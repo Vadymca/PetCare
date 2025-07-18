@@ -1,0 +1,34 @@
+﻿services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: petcare_db
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: petcare_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  petcare.api:
+    image: ${DOCKER_REGISTRY-}petcareapi
+    build:
+      context: .
+      dockerfile: PetCare.Api/Dockerfile
+    container_name: petcare_api
+    depends_on:
+      - db
+    ports:
+      - '5000:80'  # HTTP: localhost:5000 → контейнер:80
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: >
+        Host=db;
+        Port=5432;
+        Database=petcare_db;
+        Username=postgres;
+        Password=postgres
+
+volumes:
+  pgdata:

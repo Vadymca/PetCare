@@ -1,0 +1,20 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build
+bin/
+obj/
+
+# Logs
+PetCare.Api/Logs/
+
+# Secrets
+appsettings*.json
+docker-compose.override.yml
+.env
+
+# IDE
+.vscode/
+.idea/
