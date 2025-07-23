@@ -1,0 +1,43 @@
+# Node modules
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Compiled output
+dist/
+*.tsbuildinfo
+
+# Secrets
+.env
+.env.local
+.env.*.local
+
+# Editor directories and files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Tailwind CSS
+/tailwind.config.js.cache
+
+# ESLint
+.eslintcache
+
+# Testing
+coverage/
+cypress/screenshots/
+cypress/videos/
+
+# Logs
+*.log
+
+# Optional: json-server mock data (uncomment if db.json is generated dynamically)
+# mock-data/db.json

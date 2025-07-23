@@ -1,0 +1,16 @@
+# Stage 1: Build
+FROM node:latest AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build:ssr
+
+# Stage 2: Run
+FROM node:latest
+WORKDIR /app
+COPY --from=build /app/dist ./dist
+COPY package*.json ./
+RUN npm install --production
+EXPOSE 4200
+CMD ["npm", "run", "serve:ssr"]

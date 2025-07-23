@@ -1,0 +1,17 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4200:4200"
+    depends_on:
+      - json-server
+    environment:
+      - NODE_ENV=development
+  json-server:
+    image: clue/json-server
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./mock-data/db.json:/data/db.json
