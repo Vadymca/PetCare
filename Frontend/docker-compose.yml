@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "4200:4200"
+      - '4000:4000'
     depends_on:
       - json-server
     environment:
@@ -12,6 +12,6 @@ services:
   json-server:
     image: clue/json-server
     ports:
-      - "3000:3000"
+      - '3000:80'
     volumes:
       - ./mock-data/db.json:/data/db.json

@@ -11,7 +11,8 @@
     "lint": "ng lint",
     "format": "prettier --write \"src/**/*.{ts,html,css}\"",
     "build:ssr": "ng build --configuration production",
-    "serve:ssr": "node dist/petcare-frontend/server/main.server.mjs"
+    "serve:ssr": "node dist/petcare-frontend/server/server.mjs",
+    "start:ssr": "node server.mjs"
   },
   "private": true,
   "dependencies": {
