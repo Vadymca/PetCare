@@ -1,0 +1,114 @@
+<div *ngIf="animal() as data; else loading" class="max-w-4xl mx-auto p-6">
+  <div
+    class="bg-white rounded-2xl shadow-xl p-6 flex flex-col md:flex-row gap-6"
+  >
+    <!-- Фото -->
+    <img
+      *ngIf="data.photos && data.photos.length > 0"
+      [src]="data.photos[0]"
+      [alt]="data.name"
+      class="w-full md:w-1/2 h-auto object-cover rounded-xl shadow-md"
+    />
+
+    <div class="flex-1 space-y-4">
+      <h1 class="text-3xl font-bold text-gray-800">{{ data.name }}</h1>
+      <p class="text-gray-600 text-lg leading-relaxed">
+        {{ data.description || ('NO_DESCRIPTION' | translate) }}
+      </p>
+
+      <!-- Додаткова інформація -->
+      <div class="mt-4 space-y-1 text-gray-600 text-sm">
+        <p>
+          {{ 'AGE' | translate }}:
+          <ng-container *ngIf="data.age?.length === 2; else noAge">
+            {{ data.age[0] }}
+            {{
+              data.age[0] === 1
+                ? ('YEAR_SINGULAR' | translate)
+                : ('YEAR_PLURAL' | translate)
+            }},
+            {{ data.age[1] }}
+            {{
+              data.age[1] === 1
+                ? ('MONTH_SINGULAR' | translate)
+                : ('MONTH_PLURAL' | translate)
+            }}
+          </ng-container>
+          <ng-template #noAge>{{ 'UNKNOWN' | translate }}</ng-template>
+        </p>
+
+        <p>
+          {{ 'BREED' | translate }}:
+          {{ data.breed?.name || ('UNKNOWN' | translate) }}
+        </p>
+        <p>
+          {{ 'SPECIES' | translate }}:
+          {{ data.species?.name || ('UNKNOWN' | translate) }}
+        </p>
+        <p>
+          {{ 'GENDER' | translate }}:
+          {{ data.gender || ('UNKNOWN' | translate) }}
+        </p>
+
+        <p>
+          {{ 'SHELTER' | translate }}:
+          <a
+            [routerLink]="['/shelters', data.shelter?.slug]"
+            class="text-blue-600 hover:underline"
+          >
+            {{ data.shelter?.name || ('UNKNOWN' | translate) }}
+          </a>
+        </p>
+
+        <p>
+          {{ 'STATUS' | translate }}:
+          {{ data.status || ('UNKNOWN' | translate) }}
+        </p>
+        <p>
+          {{ 'ADOPTION_REQUIREMENTS' | translate }}:
+          {{ data.adoptionRequirements || ('NONE' | translate) }}
+        </p>
+        <p>
+          {{ 'MICROCHIP_ID' | translate }}:
+          {{ data.microchipId || ('NONE' | translate) }}
+        </p>
+        <p>{{ 'WEIGHT' | translate }}: {{ round(data.weight) }} кг</p>
+        <p>{{ 'HEIGHT' | translate }}: {{ round(data.height) }} см</p>
+        <p>
+          {{ 'COLOR' | translate }}: {{ data.color || ('UNKNOWN' | translate) }}
+        </p>
+        <p>
+          {{ 'STERILIZED' | translate }}:
+          {{ data.isSterilized ? ('YES' | translate) : ('NO' | translate) }}
+        </p>
+        <p>
+          {{ 'DOCUMENTS' | translate }}:
+          {{ data.haveDocuments ? ('YES' | translate) : ('NO' | translate) }}
+        </p>
+        <p>
+          {{ 'CREATED_AT' | translate }}:
+          {{ data.createdAt | date: 'longDate' }}
+        </p>
+        <p>
+          {{ 'UPDATED_AT' | translate }}:
+          {{ data.updatedAt | date: 'longDate' }}
+        </p>
+      </div>
+
+      <div class="mt-6">
+        <button
+          class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+          (click)="router.navigate(['/animals'])"
+        >
+          {{ 'RETURN_TO_LIST' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #loading>
+  <div class="text-center text-gray-500 text-lg mt-10">
+    {{ 'LOADING_ANIMAL' | translate }}
+  </div>
+</ng-template>

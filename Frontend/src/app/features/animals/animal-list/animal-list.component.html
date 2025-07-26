@@ -1,0 +1,21 @@
+<div class="gap-4 p-4">
+  <h1 class="text-3xl font-bold mb-4">{{ 'ANIMALS' | translate }}</h1>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+  @for (animal of animals(); track animal.id) {
+    <a
+      [routerLink]="['/animals', animal.slug]"
+      class="block p-4 bg-white rounded-2xl shadow hover:shadow-lg transition"
+    >
+      <h2 class="text-xl font-semibold">{{ animal.name }}</h2>
+      <p class="text-gray-600">
+        {{ animal.species?.name || ('UNKNOWN' | translate) }} —
+        {{ animal.breed?.name || ('UNKNOWN' | translate) }}
+      </p>
+      <p class="text-sm text-gray-500">
+        {{ animal.age }} {{ 'YEARS' | translate }}
+      </p>
+    </a>
+  }
+</div>

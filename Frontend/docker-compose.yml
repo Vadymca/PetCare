@@ -4,11 +4,13 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - '4000:4000'
+      - '4200:4200'
+    volumes:
+      - .:/app
     depends_on:
       - json-server
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=developmentk
   json-server:
     image: clue/json-server
     ports:

@@ -1,0 +1,130 @@
+<div *ngIf="shelter() as data; else loading" class="max-w-5xl mx-auto p-6">
+  <div
+    class="bg-white rounded-2xl shadow-xl p-6 flex flex-col md:flex-row gap-6"
+  >
+    <!-- Фото -->
+    <img
+      *ngIf="data.photos.length > 0"
+      [src]="data.photos[0]"
+      [alt]="data.name"
+      class="w-full md:w-1/2 h-auto object-cover rounded-xl shadow-md"
+    />
+
+    <!-- Інформація про притулок -->
+    <div class="flex-1 space-y-4">
+      <h1 class="text-3xl font-bold text-gray-800">{{ data.name }}</h1>
+      <p class="text-gray-600 text-lg leading-relaxed">
+        {{ data.description || ('NO_DESCRIPTION' | translate) }}
+      </p>
+
+      <!-- Основна контактна інформація -->
+      <div
+        class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-gray-600 text-sm"
+      >
+        <ng-container *ngIf="data.address">
+          <p>
+            <strong>{{ 'ADDRESS' | translate }}:</strong> {{ data.address }}
+          </p>
+        </ng-container>
+        <ng-container *ngIf="data.contactEmail">
+          <p>
+            <strong>{{ 'EMAIL' | translate }}:</strong> {{ data.contactEmail }}
+          </p>
+        </ng-container>
+        <ng-container *ngIf="data.contactPhone">
+          <p>
+            <strong>{{ 'PHONE' | translate }}:</strong> {{ data.contactPhone }}
+          </p>
+        </ng-container>
+        <ng-container *ngIf="data.workingHours">
+          <p>
+            <strong>{{ 'WORKING_HOURS' | translate }}:</strong>
+            {{ data.workingHours }}
+          </p>
+        </ng-container>
+        <ng-container *ngIf="data.capacity !== undefined">
+          <p>
+            <strong>{{ 'CAPACITY' | translate }}:</strong> {{ data.capacity }}
+          </p>
+        </ng-container>
+        <ng-container *ngIf="data.currentOccupancy !== undefined">
+          <p>
+            <strong>{{ 'CURRENT_OCCUPANCY' | translate }}:</strong>
+            {{ data.currentOccupancy }}
+          </p>
+        </ng-container>
+        <ng-container *ngIf="data.virtualTourUrl">
+          <p>
+            <strong>{{ 'VIRTUAL_TOUR' | translate }}:</strong>
+            <a
+              [href]="data.virtualTourUrl"
+              target="_blank"
+              rel="noopener"
+              class="text-blue-600 hover:underline"
+              >{{ 'VIEW' | translate }}</a
+            >
+          </p>
+        </ng-container>
+      </div>
+
+      <!-- Соцмережі -->
+      <div
+        *ngIf="data.socialMedia && (data.socialMedia | keyvalue).length > 0"
+        class="mt-4 text-gray-600 text-sm"
+      >
+        <p class="font-semibold">{{ 'SOCIAL_MEDIA' | translate }}:</p>
+        <ul class="list-disc list-inside">
+          <li *ngFor="let sm of data.socialMedia | keyvalue">
+            <strong>{{ sm.key }}:</strong>
+            <a
+              [href]="sm.value"
+              target="_blank"
+              rel="noopener"
+              class="text-blue-600 hover:underline"
+            >
+              {{ sm.value }}
+            </a>
+          </li>
+        </ul>
+      </div>
+      <!-- Карта -->
+      <div *ngIf="mapUrl() as safeUrl" class="map-container">
+        <iframe
+          [src]="safeUrl"
+          width="100%"
+          height="400"
+          style="border: 0"
+          allowfullscreen
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        >
+        </iframe>
+      </div>
+      <!-- Час створення / оновлення -->
+      <div class="mt-4 text-gray-500 text-xs">
+        <p>
+          {{ 'CREATED_AT' | translate }}: {{ data.createdAt | date: 'medium' }}
+        </p>
+        <p>
+          {{ 'UPDATED_AT' | translate }}: {{ data.updatedAt | date: 'medium' }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Кнопка повернення -->
+  <div class="mt-6 text-center">
+    <button
+      class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+      (click)="router.navigate(['/shelters'])"
+    >
+      {{ 'RETURN_TO_SHELTER_LIST' | translate }}
+    </button>
+  </div>
+</div>
+
+<ng-template #loading>
+  <div class="text-center text-gray-500 text-lg mt-10">
+    {{ 'LOADING_SHELTER' | translate }}
+  </div>
+</ng-template>
