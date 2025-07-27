@@ -1,4 +1,6 @@
-﻿using PetCare.Domain.Common;
+﻿using Microsoft.EntityFrameworkCore;
+using PetCare.Domain.Common;
+using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
 
@@ -28,6 +30,11 @@ namespace PetCare.Domain.Aggregates
         public bool HaveDocuments { get; private set; }
         public DateTime CreatedAt {  get; private set; }
         public DateTime UpdatedAt { get; private set; }
+
+        //EF Core навігація
+        public User? User { get; private set; }
+        public Breed? Breed { get; private set; }
+        public Shelter? Shelter { get; private set; }
 
         private Animal() { }
 
