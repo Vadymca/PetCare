@@ -1,5 +1,7 @@
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using PetCare.Infrastructure.Persistence;
 using Scalar.AspNetCore;
 using Serilog;
 namespace PetCare.Api
@@ -18,6 +20,12 @@ namespace PetCare.Api
                 Log.Information("Запуск PetCare.Api...");
 
                 var builder = WebApplication.CreateBuilder(args);
+
+                //AppDbContext з Npgsql + NetTopologySuite
+                builder.Services.AddDbContext<AppDbContext>(options =>
+                    options.UseNpgsql(
+                        builder.Configuration.GetConnectionString("DefaultConnection"),
+                        npgsql => npgsql.UseNetTopologySuite()));
 
                 // Використання Serilog 
                 builder.Host.UseSerilog();

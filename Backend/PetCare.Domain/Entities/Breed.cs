@@ -9,6 +9,9 @@ namespace PetCare.Domain.Entities
         public Name Name { get; private set; }
         public string? Description { get; private set; }
 
+        // EF Core навігація
+        public Specie? Specie { get; private set; }
+
         private Breed() { }
 
         private Breed(Guid speciesId, Name name, string? description)

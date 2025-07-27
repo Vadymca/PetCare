@@ -7,6 +7,9 @@ namespace PetCare.Domain.Entities
     {
         public Name Name { get; private set; }
 
+        // EF Core навігація
+        public ICollection<Breed> Breeds { get; private set; } = new List<Breed>();
+
         private Specie() { }
     
         private Specie(Name name)

@@ -19,9 +19,12 @@ namespace PetCare.Domain.Aggregates
         public string? VirtualTourUrl { get; private set; }
         public string? WorkingHours { get; private set; }
         public Dictionary<string, string> SocialMedia { get; private set; } = new();
-        public Guid ManagerId { get; private set; }
+        public Guid? ManagerId { get; private set; }
         public DateTime CreatedAt { get; private set; }
         public DateTime UpdatedAt { get; private set;}
+
+        //EF Core навігація
+        public User? Manager { get; private set; }
 
         private Shelter() { }
 
