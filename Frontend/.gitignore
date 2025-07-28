@@ -41,3 +41,4 @@ cypress/videos/
 
 # Optional: json-server mock data (uncomment if db.json is generated dynamically)
 # mock-data/db.json
+.angular/cache/
