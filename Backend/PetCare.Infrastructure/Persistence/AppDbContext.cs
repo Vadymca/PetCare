@@ -12,7 +12,7 @@ namespace PetCare.Infrastructure.Persistence
         {
         }
 
-        public DbSet<Specie> Species { get; set; } = null!;
+        public DbSet<Specie> Species => Set<Specie>();
         public DbSet<Breed> Breeds { get; set; } = null!;
         public DbSet<Shelter> Shelters { get; set; } = null!;
         public DbSet<Animal> Animals { get; set; } = null!;

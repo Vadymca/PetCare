@@ -6,12 +6,17 @@ namespace PetCare.Domain.ValueObjects
 {
     public sealed class Address : ValueObject
     {
-        private static readonly Regex AddressRegex = 
-            new(@"^(вул\.|пров\.|просп\.|пл\.|бульв\.)\s+\p{L}+.*?,\s*(№?\s*\d+[A-Za-zА-Яа-я]?),\s*м\.\s*\p{L}+$", 
-                RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        public string Value { get; }
+        private static readonly Regex AddressRegex =
+                new(@"^(вул\.|пров\.|просп\.|пл\.|бульв\.)\s+\p{L}+.*?,\s*(№?\s*\d+[A-Za-zА-Яа-я]?),\s*м\.\s*\p{L}+$",
+                    RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        public string Value { get; private set; }
+
+        // Parameterless constructor for EF Core
+        private Address() { Value = string.Empty; }
 
         private Address(string value) => Value = value;
+
         public static Address Create(string address)
         {
             if (string.IsNullOrWhiteSpace(address))
@@ -27,8 +32,11 @@ namespace PetCare.Domain.ValueObjects
 
             return new Address(trimmed);
         }
-        protected override IEnumerable<object> GetEqualityComponents() => new[] { Value };
+
+        protected override IEnumerable<object?> GetEqualityComponents() => new[] { Value };
+
         public override string ToString() => Value;
 
+        public static implicit operator string(Address address) => address.Value;
     }
 }

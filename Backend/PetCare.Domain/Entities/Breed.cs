@@ -3,7 +3,7 @@ using PetCare.Domain.ValueObjects;
 
 namespace PetCare.Domain.Entities
 {
-    public sealed class Breed : BaseEntity
+    public sealed class Breed : Entity
     {
         public Guid SpeciesId { get; private set; }
         public Name Name { get; private set; }
@@ -12,9 +12,13 @@ namespace PetCare.Domain.Entities
         // EF Core навігація
         public Specie? Specie { get; private set; }
 
-        private Breed() { }
+        // Parameterless constructor for EF Core
+        private Breed()
+        {
+            Name = Name.Create("Default");
+        }
 
-        private Breed(Guid speciesId, Name name, string? description)
+        private Breed(Guid speciesId, Name name, string? description) : base()
         {
             SpeciesId = speciesId;
             Name = name;
@@ -37,6 +41,7 @@ namespace PetCare.Domain.Entities
         {
             if (!string.IsNullOrWhiteSpace(name)) Name = Name.Create(name);
             if (description is not null) Description = description;
+            UpdateTimestamp();
         }
     }
 }

@@ -5,9 +5,13 @@ namespace PetCare.Domain.ValueObjects
 {
     public sealed class MicrochipId : ValueObject
     {
-        private static readonly Regex MicrochipRegex = new(@"^[A-Z0-9]{5,20}$", 
+        private static readonly Regex MicrochipRegex = new(@"^[A-Z0-9]{5,20}$",
             RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        public string Value { get; }
+
+        public string Value { get; private set; }
+
+        // Parameterless constructor for EF Core
+        private MicrochipId() { Value = string.Empty; }
 
         private MicrochipId(string value) => Value = value;
 
@@ -23,7 +27,11 @@ namespace PetCare.Domain.ValueObjects
 
             return new MicrochipId(value.ToUpperInvariant());
         }
-        protected override IEnumerable<object> GetEqualityComponents() => new[] { Value };
+
+        protected override IEnumerable<object?> GetEqualityComponents() => new[] { Value };
+
         public override string ToString() => Value;
+
+        public static implicit operator string(MicrochipId microchipId) => microchipId.Value;
     }
 }
