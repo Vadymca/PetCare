@@ -41,7 +41,7 @@
   "NO_INFO": "Немає даних",
   "SHELTERS": "Притулки",
   "ANIMALS": "Тварини",
-  "ERRORS": {
-    "FAILED_TO_LOAD_ANIMALS": "Не вдалося завантажити тварин"
-  }
+
+  "FAILED_TO_LOAD_ANIMALS": "Не вдалося завантажити тварин",
+  "FAILED_TO_LOAD_SHELTERS": "Не вдалося завантажити притулки"
 }

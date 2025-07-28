@@ -41,7 +41,6 @@
   "NO_INFO": "Not provided",
   "SHELTERS": "Shelters",
   "ANIMALS": "Animals",
-  "ERRORS": {
-    "FAILED_TO_LOAD_ANIMALS": "Failed to load animals"
-  }
+  "FAILED_TO_LOAD_ANIMALS": "Failed to load animals",
+	"FAILED_TO_LOAD_SHELTERS": "Failed to load shelters"
 }
