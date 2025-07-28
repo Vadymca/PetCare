@@ -79,6 +79,10 @@ export class AnimalService {
   getAnimalsWithDetails(): Observable<AnimalDetail[]> {
     return this.getAnimals().pipe(
       switchMap(animals => {
+        if (animals.length === 0) {
+          return of([]); // <-- Додаємо обробку порожнього списку
+        }
+
         const detailedAnimals$ = animals.map(animal => {
           const breed$ = animal.breedId
             ? this.breedService.getBreedById(animal.breedId)
@@ -115,7 +119,6 @@ export class AnimalService {
         });
 
         return forkJoin(detailedAnimals$).pipe(
-          // Прибрати undefined-елементи, якщо породи немає
           map(details =>
             details.filter((detail): detail is AnimalDetail => !!detail)
           )

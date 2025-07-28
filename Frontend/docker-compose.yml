@@ -17,3 +17,12 @@ services:
       - '3000:80'
     volumes:
       - ./mock-data/db.json:/data/db.json
+test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: npm run test:ci
+    volumes:
+      - .:/app
+    depends_on:
+      - json-server

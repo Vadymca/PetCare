@@ -1,16 +1,21 @@
 <div class="gap-4 p-4">
   <h1 class="text-3xl font-bold mb-4">{{ 'SHELTERS' | translate }}</h1>
 </div>
-
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-  @for (shelter of shelters(); track shelter.id) {
-    <a
-      [routerLink]="['/shelters', shelter.slug]"
-      class="block p-4 bg-white rounded-2xl shadow hover:shadow-lg transition"
-    >
-      <h2 class="text-xl font-semibold">{{ shelter.name }}</h2>
-      <p class="text-gray-600">{{ shelter.address }}</p>
-      <p class="text-sm text-gray-500">{{ shelter.contactPhone }}</p>
-    </a>
-  }
-</div>
+@if (error()) {
+  <div class="p-4 text-red-600 font-medium">
+    {{ error() ?? '' | translate }}
+  </div>
+} @else {
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+    @for (shelter of shelters(); track shelter.id) {
+      <a
+        [routerLink]="['/shelters', shelter.slug]"
+        class="block p-4 bg-white rounded-2xl shadow hover:shadow-lg transition"
+      >
+        <h2 class="text-xl font-semibold mb-1">{{ shelter.name }}</h2>
+        <p class="text-gray-600 mb-1">{{ shelter.address }}</p>
+        <p class="text-sm text-gray-500">{{ shelter.contactPhone }}</p>
+      </a>
+    }
+  </div>
+}

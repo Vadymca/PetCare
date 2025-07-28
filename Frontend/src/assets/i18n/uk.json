@@ -40,5 +40,8 @@
   "SHELTER_DETAILS": "Деталі притулку",
   "NO_INFO": "Немає даних",
   "SHELTERS": "Притулки",
-  "ANIMALS": "Тварини"
+  "ANIMALS": "Тварини",
+  "ERRORS": {
+    "FAILED_TO_LOAD_ANIMALS": "Не вдалося завантажити тварин"
+  }
 }

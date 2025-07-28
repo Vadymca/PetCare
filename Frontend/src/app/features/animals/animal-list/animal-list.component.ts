@@ -1,10 +1,10 @@
-// features/animals/animal-list.component.ts
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AnimalService } from '../../../core/services/animal.service';
+import { catchError, of } from 'rxjs';
 
 @Component({
   selector: 'app-animal-list',
@@ -15,7 +15,17 @@ import { AnimalService } from '../../../core/services/animal.service';
 })
 export class AnimalListComponent {
   private animalService = inject(AnimalService);
-  animals = toSignal(this.animalService.getAnimalsWithDetails(), {
-    initialValue: [],
-  }); // Observable<Animal[]> -> Signal
+
+  error = signal<string | null>(null);
+
+  animals = toSignal(
+    this.animalService.getAnimalsWithDetails().pipe(
+      catchError(err => {
+        this.error.set('FAILED_TO_LOAD_ANIMALS');
+        console.error('Error loading animals:', err);
+        return of([]); // Повертаємо порожній список, щоб Signal не впав
+      })
+    ),
+    { initialValue: [] }
+  );
 }

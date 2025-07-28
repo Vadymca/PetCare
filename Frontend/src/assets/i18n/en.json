@@ -29,7 +29,7 @@
   "PHONE": "Phone",
   "WEBSITE": "Website",
   "CAPACITY": "Capacity",
-	"CURRENT_OCCUPANCY": "Current occupancy",
+  "CURRENT_OCCUPANCY": "Current occupancy",
   "RETURN_TO_SHELTER_LIST": "Back to list",
   "LOADING_SHELTER": "Loading shelter...",
   "FOUNDING_DATE": "Founding date",
@@ -39,6 +39,9 @@
   "CITY": "City",
   "SHELTER_DETAILS": "Shelter details",
   "NO_INFO": "Not provided",
-	"SHELTERS": "Shelters",
-	"ANIMALS": "Animals"
+  "SHELTERS": "Shelters",
+  "ANIMALS": "Animals",
+  "ERRORS": {
+    "FAILED_TO_LOAD_ANIMALS": "Failed to load animals"
+  }
 }
