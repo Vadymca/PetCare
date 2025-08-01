@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
-import { User } from '../interfaces/user';
+import { User } from '../models/user';
 import { UserService } from './user.service';
 
 describe('UserService', () => {

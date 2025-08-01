@@ -5,13 +5,13 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../../core/services/auth.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, TranslateModule],
+  imports: [ReactiveFormsModule, TranslateModule, RouterModule],
   templateUrl: './login.component.html',
 })
 export class LoginComponent {

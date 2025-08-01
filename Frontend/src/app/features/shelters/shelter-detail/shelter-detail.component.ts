@@ -17,7 +17,7 @@ import {
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { filter, switchMap } from 'rxjs/operators';
-import { Shelter } from '../../../core/interfaces/shelter';
+import { Shelter } from '../../../core/models/shelter';
 import { ShelterService } from '../../../core/services/shelter.service';
 
 @Component({

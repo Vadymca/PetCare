@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 
-import { Shelter } from '../interfaces/shelter';
+import { Shelter } from '../models/shelter';
 import { ApiService } from './api.service';
 
 @Injectable({

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
-import { Breed } from '../interfaces/breed';
+import { Breed } from '../models/breed';
 import { BreedService } from './breed.service';
 
 describe('BreedService', () => {

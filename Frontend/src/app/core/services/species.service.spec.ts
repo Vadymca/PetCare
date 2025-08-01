@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
-import { Species } from '../interfaces/species';
+import { Species } from '../models/species';
 import { SpeciesService } from './species.service';
 
 describe('SpeciesService', () => {

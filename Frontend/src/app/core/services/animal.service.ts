@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, forkJoin, map, of, switchMap } from 'rxjs';
-import { Animal } from '../interfaces/animal';
-import { AnimalDetail } from '../interfaces/animal-detail';
+import { Animal } from '../models/animal';
+import { AnimalDetail } from '../models/animal-detail';
 import { ApiService } from './api.service'; // оновлена адреса
 
 import { BreedService } from './breed.service';

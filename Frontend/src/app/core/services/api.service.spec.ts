@@ -1,7 +1,10 @@
+import {
+  HttpClientTestingModule,
+  HttpTestingController,
+} from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { Animal } from '../models/animal';
 import { ApiService } from './api.service';
-import { Animal } from '../interfaces/animal';
 
 describe('ApiService', () => {
   let service: ApiService;
@@ -34,13 +37,13 @@ describe('ApiService', () => {
     species: undefined,
     breed: undefined,
     shelter: undefined,
-    age: 4
+    age: 4,
   };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [ApiService]
+      providers: [ApiService],
     });
 
     service = TestBed.inject(ApiService);
@@ -82,7 +85,7 @@ describe('ApiService', () => {
       next: () => fail('should have failed with 500 error'),
       error: error => {
         expect(error.status).toBe(500);
-      }
+      },
     });
 
     const req = httpMock.expectOne('http://localhost:3000/animals');
@@ -106,7 +109,7 @@ describe('ApiService', () => {
       next: () => fail('should have failed with 404 error'),
       error: error => {
         expect(error.status).toBe(404);
-      }
+      },
     });
 
     const req = httpMock.expectOne('http://localhost:3000/animals/999');
@@ -130,7 +133,9 @@ describe('ApiService', () => {
       expect(data.length).toBe(0);
     });
 
-    const req = httpMock.expectOne('http://localhost:3000/animals?slug=unknown-slug');
+    const req = httpMock.expectOne(
+      'http://localhost:3000/animals?slug=unknown-slug'
+    );
     expect(req.request.method).toBe('GET');
     req.flush([]);
   });
@@ -140,7 +145,7 @@ describe('ApiService', () => {
       next: () => fail('should have failed with 500 error'),
       error: error => {
         expect(error.status).toBe(500);
-      }
+      },
     });
 
     const req = httpMock.expectOne('http://localhost:3000/animals?slug=buddy');

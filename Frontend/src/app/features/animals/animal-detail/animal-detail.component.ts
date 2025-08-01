@@ -12,7 +12,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { filter, switchMap } from 'rxjs/operators';
-import { AnimalDetail } from '../../../core/interfaces/animal-detail';
+import { AnimalDetail } from '../../../core/models/animal-detail';
 import { AnimalService } from '../../../core/services/animal.service';
 @Component({
   selector: 'app-animal-detail',

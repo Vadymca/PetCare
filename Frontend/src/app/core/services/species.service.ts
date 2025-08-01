@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { Species } from '../interfaces/species';
+import { Species } from '../models/species';
 import { ApiService } from './api.service';
 
 @Injectable({

@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AnimalListComponent } from './animal-list.component';
-import { AnimalService } from '../../../core/services/animal.service';
-import { of, throwError } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
-import { RouterTestingModule } from '@angular/router/testing';
 import { By } from '@angular/platform-browser';
-import { AnimalDetail } from '../../../core/interfaces/animal-detail';
+import { RouterTestingModule } from '@angular/router/testing';
+import { TranslateModule } from '@ngx-translate/core';
+import { of, throwError } from 'rxjs';
+import { AnimalDetail } from '../../../core/models/animal-detail';
+import { AnimalService } from '../../../core/services/animal.service';
+import { AnimalListComponent } from './animal-list.component';
 
 describe('AnimalListComponent', () => {
   let component: AnimalListComponent;
@@ -22,7 +22,7 @@ describe('AnimalListComponent', () => {
         id: 'b1',
         speciesId: 'sp1',
         name: 'Сіамський',
-        description: 'Короткошерста порода котів'
+        description: 'Короткошерста порода котів',
       },
       shelter: undefined,
       user: undefined,
@@ -48,9 +48,15 @@ describe('AnimalListComponent', () => {
   ];
 
   beforeEach(async () => {
-    animalServiceSpy = jasmine.createSpyObj('AnimalService', ['getAnimalsWithDetails']);
+    animalServiceSpy = jasmine.createSpyObj('AnimalService', [
+      'getAnimalsWithDetails',
+    ]);
     await TestBed.configureTestingModule({
-      imports: [AnimalListComponent, TranslateModule.forRoot(), RouterTestingModule],
+      imports: [
+        AnimalListComponent,
+        TranslateModule.forRoot(),
+        RouterTestingModule,
+      ],
       providers: [{ provide: AnimalService, useValue: animalServiceSpy }],
     }).compileComponents();
   });
@@ -85,7 +91,9 @@ describe('AnimalListComponent', () => {
 
   it('should handle service error gracefully', () => {
     spyOn(console, 'error'); // suppress error logs
-    animalServiceSpy.getAnimalsWithDetails.and.returnValue(throwError(() => new Error('Server error')));
+    animalServiceSpy.getAnimalsWithDetails.and.returnValue(
+      throwError(() => new Error('Server error'))
+    );
     fixture = TestBed.createComponent(AnimalListComponent);
     fixture.detectChanges();
 

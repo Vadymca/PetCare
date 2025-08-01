@@ -116,9 +116,16 @@
     <p class="mt-4 text-center text-sm text-gray-600">
       {{ 'NO_ACCOUNT' | translate }}
       <a
-        href="/register"
-        class="text-orange-400 hover:underline font-semibold"
+        routerLink="/register"
+        class="text-orange-400 hover:underline font-semibold cursor-pointer"
         >{{ 'REGISTER' | translate }}</a
+      >
+    </p>
+    <p class="mt-4 text-center text-sm text-gray-600">
+      <a
+        routerLink="/forgot-password"
+        class="text-orange-400 hover:underline font-semibold cursor-pointer"
+        >{{ 'FORGOT_PASSWORD' | translate }}</a
       >
     </p>
     <div id="errorMessage" class="text-red-600 mb-2 text-sm">

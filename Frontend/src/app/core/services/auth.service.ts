@@ -3,7 +3,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { delay, Observable, of, tap, throwError } from 'rxjs';
 import { API_BASE_URL } from '../config/api.config';
-import { User } from '../interfaces/user';
+import { User } from '../models/user';
 
 export type AuthStep = 'login' | '2fa' | 'authenticated';
 interface AuthResponse {
@@ -102,6 +102,19 @@ export class AuthService {
   //     );
   // }
 
+  register(user: Partial<User>): Observable<User> {
+    return this.http.post<User>(`${this.baseUrl}/register`, user);
+  }
+  forgotPassword(email: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/forgot-password`, { email });
+  }
+  resetPassword(token: string, newPassword: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/reset-password`, {
+      token,
+      newPassword,
+    });
+  }
+
   //Приклад роботи на мок-датабазі
 
   login(email: string, password: string): Observable<'2fa_required'> {
@@ -171,7 +184,7 @@ export class AuthService {
   setAccessToken(token: string | null): void {
     this.accessToken.set(token);
   }
-	getAuthStep(): AuthStep {
-		return this.authStep();
-	}
+  getAuthStep(): AuthStep {
+    return this.authStep();
+  }
 }

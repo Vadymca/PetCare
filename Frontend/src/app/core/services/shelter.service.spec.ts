@@ -1,8 +1,11 @@
+import {
+  HttpClientTestingModule,
+  HttpTestingController,
+} from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ShelterService } from './shelter.service';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { Shelter } from '../interfaces/shelter';
 import { API_BASE_URL } from '../config/api.config';
+import { Shelter } from '../models/shelter';
+import { ShelterService } from './shelter.service';
 
 describe('ShelterService', () => {
   let service: ShelterService;
@@ -30,8 +33,44 @@ describe('ShelterService', () => {
   describe('#getShelters', () => {
     it('should return an array of shelters', () => {
       const mockShelters: Shelter[] = [
-        { id: '1', slug: 'shelter-1', name: 'Shelter 1', address: 'Addr 1', coordinates: { lat: 1, lng: 1 }, contactPhone: '123', contactEmail: 'a@b.com', description: 'desc', capacity: 10, currentOccupancy: 5, photos: [], virtualTourUrl: null, workingHours: '9-18', socialMedia: {}, managerId: 'mgr1', createdAt: '2023-01-01', updatedAt: '2023-01-01' },
-        { id: '2', slug: 'shelter-2', name: 'Shelter 2', address: 'Addr 2', coordinates: { lat: 2, lng: 2 }, contactPhone: '456', contactEmail: 'c@d.com', description: 'desc2', capacity: 20, currentOccupancy: 15, photos: [], virtualTourUrl: null, workingHours: '10-19', socialMedia: {}, managerId: 'mgr2', createdAt: '2023-01-02', updatedAt: '2023-01-02' }
+        {
+          id: '1',
+          slug: 'shelter-1',
+          name: 'Shelter 1',
+          address: 'Addr 1',
+          coordinates: { lat: 1, lng: 1 },
+          contactPhone: '123',
+          contactEmail: 'a@b.com',
+          description: 'desc',
+          capacity: 10,
+          currentOccupancy: 5,
+          photos: [],
+          virtualTourUrl: null,
+          workingHours: '9-18',
+          socialMedia: {},
+          managerId: 'mgr1',
+          createdAt: '2023-01-01',
+          updatedAt: '2023-01-01',
+        },
+        {
+          id: '2',
+          slug: 'shelter-2',
+          name: 'Shelter 2',
+          address: 'Addr 2',
+          coordinates: { lat: 2, lng: 2 },
+          contactPhone: '456',
+          contactEmail: 'c@d.com',
+          description: 'desc2',
+          capacity: 20,
+          currentOccupancy: 15,
+          photos: [],
+          virtualTourUrl: null,
+          workingHours: '10-19',
+          socialMedia: {},
+          managerId: 'mgr2',
+          createdAt: '2023-01-02',
+          updatedAt: '2023-01-02',
+        },
       ];
 
       service.getShelters().subscribe(shelters => {
@@ -58,11 +97,14 @@ describe('ShelterService', () => {
         next: () => fail('expected an error'),
         error: error => {
           expect(error.status).toBe(500);
-        }
+        },
       });
 
       const req = httpMock.expectOne(baseUrl);
-      req.flush('Server error', { status: 500, statusText: 'Internal Server Error' });
+      req.flush('Server error', {
+        status: 500,
+        statusText: 'Internal Server Error',
+      });
     });
   });
 
@@ -71,9 +113,23 @@ describe('ShelterService', () => {
 
     it('should return a single shelter matching the slug', () => {
       const mockShelter: Shelter = {
-        id: '1', slug, name: 'Shelter 1', address: 'Addr 1', coordinates: { lat: 1, lng: 1 }, contactPhone: '123', contactEmail: 'a@b.com',
-        description: 'desc', capacity: 10, currentOccupancy: 5, photos: [], virtualTourUrl: null, workingHours: '9-18',
-        socialMedia: {}, managerId: 'mgr1', createdAt: '2023-01-01', updatedAt: '2023-01-01'
+        id: '1',
+        slug,
+        name: 'Shelter 1',
+        address: 'Addr 1',
+        coordinates: { lat: 1, lng: 1 },
+        contactPhone: '123',
+        contactEmail: 'a@b.com',
+        description: 'desc',
+        capacity: 10,
+        currentOccupancy: 5,
+        photos: [],
+        virtualTourUrl: null,
+        workingHours: '9-18',
+        socialMedia: {},
+        managerId: 'mgr1',
+        createdAt: '2023-01-01',
+        updatedAt: '2023-01-01',
       };
 
       service.getShelterBySlug(slug).subscribe(shelter => {
@@ -99,7 +155,7 @@ describe('ShelterService', () => {
         next: () => fail('expected an error'),
         error: error => {
           expect(error.status).toBe(404);
-        }
+        },
       });
 
       const req = httpMock.expectOne(`${baseUrl}?slug=${slug}`);

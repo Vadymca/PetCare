@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { Breed } from '../interfaces/breed';
+import { Breed } from '../models/breed';
 import { ApiService } from './api.service';
 
 @Injectable({
