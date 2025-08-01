@@ -42,5 +42,35 @@
   "SHELTERS": "Shelters",
   "ANIMALS": "Animals",
   "FAILED_TO_LOAD_ANIMALS": "Failed to load animals",
-	"FAILED_TO_LOAD_SHELTERS": "Failed to load shelters"
+  "FAILED_TO_LOAD_SHELTERS": "Failed to load shelters",
+  "HELLO": "Hello",
+  "MY_PROFILE": "My profile",
+  "LOGOUT": "Logout",
+  "LOGIN_OR_REGISTER": "Login/Register",
+  "EMAIL_REQUIRED": "Email is required",
+  "PASSWORD_REQUIRED": "Password is required",
+  "EMAIL_INVALID": "Enter a valid email",
+  "LOGIN_TITLE": "Sign in to your account",
+
+  "PASSWORD": "Password",
+
+  "NO_ACCOUNT": "Don't have an account?",
+  "REGISTER": "Register",
+  "INVALID_CREDENTIALS": "Invalid credentials",
+  "NO_LOGIN_SESSION": "No login session",
+  "INVALID_2FA_CODE": "Invalid 2FA code",
+  "TWO_FACTOR_AUTH": "Two-Factor Authentication",
+  "SIX_DIGIT_CODE": "6-digit code",
+  "ENTER_CODE": "Enter code",
+  "CODE_MUST_BE_6_DIGITS": "Code must contain 6 digits",
+  "CONFIRM": "Confirm",
+  "AUTH_ERROR": "Authorization error",
+  "ACCESS_DENIED_TITLE": "Access denied!",
+
+  "ACCESS_DENIED_MESSAGE": "Sorry, friend, you're not allowed here!",
+  "GO_HOME": "Go home",
+  "NOT_FOUND_TITLE": "The page was not found",
+  "NOT_FOUND_MESSAGE": "Oops, something went wrong, friend, the page was not found...",
+  "ERROR.500_MESSAGE": "Sorry, friend, something went wrong. Try again later...",
+  "ERROR.503_MESSAGE": "Sorry, friend, the server is unavailable. We're trying to restore..."
 }

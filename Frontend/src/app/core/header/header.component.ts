@@ -1,19 +1,35 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { RouterModule, Router } from '@angular/router';
+import { Component, computed, inject, Signal } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { AuthButtonsComponent } from '../../shared/components/auth-buttons.component';
+import { UserMenuComponent } from '../../shared/components/user-menu.component';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    TranslateModule,
+    AuthButtonsComponent,
+    UserMenuComponent,
+  ],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css'],
 })
 export class HeaderComponent {
+  private authService = inject(AuthService);
   private translate = inject(TranslateService);
+
   router = inject(Router);
   isMenuOpen = false;
+  isAuthenticated: Signal<boolean> = this.authService.isLoggedIn;
+  userName: Signal<string | null> = computed(() => {
+    const user = this.authService.currentUser();
+    return user ? user.firstName : null;
+  });
 
   changeLanguage(lang: string) {
     this.translate.use(lang);
@@ -21,5 +37,8 @@ export class HeaderComponent {
 
   get currentLang(): string {
     return this.translate.currentLang || this.translate.defaultLang;
+  }
+  logout() {
+    this.authService.logout();
   }
 }

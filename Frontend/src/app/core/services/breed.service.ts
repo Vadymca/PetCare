@@ -1,21 +1,33 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { API_BASE_URL } from '../config/api.config';
+
 import { Breed } from '../interfaces/breed';
+import { ApiService } from './api.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BreedService {
-  private http = inject(HttpClient);
-  private baseUrl = `${API_BASE_URL}/breeds`;
+  private api = inject(ApiService);
+  private endpoint = `breeds`;
 
   getAll(): Observable<Breed[]> {
-    return this.http.get<Breed[]>(this.baseUrl);
+    return this.api.get<Breed[]>(this.endpoint);
   }
 
-  getBreedById(id: string): Observable<Breed | undefined> {
-    return this.http.get<Breed>(`${this.baseUrl}/${id}`);
+  getBreedById(id: string): Observable<Breed> {
+    return this.api.getById<Breed>(this.endpoint, id);
+  }
+
+  createBreed(breed: Partial<Breed>): Observable<Breed> {
+    return this.api.post<Breed>(this.endpoint, breed);
+  }
+
+  updateBreed(id: string, breed: Partial<Breed>): Observable<Breed> {
+    return this.api.put<Breed>(this.endpoint, id, breed);
+  }
+
+  deleteBreed(id: string): Observable<void> {
+    return this.api.delete<void>(this.endpoint, id);
   }
 }

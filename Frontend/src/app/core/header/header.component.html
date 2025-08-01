@@ -1,7 +1,10 @@
 <header class="sticky top-0 z-50 bg-gray-800 text-white shadow-md">
   <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
     <!-- Logo & Title -->
-    <div class="flex items-center gap-2 text-orange-400 cursor-pointer">
+    <div
+      class="flex items-center gap-2 text-orange-400 cursor-pointer"
+      [routerLink]="['/']"
+    >
       <img src="assets/icons/logo.png" alt="PetCare paw" class="w-10 h-10" />
       <span class="text-xl font-bold text-white">PetCare</span>
     </div>
@@ -23,6 +26,15 @@
         {{ 'SHELTERS' | translate }}
       </a>
     </nav>
+    <!-- Login/Logout -->
+    @if (isAuthenticated()) {
+      <app-user-menu
+        [userName]="userName() ?? ''"
+        (logout)="logout()"
+      ></app-user-menu>
+    } @else {
+      <app-auth-buttons></app-auth-buttons>
+    }
 
     <!-- Language Switcher & Burger -->
     <div class="flex items-center gap-2">

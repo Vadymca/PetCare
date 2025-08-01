@@ -1,0 +1,19 @@
+<div
+  class="flex flex-col items-center justify-center min-h-screen text-center p-4"
+>
+  <img
+    src="assets/images/black-cat.png"
+    alt="Access Denied"
+    class="w-64 mb-6"
+  />
+  <h1 class="text-3xl font-bold text-400 mb-4">
+    {{ 'ACCESS_DENIED_TITLE' | translate }}
+  </h1>
+  <p class="text-lg mb-6">{{ 'ACCESS_DENIED_MESSAGE' | translate }}</p>
+  <button
+    (click)="goHome()"
+    class="px-6 py-2 bg-orange-300 text-white rounded hover:bg-orange-600 transition"
+  >
+    {{ 'GO_HOME' | translate }}
+  </button>
+</div>

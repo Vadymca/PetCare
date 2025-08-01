@@ -55,7 +55,7 @@ export class ShelterDetailComponent {
 
       this.shelterService.getShelterBySlug(slugValue).subscribe(shelter => {
         if (!shelter) {
-          this.router.navigate(['/shelters']);
+          this.router.navigate(['/not-found']);
           return;
         }
 

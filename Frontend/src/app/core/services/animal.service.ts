@@ -1,39 +1,36 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, forkJoin, map, of, switchMap } from 'rxjs';
-import { API_BASE_URL } from '../config/api.config';
 import { Animal } from '../interfaces/animal';
 import { AnimalDetail } from '../interfaces/animal-detail';
+import { ApiService } from './api.service'; // оновлена адреса
 
-// Імпорти інших сервісів
 import { BreedService } from './breed.service';
 import { ShelterService } from './shelter.service';
 import { SpeciesService } from './species.service';
 import { UserService } from './user.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class AnimalService {
-  private http = inject(HttpClient);
+  private api = inject(ApiService);
   private breedService = inject(BreedService);
   private shelterService = inject(ShelterService);
   private userService = inject(UserService);
   private speciesService = inject(SpeciesService);
 
-  private baseUrl = `${API_BASE_URL}/animals`;
+  private readonly endpoint = 'animals';
 
   getAnimals(): Observable<Animal[]> {
-    return this.http.get<Animal[]>(this.baseUrl);
+    return this.api.get<Animal[]>(this.endpoint);
   }
 
   getAnimalBySlug(slug: string): Observable<Animal | undefined> {
-    return this.http
-      .get<Animal[]>(`${this.baseUrl}?slug=${slug}`)
+    return this.api
+      .getBySlug<Animal>(this.endpoint, slug)
       .pipe(map(animals => animals[0]));
   }
+
   getAnimalById(id: string): Observable<Animal | undefined> {
-    return this.http.get<Animal>(`${this.baseUrl}/${id}`);
+    return this.api.getById<Animal>(this.endpoint, id);
   }
 
   getAnimalDetailBySlug(slug: string): Observable<AnimalDetail | undefined> {
@@ -51,11 +48,7 @@ export class AnimalService {
           ? this.userService.getUserById(animal.userId)
           : of(undefined);
 
-        return forkJoin({
-          breed: breed$,
-          shelter: shelter$,
-          user: user$,
-        }).pipe(
+        return forkJoin({ breed: breed$, shelter: shelter$, user: user$ }).pipe(
           switchMap(({ breed, shelter, user }) => {
             if (!breed) return of(undefined);
             return this.speciesService.getSpeciesById(breed.speciesId).pipe(
@@ -76,12 +69,11 @@ export class AnimalService {
       })
     );
   }
+
   getAnimalsWithDetails(): Observable<AnimalDetail[]> {
     return this.getAnimals().pipe(
       switchMap(animals => {
-        if (animals.length === 0) {
-          return of([]); // <-- Додаємо обробку порожнього списку
-        }
+        if (animals.length === 0) return of([]);
 
         const detailedAnimals$ = animals.map(animal => {
           const breed$ = animal.breedId
@@ -119,12 +111,20 @@ export class AnimalService {
         });
 
         return forkJoin(detailedAnimals$).pipe(
-          map(details =>
-            details.filter((detail): detail is AnimalDetail => !!detail)
-          )
+          map(details => details.filter((d): d is AnimalDetail => !!d))
         );
       })
     );
+  }
+
+  create(animal: Animal): Observable<Animal> {
+    return this.api.post<Animal>(this.endpoint, animal);
+  }
+  update(id: number, animal: Partial<Animal>): Observable<Animal> {
+    return this.api.patch<Animal>(this.endpoint, id, animal);
+  }
+  delete(id: number): Observable<void> {
+    return this.api.delete<void>(this.endpoint, id);
   }
 
   private calculateAgeParts(birthday: string): [number, number] {

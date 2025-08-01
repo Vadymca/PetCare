@@ -1,10 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { AnimalService } from '../../../core/services/animal.service';
 import { catchError, of } from 'rxjs';
+import { AnimalService } from '../../../core/services/animal.service';
 
 @Component({
   selector: 'app-animal-list',

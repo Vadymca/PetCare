@@ -49,7 +49,7 @@ export class AnimalDetailComponent {
         .subscribe(animalDetail => {
           if (!animalDetail) {
             // Редірект, якщо тварина не знайдена
-            this.router.navigate(['/animals']);
+            this.router.navigate(['/not-found']);
             return;
           }
 

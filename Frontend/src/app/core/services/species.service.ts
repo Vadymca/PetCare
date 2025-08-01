@@ -1,21 +1,34 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { API_BASE_URL } from '../config/api.config';
+
 import { Species } from '../interfaces/species';
+import { ApiService } from './api.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SpeciesService {
-  private http = inject(HttpClient);
-  private baseUrl = `${API_BASE_URL}/species`;
+  private api = inject(ApiService);
+
+  private endpoint = `species`;
 
   getAll(): Observable<Species[]> {
-    return this.http.get<Species[]>(this.baseUrl);
+    return this.api.get<Species[]>(this.endpoint);
   }
 
-  getSpeciesById(id: string): Observable<Species | undefined> {
-    return this.http.get<Species>(`${this.baseUrl}/${id}`);
+  getSpeciesById(id: string): Observable<Species> {
+    return this.api.getById<Species>(this.endpoint, id);
+  }
+
+  createSpecies(species: Partial<Species>): Observable<Species> {
+    return this.api.post<Species>(this.endpoint, species);
+  }
+
+  updateSpecies(id: string, species: Partial<Species>): Observable<Species> {
+    return this.api.put<Species>(this.endpoint, id, species);
+  }
+
+  deleteSpecies(id: string): Observable<void> {
+    return this.api.delete<void>(this.endpoint, id);
   }
 }

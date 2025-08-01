@@ -1,0 +1,130 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+  <form
+    [formGroup]="loginForm"
+    (ngSubmit)="onSubmit()"
+    class="bg-white p-8 rounded shadow-md w-full max-w-md"
+  >
+    <h2 class="text-2xl font-bold mb-6 text-center">
+      {{ 'LOGIN_TITLE' | translate }}
+    </h2>
+
+    <!-- Email -->
+    <label for="email" class="block mb-2 font-semibold">{{
+      'EMAIL' | translate
+    }}</label>
+    <input
+      id="email"
+      type="email"
+      formControlName="email"
+      placeholder="example@mail.com"
+      autocomplete="username"
+      class="w-full px-3 py-2 border rounded mb-2 focus:outline-none focus:ring-2 focus:ring-orange-300"
+    />
+    <div class="text-red-600 mb-2 text-sm">
+      @if (
+        loginForm.controls.email.touched && !loginForm.controls.email.valid
+      ) {
+        @if (loginForm.controls.email.errors?.['required']) {
+          <div>{{ 'EMAIL_REQUIRED' | translate }}</div>
+        }
+        @if (loginForm.controls.email.errors?.['email']) {
+          <div>{{ 'EMAIL_INVALID' | translate }}</div>
+        }
+      }
+    </div>
+
+    <!-- Password -->
+    <label for="password" class="block mb-2 font-semibold">{{
+      'PASSWORD' | translate
+    }}</label>
+    <div class="relative">
+      <input
+        [type]="showPassword ? 'text' : 'password'"
+        id="password"
+        formControlName="password"
+        placeholder="********"
+        autocomplete="current-password"
+        class="w-full px-3 py-2 border rounded mb-2 focus:outline-none focus:ring-2 focus:ring-orange-300 pr-10"
+      />
+      <button
+        type="button"
+        (click)="togglePasswordVisibility()"
+        aria-label="Toggle password visibility"
+        class="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+      >
+        @if (!showPassword) {
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+            />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+            />
+          </svg>
+        }
+
+        @if (showPassword) {
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.27-2.945-9.543-7a9.975 9.975 0 012.256-3.73M6.4 6.4L2.1 2.1m1.95 1.95l17.85 17.85"
+            />
+          </svg>
+        }
+      </button>
+    </div>
+    <div class="text-red-600 mb-2 text-sm">
+      @if (
+        loginForm.controls.password.touched &&
+        !loginForm.controls.password.valid
+      ) {
+        <div>
+          @if (loginForm.controls.password.errors?.['required']) {
+            {{ 'PASSWORD_REQUIRED' | translate }}
+          }
+        </div>
+      }
+    </div>
+
+    <button
+      type="submit"
+      class="w-full bg-orange-300 hover:bg-orange-500 text-white py-2 rounded font-semibold transition"
+    >
+      {{ 'LOGIN_TITLE' | translate }}
+    </button>
+
+    <p class="mt-4 text-center text-sm text-gray-600">
+      {{ 'NO_ACCOUNT' | translate }}
+      <a
+        href="/register"
+        class="text-orange-400 hover:underline font-semibold"
+        >{{ 'REGISTER' | translate }}</a
+      >
+    </p>
+    <div id="errorMessage" class="text-red-600 mb-2 text-sm">
+      @if (errorMessage()) {
+        {{ errorMessage() ?? '' | translate }}
+      }
+    </div>
+  </form>
+</div>
