@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">PetCareApp</string>
+    <string name="animal_photo_description">Фото тварини</string>
+</resources>

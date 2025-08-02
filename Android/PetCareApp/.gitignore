@@ -1,0 +1,31 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+# Built application files
+*.apk
+*.ap_
+
+# Build directories
+build/
+.gradle/
+# Secrets
+*.key
+*.jks
+local.properties
+# IDE files
+.idea/
+*.iml
+# OS files
+.DS_Store
