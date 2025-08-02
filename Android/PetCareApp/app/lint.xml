@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <!-- Ігнорувати попередження про відсутність перекладів -->
+    <issue id="MissingTranslation" severity="ignore" />
+
+    <!-- Перевіряти доступність -->
+    <issue id="ContentDescription" severity="warning" />
+
+    <!-- Ігнорувати застаріле API -->
+    <issue id="Override" severity="ignore" />
+
+    <!-- Перевіряти невикористані ресурси -->
+    <issue id="UnusedResources" severity="warning" />
+
+    <!-- Перевіряти невикористані імпорти -->
+    <issue id="UnusedImports" severity="warning" />
+
+    <!-- Виключити сгенеровані файли -->
+    <issue id="all">
+        <ignore path="**/generated/**" />
+    </issue>
+</lint>
