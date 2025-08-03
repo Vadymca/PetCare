@@ -1,10 +1,23 @@
-﻿using PetCare.Domain.Aggregates;
+﻿// <copyright file="IUserRepository.cs" company="PetCare">
+// Copyright (c) PetCare. All rights reserved.
+// </copyright>
 
-namespace PetCare.Infrastructure.Persistence.Repositories
+namespace PetCare.Infrastructure.Persistence.Repositories;
+using PetCare.Domain.Aggregates;
+
+/// <summary>
+/// Repository interface for accessing user entities.
+/// </summary>
+public interface IUserRepository : IRepository<User>
 {
-    public interface IUserRepository : IRepository<User>
-    {
-        Task<User?> GetByEmailAsync(
-            string email, CancellationToken cancellationToken = default);
-    }
+    /// <summary>
+    /// Retrieves a user by their email address.
+    /// </summary>
+    /// <param name="email">The email of the user.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation. The task result contains the user if found; otherwise, <c>null</c>.
+    /// </returns>
+    Task<User?> GetByEmailAsync(
+        string email, CancellationToken cancellationToken = default);
 }

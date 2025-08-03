@@ -1,22 +1,44 @@
-﻿using PetCare.Domain.Common;
+﻿// <copyright file="Email.cs" company="PetCare">
+// Copyright (c) PetCare. All rights reserved.
+// </copyright>
+
+namespace PetCare.Domain.ValueObjects;
+using PetCare.Domain.Common;
 using System.Text.RegularExpressions;
 
-namespace PetCare.Domain.ValueObjects
+/// <summary>
+/// Represents an email address as a value object with validation.
+/// </summary>
+public sealed class Email : ValueObject
 {
-    public sealed class Email : ValueObject
+    private static readonly Regex Regex = new(@"^[\w\.\-]+@([\w\-]+\.)+[\w\-]{2,4}$", RegexOptions.Compiled);
+
+    private Email(string value) => this.Value = value;
+
+    /// <summary>
+    /// Gets the email address string.
+    /// </summary>
+    public string Value { get; }
+
+    /// <summary>
+    /// Creates a new <see cref="Email"/> instance after validating the email format.
+    /// </summary>
+    /// <param name="email">The email address to validate and encapsulate.</param>
+    /// <returns>A new <see cref="Email"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when the email is null, empty, or in an invalid format.</exception>
+    public static Email Create(string email)
     {
-        private static readonly Regex _regex = new(@"^[\w\.\-]+@([\w\-]+\.)+[\w\-]{2,4}$", RegexOptions.Compiled);
-        public string Value { get; }
-
-        private Email(string value) => Value = value;
-
-        public static Email Create(string email)
+        if (string.IsNullOrWhiteSpace(email) || !Regex.IsMatch(email))
         {
-            if (string.IsNullOrWhiteSpace(email) || !_regex.IsMatch(email))
-                throw new ArgumentException("Неправильний формат електронної пошти.", nameof(email));
-            return new Email(email);
+            throw new ArgumentException("Неправильний формат електронної пошти.", nameof(email));
         }
-        protected override IEnumerable<object> GetEqualityComponents() => new[] { Value };
-        public override string ToString() => Value;
+
+        return new Email(email);
     }
+
+    /// <inheritdoc/>
+    public override string ToString() => this.Value;
+
+    /// <inheritdoc/>
+    protected override IEnumerable<object> GetEqualityComponents() => new[] { this.Value };
 }

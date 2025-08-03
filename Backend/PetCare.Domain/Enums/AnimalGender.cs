@@ -1,9 +1,26 @@
-﻿namespace PetCare.Domain.Enums
+﻿// <copyright file="AnimalGender.cs" company="PetCare">
+// Copyright (c) PetCare. All rights reserved.
+// </copyright>
+
+namespace PetCare.Domain.Enums;
+
+/// <summary>
+/// Represents the biological sex or gender classification of an animal.
+/// </summary>
+public enum AnimalGender
 {
-    public enum AnimalGender
-    {
-        Male,
-        Female,
-        Unknown
-    }
+    /// <summary>
+    /// The animal is male.
+    /// </summary>
+    Male,
+
+    /// <summary>
+    /// The animal is female.
+    /// </summary>
+    Female,
+
+    /// <summary>
+    /// The gender of the animal is unknown or unspecified.
+    /// </summary>
+    Unknown,
 }
