@@ -3,18 +3,59 @@
 *.user
 *.suo
 
-# Build
+# Rider
+.idea/
+*.sln.iml
+
+# VS Code
+.vscode/
+
+# Build results
 bin/
 obj/
+**/bin/
+**/obj/
+
+# NuGet
+*.nupkg
+*.snupkg
+*.nuspec
+project.lock.json
+project.fragment.lock.json
+artifacts/
 
 # Logs
+*.log
+Logs/
 PetCare.Api/Logs/
 
-# Secrets
-appsettings*.json
-docker-compose.override.yml
-.env
+# Test results
+TestResults/
+*.trx
+*.coverage
+*.coveragejson
 
-# IDE
-.vscode/
-.idea/
+# User-specific files
+*.user
+*.userosscache
+*.sln.docstates
+
+# Local environment
+.env
+docker-compose.override.yml
+
+# Configuration
+appsettings*.json
+secrets.json
+
+# Others
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+*.sln.cache
+*.cache/
+*.tmp
+*.bak
+*.swp
+*.DS_Store
+Thumbs.db
