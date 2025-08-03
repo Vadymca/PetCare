@@ -54,6 +54,10 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
+            "FluentAssertions": {
+              "target": "Package",
+              "version": "[8.5.0, )"
+            },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
               "version": "[9.0.7, )"
@@ -87,6 +91,10 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[1.1.118, )"
+            },
+            "System.Device.Location.Portable": {
+              "target": "Package",
+              "version": "[1.0.0, )"
             }
           },
           "imports": [
@@ -155,6 +163,10 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
+            "FluentAssertions": {
+              "target": "Package",
+              "version": "[8.5.0, )"
+            },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
               "version": "[9.0.7, )"
@@ -192,6 +204,10 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[1.1.118, )"
+            },
+            "System.Device.Location.Portable": {
+              "target": "Package",
+              "version": "[1.0.0, )"
             }
           },
           "imports": [

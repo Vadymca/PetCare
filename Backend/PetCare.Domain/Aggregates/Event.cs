@@ -3,7 +3,6 @@
 // </copyright>
 
 namespace PetCare.Domain.Aggregates;
-using NetTopologySuite.Geometries;
 using PetCare.Domain.Common;
 using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
@@ -23,7 +22,7 @@ public sealed class Event : BaseEntity
         Title title,
         string? description,
         DateTime? eventDate,
-        Point? location,
+        ValueObjects.Coordinates? location,
         Address? address,
         EventType type,
         EventStatus status)
@@ -63,7 +62,7 @@ public sealed class Event : BaseEntity
     /// <summary>
     /// Gets the geographic location of the event, if specified. Can be null.
     /// </summary>
-    public Point? Location { get; private set; }
+    public ValueObjects.Coordinates? Location { get; private set; }
 
     /// <summary>
     /// Gets the address of the event, if specified. Can be null.
@@ -108,7 +107,7 @@ public sealed class Event : BaseEntity
         string title,
         string? description,
         DateTime? eventDate,
-        Point? location,
+        ValueObjects.Coordinates? location,
         string? address,
         EventType type,
         EventStatus status)
@@ -138,7 +137,7 @@ public sealed class Event : BaseEntity
         string? title = null,
         string? description = null,
         DateTime? eventDate = null,
-        Point? location = null,
+        ValueObjects.Coordinates? location = null,
         string? address = null,
         EventStatus? status = null)
     {
