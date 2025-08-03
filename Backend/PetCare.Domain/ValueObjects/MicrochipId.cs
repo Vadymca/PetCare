@@ -44,6 +44,21 @@ public sealed class MicrochipId : ValueObject
         return new MicrochipId(value.ToUpperInvariant());
     }
 
+    /// <summary>
+    /// Validates whether the given microchip ID string matches the required format.
+    /// </summary>
+    /// <param name="value">The microchip ID string to validate.</param>
+    /// <returns>True if valid; otherwise, false.</returns>
+    public static bool IsValid(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        return MicrochipRegex.IsMatch(value.Trim());
+    }
+
     /// <inheritdoc/>
     public override string ToString() => this.Value;
 

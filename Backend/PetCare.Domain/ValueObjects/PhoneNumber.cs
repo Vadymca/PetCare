@@ -28,21 +28,37 @@ public sealed class PhoneNumber : ValueObject
     /// <exception cref="ArgumentException">Thrown when the phone number is null, empty, or invalid format.</exception>
     public static PhoneNumber Create(string phone)
     {
-        if (string.IsNullOrWhiteSpace(phone))
-        {
-            throw new ArgumentException("Номер телефону не може бути порожнім.", nameof(phone));
-        }
+        var normalized = phone?.Trim() ?? string.Empty;
 
-        phone = phone.Trim();
-
-        if (!E164Regex.IsMatch(phone))
+        if (!IsValid(normalized))
         {
             throw new ArgumentException(
                 "Номер телефону повинен бути у дійсному форматі E.164 (наприклад, +380501112233).",
                 nameof(phone));
         }
 
-        return new PhoneNumber(phone);
+        return new PhoneNumber(normalized);
+    }
+
+    /// <summary>
+    /// Checks if the given phone number string is valid E.164 format.
+    /// </summary>
+    /// <param name="phone">Phone number string to validate.</param>
+    /// <returns><c>true</c> if valid; otherwise, <c>false</c>.</returns>
+    public static bool IsValid(string phone)
+    {
+        return !string.IsNullOrWhiteSpace(phone) && E164Regex.IsMatch(phone.Trim());
+    }
+
+    /// <summary>
+    /// Formats the phone number in a readable format.
+    /// For example, can insert spaces or dashes for easier reading.
+    /// Currently returns the E.164 canonical format.
+    /// </summary>
+    /// <returns>The formatted phone number string.</returns>
+    public string Format()
+    {
+        return this.Value;
     }
 
     /// <inheritdoc/>

@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 /// </summary>
 public sealed class Email : ValueObject
 {
-    private static readonly Regex Regex = new(@"^[\w\.\-]+@([\w\-]+\.)+[\w\-]{2,4}$", RegexOptions.Compiled);
+    private static readonly Regex EmailRegex = new(@"^[\w\.\-]+@([\w\-]+\.)+[\w\-]{2,4}$", RegexOptions.Compiled);
 
     private Email(string value) => this.Value = value;
 
@@ -21,19 +21,41 @@ public sealed class Email : ValueObject
     public string Value { get; }
 
     /// <summary>
-    /// Creates a new <see cref="Email"/> instance after validating the email format.
+    /// Creates a new <see cref="Email"/> instance after validation and normalization.
     /// </summary>
-    /// <param name="email">The email address to validate and encapsulate.</param>
-    /// <returns>A new <see cref="Email"/> instance.</returns>
-    /// <exception cref="ArgumentException">Thrown when the email is null, empty, or in an invalid format.</exception>
+    /// <param name="email">The input email string.</param>
+    /// <returns>A validated and normalized <see cref="Email"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown if the email is null or invalid.</exception>
     public static Email Create(string email)
     {
-        if (string.IsNullOrWhiteSpace(email) || !Regex.IsMatch(email))
+        var normalized = Normalize(email);
+
+        if (!IsValid(normalized))
         {
             throw new ArgumentException("Неправильний формат електронної пошти.", nameof(email));
         }
 
-        return new Email(email);
+        return new Email(normalized);
+    }
+
+    /// <summary>
+    /// Normalizes an email by trimming and converting to lowercase.
+    /// </summary>
+    /// <param name="email">The input email string.</param>
+    /// <returns>A normalized email string.</returns>
+    public static string Normalize(string email)
+    {
+        return email?.Trim().ToLowerInvariant() ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Checks if an email string is valid.
+    /// </summary>
+    /// <param name="email">The email string to check.</param>
+    /// <returns><c>true</c> if valid; otherwise <c>false</c>.</returns>
+    public static bool IsValid(string email)
+    {
+        return !string.IsNullOrWhiteSpace(email) && EmailRegex.IsMatch(email);
     }
 
     /// <inheritdoc/>

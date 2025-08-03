@@ -8,6 +8,7 @@
     ".NETCoreApp,Version=v9.0": {
       "PetCare.Tests/1.0.0": {
         "dependencies": {
+          "FluentAssertions": "8.5.0",
           "Microsoft.EntityFrameworkCore": "9.0.7",
           "Microsoft.EntityFrameworkCore.Design": "9.0.7",
           "Microsoft.EntityFrameworkCore.Tools": "9.0.7",
@@ -19,6 +20,8 @@
           "PetCare.Application": "1.0.0",
           "PetCare.Domain": "1.0.0",
           "PetCare.Infrastructure": "1.0.0",
+          "StyleCop.Analyzers": "1.1.118",
+          "System.Device.Location.Portable": "1.0.0",
           "coverlet.collector": "6.0.2",
           "xunit": "2.9.2",
           "xunit.runner.visualstudio": "2.8.2"
@@ -28,6 +31,14 @@
         }
       },
       "coverlet.collector/6.0.2": {},
+      "FluentAssertions/8.5.0": {
+        "runtime": {
+          "lib/net6.0/FluentAssertions.dll": {
+            "assemblyVersion": "8.5.0.0",
+            "fileVersion": "8.5.0.0"
+          }
+        }
+      },
       "Humanizer.Core/2.14.1": {
         "runtime": {
           "lib/net6.0/Humanizer.dll": {
@@ -1015,6 +1026,7 @@
           }
         }
       },
+      "StyleCop.Analyzers/1.1.118": {},
       "Swashbuckle.AspNetCore/9.0.3": {
         "dependencies": {
           "Microsoft.Extensions.ApiDescription.Server": "9.0.0",
@@ -1122,6 +1134,14 @@
           }
         }
       },
+      "System.Device.Location.Portable/1.0.0": {
+        "runtime": {
+          "lib/System.Device.Portable.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
       "System.IO.Pipelines/7.0.0": {},
       "System.Reflection.Metadata/7.0.0": {
         "dependencies": {
@@ -1186,6 +1206,7 @@
       "xunit.runner.visualstudio/2.8.2": {},
       "PetCare.Api/1.0.0": {
         "dependencies": {
+          "FluentAssertions": "8.5.0",
           "Microsoft.AspNetCore.OpenApi": "9.0.7",
           "Microsoft.EntityFrameworkCore": "9.0.7",
           "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": "1.22.1",
@@ -1198,7 +1219,8 @@
           "Serilog.AspNetCore": "9.0.0",
           "Serilog.Sinks.Console": "6.0.0",
           "Serilog.Sinks.File": "7.0.0",
-          "Swashbuckle.AspNetCore": "9.0.3"
+          "Swashbuckle.AspNetCore": "9.0.3",
+          "System.Device.Location.Portable": "1.0.0"
         },
         "runtime": {
           "PetCare.Api.dll": {
@@ -1209,11 +1231,13 @@
       },
       "PetCare.Application/1.0.0": {
         "dependencies": {
+          "FluentAssertions": "8.5.0",
           "Microsoft.EntityFrameworkCore": "9.0.7",
           "NetTopologySuite": "2.6.0",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "9.0.4",
           "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite": "9.0.4",
-          "PetCare.Domain": "1.0.0"
+          "PetCare.Domain": "1.0.0",
+          "System.Device.Location.Portable": "1.0.0"
         },
         "runtime": {
           "PetCare.Application.dll": {
@@ -1224,11 +1248,13 @@
       },
       "PetCare.Domain/1.0.0": {
         "dependencies": {
+          "FluentAssertions": "8.5.0",
           "Microsoft.EntityFrameworkCore": "9.0.7",
           "NetTopologySuite": "2.6.0",
           "Newtonsoft.Json": "13.0.1",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "9.0.4",
-          "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite": "9.0.4"
+          "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite": "9.0.4",
+          "System.Device.Location.Portable": "1.0.0"
         },
         "runtime": {
           "PetCare.Domain.dll": {
@@ -1239,11 +1265,13 @@
       },
       "PetCare.Infrastructure/1.0.0": {
         "dependencies": {
+          "FluentAssertions": "8.5.0",
           "Microsoft.EntityFrameworkCore": "9.0.7",
           "NetTopologySuite": "2.6.0",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "9.0.4",
           "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite": "9.0.4",
-          "PetCare.Domain": "1.0.0"
+          "PetCare.Domain": "1.0.0",
+          "System.Device.Location.Portable": "1.0.0"
         },
         "runtime": {
           "PetCare.Infrastructure.dll": {
@@ -1266,6 +1294,13 @@
       "sha512": "sha512-bJShQ6uWRTQ100ZeyiMqcFlhP7WJ+bCuabUs885dJiBEzMsJMSFr7BOyeCw4rgvQokteGi5rKQTlkhfQPUXg2A==",
       "path": "coverlet.collector/6.0.2",
       "hashPath": "coverlet.collector.6.0.2.nupkg.sha512"
+    },
+    "FluentAssertions/8.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-VN3eH+jnwSBbEDK1/Z7Sg8Mw6O/zHLKK58OueRpG4rIzLxtlJYTUkUieGee5C4Ymhjkiim0ag2H/0Nc8PfNmaA==",
+      "path": "fluentassertions/8.5.0",
+      "hashPath": "fluentassertions.8.5.0.nupkg.sha512"
     },
     "Humanizer.Core/2.14.1": {
       "type": "package",
@@ -1659,6 +1694,13 @@
       "path": "serilog.sinks.file/7.0.0",
       "hashPath": "serilog.sinks.file.7.0.0.nupkg.sha512"
     },
+    "StyleCop.Analyzers/1.1.118": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Onx6ovGSqXSK07n/0eM3ZusiNdB6cIlJdabQhWGgJp3Vooy9AaLS/tigeybOJAobqbtggTamoWndz72JscZBvw==",
+      "path": "stylecop.analyzers/1.1.118",
+      "hashPath": "stylecop.analyzers.1.1.118.nupkg.sha512"
+    },
     "Swashbuckle.AspNetCore/9.0.3": {
       "type": "package",
       "serviceable": true,
@@ -1742,6 +1784,13 @@
       "sha512": "sha512-ZK0KNPfbtxVceTwh+oHNGUOYV2WNOHReX2AXipuvkURC7s/jPwoWfsu3SnDBDgofqbiWr96geofdQ2erm/KTHg==",
       "path": "system.composition.typedparts/7.0.0",
       "hashPath": "system.composition.typedparts.7.0.0.nupkg.sha512"
+    },
+    "System.Device.Location.Portable/1.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-VttxozXEleYcK2NiMo7xKMhDCCJbKtjnxcWDmqu703DeceLTI/9jopfEblyZKL0DWHGyOYLEan06yk6Hcv2cXw==",
+      "path": "system.device.location.portable/1.0.0",
+      "hashPath": "system.device.location.portable.1.0.0.nupkg.sha512"
     },
     "System.IO.Pipelines/7.0.0": {
       "type": "package",

@@ -52,9 +52,13 @@ public class ShelterConfiguration : IEntityTypeConfiguration<Shelter>
         .HasColumnType("text")
         .IsRequired();
 
-        builder.Property(s => s.Coordinates)
-        .HasColumnType("geometry (point, 4326)")
-        .IsRequired();
+        builder.OwnsOne(s => s.Coordinates, cb =>
+        {
+            cb.Property(c => c.Point)
+              .HasColumnName("Coordinates")
+              .HasColumnType("geometry (point,4326)")
+              .IsRequired();
+        });
 
         builder.HasIndex(s => s.Coordinates)
             .HasMethod("GIST");
