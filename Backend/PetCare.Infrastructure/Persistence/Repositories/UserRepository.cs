@@ -1,19 +1,32 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// <copyright file="UserRepository.cs" company="PetCare">
+// Copyright (c) PetCare. All rights reserved.
+// </copyright>
+
+namespace PetCare.Infrastructure.Persistence.Repositories;
+using Microsoft.EntityFrameworkCore;
 using PetCare.Domain.Aggregates;
 
-namespace PetCare.Infrastructure.Persistence.Repositories
+/// <summary>
+/// Repository implementation for managing <see cref="User"/> entities.
+/// </summary>
+public class UserRepository : GenericRepository<User>, IUserRepository
 {
-    public class UserRepository : GenericRepository<User>, IUserRepository
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UserRepository"/> class.
+    /// </summary>
+    /// <param name="context">The database context.</param>
+    public UserRepository(AppDbContext context)
+        : base(context)
     {
-        public UserRepository(AppDbContext context) 
-            : base(context) { }
+    }
 
-        public async Task<User?> GetByEmailAsync(
-            string email, CancellationToken cancellationToken = default)
-        {
-            return await _context.Users
-                .FirstOrDefaultAsync(u => 
-                u.Email.Value == email, cancellationToken);
-        }
+    /// <inheritdoc/>
+    public async Task<User?> GetByEmailAsync(
+        string email, CancellationToken cancellationToken = default)
+    {
+        return await this.Context.Users
+            .FirstOrDefaultAsync(
+                u =>
+            u.Email.Value == email, cancellationToken);
     }
 }

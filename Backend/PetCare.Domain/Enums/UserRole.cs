@@ -1,9 +1,26 @@
-﻿namespace PetCare.Domain.Enums
+﻿// <copyright file="UserRole.cs" company="PetCare">
+// Copyright (c) PetCare. All rights reserved.
+// </copyright>
+
+namespace PetCare.Domain.Enums;
+
+/// <summary>
+/// Represents the roles assigned to users within the system.
+/// </summary>
+public enum UserRole
 {
-    public enum UserRole
-    {
-        User,
-        Admin,
-        Moderator
-    }
+    /// <summary>
+    /// A regular user with standard permissions.
+    /// </summary>
+    User,
+
+    /// <summary>
+    /// An administrator with full system access.
+    /// </summary>
+    Admin,
+
+    /// <summary>
+    /// A moderator responsible for managing content and users.
+    /// </summary>
+    Moderator,
 }
