@@ -230,3 +230,6 @@ C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\obj\Debug\net9.0\refint\PetC
 C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\obj\Debug\net9.0\PetCare.Tests.pdb
 C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\obj\Debug\net9.0\PetCare.Tests.genruntimeconfig.cache
 C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\obj\Debug\net9.0\ref\PetCare.Tests.dll
+C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\bin\Debug\net9.0\stylecop.json
+C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\bin\Debug\net9.0\System.Device.Portable.dll
+C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\bin\Debug\net9.0\FluentAssertions.dll

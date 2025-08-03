@@ -3,7 +3,6 @@
 // </copyright>
 
 namespace PetCare.Domain.Aggregates;
-using NetTopologySuite.Geometries;
 using PetCare.Domain.Common;
 using PetCare.Domain.ValueObjects;
 
@@ -17,7 +16,7 @@ public sealed class Shelter : BaseEntity
         this.Slug = Slug.Create(string.Empty);
         this.Name = Name.Create(string.Empty);
         this.Address = Address.Create(string.Empty);
-        this.Coordinates = new Point(0, 0) { SRID = 4326 };
+        this.Coordinates = ValueObjects.Coordinates.Origin;
         this.ContactPhone = PhoneNumber.Create(string.Empty);
         this.ContactEmail = Email.Create("default@petcare.com");
     }
@@ -26,7 +25,7 @@ public sealed class Shelter : BaseEntity
         Slug slug,
         Name name,
         Address address,
-        Point coordinates,
+        ValueObjects.Coordinates coordinates,
         PhoneNumber contactPhone,
         Email contactEmail,
         string? description,
@@ -74,7 +73,7 @@ public sealed class Shelter : BaseEntity
     /// <summary>
     /// Gets the geographic coordinates of the shelter.
     /// </summary>
-    public Point Coordinates { get; private set; }
+    public ValueObjects.Coordinates Coordinates { get; private set; }
 
     /// <summary>
     /// Gets the contact phone number of the shelter.
@@ -164,7 +163,7 @@ public sealed class Shelter : BaseEntity
         string slug,
         string name,
         string address,
-        Point coordinates,
+        ValueObjects.Coordinates coordinates,
         string contactPhone,
         string contactEmail,
         string? description,
@@ -212,7 +211,7 @@ public sealed class Shelter : BaseEntity
     public void Update(
         string? name = null,
         string? address = null,
-        Point? coordinates = null,
+        ValueObjects.Coordinates? coordinates = null,
         string? contactPhone = null,
         string? contactEmail = null,
         string? description = null,

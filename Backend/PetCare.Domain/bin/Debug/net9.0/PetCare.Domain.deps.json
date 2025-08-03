@@ -8,6 +8,7 @@
     ".NETCoreApp,Version=v9.0": {
       "PetCare.Domain/1.0.0": {
         "dependencies": {
+          "FluentAssertions": "8.5.0",
           "Microsoft.EntityFrameworkCore": "9.0.7",
           "Microsoft.EntityFrameworkCore.Design": "9.0.7",
           "Microsoft.EntityFrameworkCore.Tools": "9.0.7",
@@ -15,10 +16,19 @@
           "Newtonsoft.Json": "13.0.1",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "9.0.4",
           "Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite": "9.0.4",
-          "StyleCop.Analyzers": "1.1.118"
+          "StyleCop.Analyzers": "1.1.118",
+          "System.Device.Location.Portable": "1.0.0"
         },
         "runtime": {
           "PetCare.Domain.dll": {}
+        }
+      },
+      "FluentAssertions/8.5.0": {
+        "runtime": {
+          "lib/net6.0/FluentAssertions.dll": {
+            "assemblyVersion": "8.5.0.0",
+            "fileVersion": "8.5.0.0"
+          }
         }
       },
       "Humanizer.Core/2.14.1": {
@@ -655,6 +665,14 @@
           }
         }
       },
+      "System.Device.Location.Portable/1.0.0": {
+        "runtime": {
+          "lib/System.Device.Portable.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
       "System.IO.Pipelines/7.0.0": {},
       "System.Reflection.Metadata/7.0.0": {
         "dependencies": {
@@ -671,6 +689,13 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "FluentAssertions/8.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-VN3eH+jnwSBbEDK1/Z7Sg8Mw6O/zHLKK58OueRpG4rIzLxtlJYTUkUieGee5C4Ymhjkiim0ag2H/0Nc8PfNmaA==",
+      "path": "fluentassertions/8.5.0",
+      "hashPath": "fluentassertions.8.5.0.nupkg.sha512"
     },
     "Humanizer.Core/2.14.1": {
       "type": "package",
@@ -972,6 +997,13 @@
       "sha512": "sha512-ZK0KNPfbtxVceTwh+oHNGUOYV2WNOHReX2AXipuvkURC7s/jPwoWfsu3SnDBDgofqbiWr96geofdQ2erm/KTHg==",
       "path": "system.composition.typedparts/7.0.0",
       "hashPath": "system.composition.typedparts.7.0.0.nupkg.sha512"
+    },
+    "System.Device.Location.Portable/1.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-VttxozXEleYcK2NiMo7xKMhDCCJbKtjnxcWDmqu703DeceLTI/9jopfEblyZKL0DWHGyOYLEan06yk6Hcv2cXw==",
+      "path": "system.device.location.portable/1.0.0",
+      "hashPath": "system.device.location.portable.1.0.0.nupkg.sha512"
     },
     "System.IO.Pipelines/7.0.0": {
       "type": "package",

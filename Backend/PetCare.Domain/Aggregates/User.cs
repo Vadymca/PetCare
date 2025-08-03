@@ -31,8 +31,7 @@ public sealed class User : BaseEntity
         UserRole role,
         Dictionary<string, string> preferences,
         int points,
-        DateTime?
-        lastLogin,
+        DateTime? lastLogin,
         string? profilePhoto,
         string language)
     {

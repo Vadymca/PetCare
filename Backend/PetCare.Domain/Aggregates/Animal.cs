@@ -24,7 +24,7 @@ public sealed class Animal : BaseEntity
         Guid userId,
         Name name,
         Guid breedId,
-        DateTime? birthday,
+        Birthday? birthday,
         AnimalGender gender,
         string? description,
         string? healthStatus,
@@ -78,7 +78,7 @@ public sealed class Animal : BaseEntity
     /// <summary>
     /// Gets the birthday of the animal, if known. Can be null.
     /// </summary>
-    public DateTime? Birthday { get; private set; }
+    public Birthday? Birthday { get; private set; }
 
     /// <summary>
     /// Gets the gender of the animal.
@@ -220,7 +220,7 @@ public sealed class Animal : BaseEntity
         Guid userId,
         string name,
         Guid breedId,
-        DateTime? birthday,
+        Birthday? birthday,
         AnimalGender gender,
         string? description,
         string? healthStatus,
@@ -242,7 +242,7 @@ public sealed class Animal : BaseEntity
             userId,
             Name.Create(name),
             breedId,
-            birthday,
+            birthday is not null ? Birthday.Create(birthday.Value) : null,
             gender,
             description,
             healthStatus,
@@ -281,7 +281,7 @@ public sealed class Animal : BaseEntity
     /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> or <paramref name="microchipId"/> is invalid according to their respective <see cref="ValueObject"/> creation methods.</exception>
     public void Update(
         string? name = null,
-        DateTime? birthday = null,
+        Birthday? birthday = null,
         AnimalGender? gender = null,
         string? description = null,
         string? healthStatus = null,

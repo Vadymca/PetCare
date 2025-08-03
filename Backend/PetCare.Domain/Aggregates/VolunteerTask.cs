@@ -3,7 +3,6 @@
 // </copyright>
 
 namespace PetCare.Domain.Aggregates;
-using NetTopologySuite.Geometries;
 using PetCare.Domain.Common;
 using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
@@ -28,7 +27,7 @@ public sealed class VolunteerTask : BaseEntity
         int requiredVolunteers,
         VolunteerTaskStatus status,
         int pointsReward,
-        Point? location,
+        ValueObjects.Coordinates? location,
         Dictionary<string, string> skillsRequired)
     {
         if (requiredVolunteers <= 0)
@@ -103,7 +102,7 @@ public sealed class VolunteerTask : BaseEntity
     /// <summary>
     /// Gets the geographic location of the task, if any. Can be null.
     /// </summary>
-    public Point? Location { get; private set; }
+    public ValueObjects.Coordinates? Location { get; private set; }
 
     /// <summary>
     /// Gets the skills required for the task.
@@ -145,7 +144,7 @@ public sealed class VolunteerTask : BaseEntity
         int requiredVolunteers,
         VolunteerTaskStatus status,
         int pointsReward,
-        Point? location,
+        ValueObjects.Coordinates? location,
         Dictionary<string, string>? skillsRequired)
     {
         return new VolunteerTask(
@@ -191,7 +190,7 @@ public sealed class VolunteerTask : BaseEntity
         int? duration,
         int requiredVolunteers,
         int pointsReward,
-        Point? location,
+        ValueObjects.Coordinates? location,
         Dictionary<string, string>? skillsRequired)
     {
         if (requiredVolunteers <= 0)

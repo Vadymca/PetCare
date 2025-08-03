@@ -65,7 +65,9 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Property(a => a.Birthday)
-            .HasColumnType("date");
+            .HasConversion(
+            birthday => birthday != null ? birthday.Value : (DateOnly?)null,
+            value => value != null ? Birthday.Create(value.Value) : null);
 
         builder.Property(a => a.Gender)
             .HasColumnType("varchar(10)")
