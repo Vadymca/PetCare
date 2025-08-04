@@ -3,10 +3,12 @@ package com.example.petcareapp.di;
 import android.app.Application;
 import androidx.room.Room;
 import com.example.petcareapp.data.api.ApiClient;
+import com.example.petcareapp.data.api.ApiService;
 import com.example.petcareapp.data.repository.AnimalRepository;
 import com.example.petcareapp.data.room.PetCareDatabase;
 import com.example.petcareapp.ui.viewmodels.AnimalViewModel;
 import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import javax.inject.Singleton;
@@ -16,8 +18,8 @@ import dagger.Provides;
 @Module
 public class AppModule {
 
-    //private static final String BASE_URL = "https://api.petcare.com/api/";
     private static final String BASE_URL = "http://json-server:3000/";
+    // private static final String BASE_URL = "https://api.petcare.com/api/";
     private final Application application;
 
     public AppModule(Application application) {
@@ -27,7 +29,11 @@ public class AppModule {
     @Provides
     @Singleton
     public OkHttpClient provideOkHttpClient() {
-        return new OkHttpClient();
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+        return new OkHttpClient.Builder()
+                .addInterceptor(logging)
+                .build();
     }
 
     @Provides
@@ -42,22 +48,26 @@ public class AppModule {
 
     @Provides
     @Singleton
+    public PetCareDatabase provideDatabase() {
+        return Room.databaseBuilder(application, PetCareDatabase.class, "petcare-db").build();
+    }
+
+    @Provides
+    @Singleton
     public ApiClient provideApiClient(Retrofit retrofit) {
         return new ApiClient(retrofit);
     }
 
     @Provides
     @Singleton
-    public PetCareDatabase provideDatabase() {
-        return Room.databaseBuilder(application,
-                        PetCareDatabase.class, "petcare-db")
-                .build();
+    public ApiService provideApiService(Retrofit retrofit) {
+        return retrofit.create(ApiService.class);
     }
 
     @Provides
     @Singleton
-    public AnimalRepository provideAnimalRepository(ApiClient apiClient, PetCareDatabase database) {
-        return new AnimalRepository(apiClient, database.animalDao());
+    public AnimalRepository provideAnimalRepository(ApiService apiService, PetCareDatabase database) {
+        return new AnimalRepository(apiService, database.animalDao(), database.shelterDao());
     }
 
     @Provides

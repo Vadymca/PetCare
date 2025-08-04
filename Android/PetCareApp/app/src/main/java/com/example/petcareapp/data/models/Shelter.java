@@ -10,4 +10,13 @@ public class Shelter {
     @SerializedName("address") public String address;
     @SerializedName("coordinAAates") public String coordinates;
     @SerializedName("photos") public List<String> photos;
+
+    public Shelter(String id, String slug, String name, String address, String coordinates, List<String> photos) {
+        this.id = id;
+        this.slug = slug;
+        this.name = name;
+        this.address = address;
+        this.coordinates = coordinates;
+        this.photos = photos;
+    }
 }
