@@ -22,7 +22,7 @@
   "NO": "ні",
   "CREATED_AT": "Дата створення",
   "UPDATED_AT": "Оновлено",
-  "RETURN_TO_LIST": "Повернутися до списку тварин",
+  "RETURN_TO_LIST": "До списку тварин",
   "LOADING_ANIMAL": "Завантаження інформації про тварину...",
   "ADDRESS": "Адреса",
   "EMAIL": "Електронна пошта",
@@ -30,7 +30,7 @@
   "WEBSITE": "Вебсайт",
   "CAPACITY": "Місткість",
   "CURRENT_OCCUPANCY": "Поточна завантаженість",
-  "RETURN_TO_SHELTER_LIST": "Повернутися до списку притулків",
+  "RETURN_TO_SHELTER_LIST": "До списку притулків",
   "LOADING_SHELTER": "Завантаження притулку...",
   "FOUNDING_DATE": "Дата заснування",
   "WORKING_HOURS": "Години роботи",
@@ -99,5 +99,19 @@
   "PASSWORD_RESET_SUCCESS": "Пароль успішно скинутий",
   "RESET_PASSWORD_FAILED": "Скидання пароля не вдалось",
   "NEW_PASSWORD_PLACEHOLDER": "Новий пароль",
-  "RESET_PASSWORD_TITLE": "Скинути пароль"
+  "RESET_PASSWORD_TITLE": "Скинути пароль",
+  "PROFILE_TITLE": "Мій кабінет",
+  "UPLOAD_PHOTO": "Завантажити фото",
+  "SAVE_CHANGES": "Зберегти зміни",
+  "CHANGE_PASSWORD": "Змінити пароль",
+  "CHANGE_PASSWORD_FAILED": "Зміна пароля не вдалася",
+  "PASSWORD_CHANGED": "Пароль успішно змінено",
+  "SUBSCRIPTION_DATE": "Дата підписки",
+	"CONFIRM_UNSUBSCRIBE": "Ви впевнені, що хочете зупинити підписку?",
+	"ANIMAL_SUBSCRIPTIONS": "Підписки на тварини",
+	"SHELTER_SUBSCRIPTIONS": "Підписки на притулки",
+	"NO_SUBSCRIPTIONS": "Немає підписок",
+	"UNSUBSCRIBE": "Відписатися",
+	"SUBSCRIBE": "Підписатися"
+
 }

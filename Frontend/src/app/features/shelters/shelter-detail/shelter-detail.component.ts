@@ -1,8 +1,10 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   effect,
   inject,
+  Signal,
   signal,
 } from '@angular/core';
 
@@ -16,8 +18,13 @@ import {
 } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { filter, switchMap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { catchError, filter, map, switchMap } from 'rxjs/operators';
 import { Shelter } from '../../../core/models/shelter';
+import { ShelterSubscription } from '../../../core/models/shelterSubscriptions';
+import { User } from '../../../core/models/user';
+import { AuthService } from '../../../core/services/auth.service';
+import { ShelterSubscriptionService } from '../../../core/services/shelter-subscription.service';
 import { ShelterService } from '../../../core/services/shelter.service';
 
 @Component({
@@ -36,6 +43,10 @@ export class ShelterDetailComponent {
   private translate = inject(TranslateService);
   private shelterService = inject(ShelterService);
   private sanitizer = inject(DomSanitizer);
+  private cdr = inject(ChangeDetectorRef);
+  private authService = inject(AuthService);
+  private shelterSubscriptionService = inject(ShelterSubscriptionService);
+  private shelterSubscriptionId = '';
 
   mapUrl = signal<SafeResourceUrl | null>(null); // оголошено з дефолтним значенням
 
@@ -47,7 +58,10 @@ export class ShelterDetailComponent {
   );
 
   shelter = signal<Shelter | undefined>(undefined);
-
+  public isAuthenticated: Signal<boolean> = this.authService.isLoggedIn;
+  user: Signal<User | null> = signal(this.authService.currentUser());
+  isSubscribed = false; // Поточна підписка на тварину, по замовчуванню false;
+  isSubscriptionChecked = false;
   constructor() {
     effect(() => {
       const slugValue = this.slug();
@@ -65,7 +79,14 @@ export class ShelterDetailComponent {
           name: 'description',
           content: shelter.address,
         });
-
+        this.isSubscriptionChecked = false;
+        console.log('this.user', this.user());
+        console.log('this.shelter', this.shelter());
+        this.isSubscribedToShelter().subscribe(isSubscribed => {
+          this.isSubscribed = isSubscribed;
+          this.isSubscriptionChecked = true;
+          this.cdr.detectChanges();
+        });
         if (shelter.coordinates.lat && shelter.coordinates.lng) {
           const url = `https://maps.google.com/maps?q=${shelter.coordinates.lat},${shelter.coordinates.lng}&z=14&output=embed`;
           this.mapUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(url));
@@ -74,5 +95,67 @@ export class ShelterDetailComponent {
         }
       });
     });
+  }
+  isSubscribedToShelter(): Observable<boolean> {
+    const shelterValue = this.shelter();
+    const userValue = this.user();
+    if (!userValue) return of(false);
+    if (!shelterValue) return of(false);
+
+    return this.shelterSubscriptionService
+      .getShelterSubscriptionsByUserId(userValue.id)
+      .pipe(
+        map(subscriptions => {
+          const found = subscriptions.find(
+            s => s.shelterId === shelterValue.id
+          );
+          this.shelterSubscriptionId = found?.id ?? '';
+          this.isSubscribed = !!found;
+          return !!found;
+        }),
+        catchError(err => {
+          console.error('Error fetching shelter subscriptions:', err);
+          return of(false);
+        })
+      );
+  }
+  unsubscribe() {
+    if (!this.isSubscribed) return;
+    if (this.shelterSubscriptionId === '') return;
+    this.shelterSubscriptionService
+      .deleteShelterSubscription(this.shelterSubscriptionId)
+      .subscribe({
+        next: () => {	
+          this.isSubscribed = false;
+          this.shelterSubscriptionId = '';
+          this.cdr.detectChanges();
+        },
+        error: err => {
+          console.error('Error deleting shelter subscription:', err);
+        },
+      });
+  }
+  subscribe() {
+    if (this.isSubscribed) return;
+    const shelterValue = this.shelter();
+    const userValue = this.user();
+    if (!shelterValue || !userValue) return;
+    const shelterSubscription: Partial<ShelterSubscription> = {
+      shelterId: shelterValue.id,
+      userId: userValue.id,
+    };
+
+    this.shelterSubscriptionService
+      .createShelterSubscription(shelterSubscription)
+      .subscribe({
+        next: subscription => {
+          this.isSubscribed = true;
+          this.shelterSubscriptionId = subscription.id;
+          this.cdr.detectChanges();
+        },
+        error: err => {
+          console.error('Error craeting shelter subscription:', err);
+        },
+      });
   }
 }

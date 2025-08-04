@@ -22,7 +22,7 @@ export const routes: Routes = [
   },
   {
     path: 'animals/:slug',
-    canActivate: [authGuard],
+
     loadComponent: () =>
       import('./features/animals/animal-detail/animal-detail.component').then(
         c => c.AnimalDetailComponent
@@ -79,7 +79,7 @@ export const routes: Routes = [
         m => m.ForgotPasswordComponent
       ),
   },
-	//перевірити потім, чи з бека так повертатиметься чи ?token=...
+  //перевірити потім, чи з бека так повертатиметься чи ?token=...
   {
     path: 'reset-password/:token',
     loadComponent: () =>

@@ -3,7 +3,7 @@ import { By } from '@angular/platform-browser';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslateModule } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
-import { AnimalDetail } from '../../../core/models/animal-detail';
+import { Animal } from '../../../core/models/animal';
 import { AnimalService } from '../../../core/services/animal.service';
 import { AnimalListComponent } from './animal-list.component';
 
@@ -12,7 +12,7 @@ describe('AnimalListComponent', () => {
   let fixture: ComponentFixture<AnimalListComponent>;
   let animalServiceSpy: jasmine.SpyObj<AnimalService>;
 
-  const mockAnimals: AnimalDetail[] = [
+  const mockAnimals: Animal[] = [
     {
       id: '1',
       name: 'Барсик',
@@ -62,7 +62,7 @@ describe('AnimalListComponent', () => {
   });
 
   it('should create', () => {
-    animalServiceSpy.getAnimalsWithDetails.and.returnValue(of(mockAnimals));
+    animalServiceSpy.getAnimals.and.returnValue(of(mockAnimals));
     fixture = TestBed.createComponent(AnimalListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -70,7 +70,7 @@ describe('AnimalListComponent', () => {
   });
 
   it('should render a list of animals', () => {
-    animalServiceSpy.getAnimalsWithDetails.and.returnValue(of(mockAnimals));
+    animalServiceSpy.getAnimals.and.returnValue(of(mockAnimals));
     fixture = TestBed.createComponent(AnimalListComponent);
     fixture.detectChanges();
 
@@ -81,7 +81,7 @@ describe('AnimalListComponent', () => {
   });
 
   it('should show nothing if animal list is empty', () => {
-    animalServiceSpy.getAnimalsWithDetails.and.returnValue(of([]));
+    animalServiceSpy.getAnimals.and.returnValue(of([]));
     fixture = TestBed.createComponent(AnimalListComponent);
     fixture.detectChanges();
 
@@ -91,7 +91,7 @@ describe('AnimalListComponent', () => {
 
   it('should handle service error gracefully', () => {
     spyOn(console, 'error'); // suppress error logs
-    animalServiceSpy.getAnimalsWithDetails.and.returnValue(
+    animalServiceSpy.getAnimals.and.returnValue(
       throwError(() => new Error('Server error'))
     );
     fixture = TestBed.createComponent(AnimalListComponent);

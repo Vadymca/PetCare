@@ -25,14 +25,19 @@ export class AuthService {
 
   //мок поки бекенд не працює
   private mockUser: User = {
-    id: '123',
-    email: 'test@example.com',
-    firstName: 'User',
-    lastName: 'Test',
+    id: '62c6e9d8-e0d7-45f3-b22b-47e154262b25',
+    email: 'user1@example.com',
+    firstName: 'John',
+    lastName: 'Petrenko',
     role: 'Admin',
     passwordHash: 'passwordHash',
-    phone: '0501111111',
-    preferences: undefined,
+    phone: '+380677291402',
+    points: 46,
+    lastLogin: '2023-01-01T00:00:00.000Z',
+    profilePhoto:
+      'https://i.pinimg.com/1200x/e7/ae/91/e7ae91172659c1ba17addf6fd6339472.jpg',
+    createdAt: '2023-01-01T00:00:00.000Z',
+    updatedAt: '2023-01-01T00:00:00.000Z',
   };
 
   readonly currentUser = signal<User | null>(null);
@@ -111,6 +116,11 @@ export class AuthService {
   resetPassword(token: string, newPassword: string): Observable<void> {
     return this.http.post<void>(`${this.baseUrl}/reset-password`, {
       token,
+      newPassword,
+    });
+  }
+  changePassword(newPassword: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/change-password`, {
       newPassword,
     });
   }

@@ -1,6 +1,7 @@
 import { Breed } from './breed';
 import { Shelter } from './shelter';
 import { Species } from './species';
+import { User } from './user';
 
 export interface Animal {
   id: string;
@@ -10,10 +11,11 @@ export interface Animal {
   breedId?: string;
   shelterId?: string;
 
-  age?: number; // обчислюване
-  species?: Species;
   breed?: Breed;
+  species?: Species;
   shelter?: Shelter;
+  user?: User; // якщо потрібно
+  age: [number, number];
 
   slug: string;
   birthday: string; // ISO дата у форматі рядка

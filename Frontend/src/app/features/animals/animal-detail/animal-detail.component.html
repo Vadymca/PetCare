@@ -94,21 +94,41 @@
           {{ data.updatedAt | date: 'longDate' }}
         </p>
       </div>
-
-      <div class="mt-6">
-        <button
-          class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-          (click)="router.navigate(['/animals'])"
-        >
-          {{ 'RETURN_TO_LIST' | translate }}
-        </button>
-      </div>
     </div>
   </div>
 </div>
 
+<div class="mt-6 text-center">
+  @if (isAuthenticated()) {
+    @if (isSubscriptionChecked) {
+      @if (isSubscribed) {
+        <button
+          class="px-4 py-2 bg-orange-300 text-white rounded hover:bg-orange-700 mr-4"
+          (click)="unsubscribe()"
+        >
+          {{ 'UNSUBSCRIBE' | translate }}
+        </button>
+      } @else {
+        <button
+          class="px-4 py-2 bg-orange-300 text-white rounded hover:bg-orange-700 mr-4"
+          (click)="subscribe()"
+        >
+          {{ 'SUBSCRIBE' | translate }}
+        </button>
+      }
+    }
+  }
+
+  <button
+    class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+    (click)="router.navigate(['/animals'])"
+  >
+    {{ 'RETURN_TO_LIST' | translate }}
+  </button>
+</div>
 <ng-template #loading>
   <div class="text-center text-gray-500 text-lg mt-10">
+    <app-loading-spinner></app-loading-spinner>
     {{ 'LOADING_ANIMAL' | translate }}
   </div>
 </ng-template>

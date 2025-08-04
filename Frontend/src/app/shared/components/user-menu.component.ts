@@ -23,6 +23,7 @@ import { TranslateModule } from '@ngx-translate/core';
           <li>
             <a
               routerLink="/profile"
+              (click)="menuOpen = false"
               class="block px-4 py-2 hover:text-orange-300 transition"
               >{{ 'MY_PROFILE' | translate }}</a
             >

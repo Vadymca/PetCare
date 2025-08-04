@@ -62,6 +62,7 @@ export class LoginComponent {
         },
         error: err => {
           this.errorMessage.set(err.message || 'AUTH_ERROR');
+          this.loginForm.reset();
         },
       });
     } else {

@@ -24,7 +24,7 @@ export class AnimalListComponent {
   error = signal<string | null>(null);
 
   animals = toSignal(
-    this.animalService.getAnimalsWithDetails().pipe(
+    this.animalService.getAnimals().pipe(
       catchError(err => {
         this.error.set('FAILED_TO_LOAD_ANIMALS');
         console.error('Error loading animals:', err);

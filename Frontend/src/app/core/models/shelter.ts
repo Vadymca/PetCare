@@ -1,11 +1,11 @@
+import { User } from './user';
+
 export interface Coordinates {
   lat: number;
   lng: number;
 }
 
-export interface SocialMedia {
-  [platform: string]: string; // Наприклад: facebook: "https://facebook.com/shelter"
-}
+export type SocialMedia = Record<string, string>;
 
 export interface Shelter {
   id: string;
@@ -23,6 +23,7 @@ export interface Shelter {
   workingHours: string;
   socialMedia: SocialMedia;
   managerId: string;
+  manager?: User;
   createdAt: string; // ISO 8601
   updatedAt: string;
 }

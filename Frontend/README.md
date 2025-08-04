@@ -71,7 +71,7 @@ json
 Copy
 Edit
 {
-"email": "test@example.com",
+"email": "user1@example.com",
 "password": "password"
 }
 Відповідь:

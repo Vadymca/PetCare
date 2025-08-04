@@ -1,1 +1,324 @@
-<p>user-profile works!</p>
+<div class="mx-auto grid grid-cols-1 md:grid-cols-3 bg-gray-100">
+  <div class="md:col-span-1 space-y-6 mr-4">
+    <form
+      [formGroup]="profileForm"
+      (ngSubmit)="onSubmit()"
+      class="bg-white p-8 rounded shadow-md w-full m-2"
+    >
+      <h1 class="text-2xl font-bold mb-6 text-center">
+        {{ 'PROFILE_TITLE' | translate }}
+      </h1>
+      <!-- Фото профілю -->
+      <div class="flex items-center justify-center mb-4">
+        <img
+          [src]="profilePhoto()"
+          alt="Profile Photo"
+          class="w-24 h-24 rounded-full object-cover border"
+        />
+      </div>
+      <div class="mb-4">
+        <label for="profilePhoto" class="block mb-1 font-semibold">
+          {{ 'UPLOAD_PHOTO' | translate }}
+        </label>
+        <input
+          type="file"
+          id="profilePhoto"
+          (change)="onPhotoSelected($event)"
+          accept="image/*"
+          class="block w-full text-sm text-gray-700 border border-gray-300 rounded px-3 py-2"
+        />
+      </div>
+      <!-- First Name -->
+      <label for="firstName" class="block mb-1 font-semibold">
+        {{ 'FIRST_NAME' | translate }}
+      </label>
+      <input
+        id="firstName"
+        formControlName="firstName"
+        class="w-full px-3 py-2 border rounded mb-2 focus:outline-none focus:ring-2 focus:ring-orange-300"
+        aria-label="First name"
+      />
+      <!-- Last Name -->
+      <label for="lastName" class="block mb-1 font-semibold">
+        {{ 'LAST_NAME' | translate }}
+      </label>
+      <input
+        id="lastName"
+        formControlName="lastName"
+        class="w-full px-3 py-2 border rounded mb-2 focus:outline-none focus:ring-2 focus:ring-orange-300"
+        aria-label="Last name"
+      />
+      <!-- Phone -->
+      <label for="phone" class="block mb-1 font-semibold">
+        {{ 'PHONE' | translate }}
+      </label>
+      <input
+        id="phone"
+        type="tel"
+        formControlName="phone"
+        class="w-full px-3 py-2 border rounded mb-2 focus:outline-none focus:ring-2 focus:ring-orange-300"
+        aria-label="Phone number"
+      />
+      <!-- Email -->
+      <label for="email" class="block mb-1 font-semibold">
+        {{ 'EMAIL' | translate }}
+      </label>
+      <input
+        id="email"
+        type="email"
+        formControlName="email"
+        class="w-full px-3 py-2 border rounded mb-4 focus:outline-none focus:ring-2 focus:ring-orange-300"
+        aria-label="Email"
+      />
+      <div class="mt-4 p-4 rounded border bg-gray-50 text-sm text-gray-700">
+        <p><strong>Балів:</strong> {{ user()?.points ?? 0 }}</p>
+        <p>
+          <strong>Останній вхід:</strong>
+          {{ user()?.lastLogin | date: 'medium' }}
+        </p>
+        <p>
+          <strong>Дата створення:</strong>
+          {{ user()?.createdAt | date: 'medium' }}
+        </p>
+        <p>
+          <strong>Оновлено:</strong> {{ user()?.updatedAt | date: 'medium' }}
+        </p>
+      </div>
+      <hr class="my-4" />
+      <!-- Submit -->
+      <button
+        type="submit"
+        class="w-full bg-orange-300 hover:bg-orange-500 text-white py-2 rounded font-semibold transition"
+      >
+        {{ 'SAVE_CHANGES' | translate }}
+      </button>
+    </form>
+    <form
+      [formGroup]="changePasswordForm"
+      (ngSubmit)="onChengePassword()"
+      class="bg-white p-8 rounded shadow-md w-full m-2"
+    >
+      <!-- New Password -->
+      <label for="password" class="block mb-2 font-semibold">
+        {{ 'NEW_PASSWORD' | translate }}
+      </label>
+      <div class="relative">
+        <input
+          [type]="showPassword() ? 'text' : 'password'"
+          id="password"
+          formControlName="password"
+          placeholder="{{ 'NEW_PASSWORD_PLACEHOLDER' | translate }}"
+          autocomplete="new-password"
+          class="w-full px-3 py-2 border rounded mb-2 focus:outline-none focus:ring-2 focus:ring-orange-300 pr-10"
+          aria-label="New password"
+        />
+        <button
+          type="button"
+          (click)="togglePasswordVisibility()"
+          aria-label="Toggle password visibility"
+          class="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+        >
+          @if (!showPassword()) {
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+              />
+            </svg>
+          }
+          @if (showPassword()) {
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.27-2.945-9.543-7a9.975 9.975 0 012.256-3.73M6.4 6.4L2.1 2.1m1.95 1.95l17.85 17.85"
+              />
+            </svg>
+          }
+        </button>
+      </div>
+      @if (
+        changePasswordForm.controls.password.touched &&
+        changePasswordForm.controls.password.invalid
+      ) {
+        <div class="text-red-600 mb-2 text-sm">
+          @if (changePasswordForm.controls.password.errors?.['required']) {
+            <div>
+              {{ 'PASSWORD_REQUIRED' | translate }}
+            </div>
+          } @else {
+            <div>
+              {{ 'INCORRECT_DATA' | translate }}
+            </div>
+          }
+        </div>
+      }
+      <!-- Confirm Password -->
+      <label for="confirmPassword" class="block mb-1 font-semibold">
+        {{ 'CONFIRM_PASSWORD' | translate }}
+      </label>
+      <div class="relative">
+        <input
+          [type]="showRepeatPassword() ? 'text' : 'password'"
+          id="confirmPassword"
+          formControlName="confirmPassword"
+          placeholder="{{ 'NEW_PASSWORD_PLACEHOLDER' | translate }}"
+          class="w-full px-3 py-2 border rounded mb-2 focus:outline-none focus:ring-2 focus:ring-orange-300 pr-10"
+          autocomplete="new-password"
+          aria-label="Confirm password"
+        />
+        <button
+          type="button"
+          (click)="toggleRepeatPasswordVisibility()"
+          aria-label="Toggle password visibility"
+          class="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+        >
+          @if (!showRepeatPassword()) {
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+              />
+            </svg>
+          }
+          @if (showRepeatPassword()) {
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.27-2.945-9.543-7a9.975 9.975 0 012.256-3.73M6.4 6.4L2.1 2.1m1.95 1.95l17.85 17.85"
+              />
+            </svg>
+          }
+        </button>
+      </div>
+      @if (
+        changePasswordForm.controls.confirmPassword.touched &&
+        changePasswordForm.controls.confirmPassword.invalid
+      ) {
+        <div class="text-red-600 text-sm mb-2">
+          {{ 'CONFIRM_PASSWORD_REQUIRED' | translate }}
+        </div>
+      }
+      @if (
+        changePasswordForm.hasError('passwordsMismatch') &&
+        changePasswordForm.touched
+      ) {
+        <div class="text-red-600 text-sm mb-2">
+          {{ 'PASSWORDS_DO_NOT_MATCH' | translate }}
+        </div>
+      }
+      @if (successChangePasswordMessage()) {
+        <div
+          id="successMessage"
+          class="text-green-600 mt-2 text-sm text-center"
+        >
+          {{ 'PASSWORD_CHANGED' | translate }}
+        </div>
+      }
+      @if (errorChangePasswordMessage()) {
+        <div class="text-red-600 text-sm mb-2">
+          {{ 'CHANGE_PASSWORD_FAILED' | translate }}
+        </div>
+      }
+      <button
+        type="submit"
+        class="w-full bg-orange-300 hover:bg-orange-500 text-white py-2 rounded font-semibold transition"
+      >
+        {{ 'CHANGE_PASSWORD' | translate }}
+      </button>
+    </form>
+  </div>
+  <div class="md:col-span-2 space-y-6">
+    <details class="bg-white p-8 rounded shadow-md w-full m-2">
+      <summary class="text-xl font-semibold mb-4 cursor-pointer select-none">
+        {{ 'ANIMAL_SUBSCRIPTIONS' | translate }}
+      </summary>
+
+      @if (animalSubscriptions().length === 0) {
+        <p class="text-gray-600">
+          {{ 'NO_SUBSCRIPTIONS' | translate }}
+        </p>
+      } @else {
+        @for (
+          animalSubscription of animalSubscriptions();
+          track animalSubscription.id
+        ) {
+          <app-animal-subscription-card
+            [animalSubscription]="animalSubscription"
+            (deleteSubscription)="
+              deleteAnimalSubscription(animalSubscription.id)
+            "
+          >
+          </app-animal-subscription-card>
+        }
+      }
+    </details>
+    <details class="bg-white p-8 rounded shadow-md w-full m-2">
+      <summary class="text-xl font-semibold mb-4 cursor-pointer select-none">
+        {{ 'SHELTER_SUBSCRIPTIONS' | translate }}
+      </summary>
+
+      @if (shelterSubscriptions().length === 0) {
+        <p class="text-gray-600">
+          {{ 'NO_SUBSCRIPTIONS' | translate }}
+        </p>
+      } @else {
+        @for (
+          shelterSubscription of shelterSubscriptions();
+          track shelterSubscription.id
+        ) {
+          <app-shelter-subscription-card
+            [shelterSubscription]="shelterSubscription"
+            (deleteSubscription)="
+              deleteShelterSubscription(shelterSubscription.id)
+            "
+          >
+          </app-shelter-subscription-card>
+        }
+      }
+    </details>
+  </div>
+</div>

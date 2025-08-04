@@ -1,7 +1,3 @@
-export interface UserPreferences {
-  language: string;
-}
-
 export type UserRole = 'Admin' | 'User' | 'Moderator' | string;
 export interface User {
   id: string;
@@ -12,5 +8,9 @@ export interface User {
   lastName: string;
   phone: string;
   role: UserRole;
-  preferences?: UserPreferences;
+  points?: number;
+  lastLogin?: string;
+  profilePhoto?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }

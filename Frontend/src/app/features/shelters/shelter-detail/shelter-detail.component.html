@@ -20,7 +20,7 @@
       <!-- Основна контактна інформація -->
       <div
         class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-gray-600 text-sm"
-      >	
+      >
         <ng-container *ngIf="data.address">
           <p>
             <strong>{{ 'ADDRESS' | translate }}:</strong> {{ data.address }}
@@ -114,6 +114,26 @@
 
   <!-- Кнопка повернення -->
   <div class="mt-6 text-center">
+    @if (isAuthenticated()) {
+      @if (isSubscriptionChecked) {
+        @if (isSubscribed) {
+          <button
+            class="px-4 py-2 bg-orange-300 text-white rounded hover:bg-orange-700 mr-4"
+            (click)="unsubscribe()"
+          >
+            {{ 'UNSUBSCRIBE' | translate }}
+          </button>
+        } @else {
+          <button
+            class="px-4 py-2 bg-orange-300 text-white rounded hover:bg-orange-700 mr-4"
+            (click)="subscribe()"
+          >
+            {{ 'SUBSCRIBE' | translate }}
+          </button>
+        }
+      }
+    }
+
     <button
       class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
       (click)="router.navigate(['/shelters'])"
