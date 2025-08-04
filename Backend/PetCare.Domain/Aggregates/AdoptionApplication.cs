@@ -40,16 +40,6 @@ public sealed class AdoptionApplication : BaseEntity
     }
 
     /// <summary>
-    /// Gets the unique identifier of the user submitting the application.
-    /// </summary>
-    public Guid UserId { get; private set; }
-
-    /// <summary>
-    /// Gets the unique identifier of the animal for adoption.
-    /// </summary>
-    public Guid AnimalId { get; private set; }
-
-    /// <summary>
     /// Gets the current status of the adoption application.
     /// </summary>
     public AdoptionStatus Status { get; private set; }
@@ -70,11 +60,6 @@ public sealed class AdoptionApplication : BaseEntity
     public string? AdminNotes { get; private set; }
 
     /// <summary>
-    /// Gets the unique identifier of the administrator who approved the application, if any. Can be null.
-    /// </summary>
-    public Guid? ApprovedBy { get; private set; }
-
-    /// <summary>
     /// Gets the reason for rejection of the application, if any. Can be null.
     /// </summary>
     public string? RejectionReason { get; private set; }
@@ -88,6 +73,61 @@ public sealed class AdoptionApplication : BaseEntity
     /// Gets the date and time when the application was last updated.
     /// </summary>
     public DateTime UpdatedAt { get; private set; }
+
+    /// <summary>
+    /// Gets the unique identifier of the user submitting the application.
+    /// </summary>
+    public Guid UserId { get; private set; }
+
+    /// <summary>
+    /// Gets the user associated with the application (navigation property for EF Core).
+    /// </summary>
+    public User? User { get; private set; }
+
+    /// <summary>
+    /// Gets the unique identifier of the animal for adoption.
+    /// </summary>
+    public Guid AnimalId { get; private set; }
+
+    /// <summary>
+    /// Gets the animal associated with the application (navigation property for EF Core).
+    /// </summary>
+    public Animal? Animal { get; private set; }
+
+    /// <summary>
+    /// Gets the unique identifier of the administrator who approved the application, if any. Can be null.
+    /// </summary>
+    public Guid? ApprovedBy { get; private set; }
+
+    /// <summary>
+    /// Gets the admin user who approved the application (navigation property for EF Core).
+    /// </summary>
+    public User? ApprovedByUser { get; private set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the application is in Pending status.
+    /// </summary>
+    public bool IsPending => this.Status == AdoptionStatus.Pending;
+
+    /// <summary>
+    /// Gets a value indicating whether the application is Approved.
+    /// </summary>
+    public bool IsApproved => this.Status == AdoptionStatus.Approved;
+
+    /// <summary>
+    /// Gets a value indicating whether the application is Rejected.
+    /// </summary>
+    public bool IsRejected => this.Status == AdoptionStatus.Rejected;
+
+    /// <summary>
+    /// Gets a value indicating whether the application can be approved.
+    /// </summary>
+    public bool CanBeApproved => this.Status == AdoptionStatus.Pending;
+
+    /// <summary>
+    /// Gets a value indicating whether the application can be rejected.
+    /// </summary>
+    public bool CanBeRejected => this.Status == AdoptionStatus.Pending;
 
     /// <summary>
     /// Creates a new <see cref="AdoptionApplication"/> instance with the specified parameters.
@@ -107,7 +147,7 @@ public sealed class AdoptionApplication : BaseEntity
     /// <exception cref="InvalidOperationException">Thrown when the application is not in the <see cref="AdoptionStatus.Pending"/> state.</exception>
     public void Approve(Guid adminId)
     {
-        if (this.Status != AdoptionStatus.Pending)
+        if (!this.IsPending)
         {
             throw new InvalidOperationException("Затверджуються лише ті заявки, які знаходяться на розгляді.");
         }
@@ -124,7 +164,7 @@ public sealed class AdoptionApplication : BaseEntity
     /// <exception cref="InvalidOperationException">Thrown when the application is not in the <see cref="AdoptionStatus.Pending"/> state.</exception>
     public void Reject(string reason)
     {
-        if (this.Status != AdoptionStatus.Pending)
+        if (!this.IsPending)
         {
             throw new InvalidOperationException("Відхилити можна лише ті заявки, що перебувають на розгляді.");
         }
@@ -140,6 +180,11 @@ public sealed class AdoptionApplication : BaseEntity
     /// <param name="notes">The administrative notes to add or update.</param>
     public void AddAdminNotes(string notes)
     {
+        if (string.IsNullOrWhiteSpace(notes))
+        {
+            throw new ArgumentException("Адміністративні нотатки не можуть бути порожніми.", nameof(notes));
+        }
+
         this.AdminNotes = notes;
         this.UpdatedAt = DateTime.UtcNow;
     }

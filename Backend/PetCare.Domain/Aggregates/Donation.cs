@@ -4,6 +4,7 @@
 
 namespace PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
+using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
 
 /// <summary>
@@ -17,7 +18,7 @@ public sealed class Donation : BaseEntity
 
     private Donation(
         Guid? userId,
-        float amount,
+        decimal amount,
         Guid? shelterId,
         Guid paymentMethodId,
         DonationStatus status,
@@ -50,24 +51,9 @@ public sealed class Donation : BaseEntity
     }
 
     /// <summary>
-    /// Gets the unique identifier of the user making the donation, if any. Can be null.
-    /// </summary>
-    public Guid? UserId { get; private set; }
-
-    /// <summary>
     /// Gets the amount of the donation.
     /// </summary>
-    public float Amount { get; private set; }
-
-    /// <summary>
-    /// Gets the unique identifier of the shelter receiving the donation, if any. Can be null.
-    /// </summary>
-    public Guid? ShelterId { get; private set; }
-
-    /// <summary>
-    /// Gets the unique identifier of the payment method used for the donation.
-    /// </summary>
-    public Guid PaymentMethodId { get; private set; }
+    public decimal Amount { get; private set; }
 
     /// <summary>
     /// Gets the current status of the donation.
@@ -115,6 +101,36 @@ public sealed class Donation : BaseEntity
     public DateTime UpdatedAt { get; private set; }
 
     /// <summary>
+    /// Gets the unique identifier of the user making the donation, if any. Can be null.
+    /// </summary>
+    public Guid? UserId { get; private set; }
+
+    /// <summary>
+    /// Gets navigation property for the user who made the donation.
+    /// </summary>
+    public User? User { get; private set; }
+
+    /// <summary>
+    /// Gets the unique identifier of the shelter receiving the donation, if any. Can be null.
+    /// </summary>
+    public Guid? ShelterId { get; private set; }
+
+    /// <summary>
+    /// Gets navigation property for the shelter receiving the donation.
+    /// </summary>
+    public Shelter? Shelter { get; private set; }
+
+    /// <summary>
+    /// Gets the unique identifier of the payment method used for the donation.
+    /// </summary>
+    public Guid PaymentMethodId { get; private set; }
+
+    /// <summary>
+    /// Gets navigation property to the payment method.
+    /// </summary>
+    public PaymentMethod? PaymentMethod { get; private set; }
+
+    /// <summary>
     /// Creates a new <see cref="Donation"/> instance with the specified parameters.
     /// </summary>
     /// <param name="userId">The unique identifier of the user making the donation, if any. Can be null.</param>
@@ -132,7 +148,7 @@ public sealed class Donation : BaseEntity
     /// <exception cref="ArgumentException">Thrown when <paramref name="amount"/> is less than or equal to zero.</exception>
     public static Donation Create(
         Guid? userId,
-        float amount,
+        decimal amount,
         Guid? shelterId,
         Guid paymentMethodId,
         DonationStatus status,

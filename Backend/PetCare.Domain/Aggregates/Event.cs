@@ -27,6 +27,11 @@ public sealed class Event : BaseEntity
         EventType type,
         EventStatus status)
     {
+        if (eventDate is not null && eventDate <= DateTime.UtcNow)
+        {
+            throw new ArgumentException("Дата події повинна бути в майбутньому.", nameof(eventDate));
+        }
+
         this.ShelterId = shelterId;
         this.Title = title ?? throw new ArgumentNullException(nameof(title));
         this.Description = description;
@@ -38,11 +43,6 @@ public sealed class Event : BaseEntity
         this.CreatedAt = DateTime.UtcNow;
         this.UpdatedAt = DateTime.UtcNow;
     }
-
-    /// <summary>
-    /// Gets the unique identifier of the shelter associated with the event, if any. Can be null.
-    /// </summary>
-    public Guid? ShelterId { get; private set; }
 
     /// <summary>
     /// Gets the title of the event.
@@ -88,6 +88,16 @@ public sealed class Event : BaseEntity
     /// Gets the date and time when the event was last updated.
     /// </summary>
     public DateTime UpdatedAt { get; private set; }
+
+    /// <summary>
+    /// Gets the unique identifier of the shelter associated with the event, if any. Can be null.
+    /// </summary>
+    public Guid? ShelterId { get; private set; }
+
+    /// <summary>
+    /// Gets the shelter associated with this event, if any. Can be null.
+    /// </summary>
+    public Shelter? Shelter { get; private set; }
 
     /// <summary>
     /// Creates a new <see cref="Event"/> instance with the specified parameters.
@@ -171,6 +181,88 @@ public sealed class Event : BaseEntity
             this.Status = status.Value;
         }
 
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Cancels the event.
+    /// </summary>
+    public void Cancel()
+    {
+        if (this.Status == EventStatus.Cancelled)
+        {
+            throw new InvalidOperationException("Подія вже скасована.");
+        }
+
+        this.Status = EventStatus.Cancelled;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Completes the event.
+    /// </summary>
+    public void Complete()
+    {
+        if (this.Status == EventStatus.Completed)
+        {
+            throw new InvalidOperationException("Подія вже завершена.");
+        }
+
+        this.Status = EventStatus.Completed;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Reschedules the event by updating its planned date.
+    /// </summary>
+    /// <param name="newDate">The future date to which the event is postponed.</param>
+    /// <exception cref="ArgumentException">Thrown if the provided date is not in the future.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the event has already been completed or cancelled.</exception>
+    public void Postpone(DateTime newDate)
+    {
+        if (newDate <= DateTime.UtcNow)
+        {
+            throw new ArgumentException("Нова дата повинна бути в майбутньому.", nameof(newDate));
+        }
+
+        this.EventDate = newDate;
+
+        if (this.Status is EventStatus.Completed or EventStatus.Cancelled)
+        {
+            throw new InvalidOperationException("Не можна перенести завершену або скасовану подію.");
+        }
+
+        this.Status = EventStatus.Planned;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Updates the location coordinates of the event.
+    /// </summary>
+    /// <param name="coordinates">The new geographical coordinates of the event.</param>
+    public void UpdateCoordinates(Coordinates coordinates)
+    {
+        this.Location = coordinates;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Updates the address of the event.
+    /// </summary>
+    /// <param name="address">The new address of the event as a single-line string.</param>
+    public void UpdateAddress(string address)
+    {
+        this.Address = Address.Create(address);
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Assigns the event to a specific shelter.
+    /// </summary>
+    /// <param name="shelterId">The unique identifier of the shelter.</param>
+    public void AssignToShelter(Guid shelterId)
+    {
+        this.ShelterId = shelterId;
         this.UpdatedAt = DateTime.UtcNow;
     }
 }

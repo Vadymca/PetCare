@@ -2,7 +2,8 @@
 // Copyright (c) PetCare. All rights reserved.
 // </copyright>
 
-namespace PetCare.Domain.Aggregates;
+namespace PetCare.Domain.Entities;
+using PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 using PetCare.Domain.ValueObjects;
 
@@ -49,16 +50,6 @@ public sealed class Notification : BaseEntity
     }
 
     /// <summary>
-    /// Gets the unique identifier of the user receiving the notification.
-    /// </summary>
-    public Guid UserId { get; private set; }
-
-    /// <summary>
-    /// Gets the unique identifier of the notification type.
-    /// </summary>
-    public Guid NotificationTypeId { get; private set; }
-
-    /// <summary>
     /// Gets the title of the notification.
     /// </summary>
     public Title Title { get; private set; } = default!;
@@ -87,6 +78,26 @@ public sealed class Notification : BaseEntity
     /// Gets the date and time when the notification was created.
     /// </summary>
     public DateTime CreatedAt { get; private set; }
+
+    /// <summary>
+    /// Gets the unique identifier of the user receiving the notification.
+    /// </summary>
+    public Guid UserId { get; private set; }
+
+    /// <summary>
+    /// Gets the user who receives the notification.
+    /// </summary>
+    public User? User { get; private set; }
+
+    /// <summary>
+    /// Gets the unique identifier of the notification type.
+    /// </summary>
+    public Guid NotificationTypeId { get; private set; }
+
+    /// <summary>
+    /// Gets the notification type.
+    /// </summary>
+    public NotificationType? NotificationType { get; private set; }
 
     /// <summary>
     /// Creates a new <see cref="Notification"/> instance with the specified parameters.

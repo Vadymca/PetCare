@@ -3,6 +3,8 @@
 // </copyright>
 
 namespace PetCare.Domain.Entities;
+
+using PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 
 /// <summary>
@@ -37,9 +39,19 @@ public sealed class AnimalAidDonation : ValueObject
     public Guid DonationId { get; private set; }
 
     /// <summary>
+    /// Gets the donation associated with this entity.
+    /// </summary>
+    public Donation? Donation { get; private set; }
+
+    /// <summary>
     /// Gets the unique identifier of the animal aid request.
     /// </summary>
     public Guid AnimalAidRequestId { get; private set; }
+
+    /// <summary>
+    /// Gets the animal aid request associated with this entity.
+    /// </summary>
+    public AnimalAidRequest? AnimalAidRequest { get; private set; }
 
     /// <summary>
     /// Gets the date and time when the association was created.

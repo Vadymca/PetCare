@@ -3,6 +3,8 @@
 // </copyright>
 
 namespace PetCare.Domain.Entities;
+
+using PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 
 /// <summary>
@@ -37,9 +39,19 @@ public sealed class AnimalSubscription : ValueObject
     public Guid UserId { get; private set; }
 
     /// <summary>
+    /// Gets the user who subscribes to the animal.
+    /// </summary>
+    public User? User { get; private set; }
+
+    /// <summary>
     /// Gets the unique identifier of the animal being subscribed to.
     /// </summary>
     public Guid AnimalId { get; private set; }
+
+    /// <summary>
+    /// Gets the animal to which the user subscribes.
+    /// </summary>
+    public Animal? Animal { get; private set; }
 
     /// <summary>
     /// Gets the date and time when the subscription was created.

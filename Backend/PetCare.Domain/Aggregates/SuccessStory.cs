@@ -11,6 +11,9 @@ using PetCare.Domain.ValueObjects;
 /// </summary>
 public sealed class SuccessStory : BaseEntity
 {
+    private readonly List<string> photos = new();
+    private readonly List<string> videos = new();
+
     private SuccessStory()
     {
         this.Title = Title.Create(string.Empty);
@@ -39,23 +42,13 @@ public sealed class SuccessStory : BaseEntity
         this.UserId = userId;
         this.Title = title;
         this.Content = content;
-        this.Photos = photos ?? new List<string>();
-        this.Videos = videos ?? new List<string>();
+        this.photos = photos ?? new List<string>();
+        this.videos = videos ?? new List<string>();
         this.Views = 0;
         this.PublishedAt = DateTime.UtcNow;
         this.CreatedAt = DateTime.UtcNow;
         this.UpdatedAt = DateTime.UtcNow;
     }
-
-    /// <summary>
-    /// Gets the unique identifier of the animal associated with the success story.
-    /// </summary>
-    public Guid AnimalId { get; private set; }
-
-    /// <summary>
-    /// Gets the unique identifier of the user who created the success story, if any. Can be null.
-    /// </summary>
-    public Guid? UserId { get; private set; }
 
     /// <summary>
     /// Gets the title of the success story.
@@ -70,12 +63,12 @@ public sealed class SuccessStory : BaseEntity
     /// <summary>
     /// Gets the list of photo URLs for the success story.
     /// </summary>
-    public List<string> Photos { get; private set; } = new();
+    public IReadOnlyList<string> Photos => this.photos.AsReadOnly();
 
     /// <summary>
     /// Gets the list of video URLs for the success story.
     /// </summary>
-    public List<string> Videos { get; private set; } = new();
+    public IReadOnlyList<string> Videos => this.videos.AsReadOnly();
 
     /// <summary>
     /// Gets the date and time when the success story was published.
@@ -96,6 +89,26 @@ public sealed class SuccessStory : BaseEntity
     /// Gets the date and time when the success story was last updated.
     /// </summary>
     public DateTime UpdatedAt { get; private set; }
+
+    /// <summary>
+    /// Gets the unique identifier of the animal associated with the success story.
+    /// </summary>
+    public Guid AnimalId { get; private set; }
+
+    /// <summary>
+    /// Gets the animal associated with the success story.
+    /// </summary>
+    public Animal? Animal { get; private set; }
+
+    /// <summary>
+    /// Gets the unique identifier of the user who created the success story, if any. Can be null.
+    /// </summary>
+    public Guid? UserId { get; private set; }
+
+    /// <summary>
+    /// Gets the user who created the success story, if any.
+    /// </summary>
+    public User? User { get; private set; }
 
     /// <summary>
     /// Creates a new <see cref="SuccessStory"/> instance with the specified parameters.
@@ -160,14 +173,72 @@ public sealed class SuccessStory : BaseEntity
 
         if (photos is not null)
         {
-            this.Photos = photos;
+            this.photos.Clear();
+            this.photos.AddRange(photos);
         }
 
         if (videos is not null)
         {
-            this.Videos = videos;
+            this.videos.Clear();
+            this.videos.AddRange(videos);
         }
 
         this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Adds a photo URL to the success story.
+    /// </summary>
+    /// <param name="photoUrl">The photo URL to add.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="photoUrl"/> is null or whitespace.</exception>
+    public void AddPhoto(string photoUrl)
+    {
+        if (string.IsNullOrWhiteSpace(photoUrl))
+        {
+            throw new ArgumentException("URL фото не може бути порожнім.", nameof(photoUrl));
+        }
+
+        this.photos.Add(photoUrl);
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Removes a photo URL from the success story.
+    /// </summary>
+    /// <param name="photoUrl">The photo URL to remove.</param>
+    public void RemovePhoto(string photoUrl)
+    {
+        if (this.photos.Remove(photoUrl))
+        {
+            this.UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
+    /// <summary>
+    /// Adds a video URL to the success story.
+    /// </summary>
+    /// <param name="videoUrl">The video URL to add.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="videoUrl"/> is null or whitespace.</exception>
+    public void AddVideo(string videoUrl)
+    {
+        if (string.IsNullOrWhiteSpace(videoUrl))
+        {
+            throw new ArgumentException("URL відео не може бути порожнім.", nameof(videoUrl));
+        }
+
+        this.videos.Add(videoUrl);
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Removes a video URL from the success story.
+    /// </summary>
+    /// <param name="videoUrl">The video URL to remove.</param>
+    public void RemoveVideo(string videoUrl)
+    {
+        if (this.videos.Remove(videoUrl))
+        {
+            this.UpdatedAt = DateTime.UtcNow;
+        }
     }
 }

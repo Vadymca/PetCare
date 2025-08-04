@@ -13,6 +13,9 @@ using PetCare.Domain.ValueObjects;
 /// </summary>
 public sealed class Animal : BaseEntity
 {
+    private readonly List<string> photos = new();
+    private readonly List<string> videos = new();
+
     private Animal()
     {
         this.Slug = Slug.Create(string.Empty);
@@ -42,16 +45,22 @@ public sealed class Animal : BaseEntity
         bool haveDocuments)
     {
         this.Slug = slug;
-        this.UserId = userId;
+        this.UserId = userId != Guid.Empty
+            ? userId
+            : throw new ArgumentException("Ідентифікатор користувача не може бути порожнім.", nameof(userId));
         this.Name = name;
-        this.BreedId = breedId;
+        this.BreedId = breedId != Guid.Empty
+           ? breedId
+           : throw new ArgumentException("Ідентифікатор породи не може бути порожнім.", nameof(breedId));
         this.Birthday = birthday;
         this.Gender = gender;
         this.Description = description;
         this.HealthStatus = healthStatus;
-        this.Photos = photos;
-        this.Videos = videos;
-        this.ShelterId = shelterId;
+        this.photos = photos ?? new List<string>();
+        this.videos = videos ?? new List<string>();
+        this.ShelterId = shelterId != Guid.Empty
+           ? shelterId
+           : throw new ArgumentException("Ідентифікатор притулку не може бути порожнім.", nameof(shelterId));
         this.Status = status;
         this.AdoptionRequirements = adoptionRequirements;
         this.MicrochipId = microchipId;
@@ -96,14 +105,14 @@ public sealed class Animal : BaseEntity
     public string? HealthStatus { get; private set; }
 
     /// <summary>
-    /// Gets the list of photo URLs for the animal.
+    /// Gets the photos of the animal.
     /// </summary>
-    public List<string> Photos { get; private set; } = new();
+    public IReadOnlyList<string> Photos => this.photos.AsReadOnly();
 
     /// <summary>
-    /// Gets the list of video URLs for the animal.
+    /// Gets the videos of the animal.
     /// </summary>
-    public List<string> Videos { get; private set; } = new();
+    public IReadOnlyList<string> Videos => this.videos.AsReadOnly();
 
     /// <summary>
     /// Gets the current status of the animal.
@@ -191,6 +200,16 @@ public sealed class Animal : BaseEntity
     public Shelter? Shelter { get; private set; }
 
     /// <summary>
+    /// Gets a value indicating whether the animal is eligible for adoption.
+    /// </summary>
+    public bool CanBeAdopted => this.Status == AnimalStatus.Available;
+
+    /// <summary>
+    /// Gets a value indicating whether the animal has a microchip.
+    /// </summary>
+    public bool HasMicrochip => this.MicrochipId is not null;
+
+    /// <summary>
     /// Creates a new <see cref="Animal"/> instance with the specified parameters.
     /// </summary>
     /// <param name="slug">The unique slug identifier for the animal.</param>
@@ -246,8 +265,8 @@ public sealed class Animal : BaseEntity
             gender,
             description,
             healthStatus,
-            photos ?? new List<string>(),
-            videos ?? new List<string>(),
+            photos ?? new(),
+            videos ?? new(),
             shelterId,
             status,
             adoptionRequirements,
@@ -268,8 +287,6 @@ public sealed class Animal : BaseEntity
     /// <param name="gender">The new gender of the animal, if provided. If null, the gender remains unchanged.</param>
     /// <param name="description">The new description of the animal, if provided. If null, the description remains unchanged.</param>
     /// <param name="healthStatus">The new health status of the animal, if provided. If null, the health status remains unchanged.</param>
-    /// <param name="photos">The new list of photo URLs for the animal, if provided. If null, the photos remain unchanged.</param>
-    /// <param name="videos">The new list of video URLs for the animal, if provided. If null, the videos remain unchanged.</param>
     /// <param name="status">The new status of the animal, if provided. If null, the status remains unchanged.</param>
     /// <param name="adoptionRequirements">The new adoption requirements for the animal, if provided. If null, the adoption requirements remain unchanged.</param>
     /// <param name="microchipId">The new microchip identifier for the animal, if provided. If null, the microchip identifier remains unchanged.</param>
@@ -285,8 +302,6 @@ public sealed class Animal : BaseEntity
         AnimalGender? gender = null,
         string? description = null,
         string? healthStatus = null,
-        List<string>? photos = null,
-        List<string>? videos = null,
         AnimalStatus? status = null,
         string? adoptionRequirements = null,
         string? microchipId = null,
@@ -319,16 +334,6 @@ public sealed class Animal : BaseEntity
         if (healthStatus is not null)
         {
             this.HealthStatus = healthStatus;
-        }
-
-        if (photos is not null)
-        {
-            this.Photos = photos;
-        }
-
-        if (videos is not null)
-        {
-            this.Videos = videos;
         }
 
         if (status is not null)
@@ -372,5 +377,79 @@ public sealed class Animal : BaseEntity
         }
 
         this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Changes the status of the animal.
+    /// </summary>
+    /// /// <param name="newStatus">The new status to apply.</param>
+    public void ChangeStatus(AnimalStatus newStatus)
+    {
+        this.Status = newStatus;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Adds a photo to the animal.
+    /// </summary>
+    /// <param name="url">The URL of the photo to add.</param>
+    public void AddPhoto(string url)
+    {
+        if (!string.IsNullOrWhiteSpace(url) && !this.photos.Contains(url))
+        {
+            this.photos.Add(url);
+            this.UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
+    /// <summary>
+    /// Removes a photo from the animal.
+    /// </summary>
+    /// <param name="url">The URL of the photo to remove.</param>
+    public void RemovePhoto(string url)
+    {
+        if (this.photos.Remove(url))
+        {
+            this.UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
+    /// <summary>
+    /// Adds a video to the animal.
+    /// </summary>
+    /// <param name="url">The URL of the video to add.</param>
+    public void AddVideo(string url)
+    {
+        if (!string.IsNullOrWhiteSpace(url) && !this.videos.Contains(url))
+        {
+            this.videos.Add(url);
+            this.UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
+    /// <summary>
+    /// Removes a video from the animal.
+    /// </summary>
+    /// <param name="url">The URL of the video to remove.</param>
+    public void RemoveVideo(string url)
+    {
+        if (this.videos.Remove(url))
+        {
+            this.UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
+    /// <summary>
+    /// Validates whether the animal has sufficient adoption requirements defined.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the animal's adoption requirements are missing or too short.
+    /// </exception>
+    public void ValidateAdoptionRequirements()
+    {
+        if (string.IsNullOrWhiteSpace(this.AdoptionRequirements) || this.AdoptionRequirements.Length < 10)
+        {
+            throw new InvalidOperationException("Вимоги до адопції тварини не заповнені або занадто короткі.");
+        }
     }
 }

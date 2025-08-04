@@ -3,6 +3,8 @@
 // </copyright>
 
 namespace PetCare.Domain.Entities;
+
+using PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 using PetCare.Domain.Enums;
 
@@ -64,14 +66,29 @@ public sealed class ArticleComment : BaseEntity
     public Guid ArticleId { get; private set; }
 
     /// <summary>
+    /// Gets the article that this comment belongs to.
+    /// </summary>
+    public Article? Article { get; private set; }
+
+    /// <summary>
     /// Gets the unique identifier of the user who created the comment.
     /// </summary>
     public Guid UserId { get; private set; }
 
     /// <summary>
+    /// Gets the user who created this comment.
+    /// </summary>
+    public User? User { get; private set; }
+
+    /// <summary>
     /// Gets the unique identifier of the parent comment, if this is a reply. Can be null.
     /// </summary>
     public Guid? ParentCommentId { get; private set; }
+
+    /// <summary>
+    /// Gets the parent comment if this is a reply. Can be null.
+    /// </summary>
+    public ArticleComment? ParentComment { get; private set; }
 
     /// <summary>
     /// Gets the content of the comment.

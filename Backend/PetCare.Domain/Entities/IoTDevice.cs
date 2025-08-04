@@ -2,7 +2,8 @@
 // Copyright (c) PetCare. All rights reserved.
 // </copyright>
 
-namespace PetCare.Domain.Aggregates;
+namespace PetCare.Domain.Entities;
+using PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 using PetCare.Domain.Enums;
 
@@ -50,11 +51,6 @@ public sealed class IoTDevice : BaseEntity
     }
 
     /// <summary>
-    /// Gets the unique identifier of the shelter associated with the device.
-    /// </summary>
-    public Guid ShelterId { get; private set; }
-
-    /// <summary>
     /// Gets the type of the IoT device.
     /// </summary>
     public IoTDeviceType Type { get; private set; }
@@ -88,6 +84,16 @@ public sealed class IoTDevice : BaseEntity
     /// Gets the date and time when the IoT device was last updated.
     /// </summary>
     public DateTime LastUpdated { get; private set; }
+
+    /// <summary>
+    /// Gets the unique identifier of the shelter associated with the device.
+    /// </summary>
+    public Guid ShelterId { get; private set; }
+
+    /// <summary>
+    /// Gets navigation property to the shelter.
+    /// </summary>
+    public Shelter? Shelter { get; private set; }
 
     /// <summary>
     /// Creates a new <see cref="IoTDevice"/> instance with the specified parameters.

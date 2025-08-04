@@ -3,7 +3,6 @@ C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\bin\Debug\net9.0\CoverletSou
 C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\bin\Debug\net9.0\testhost.dll
 C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\bin\Debug\net9.0\PetCare.Api.deps.json
 C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\bin\Debug\net9.0\PetCare.Api.runtimeconfig.json
-C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\bin\Debug\net9.0\appsettings.Development.json
 C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\bin\Debug\net9.0\appsettings.json
 C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\bin\Debug\net9.0\PetCare.Api.staticwebassets.endpoints.json
 C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\bin\Debug\net9.0\PetCare.Api.exe

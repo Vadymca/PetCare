@@ -3,6 +3,8 @@
 // </copyright>
 
 namespace PetCare.Domain.Entities;
+
+using PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 using PetCare.Domain.Enums;
 
@@ -59,6 +61,11 @@ public sealed class AuditLog : BaseEntity
     /// Gets the unique identifier of the user who performed the operation, if known.
     /// </summary>
     public Guid? UserId { get; private set; }
+
+    /// <summary>
+    /// Gets the user who performed the operation, if known.
+    /// </summary>
+    public User? User { get; private set; }
 
     /// <summary>
     /// Gets the details of the changes, if any.

@@ -2,7 +2,8 @@
 // Copyright (c) PetCare. All rights reserved.
 // </copyright>
 
-namespace PetCare.Domain.Aggregates;
+namespace PetCare.Domain.Entities;
+using PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 
 /// <summary>
@@ -32,23 +33,13 @@ public sealed class GamificationReward : BaseEntity
             throw new ArgumentOutOfRangeException(nameof(points), "Бали не можуть бути від'ємними.");
         }
 
-        this.UserId = userId;
-        this.TaskId = taskId;
-        this.Points = points;
-        this.Description = description;
-        this.Used = used;
-        this.AwardedAt = awardedAt;
+        UserId = userId;
+        TaskId = taskId;
+        Points = points;
+        Description = description;
+        Used = used;
+        AwardedAt = awardedAt;
     }
-
-    /// <summary>
-    /// Gets the unique identifier of the user receiving the reward.
-    /// </summary>
-    public Guid UserId { get; private set; }
-
-    /// <summary>
-    /// Gets the unique identifier of the task associated with the reward, if any. Can be null.
-    /// </summary>
-    public Guid? TaskId { get; private set; }
 
     /// <summary>
     /// Gets the number of points awarded.
@@ -69,6 +60,26 @@ public sealed class GamificationReward : BaseEntity
     /// Gets the date and time when the reward was awarded.
     /// </summary>
     public DateTime AwardedAt { get; private set; }
+
+    /// <summary>
+    /// Gets the unique identifier of the user receiving the reward.
+    /// </summary>
+    public Guid UserId { get; private set; }
+
+    /// <summary>
+    /// Gets navigation property to the user who received the reward.
+    /// </summary>
+    public User? User { get; private set; }
+
+    /// <summary>
+    /// Gets the unique identifier of the task associated with the reward, if any. Can be null.
+    /// </summary>
+    public Guid? TaskId { get; private set; }
+
+    /// <summary>
+    /// Gets navigation property to the task associated with the reward, if any.
+    /// </summary>
+    public VolunteerTask? Task { get; private set; }
 
     /// <summary>
     /// Creates a new <see cref="GamificationReward"/> instance with the specified parameters.
@@ -102,7 +113,7 @@ public sealed class GamificationReward : BaseEntity
     /// </summary>
     public void MarkAsUsed()
     {
-        this.Used = true;
+        Used = true;
     }
 
     /// <summary>
@@ -111,6 +122,6 @@ public sealed class GamificationReward : BaseEntity
     /// <param name="description">The new description of the reward. Can be null.</param>
     public void UpdateDescription(string? description)
     {
-        this.Description = description;
+        Description = description;
     }
 }

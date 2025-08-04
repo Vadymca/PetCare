@@ -11,6 +11,10 @@ using PetCare.Domain.ValueObjects;
 /// </summary>
 public sealed class Shelter : BaseEntity
 {
+    private readonly List<Guid> animalIds = new();
+    private readonly List<string> photos = new();
+    private readonly Dictionary<string, string> socialMedia = new();
+
     private Shelter()
     {
         this.Slug = Slug.Create(string.Empty);
@@ -46,10 +50,10 @@ public sealed class Shelter : BaseEntity
         this.Description = description;
         this.Capacity = capacity;
         this.CurrentOccupancy = currentOccupancy;
-        this.Photos = photos;
+        this.photos = photos;
         this.VirtualTourUrl = virtualTourUrl;
         this.WorkingHours = workingHours;
-        this.SocialMedia = socialMedia;
+        this.socialMedia = socialMedia;
         this.ManagerId = managerId;
         this.CreatedAt = DateTime.UtcNow;
         this.UpdatedAt = DateTime.UtcNow;
@@ -103,7 +107,7 @@ public sealed class Shelter : BaseEntity
     /// <summary>
     /// Gets the list of photo URLs for the shelter.
     /// </summary>
-    public List<string> Photos { get; private set; } = new();
+    public IReadOnlyList<string> Photos => this.photos.AsReadOnly();
 
     /// <summary>
     /// Gets the URL for the virtual tour of the shelter, if any. Can be null.
@@ -118,7 +122,7 @@ public sealed class Shelter : BaseEntity
     /// <summary>
     /// Gets the social media links for the shelter.
     /// </summary>
-    public Dictionary<string, string> SocialMedia { get; private set; } = new();
+    public IReadOnlyDictionary<string, string> SocialMedia => this.socialMedia;
 
     /// <summary>
     /// Gets the date and time when the shelter record was created.
@@ -139,6 +143,16 @@ public sealed class Shelter : BaseEntity
     /// Gets the manager associated with the shelter, if any. Can be null.
     /// </summary>
     public User? Manager { get; private set; }
+
+    /// <summary>
+    /// Gets the identifiers of animals in the shelter.
+    /// </summary>
+    public IReadOnlyList<Guid> AnimalIds => this.animalIds.AsReadOnly();
+
+    /// <summary>
+    /// Gets the animals in the shelter (EF Core navigation).
+    /// </summary>
+    public ICollection<Animal>? Animals { get; private set; }
 
     /// <summary>
     /// Creates a new <see cref="Shelter"/> instance with the specified parameters.
@@ -185,10 +199,10 @@ public sealed class Shelter : BaseEntity
             description,
             capacity,
             currentOccupancy,
-            photos ?? new List<string>(),
+            photos ?? new(),
             virtualTourUrl,
             workingHours,
-            socialMedia ?? new Dictionary<string, string>(),
+            socialMedia ?? new(),
             managerId);
     }
 
@@ -264,7 +278,8 @@ public sealed class Shelter : BaseEntity
 
         if (photos != null)
         {
-            this.Photos = photos;
+            this.photos.Clear();
+            this.photos.AddRange(photos);
         }
 
         if (virtualTourUrl != null)
@@ -279,9 +294,57 @@ public sealed class Shelter : BaseEntity
 
         if (socialMedia != null)
         {
-            this.SocialMedia = socialMedia;
+            this.socialMedia.Clear();
+            foreach (var kvp in socialMedia)
+            {
+                this.socialMedia[kvp.Key] = kvp.Value;
+            }
         }
 
         this.UpdatedAt = DateTime.UtcNow;
     }
+
+    /// <summary>
+    /// Adds an animal to the shelter, updating the occupancy count.
+    /// </summary>
+    /// <param name="animalId">The identifier of the animal.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the shelter is already full or animal is already added.</exception>
+    public void AddAnimal(Guid animalId)
+    {
+        if (this.CurrentOccupancy >= this.Capacity)
+        {
+            throw new InvalidOperationException("Притулок заповнений. Неможливо додати нову тварину.");
+        }
+
+        if (this.animalIds.Contains(animalId))
+        {
+            throw new InvalidOperationException("Ця тварина вже перебуває у притулку.");
+        }
+
+        this.animalIds.Add(animalId);
+        this.CurrentOccupancy++;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Removes an animal from the shelter, updating the occupancy count.
+    /// </summary>
+    /// <param name="animalId">The identifier of the animal.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the animal is not found.</exception>
+    public void RemoveAnimal(Guid animalId)
+    {
+        if (!this.animalIds.Remove(animalId))
+        {
+            throw new InvalidOperationException("Тварину не знайдено у притулку.");
+        }
+
+        this.CurrentOccupancy--;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Checks if the shelter has free capacity.
+    /// </summary>
+    /// <returns>True if there is available capacity, otherwise false.</returns>
+    public bool HasFreeCapacity() => this.CurrentOccupancy < this.Capacity;
 }
