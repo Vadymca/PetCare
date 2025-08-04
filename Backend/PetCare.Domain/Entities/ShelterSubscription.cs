@@ -3,6 +3,8 @@
 // </copyright>
 
 namespace PetCare.Domain.Entities;
+
+using PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 
 /// <summary>
@@ -37,9 +39,19 @@ public sealed class ShelterSubscription : ValueObject
     public Guid UserId { get; private set; }
 
     /// <summary>
+    /// Gets the user who is subscribed to the shelter.
+    /// </summary>
+    public User? User { get; private set; }
+
+    /// <summary>
     /// Gets the unique identifier of the shelter.
     /// </summary>
     public Guid ShelterId { get; private set; }
+
+    /// <summary>
+    /// Gets the shelter to which the user is subscribed.
+    /// </summary>
+    public Shelter? Shelter { get; private set; }
 
     /// <summary>
     /// Gets the date and time when the user subscribed to the shelter.

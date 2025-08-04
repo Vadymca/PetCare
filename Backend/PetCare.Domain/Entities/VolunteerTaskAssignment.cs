@@ -3,6 +3,8 @@
 // </copyright>
 
 namespace PetCare.Domain.Entities;
+
+using PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 
 /// <summary>
@@ -40,9 +42,19 @@ public sealed class VolunteerTaskAssignment : ValueObject
     public Guid VolunteerTaskId { get; private set; }
 
     /// <summary>
+    /// Gets the volunteer task assigned to the user.
+    /// </summary>
+    public VolunteerTask? VolunteerTask { get; private set; }
+
+    /// <summary>
     /// Gets the unique identifier of the user assigned to the task.
     /// </summary>
     public Guid UserId { get; private set; }
+
+    /// <summary>
+    /// Gets the user assigned to the volunteer task.
+    /// </summary>
+    public User? User { get; private set; }
 
     /// <summary>
     /// Gets the date and time when the task was assigned to the user.

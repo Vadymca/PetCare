@@ -5,6 +5,7 @@
 namespace PetCare.Domain.Aggregates;
 using NetTopologySuite.Geometries;
 using PetCare.Domain.Common;
+using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
 
@@ -13,6 +14,8 @@ using PetCare.Domain.ValueObjects;
 /// </summary>
 public sealed class LostPet : BaseEntity
 {
+    private readonly List<string> photos = new();
+
     private LostPet()
     {
         this.Slug = Slug.Create(string.Empty);
@@ -26,13 +29,18 @@ public sealed class LostPet : BaseEntity
         string? description,
         Point? lastSeenLocation,
         DateTime? lastSeenDate,
-        List<string>? photos,
+        IEnumerable<string>? photos,
         LostPetStatus status,
         string? adminNotes,
-        float? reward,
+        decimal? reward,
         string? contactAlternative,
         MicrochipId? microchipId)
     {
+        if (userId == Guid.Empty)
+        {
+            throw new ArgumentException("Ідентифікатор користувача не може бути порожнім.", nameof(userId));
+        }
+
         this.Slug = slug;
         this.UserId = userId;
         this.BreedId = breedId;
@@ -40,7 +48,16 @@ public sealed class LostPet : BaseEntity
         this.Description = description;
         this.LastSeenLocation = lastSeenLocation;
         this.LastSeenDate = lastSeenDate;
-        this.Photos = photos ?? new List<string>();
+        if (photos != null)
+        {
+            this.photos.AddRange(photos);
+        }
+
+        if (reward is < 0)
+        {
+            throw new ArgumentException("Розмір винагороди не може бути від’ємним.", nameof(reward));
+        }
+
         this.Status = status;
         this.AdminNotes = adminNotes;
         this.Reward = reward;
@@ -54,16 +71,6 @@ public sealed class LostPet : BaseEntity
     /// Gets the unique slug identifier for the lost pet record.
     /// </summary>
     public Slug Slug { get; private set; }
-
-    /// <summary>
-    /// Gets the unique identifier of the user reporting the lost pet.
-    /// </summary>
-    public Guid UserId { get; private set; }
-
-    /// <summary>
-    /// Gets the unique identifier of the pet's breed, if any. Can be null.
-    /// </summary>
-    public Guid? BreedId { get; private set; }
 
     /// <summary>
     /// Gets the name of the lost pet, if any. Can be null.
@@ -88,7 +95,7 @@ public sealed class LostPet : BaseEntity
     /// <summary>
     /// Gets the list of photo URLs for the lost pet.
     /// </summary>
-    public List<string> Photos { get; private set; } = new();
+    public IReadOnlyList<string> Photos => this.photos.AsReadOnly();
 
     /// <summary>
     /// Gets the current status of the lost pet record.
@@ -103,7 +110,7 @@ public sealed class LostPet : BaseEntity
     /// <summary>
     /// Gets the reward offered for finding the pet, if any. Can be null.
     /// </summary>
-    public float? Reward { get; private set; }
+    public decimal? Reward { get; private set; }
 
     /// <summary>
     /// Gets the alternative contact information for the lost pet, if any. Can be null.
@@ -124,6 +131,28 @@ public sealed class LostPet : BaseEntity
     /// Gets the date and time when the lost pet record was last updated.
     /// </summary>
     public DateTime UpdatedAt { get; private set; }
+
+    /// <summary>
+    /// Gets the unique identifier of the user reporting the lost pet.
+    /// </summary>
+    public Guid UserId { get; private set; }
+
+    /// <summary>
+    /// Gets the user who reported the lost pet.
+    /// Navigation property for EF Core.
+    /// </summary>
+    public User? User { get; private set; }
+
+    /// <summary>
+    /// Gets the unique identifier of the pet's breed, if any. Can be null.
+    /// </summary>
+    public Guid? BreedId { get; private set; }
+
+    /// <summary>
+    /// Gets the breed of the lost pet.
+    /// Navigation property for EF Core.
+    /// </summary>
+    public Breed? Breed { get; private set; }
 
     /// <summary>
     /// Creates a new <see cref="LostPet"/> instance with the specified parameters.
@@ -151,10 +180,10 @@ public sealed class LostPet : BaseEntity
         string? description,
         Point? lastSeenLocation,
         DateTime? lastSeenDate,
-        List<string>? photos,
+        IEnumerable<string>? photos,
         LostPetStatus status,
         string? adminNotes,
-        float? reward,
+        decimal? reward,
         string? contactAlternative,
         string? microchipId)
     {
@@ -175,10 +204,106 @@ public sealed class LostPet : BaseEntity
     }
 
     /// <summary>
-    /// Updates the status and optionally the administrative notes of the lost pet record.
+    /// Adds a photo URL to the photos collection.
     /// </summary>
-    /// <param name="status">The new status of the lost pet record.</param>
-    /// <param name="adminNotes">The new administrative notes, if provided. If null, the notes remain unchanged.</param>
+    /// <param name="photoUrl">The URL of the photo to add.</param>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="photoUrl"/> is null or whitespace.</exception>
+    public void AddPhoto(string photoUrl)
+    {
+        if (string.IsNullOrWhiteSpace(photoUrl))
+        {
+            throw new ArgumentException("URL фотографії не може бути пустим.", nameof(photoUrl));
+        }
+
+        this.photos.Add(photoUrl);
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Removes a photo URL from the photos collection.
+    /// </summary>
+    /// <param name="photoUrl">The URL of the photo to remove.</param>
+    public void RemovePhoto(string photoUrl)
+    {
+        if (this.photos.Remove(photoUrl))
+        {
+            this.UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
+    /// <summary>
+    /// Updates the name of the lost pet.
+    /// </summary>
+    /// <param name="newName">The new name. Null or whitespace will clear the current name.</param>
+    public void UpdateName(string? newName)
+    {
+        this.Name = string.IsNullOrWhiteSpace(newName) ? null : Name.Create(newName);
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Updates the description of the lost pet.
+    /// </summary>
+    /// <param name="newDescription">The new description. Can be null.</param>
+    public void UpdateDescription(string? newDescription)
+    {
+        this.Description = newDescription;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Updates the last seen location and date.
+    /// </summary>
+    /// <param name="location">The new last seen location. Can be null.</param>
+    /// <param name="date">The new last seen date. Can be null.</param>
+    public void UpdateLastSeen(Point? location, DateTime? date)
+    {
+        this.LastSeenLocation = location;
+        this.LastSeenDate = date;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Updates the alternative contact information.
+    /// </summary>
+    /// <param name="contact">The new alternative contact information. Can be null.</param>
+    public void UpdateContactAlternative(string? contact)
+    {
+        this.ContactAlternative = contact;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Updates the reward amount.
+    /// </summary>
+    /// <param name="rewardAmount">The new reward amount. Must not be negative.</param>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="rewardAmount"/> is negative.</exception>
+    public void UpdateReward(decimal? rewardAmount)
+    {
+        if (rewardAmount is < 0)
+        {
+            throw new ArgumentException("Розмір винагороди не може бути від’ємним.", nameof(rewardAmount));
+        }
+
+        this.Reward = rewardAmount;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Updates the microchip ID.
+    /// </summary>
+    /// <param name="microchipId">The new microchip ID. Null to clear.</param>
+    public void UpdateMicrochipId(string? microchipId)
+    {
+        this.MicrochipId = microchipId is null ? null : MicrochipId.Create(microchipId);
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Updates the status and optionally the administrative notes.
+    /// </summary>
+    /// <param name="status">The new status.</param>
+    /// <param name="adminNotes">The new administrative notes. If null, notes remain unchanged.</param>
     public void UpdateStatus(LostPetStatus status, string? adminNotes = null)
     {
         this.Status = status;
@@ -187,6 +312,33 @@ public sealed class LostPet : BaseEntity
             this.AdminNotes = adminNotes;
         }
 
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Assigns or updates the microchip ID for the lost pet.
+    /// </summary>
+    /// <param name="microchipId">The microchip ID to assign.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the microchip ID is already assigned.</exception>
+    public void SetMicrochip(string microchipId)
+    {
+        var newMicrochip = MicrochipId.Create(microchipId);
+
+        if (this.MicrochipId is not null && this.MicrochipId.Equals(newMicrochip))
+        {
+            throw new InvalidOperationException("Цей мікрочіп вже призначено цьому запису.");
+        }
+
+        this.MicrochipId = newMicrochip;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Removes the microchip ID from the lost pet.
+    /// </summary>
+    public void ClearMicrochip()
+    {
+        this.MicrochipId = null;
         this.UpdatedAt = DateTime.UtcNow;
     }
 }

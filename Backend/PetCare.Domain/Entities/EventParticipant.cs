@@ -3,6 +3,8 @@
 // </copyright>
 
 namespace PetCare.Domain.Entities;
+
+using PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 
 /// <summary>
@@ -37,9 +39,19 @@ public sealed class EventParticipant : ValueObject
     public Guid EventId { get; private set; }
 
     /// <summary>
+    /// Gets the event associated with this participation.
+    /// </summary>
+    public Event? Event { get; private set; }
+
+    /// <summary>
     /// Gets the unique identifier of the user participating in the event.
     /// </summary>
     public Guid UserId { get; private set; }
+
+    /// <summary>
+    /// Gets the user participating in the event.
+    /// </summary>
+    public User? User { get; private set; }
 
     /// <summary>
     /// Gets the date and time when the user registered for the event.

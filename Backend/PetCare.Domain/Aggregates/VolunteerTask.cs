@@ -6,16 +6,19 @@ namespace PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
+using System.Collections.ObjectModel;
 
 /// <summary>
 /// Represents a volunteer task in the system.
 /// </summary>
 public sealed class VolunteerTask : BaseEntity
 {
+    private Dictionary<string, string> skillsRequired;
+
     private VolunteerTask()
     {
         this.Title = Title.Create(string.Empty);
-        this.SkillsRequired = new Dictionary<string, string>();
+        this.skillsRequired = new Dictionary<string, string>();
     }
 
     private VolunteerTask(
@@ -54,15 +57,10 @@ public sealed class VolunteerTask : BaseEntity
         this.Status = status;
         this.PointsReward = pointsReward;
         this.Location = location;
-        this.SkillsRequired = skillsRequired;
+        this.skillsRequired = skillsRequired ?? new Dictionary<string, string>();
         this.CreatedAt = DateTime.UtcNow;
         this.UpdatedAt = DateTime.UtcNow;
     }
-
-    /// <summary>
-    /// Gets the unique identifier of the shelter associated with the task.
-    /// </summary>
-    public Guid ShelterId { get; private set; }
 
     /// <summary>
     /// Gets the title of the volunteer task.
@@ -107,7 +105,7 @@ public sealed class VolunteerTask : BaseEntity
     /// <summary>
     /// Gets the skills required for the task.
     /// </summary>
-    public Dictionary<string, string> SkillsRequired { get; private set; }
+    public IReadOnlyDictionary<string, string> SkillsRequired => new ReadOnlyDictionary<string, string>(this.skillsRequired);
 
     /// <summary>
     /// Gets the date and time when the volunteer task was created.
@@ -118,6 +116,16 @@ public sealed class VolunteerTask : BaseEntity
     /// Gets the date and time when the volunteer task was last updated.
     /// </summary>
     public DateTime UpdatedAt { get; private set; }
+
+    /// <summary>
+    /// Gets the unique identifier of the shelter associated with the task.
+    /// </summary>
+    public Guid ShelterId { get; private set; }
+
+    /// <summary>
+    /// Gets the shelter hosting the animal, if any. Can be null.
+    /// </summary>
+    public Shelter? Shelter { get; private set; }
 
     /// <summary>
     /// Creates a new <see cref="VolunteerTask"/> instance with the specified parameters.
@@ -215,7 +223,45 @@ public sealed class VolunteerTask : BaseEntity
         this.RequiredVolunteers = requiredVolunteers;
         this.PointsReward = pointsReward;
         this.Location = location;
-        this.SkillsRequired = skillsRequired ?? new Dictionary<string, string>();
+        this.skillsRequired = skillsRequired ?? new Dictionary<string, string>();
         this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Adds or updates a skill requirement.
+    /// </summary>
+    /// <param name="skillName">The name of the skill.</param>
+    /// <param name="description">The description of the skill requirement.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="skillName"/> is null or whitespace.</exception>
+    public void AddOrUpdateSkill(string skillName, string description)
+    {
+        if (string.IsNullOrWhiteSpace(skillName))
+        {
+            throw new ArgumentException("Назва навички не може бути порожньою.", nameof(skillName));
+        }
+
+        this.skillsRequired[skillName] = description;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Removes a skill requirement by name.
+    /// </summary>
+    /// <param name="skillName">The name of the skill to remove.</param>
+    /// <returns>True if the skill was removed; otherwise, false.</returns>
+    public bool RemoveSkill(string skillName)
+    {
+        if (string.IsNullOrWhiteSpace(skillName))
+        {
+            return false;
+        }
+
+        bool removed = this.skillsRequired.Remove(skillName);
+        if (removed)
+        {
+            this.UpdatedAt = DateTime.UtcNow;
+        }
+
+        return removed;
     }
 }

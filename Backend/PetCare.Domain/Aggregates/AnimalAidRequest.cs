@@ -12,6 +12,8 @@ using PetCare.Domain.ValueObjects;
 /// </summary>
 public sealed class AnimalAidRequest : BaseEntity
 {
+    private readonly List<string> photos = new();
+
     private AnimalAidRequest()
     {
         this.Title = Title.Create(string.Empty);
@@ -24,7 +26,7 @@ public sealed class AnimalAidRequest : BaseEntity
         string? description,
         AidCategory category,
         AidStatus status,
-        float? estimatedCost,
+        decimal? estimatedCost,
         List<string>? photos)
     {
         if (estimatedCost is < 0)
@@ -39,20 +41,10 @@ public sealed class AnimalAidRequest : BaseEntity
         this.Category = category;
         this.Status = status;
         this.EstimatedCost = estimatedCost;
-        this.Photos = photos ?? new List<string>();
+        this.photos = photos ?? new List<string>();
         this.CreatedAt = DateTime.UtcNow;
         this.UpdatedAt = DateTime.UtcNow;
     }
-
-    /// <summary>
-    /// Gets the unique identifier of the user making the request, if any. Can be null.
-    /// </summary>
-    public Guid? UserId { get; private set; }
-
-    /// <summary>
-    /// Gets the unique identifier of the shelter associated with the request, if any. Can be null.
-    /// </summary>
-    public Guid? ShelterId { get; private set; }
 
     /// <summary>
     /// Gets the title of the aid request.
@@ -77,12 +69,12 @@ public sealed class AnimalAidRequest : BaseEntity
     /// <summary>
     /// Gets the estimated cost of the aid request, if known. Can be null.
     /// </summary>
-    public float? EstimatedCost { get; private set; }
+    public decimal? EstimatedCost { get; private set; }
 
     /// <summary>
     /// Gets the list of photo URLs for the aid request.
     /// </summary>
-    public List<string> Photos { get; private set; } = new();
+    public IReadOnlyList<string> Photos => this.photos.AsReadOnly();
 
     /// <summary>
     /// Gets the date and time when the aid request was created.
@@ -93,6 +85,26 @@ public sealed class AnimalAidRequest : BaseEntity
     /// Gets the date and time when the aid request was last updated.
     /// </summary>
     public DateTime UpdatedAt { get; private set; }
+
+    /// <summary>
+    /// Gets the unique identifier of the user making the request, if any. Can be null.
+    /// </summary>
+    public Guid? UserId { get; private set; }
+
+    /// <summary>
+    /// Gets the user who made the aid request, if any.
+    /// </summary>
+    public User? User { get; private set; }
+
+    /// <summary>
+    /// Gets the unique identifier of the shelter associated with the request, if any. Can be null.
+    /// </summary>
+    public Guid? ShelterId { get; private set; }
+
+    /// <summary>
+    /// Gets the shelter associated with the aid request, if any.
+    /// </summary>
+    public Shelter? Shelter { get; private set; }
 
     /// <summary>
     /// Creates a new <see cref="AnimalAidRequest"/> instance with the specified parameters.
@@ -115,7 +127,7 @@ public sealed class AnimalAidRequest : BaseEntity
         string? description,
         AidCategory category,
         AidStatus status,
-        float? estimatedCost,
+        decimal? estimatedCost,
         List<string>? photos)
     {
         return new AnimalAidRequest(
@@ -136,7 +148,7 @@ public sealed class AnimalAidRequest : BaseEntity
     public void UpdateStatus(AidStatus status)
     {
         this.Status = status;
-        this.UpdatedAt = DateTime.Now;
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -144,7 +156,7 @@ public sealed class AnimalAidRequest : BaseEntity
     /// </summary>
     /// <param name="newCost">The new estimated cost of the aid request. Can be null.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="newCost"/> is negative.</exception>
-    public void UpdateEstimatedCost(float? newCost)
+    public void UpdateEstimatedCost(decimal? newCost)
     {
         if (newCost is < 0)
         {
@@ -153,5 +165,37 @@ public sealed class AnimalAidRequest : BaseEntity
 
         this.EstimatedCost = newCost;
         this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Adds a photo URL to the aid request.
+    /// </summary>
+    /// <param name="url">The photo URL to add.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="url"/> is null or empty.</exception>
+    public void AddPhoto(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            throw new ArgumentException("URL не може бути порожнім.", nameof(url));
+        }
+
+        this.photos.Add(url);
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Removes a photo URL from the aid request.
+    /// </summary>
+    /// <param name="url">The photo URL to remove.</param>
+    /// <returns>True if the photo was removed; otherwise, false.</returns>
+    public bool RemovePhoto(string url)
+    {
+        var removed = this.photos.Remove(url);
+        if (removed)
+        {
+            this.UpdatedAt = DateTime.UtcNow;
+        }
+
+        return removed;
     }
 }
