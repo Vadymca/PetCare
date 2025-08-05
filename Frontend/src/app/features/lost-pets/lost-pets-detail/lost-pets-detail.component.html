@@ -1,0 +1,96 @@
+<div *ngIf="lostPet() as data; else loading" class="max-w-4xl mx-auto p-6">
+  <div
+    class="bg-white rounded-2xl shadow-xl p-6 flex flex-col md:flex-row gap-6"
+  >
+    <!-- Фото -->
+    <img
+      *ngIf="data.photos && data.photos.length > 0"
+      [src]="data.photos[0]"
+      [alt]="data.name"
+      class="w-full md:w-1/2 h-auto object-cover rounded-xl shadow-md"
+    />
+
+    <div class="flex-1 space-y-4">
+      <h1 class="text-3xl font-bold text-gray-800">{{ data.name }}</h1>
+
+      <!-- Опис -->
+      <p class="text-gray-600 text-lg leading-relaxed">
+        {{ data.description || ('NO_DESCRIPTION' | translate) }}
+      </p>
+
+      <!-- Додаткова інформація -->
+      <div class="mt-4 space-y-1 text-gray-600 text-sm">
+        <p>
+          {{ 'BREED' | translate }}:
+          {{ data.breed?.name || ('UNKNOWN' | translate) }}
+        </p>
+        <p>
+          {{ 'SPECIES' | translate }}:
+          {{ data.species?.name || ('UNKNOWN' | translate) }}
+        </p>
+        <p>
+          {{ 'STATUS' | translate }}:
+          {{ data.status || ('UNKNOWN' | translate) }}
+        </p>
+        <p>
+          {{ 'REWARD' | translate }}:
+          {{ data.reward > 0 ? data.reward + ' ₴' : ('NO_REWARD' | translate) }}
+        </p>
+        <p>
+          {{ 'MICROCHIP_ID' | translate }}:
+          {{ data.microchipId || ('NONE' | translate) }}
+        </p>
+
+        <p>
+          {{ 'LAST_SEEN_LOCATION' | translate }}:
+          {{ data.lastSeenLocation || ('UNKNOWN' | translate) }}
+        </p>
+        <p>
+          {{ 'LAST_SEEN_DATE' | translate }}:
+          {{ data.lastSeenDate | date: 'longDate' }}
+        </p>
+
+        <p>
+          {{ 'ADMIN_NOTES' | translate }}:
+          {{ data.adminNotes || ('NONE' | translate) }}
+        </p>
+
+        <!-- Користувач -->
+        <p>
+          {{ 'POSTED_BY' | translate }}: {{ data.user?.firstName }}
+          {{ data.user?.lastName }} ({{ data.user?.email }})
+        </p>
+        <p>
+          {{ 'CONTACT_ALTERNATIVE' | translate }}:
+          {{ data.contactAlternative || ('NONE' | translate) }}
+        </p>
+        <p>
+          {{ 'CREATED_AT' | translate }}:
+          {{ data.createdAt | date: 'longDate' }}
+        </p>
+        <p>
+          {{ 'UPDATED_AT' | translate }}:
+          {{ data.updatedAt | date: 'longDate' }}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Кнопка повернення -->
+<div class="mt-6 text-center">
+  <button
+    class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+    (click)="router.navigate(['/lost-pets'])"
+  >
+    {{ 'RETURN_TO_LOST_PET_LIST' | translate }}
+  </button>
+</div>
+
+<!-- Завантаження -->
+<ng-template #loading>
+  <div class="text-center text-gray-500 text-lg mt-10">
+    <app-loading-spinner></app-loading-spinner>
+    {{ 'LOADING_LOST_PET' | translate }}
+  </div>
+</ng-template>

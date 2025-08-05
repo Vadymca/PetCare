@@ -18,7 +18,42 @@ export class LostPetService {
   private speciesService = inject(SpeciesService);
 
   getLostPets(): Observable<LostPet[]> {
-    return this.api.get<LostPet[]>(this.endpoint);
+    return this.api.get<LostPet[]>(this.endpoint).pipe(
+      switchMap(lostPets => {
+        const enriched$ = lostPets.map(lostPet => {
+          const breed$ = lostPet.breedId
+            ? this.breedService.getBreedById(lostPet.breedId)
+            : of(undefined);
+
+          const user$ = lostPet.userId
+            ? this.userService.getUserById(lostPet.userId)
+            : of(undefined);
+
+          return forkJoin({
+            user: user$,
+            breed: breed$,
+          }).pipe(
+            switchMap(({ breed, user }) => {
+              if (!breed) return of(undefined);
+              return this.speciesService.getSpeciesById(breed.speciesId).pipe(
+                map(species => {
+                  return {
+                    ...lostPet,
+                    breed,
+                    species,
+
+                    user,
+                  } as LostPet;
+                })
+              );
+            })
+          );
+        });
+        return forkJoin(enriched$).pipe(
+          map(details => details.filter((d): d is LostPet => !!d))
+        );
+      })
+    );
   }
   getLostPetById(id: string): Observable<LostPet | undefined> {
     return this.api.getById<LostPet>(this.endpoint, id).pipe(

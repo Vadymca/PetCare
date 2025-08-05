@@ -15,7 +15,28 @@ export class ArticleService {
   private userService = inject(UserService);
 
   getArticles(): Observable<Article[]> {
-    return this.api.get(this.endpoint);
+    return this.api.get<Article[]>(this.endpoint).pipe(
+      switchMap(articles => {
+        const enriched$ = articles.map(article => {
+          const author$ = article.authorId
+            ? this.userService.getUserById(article.authorId)
+            : of(undefined);
+          const category$ = article.categoryId
+            ? this.categoryService.getCategoryById(article.categoryId)
+            : of(undefined);
+
+          return forkJoin({ author: author$, category: category$ }).pipe(
+            map(({ author, category }) => ({
+              ...article,
+              author,
+              category,
+            }))
+          );
+        });
+
+        return forkJoin(enriched$);
+      })
+    );
   }
 
   getArticleById(id: string): Observable<Article | undefined> {

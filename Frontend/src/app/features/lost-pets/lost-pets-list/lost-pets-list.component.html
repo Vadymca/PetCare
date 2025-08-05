@@ -1,0 +1,37 @@
+<div class="gap-4 p-4">
+  <h1 class="text-3xl font-bold mb-4">{{ 'LOST_PETS' | translate }}</h1>
+</div>
+
+@if (error()) {
+  <div class="p-4 text-red-600 font-medium">
+    {{ error() ?? '' | translate }}
+  </div>
+} @else {
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+    @for (lostPet of lostPets(); track lostPet.id) {
+      <a
+        [routerLink]="['/lost-pets', lostPet.slug]"
+        class="block p-4 bg-white rounded-2xl shadow hover:shadow-lg transition"
+      >
+        <h2 class="text-xl font-semibold">{{ lostPet.name }}</h2>
+        <p>
+          {{ 'BREED' | translate }}:
+          {{ lostPet.breed?.name || ('UNKNOWN' | translate) }}
+        </p>
+        <p>
+          {{ 'SPECIES' | translate }}:
+          {{ lostPet.species?.name || ('UNKNOWN' | translate) }}
+        </p>
+        <p>
+          {{ 'LOST_ANIMAL_STATUS' | translate }}:
+          {{ lostPet.status || ('UNKNOWN' | translate) }}
+        </p>
+
+        <p class="text-gray-600">
+          {{ 'LAST_SEEN_LOCATION' | translate }}:
+          {{ lostPet.lastSeenLocation || ('UNKNOWN' | translate) }}
+        </p>
+      </a>
+    }
+  </div>
+}

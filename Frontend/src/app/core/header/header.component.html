@@ -25,6 +25,20 @@
       >
         {{ 'SHELTERS' | translate }}
       </a>
+      <a
+        routerLink="/articles"
+        routerLinkActive="underline  font-semibold"
+        class="hover:text-orange-300 transition"
+      >
+        {{ 'ARTICLES' | translate }}
+      </a>
+			      <a
+        routerLink="/lost-pets"
+        routerLinkActive="underline  font-semibold"
+        class="hover:text-orange-300 transition"
+      >
+        {{ 'LOST_PETS' | translate }}
+      </a>
     </nav>
     <!-- Login/Logout -->
     @if (isAuthenticated()) {

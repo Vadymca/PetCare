@@ -42,6 +42,36 @@ export const routes: Routes = [
         './features/shelters/shelter-detail/shelter-detail.component'
       ).then(c => c.ShelterDetailComponent),
   },
+
+  {
+    path: 'articles',
+    loadComponent: () =>
+      import('./features/articles/article-list/article-list.component').then(
+        c => c.ArticleListComponent
+      ),
+  },
+  {
+    path: 'articles/:slug',
+    loadComponent: () =>
+      import(
+        './features/articles/article-detail/article-detail.component'
+      ).then(c => c.ArticleDetailComponent),
+  },
+  {
+    path: 'lost-pets',
+    loadComponent: () =>
+      import(
+        './features/lost-pets/lost-pets-list/lost-pets-list.component'
+      ).then(c => c.LostPetsListComponent),
+  },
+  {
+    path: 'lost-pets/:slug',
+    loadComponent: () =>
+      import(
+        './features/lost-pets/lost-pets-detail/lost-pets-detail.component'
+      ).then(c => c.LostPetsDetailComponent),
+  },
+
   {
     path: 'profile',
     canActivate: [authGuard],
