@@ -74,10 +74,23 @@ export class ShelterDetailComponent {
         }
 
         this.shelter.set(shelter);
-        this.title.setTitle(shelter.name);
-        this.meta.updateTag({
-          name: 'description',
-          content: shelter.address,
+        const translatedName = this.translate.instant('shelter.name', {
+          value: shelter.name,
+        });
+        const translatedDescription = this.translate.instant(
+          'shelter.description',
+          {
+            value: shelter.address,
+          }
+        );
+
+        this.setMetaTags(translatedName, translatedDescription);
+        this.addJsonLd({
+          name: shelter.name,
+          description: shelter.address,
+          telephone: shelter.contactPhone,
+          address: shelter.address,
+          url: window.location.href,
         });
         this.isSubscriptionChecked = false;
         console.log('this.user', this.user());
@@ -95,6 +108,53 @@ export class ShelterDetailComponent {
         }
       });
     });
+  }
+  private setMetaTags(name: string, description: string) {
+    this.title.setTitle(`${name} | PetCare`);
+    this.meta.updateTag({ name: 'description', content: description || '' });
+    this.meta.updateTag({
+      name: 'keywords',
+      content: `petcare, shelter, ${name}`,
+    });
+
+    this.meta.updateTag({ property: 'og:title', content: name });
+    this.meta.updateTag({
+      property: 'og:description',
+      content: description || `Details about ${name}`,
+    });
+    this.meta.updateTag({ property: 'og:type', content: 'localBusiness' });
+    this.meta.updateTag({ property: 'og:url', content: window.location.href });
+
+    this.meta.updateTag({ name: 'twitter:card', content: 'summary' });
+    this.meta.updateTag({ name: 'twitter:title', content: name });
+    this.meta.updateTag({
+      name: 'twitter:description',
+      content: description || '',
+    });
+  }
+
+  private addJsonLd(data: {
+    name: string;
+    description: string;
+    telephone?: string;
+    address?: string;
+    url?: string;
+  }) {
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'LocalBusiness',
+      name: data.name,
+      description: data.description,
+      telephone: data.telephone,
+      address: data.address,
+      url: data.url,
+    };
+
+    script.text = JSON.stringify(jsonLd);
+    document.head.appendChild(script);
   }
   isSubscribedToShelter(): Observable<boolean> {
     const shelterValue = this.shelter();
@@ -125,7 +185,7 @@ export class ShelterDetailComponent {
     this.shelterSubscriptionService
       .deleteShelterSubscription(this.shelterSubscriptionId)
       .subscribe({
-        next: () => {	
+        next: () => {
           this.isSubscribed = false;
           this.shelterSubscriptionId = '';
           this.cdr.detectChanges();

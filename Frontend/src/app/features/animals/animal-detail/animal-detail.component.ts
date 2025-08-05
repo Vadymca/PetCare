@@ -59,59 +59,6 @@ export class AnimalDetailComponent {
   isSubscribed = false; // Поточна підписка на тварину, по замовчуванню false;
   isSubscriptionChecked = false;
 
-  // constructor() {
-  //   effect(() => {
-  //     const slugValue = this.slug();
-  //     if (!slugValue) return;
-
-  //     this.animalService.getAnimalBySlug(slugValue).subscribe(animal => {
-  //       if (!animal) {
-  //         this.router.navigate(['/not-found']);
-  //         return;
-  //       }
-
-  //       this.animal.set(animal);
-
-  //       const translatedName = this.translate.instant('animal.name', {
-  //         value: animal.name,
-  //       });
-  //       const translatedDescription = this.translate.instant(
-  //         'animal.description',
-  //         {
-  //           value: animal.description,
-  //         }
-  //       );
-
-  //       this.title.setTitle(`${translatedName} - PetCare`);
-  //       this.meta.updateTag({
-  //         name: 'description',
-  //         content: translatedDescription || '',
-  //       });
-  //       console.log('this.isAuthenticated()  ', this.isAuthenticated());
-  //       // Перевірка підписки після завантаження тварини
-  //       if (this.isAuthenticated()) {
-  //         const userValue = this.user();
-  //         if (userValue) {
-  //           this.animalSubscriptionService
-  //             .getAnimalSubscriptionsByUserId(userValue.id)
-  //             .subscribe({
-  //               next: subscriptions => {
-  //                 const found = subscriptions.find(
-  //                   s => s.animalId === animal.id
-  //                 );
-  //                 this.isSubscribed.set(!!found);
-  //                 console.log('this.isSubscribed()  ', this.isSubscribed());
-  //                 this.animalSubscriptionId = found?.id ?? '';
-  //               },
-  //               error: err => {
-  //                 console.error('Error fetching animal subscriptions:', err);
-  //               },
-  //             });
-  //         }
-  //       }
-  //     });
-  //   });
-  // }
   constructor() {
     // Ефект завантаження тварини за slug
     effect(() => {
@@ -125,6 +72,7 @@ export class AnimalDetailComponent {
         }
 
         this.animal.set(animal);
+        this.addJsonLd(animal);
         const translatedName = this.translate.instant('animal.name', {
           value: animal.name,
         });
@@ -148,8 +96,53 @@ export class AnimalDetailComponent {
           name: 'description',
           content: translatedDescription || '',
         });
+        this.meta.updateTag({ property: 'og:title', content: translatedName });
+        this.meta.updateTag({
+          property: 'og:description',
+          content: translatedDescription,
+        });
+        this.meta.updateTag({ property: 'og:type', content: 'article' });
+        this.meta.updateTag({
+          property: 'og:url',
+          content: window.location.href,
+        });
+        // Якщо є фото:
+        if (animal.photos?.length) {
+          this.meta.updateTag({
+            property: 'og:image',
+            content: animal.photos[0],
+          });
+        }
+
+        this.meta.updateTag({
+          name: 'twitter:card',
+          content: 'summary_large_image',
+        });
+        this.meta.updateTag({ name: 'twitter:title', content: translatedName });
+        this.meta.updateTag({
+          name: 'twitter:description',
+          content: translatedDescription,
+        });
+        this.meta.updateTag({
+          name: 'keywords',
+          content: `petcare, ${animal.name}, ${animal.breed?.name}, ${animal.species?.name}`,
+        });
       });
     });
+  }
+  addJsonLd(animal: Animal) {
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Pet',
+      name: animal.name,
+      description: animal.description,
+      additionalType: animal.species?.name,
+      breed: animal.breed?.name,
+      image: animal.photos?.[0] || '',
+    });
+    document.head.appendChild(script);
   }
   isSubscribedToAnimal(): Observable<boolean> {
     const animalValue = this.animal();

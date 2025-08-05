@@ -32,7 +32,7 @@
       >
         {{ 'ARTICLES' | translate }}
       </a>
-			      <a
+      <a
         routerLink="/lost-pets"
         routerLinkActive="underline  font-semibold"
         class="hover:text-orange-300 transition"
@@ -89,7 +89,7 @@
     </div>
   </div>
 
-  <!-- Mobile Menu using classes instead of *ngIf -->
+  <!-- Mobile Menu  -->
   <div
     [class.hidden]="!isMenuOpen"
     class="md:hidden px-4 pb-4 flex flex-col gap-2 text-white font-medium"
@@ -107,6 +107,20 @@
       class="hover:text-orange-300 transition"
     >
       {{ 'SHELTERS' | translate }}
+    </a>
+    <a
+      routerLink="/articles"
+      (click)="isMenuOpen = false"
+      class="hover:text-orange-300 transition"
+    >
+      {{ 'ARTICLES' | translate }}
+    </a>
+    <a
+      routerLink="/lost-pets"
+      (click)="isMenuOpen = false"
+      class="hover:text-orange-300 transition"
+    >
+      {{ 'LOST_PETS' | translate }}
     </a>
   </div>
 </header>

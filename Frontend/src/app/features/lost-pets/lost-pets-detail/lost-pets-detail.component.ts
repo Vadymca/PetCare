@@ -41,7 +41,6 @@ export class LostPetsDetailComponent {
   // user: Signal<User | null> = signal(this.authService.currentUser());
 
   constructor() {
-    // Ефект завантаження тварини за slug
     effect(() => {
       const slugValue = this.slug();
       if (!slugValue) return;
@@ -53,6 +52,7 @@ export class LostPetsDetailComponent {
         }
 
         this.lostPet.set(lostPet);
+
         const translatedName = this.translate.instant('lostPet.name', {
           value: lostPet.name,
         });
@@ -63,14 +63,53 @@ export class LostPetsDetailComponent {
           }
         );
 
-        console.log('this.lostPet', this.lostPet());
-
-        this.title.setTitle(`${translatedName} - PetCare`);
-        this.meta.updateTag({
-          name: 'description',
-          content: translatedDescription || '',
+        this.setMetaTags(translatedName, translatedDescription);
+        this.addJsonLd({
+          name: lostPet.name,
+          description: lostPet.description,
         });
+
+        console.log('this.lostPet', this.lostPet());
       });
     });
+  }
+  private setMetaTags(name: string, description: string) {
+    this.title.setTitle(`${name} | PetCare`);
+
+    this.meta.updateTag({ name: 'description', content: description || '' });
+    this.meta.updateTag({
+      name: 'keywords',
+      content: `petcare, ${name}, lost pet`,
+    });
+
+    this.meta.updateTag({ property: 'og:title', content: name });
+    this.meta.updateTag({
+      property: 'og:description',
+      content: description || `Details about ${name}`,
+    });
+    this.meta.updateTag({ property: 'og:type', content: 'article' });
+    this.meta.updateTag({ property: 'og:url', content: window.location.href });
+
+    this.meta.updateTag({
+      name: 'twitter:card',
+      content: 'summary_large_image',
+    });
+    this.meta.updateTag({ name: 'twitter:title', content: name });
+    this.meta.updateTag({
+      name: 'twitter:description',
+      content: description || '',
+    });
+  }
+
+  private addJsonLd(data: { name: string; description: string }) {
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Pet',
+      name: data.name,
+      description: data.description,
+    });
+    document.head.appendChild(script);
   }
 }
