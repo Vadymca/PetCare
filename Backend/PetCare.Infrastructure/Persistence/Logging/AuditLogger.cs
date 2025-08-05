@@ -3,22 +3,36 @@
 // </copyright>
 
 namespace PetCare.Infrastructure.Persistence.Logging;
+
 using PetCare.Domain.DomainServices;
+using Serilog;
+using System.Threading;
+using System.Threading.Tasks;
 
 /// <summary>
-/// Provides functionality for asynchronous audit logging.
+/// Implements audit logging using Serilog.
 /// </summary>
 public class AuditLogger : IAuditLogger
 {
+    private readonly Serilog.ILogger logger;
+
     /// <summary>
-    /// Logs a message asynchronously.
+    /// Initializes a new instance of the <see cref="AuditLogger"/> class.
     /// </summary>
-    /// <param name="message">The audit message to log.</param>
-    /// <param name="cancellationToken">Token to observe while waiting for the task to complete.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    public async Task LogAsync(string message, CancellationToken cancellationToken)
+    public AuditLogger()
     {
-        // Не встиг добавити логіку
-        await Task.CompletedTask;
+        this.logger = Log.ForContext<AuditLogger>();
+    }
+
+    /// <inheritdoc />
+    public Task LogAsync(
+    string message,
+    CancellationToken cancellationToken)
+    {
+        return Task.Run(
+            () =>
+        {
+            this.logger.Information("[AUDIT] {Message}", message);
+        }, cancellationToken);
     }
 }

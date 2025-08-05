@@ -4,7 +4,10 @@
 
 namespace PetCare.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using PetCare.Domain.DomainServices;
 using PetCare.Domain.Interfaces;
+using PetCare.Infrastructure.Persistence.Logging;
+using PetCare.Infrastructure.Persistence.Notifications;
 using PetCare.Infrastructure.Persistence.Repositories;
 
 
@@ -25,6 +28,9 @@ public static class DependencyInjection
         services.AddScoped<IShelterRepository, ShelterRepository>();
         services.AddScoped<ISpeciesRepository, SpeciesRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+
+        services.AddScoped<IAuditLogger, AuditLogger>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         return services;
     }
