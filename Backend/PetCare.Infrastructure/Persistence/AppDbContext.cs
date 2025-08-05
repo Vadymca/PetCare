@@ -23,29 +23,29 @@ public class AppDbContext : DbContext
     }
 
     /// <summary>
-    /// Gets or sets the species entities.
+    /// Gets the species entities.
     /// </summary>
-    public DbSet<Specie> Species { get; set; } = null!;
+    public DbSet<Specie> Species => this.Set<Specie>();
 
     /// <summary>
-    /// Gets or sets the breed entities.
+    /// Gets the breed entities.
     /// </summary>
-    public DbSet<Breed> Breeds { get; set; } = null!;
+    public DbSet<Breed> Breeds => this.Set<Breed>();
 
     /// <summary>
-    /// Gets or sets the shelter entities.
+    /// Gets the shelter entities.
     /// </summary>
-    public DbSet<Shelter> Shelters { get; set; } = null!;
+    public DbSet<Shelter> Shelters => this.Set<Shelter>();
 
     /// <summary>
-    /// Gets or sets the animal entities.
+    /// Gets the animal entities.
     /// </summary>
-    public DbSet<Animal> Animals { get; set; } = null!;
+    public DbSet<Animal> Animals => this.Set<Animal>();
 
     /// <summary>
-    /// Gets or sets the user entities.
+    /// Gets the user entities.
     /// </summary>
-    public DbSet<User> Users { get; set; } = null!;
+    public DbSet<User> Users => this.Set<User>();
 
     /// <summary>
     /// Configures the model by applying entity configurations.

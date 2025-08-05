@@ -5,6 +5,8 @@
 namespace PetCare.Api;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using PetCare.Application;
+using PetCare.Infrastructure;
 using PetCare.Infrastructure.Persistence;
 using Scalar.AspNetCore;
 using Serilog;
@@ -36,6 +38,9 @@ public class Program
                 options.UseNpgsql(
                     builder.Configuration.GetConnectionString("DefaultConnection"),
                     npgsql => npgsql.UseNetTopologySuite()));
+
+            builder.Services.AddAplication();
+            builder.Services.AddInfrastructure();
 
             builder.Host.UseSerilog();
 

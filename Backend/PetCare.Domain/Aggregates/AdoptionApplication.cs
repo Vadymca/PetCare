@@ -5,12 +5,18 @@
 namespace PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 using PetCare.Domain.Enums;
+using PetCare.Domain.Events;
 
 /// <summary>
 /// Represents an adoption application for an animal in the system.
 /// </summary>
 public sealed class AdoptionApplication : BaseEntity
 {
+    /// <summary>
+    /// List of domain events raised by the entity.
+    /// </summary>
+    private readonly List<DomainEvent> domainEvents = new();
+
     private AdoptionApplication()
     {
     }
@@ -130,6 +136,11 @@ public sealed class AdoptionApplication : BaseEntity
     public bool CanBeRejected => this.Status == AdoptionStatus.Pending;
 
     /// <summary>
+    /// Gets the domain events raised by the entity.
+    /// </summary>
+    public IReadOnlyList<DomainEvent> DomainEvents => this.domainEvents.AsReadOnly();
+
+    /// <summary>
     /// Creates a new <see cref="AdoptionApplication"/> instance with the specified parameters.
     /// </summary>
     /// <param name="userId">The unique identifier of the user submitting the application.</param>
@@ -138,7 +149,11 @@ public sealed class AdoptionApplication : BaseEntity
     /// <returns>A new instance of <see cref="AdoptionApplication"/> with the specified parameters.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="userId"/> or <paramref name="animalId"/> is empty.</exception>
     public static AdoptionApplication Create(Guid userId, Guid animalId, string? comment)
-        => new AdoptionApplication(userId, animalId, comment);
+    {
+        var application = new AdoptionApplication(userId, animalId, comment);
+        application.AddDomainEvent(new AdoptionApplicationCreatedEvent(application.Id, userId, animalId));
+        return application;
+    }
 
     /// <summary>
     /// Approves the adoption application and sets the approving administrator.
@@ -155,6 +170,8 @@ public sealed class AdoptionApplication : BaseEntity
         this.Status = AdoptionStatus.Approved;
         this.ApprovedBy = adminId;
         this.UpdatedAt = DateTime.UtcNow;
+
+        this.AddDomainEvent(new AdoptionApplicationApprovedEvent(this.Id, this.UserId, this.AnimalId, adminId));
     }
 
     /// <summary>
@@ -172,6 +189,8 @@ public sealed class AdoptionApplication : BaseEntity
         this.Status = AdoptionStatus.Rejected;
         this.RejectionReason = reason;
         this.UpdatedAt = DateTime.UtcNow;
+
+        this.AddDomainEvent(new AdoptionApplicationRejectedEvent(this.Id, this.UserId, this.AnimalId, reason));
     }
 
     /// <summary>
@@ -187,5 +206,18 @@ public sealed class AdoptionApplication : BaseEntity
 
         this.AdminNotes = notes;
         this.UpdatedAt = DateTime.UtcNow;
+
+        this.AddDomainEvent(new AdoptionApplicationNotesUpdatedEvent(this.Id, this.UserId, notes));
     }
+
+    /// <summary>
+    /// Clears all domain events raised by the entity.
+    /// </summary>
+    public void ClearDomainEvents() => this.domainEvents.Clear();
+
+    /// <summary>
+    /// Adds a domain event to the internal list.
+    /// </summary>
+    /// <param name="domainEvent">The domain event to add.</param>
+    private void AddDomainEvent(DomainEvent domainEvent) => this.domainEvents.Add(domainEvent);
 }

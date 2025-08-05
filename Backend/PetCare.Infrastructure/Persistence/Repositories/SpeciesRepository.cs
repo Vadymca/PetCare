@@ -5,6 +5,8 @@
 namespace PetCare.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using PetCare.Domain.Entities;
+using PetCare.Domain.Interfaces;
+using PetCare.Infrastructure.Persistence;
 
 /// <summary>
 /// Repository implementation for managing <see cref="Specie"/> entities.
