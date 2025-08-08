@@ -133,5 +133,13 @@
   "ADMIN_NOTES": "Примітки адміністратора",
   "NONE": "Немає",
   "POSTED_BY": "Опубліковано",
-	"RETURN_TO_LOST_PET_LIST": "До списку загублених тварин"
+	"RETURN_TO_LOST_PET_LIST": "До списку загублених тварин",
+	"ANIMAL_AID_REQUEST": "Запити на допомогу",
+	"FAILED_TO_LOAD_ANIMAL_AID_REQUESTS": "Не вдалося завантажити запити на допомогу",
+	"NO_REQUESTS_FOUND": "Запитів не знайдено",
+	"AID_REQUEST_CATEGORY": "Категорія запиту",
+	"AID_REQUEST_STATUS": "Статус запиту",
+	"AID_REQUEST_DESCRIPTION": "Опис запиту",
+	"AID_REQUEST_ESTIMATED_COST": "Орієнтовна вартість",
+	"CURRENCY": "грн"
 }

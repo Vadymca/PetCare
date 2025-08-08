@@ -327,6 +327,27 @@ for (let i = 0; i < 50; i++) {
     subscribedAt: '2025-07-10T12:00:00Z',
   });
 }
+const aidCategories = ['Food', 'Medical', 'Equipment', 'Other'];
+const aidStatuses = ['Open', 'InProgress', 'Fulfilled', 'Cancelled'];
+
+const animalAidRequests = [];
+for (let i = 0; i < 30; i++) {
+  const user = users[Math.floor(Math.random() * users.length)];
+  const shelter = shelters[Math.floor(Math.random() * shelters.length)];
+  animalAidRequests.push({
+    id: uuidv4(),
+    userId: user ? user.id : undefined,
+    shelterId: shelter ? shelter.id : undefined,
+    title: `Aid Request ${i + 1}`,
+    description: `This is a ${aidCategories[Math.floor(Math.random() * aidCategories.length)].toLowerCase()} aid request for animals in need.`,
+    category: aidCategories[Math.floor(Math.random() * aidCategories.length)],
+    status: aidStatuses[Math.floor(Math.random() * aidStatuses.length)],
+    estimatedCost: Math.floor(100 + Math.random() * 5000),
+    photos: [],
+    createdAt: '2025-07-01T10:00:00Z',
+    updatedAt: '2025-07-01T10:00:00Z',
+  });
+}
 
 // Запис у файл
 const db = {
@@ -340,6 +361,7 @@ const db = {
   'lost-pets': lostPets,
   'animal-subscriptions': animalSubscriptions,
   'shelter-subscriptions': shelterSubscriptions,
+  'animal-aid-requests': animalAidRequests, // ✅ нова сутність
 };
 
 fs.writeFileSync('mock-data/db.json', JSON.stringify(db, null, 2));

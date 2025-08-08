@@ -133,5 +133,13 @@
   "ADMIN_NOTES": "Admin notes",
   "NONE": "None",
   "POSTED_BY": "Posted by",
-	"RETURN_TO_LOST_PET_LIST": "Return to lost pet list"
+  "RETURN_TO_LOST_PET_LIST": "Return to lost pet list",
+  "ANIMAL_AID_REQUEST": "Animal aid requests",
+  "FAILED_TO_LOAD_ANIMAL_AID_REQUESTS": "Failed to load animal aid requests",
+  "NO_REQUESTS_FOUND": "No requests found",
+  "AID_REQUEST_CATEGORY": "Category of request",
+  "AID_REQUEST_STATUS": "Request status",
+  "AID_REQUEST_DESCRIPTION": "Request description",
+  "AID_REQUEST_ESTIMATED_COST": "Estimated cost",
+  "CURRENCY": "UAH"
 }

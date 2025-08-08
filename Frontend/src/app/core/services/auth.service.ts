@@ -25,17 +25,16 @@ export class AuthService {
 
   //мок поки бекенд не працює
   private mockUser: User = {
-    id: '62c6e9d8-e0d7-45f3-b22b-47e154262b25',
+    id: 'fb682961-29df-46ca-92df-b0bf80495a55',
     email: 'user1@example.com',
-    firstName: 'John',
-    lastName: 'Petrenko',
+    firstName: 'Yulia',
+    lastName: 'Kovalenko',
     role: 'Admin',
-    passwordHash: 'passwordHash',
-    phone: '+380677291402',
-    points: 46,
+    phone: '+380671704664',
+    points: 53,
     lastLogin: '2023-01-01T00:00:00.000Z',
     profilePhoto:
-      'https://i.pinimg.com/1200x/e7/ae/91/e7ae91172659c1ba17addf6fd6339472.jpg',
+      'https://i.pinimg.com/1200x/d2/d4/56/d2d4565a95f82ab36f7ba590b51c7acd.jpg',
     createdAt: '2023-01-01T00:00:00.000Z',
     updatedAt: '2023-01-01T00:00:00.000Z',
   };

@@ -71,6 +71,20 @@ export const routes: Routes = [
         './features/lost-pets/lost-pets-detail/lost-pets-detail.component'
       ).then(c => c.LostPetsDetailComponent),
   },
+  {
+    path: 'animal-aid-requests',
+    loadComponent: () =>
+      import(
+        './features/animal-aid-request/animal-aid-request-list/animal-aid-request-list.component'
+      ).then(c => c.AnimalAidRequestListComponent),
+  },
+  {
+    path: 'animal-aid-requests/:id',
+    loadComponent: () =>
+      import(
+        './features/animal-aid-request/animal-aid-request-detail/animal-aid-request-detail.component'
+      ).then(c => c.AnimalAidRequestDetailComponent),
+  },
 
   {
     path: 'profile',
