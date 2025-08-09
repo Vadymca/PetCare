@@ -22,6 +22,16 @@ import { AuthService } from '../services/auth.service';
 export class HeaderComponent {
   private authService = inject(AuthService);
   private translate = inject(TranslateService);
+  menuItems: Record<string, string> = {
+    '/animals': 'ANIMALS',
+    '/shelters': 'SHELTERS',
+    '/articles': 'ARTICLES',
+    '/lost-pets': 'LOST_PETS',
+    '/animal-aid-requests': 'ANIMAL_AID_REQUEST',
+  };
+  get menuItemKeys(): string[] {
+    return Object.keys(this.menuItems);
+  }
 
   router = inject(Router);
   isMenuOpen = false;

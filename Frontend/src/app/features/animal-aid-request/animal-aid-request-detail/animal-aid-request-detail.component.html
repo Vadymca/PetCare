@@ -1,0 +1,84 @@
+@if (loading()) {
+  <div class="text-center text-gray-500 text-lg mt-10">
+    <app-loading-spinner></app-loading-spinner>
+  </div>
+} @else if (animalAidRequest()) {
+  <div class="max-w-4xl mx-auto p-6">
+    <div
+      class="bg-white rounded-2xl shadow-xl p-6 flex flex-col md:flex-row gap-6"
+    >
+      <div class="flex-1 space-y-4 content-center">
+        <!-- Фото -->
+        <div
+          *ngIf="animalAidRequest() as data"
+          class="flex items-center justify-center"
+        >
+          <img
+            *ngIf="data.photos && data.photos.length > 0"
+            [src]="data.photos[0]"
+            [alt]="data.title"
+            class="w-full md:w-1/2 h-auto object-cover center rounded-xl shadow-md"
+          />
+        </div>
+        <h1 class="text-3xl font-bold text-gray-800 text-center">
+          {{ animalAidRequest()?.title }}
+        </h1>
+        <p class="text-gray-600">
+          {{ 'AID_REQUEST_CATEGORY' | translate }}:
+          {{ animalAidRequest()?.category || ('UNKNOWN' | translate) }}
+        </p>
+        <p class="text-gray-600">
+          {{ 'AID_REQUEST_STATUS' | translate }}:
+          {{ animalAidRequest()?.status || ('UNKNOWN' | translate) }}
+        </p>
+        <p class="text-gray-600">
+          {{ 'AID_REQUEST_DESCRIPTION' | translate }}:
+          {{
+            animalAidRequest()?.description || ('NO_DESCRIPTION' | translate)
+          }}
+        </p>
+
+        <p class="text-gray-600">
+          {{ 'AID_REQUEST_ESTIMATED_COST' | translate }}:
+          {{ animalAidRequest()?.estimatedCost || ('UNKNOWN' | translate) }}
+          {{ 'CURRENCY' | translate }}
+        </p>
+        <div class="mt-4 space-y-1 text-gray-600 text-sm">
+          <p class="text-gray-600">
+            {{ 'AUTHOR' | translate }} —
+            {{ animalAidRequest()?.user?.firstName || ('UNKNOWN' | translate) }}
+            {{ animalAidRequest()?.user?.lastName || ('UNKNOWN' | translate) }}
+          </p>
+          <p class="text-gray-600">
+            {{ 'SHELTER' | translate }}:
+            <a
+              [routerLink]="['/shelters', animalAidRequest()?.shelter?.slug]"
+              class="text-blue-600 hover:underline"
+            >
+              {{ animalAidRequest()?.shelter?.name || ('UNKNOWN' | translate) }}
+            </a>
+          </p>
+          <p class="text-gray-600">
+            {{ 'CONTACT_ALTERNATIVE' | translate }}:
+            {{
+              animalAidRequest()?.shelter?.contactPhone ||
+                ('UNKNOWN' | translate)
+            }}
+          </p>
+          <p class="text-gray-600">
+            {{ 'CREATED_AT' | translate }}:
+            {{ animalAidRequest()?.createdAt | date: 'longDate' }}
+          </p>
+          <p class="text-gray-600">
+            {{ 'UPDATED_AT' | translate }}:
+            {{ animalAidRequest()?.updatedAt | date: 'longDate' }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+} @else if (error()) {
+  <div class="p-4 text-red-600 font-medium">
+    {{ error() ?? '' | translate }}
+  </div>
+}

@@ -92,7 +92,7 @@ export class ShelterSubscriptionService {
       shelterSubscription
     );
   }
-  deleteShelterSubscription(id: string): Observable<ShelterSubscription> {
-    return this.api.delete<ShelterSubscription>(this.endpoint, id);
+  deleteShelterSubscription(id: string): Observable<void> {
+    return this.api.delete<void>(this.endpoint, id);
   }
 }
