@@ -1,16 +1,11 @@
-﻿// <copyright file="AnimalAidDonation.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
+﻿namespace PetCare.Domain.Entities;
 
-namespace PetCare.Domain.Entities;
-
-using PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 
 /// <summary>
 /// Represents a value object that associates a donation with an animal aid request.
 /// </summary>
-public sealed class AnimalAidDonation : ValueObject
+public sealed class AnimalAidDonation : BaseEntity
 {
     private AnimalAidDonation()
     {
@@ -77,9 +72,4 @@ public sealed class AnimalAidDonation : ValueObject
     /// Returns the components used to determine equality for the <see cref="AnimalAidDonation"/> instance.
     /// </summary>
     /// <returns>An enumerable of objects representing the equality components.</returns>
-    protected override IEnumerable<object> GetEqualityComponents()
-    {
-        yield return this.DonationId;
-        yield return this.AnimalAidRequestId;
-    }
 }

@@ -1,8 +1,4 @@
-﻿// <copyright file="IoTDeviceType.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Domain.Enums;
+﻿namespace PetCare.Domain.Enums;
 
 /// <summary>
 /// Represents different types of IoT devices used in the system.

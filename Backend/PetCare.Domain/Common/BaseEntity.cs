@@ -1,8 +1,4 @@
-﻿// <copyright file="BaseEntity.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Domain.Common;
+﻿namespace PetCare.Domain.Common;
 
 /// <summary>
 /// Represents a base entity with a unique identifier.

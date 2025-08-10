@@ -1,8 +1,4 @@
-﻿// <copyright file="VolunteerTask.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Domain.Aggregates;
+﻿namespace PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
@@ -11,7 +7,7 @@ using System.Collections.ObjectModel;
 /// <summary>
 /// Represents a volunteer task in the system.
 /// </summary>
-public sealed class VolunteerTask : BaseEntity
+public sealed class VolunteerTask : AggregateRoot
 {
     private Dictionary<string, string> skillsRequired;
 

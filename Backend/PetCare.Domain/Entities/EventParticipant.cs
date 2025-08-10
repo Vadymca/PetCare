@@ -1,8 +1,4 @@
-﻿// <copyright file="EventParticipant.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Domain.Entities;
+﻿namespace PetCare.Domain.Entities;
 
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
@@ -10,7 +6,7 @@ using PetCare.Domain.Common;
 /// <summary>
 /// Represents a value object that associates a user with an event as a participant.
 /// </summary>
-public sealed class EventParticipant : ValueObject
+public sealed class EventParticipant : BaseEntity
 {
     private EventParticipant()
     {
@@ -67,14 +63,4 @@ public sealed class EventParticipant : ValueObject
     /// <exception cref="ArgumentException">Thrown when <paramref name="eventId"/> or <paramref name="userId"/> is empty.</exception>
     public static EventParticipant Create(Guid eventId, Guid userId) =>
         new EventParticipant(eventId, userId, DateTime.UtcNow);
-
-    /// <summary>
-    /// Returns the components used to determine equality for the <see cref="EventParticipant"/> instance.
-    /// </summary>
-    /// <returns>An enumerable of objects representing the equality components.</returns>
-    protected override IEnumerable<object> GetEqualityComponents()
-    {
-        yield return this.EventId;
-        yield return this.UserId;
-    }
 }

@@ -1,10 +1,6 @@
-﻿// <copyright file="AdoptionApplicationNotesUpdatedHandler.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Application.EventHandlers;
+﻿namespace PetCare.Application.EventHandlers;
 using PetCare.Application.Common;
-using PetCare.Domain.DomainServices;
+using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Events;
 
 /// <summary>

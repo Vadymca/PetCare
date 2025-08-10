@@ -1,8 +1,4 @@
-﻿// <copyright file="DependencyInjection.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-
-namespace PetCare.Application;
+﻿namespace PetCare.Application;
 using Microsoft.Extensions.DependencyInjection;
 using PetCare.Application.Common;
 using PetCare.Application.EventHandlers;

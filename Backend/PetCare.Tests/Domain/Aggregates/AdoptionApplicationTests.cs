@@ -1,177 +1,190 @@
-﻿// <copyright file="AdoptionApplicationTests.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
+﻿namespace PetCare.Tests.Domain.Aggregates;
 
-namespace PetCare.Tests.Domain.Aggregates;
+using FluentAssertions;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Enums;
+using PetCare.Domain.Events;
 using Xunit;
 
 /// <summary>
-/// Contains unit tests for the <see cref="AdoptionApplication"/> aggregate.
+/// Unit tests for <see cref="AdoptionApplication"/> aggregate.
 /// </summary>
-public sealed class AdoptionApplicationTests
+public class AdoptionApplicationTests
 {
     /// <summary>
-    /// Verifies that creating an application with valid data sets all fields correctly.
+    /// Tests that creating an adoption application with valid parameters
+    /// sets all properties correctly and adds the created domain event.
     /// </summary>
     [Fact]
-    public void Create_WithValidParameters_ShouldCreatePendingApplication()
+    public void Create_WithValidParameters_ShouldCreateSuccessfully()
     {
         // Arrange
         var userId = Guid.NewGuid();
         var animalId = Guid.NewGuid();
-        var comment = "I love dogs";
+        var comment = "I love animals";
 
         // Act
         var application = AdoptionApplication.Create(userId, animalId, comment);
 
         // Assert
-        Assert.Equal(userId, application.UserId);
-        Assert.Equal(animalId, application.AnimalId);
-        Assert.Equal(comment, application.Comment);
-        Assert.Equal(AdoptionStatus.Pending, application.Status);
-        Assert.True(application.IsPending);
-        Assert.NotEqual(default, application.ApplicationDate);
-        Assert.NotEqual(default, application.CreatedAt);
-        Assert.NotEqual(default, application.UpdatedAt);
+        application.UserId.Should().Be(userId);
+        application.AnimalId.Should().Be(animalId);
+        application.Comment.Should().Be(comment);
+        application.Status.Should().Be(AdoptionStatus.Pending);
+        application.IsPending.Should().BeTrue();
+        application.ApplicationDate.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        application.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        application.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        application.DomainEvents.Should().ContainSingle(e => e is AdoptionApplicationCreatedEvent);
     }
 
     /// <summary>
-    /// Verifies that creating an application with an empty user ID throws an exception.
+    /// Tests that creating an adoption application with empty <paramref name="userId"/> or <paramref name="animalId"/>
+    /// throws <see cref="ArgumentException"/> with the correct parameter name.
     /// </summary>
-    [Fact]
-    public void Create_WithEmptyUserId_ShouldThrowArgumentException()
+    /// <param name="userIdStr">The user ID as a string.</param>
+    /// <param name="animalIdStr">The animal ID as a string.</param>
+    [Theory]
+    [InlineData("00000000-0000-0000-0000-000000000000", "11111111-1111-1111-1111-111111111111")]
+    [InlineData("11111111-1111-1111-1111-111111111111", "00000000-0000-0000-0000-000000000000")]
+    [InlineData("00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000")]
+    public void Create_WithEmptyGuid_ShouldThrowArgumentException(string userIdStr, string animalIdStr)
     {
         // Arrange
-        var userId = Guid.Empty;
-        var animalId = Guid.NewGuid();
+        var userId = Guid.Parse(userIdStr);
+        var animalId = Guid.Parse(animalIdStr);
 
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(() =>
-            AdoptionApplication.Create(userId, animalId, null));
-        Assert.Equal("Ідентифікатор користувача не може бути порожнім. (Parameter 'userId')", ex.Message);
+        // Act
+        Action act = () => AdoptionApplication.Create(userId, animalId, "comment");
+
+        // Assert
+        act.Should().Throw<ArgumentException>()
+            .Where(ex => ex.ParamName == (userId == Guid.Empty ? "userId" : "animalId"));
     }
 
     /// <summary>
-    /// Verifies that creating an application with an empty animal ID throws an exception.
+    /// Tests that approving a pending application sets the status to Approved,
+    /// sets the approving admin ID, updates the timestamp, and adds the approved event.
     /// </summary>
     [Fact]
-    public void Create_WithEmptyAnimalId_ShouldThrowArgumentException()
+    public void Approve_WhenPending_ShouldSetStatusApprovedAndAddEvent()
     {
         // Arrange
-        var userId = Guid.NewGuid();
-        var animalId = Guid.Empty;
-
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(() =>
-            AdoptionApplication.Create(userId, animalId, null));
-        Assert.Equal("Ідентифікатор тварини не може бути порожнім. (Parameter 'animalId')", ex.Message);
-    }
-
-    /// <summary>
-    /// Verifies that a pending application can be approved correctly.
-    /// </summary>
-    [Fact]
-    public void Approve_ShouldUpdateStatusAndApprover()
-    {
-        // Arrange
-        var application = AdoptionApplication.Create(Guid.NewGuid(), Guid.NewGuid(), null);
+        var app = AdoptionApplication.Create(Guid.NewGuid(), Guid.NewGuid(), null);
         var adminId = Guid.NewGuid();
 
         // Act
-        application.Approve(adminId);
+        app.Approve(adminId);
 
         // Assert
-        Assert.Equal(AdoptionStatus.Approved, application.Status);
-        Assert.Equal(adminId, application.ApprovedBy);
-        Assert.True(application.IsApproved);
-        Assert.False(application.IsPending);
-        Assert.False(application.IsRejected);
+        app.Status.Should().Be(AdoptionStatus.Approved);
+        app.ApprovedBy.Should().Be(adminId);
+        app.IsApproved.Should().BeTrue();
+        app.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        app.DomainEvents.Should().ContainSingle(e => e is AdoptionApplicationApprovedEvent);
     }
 
     /// <summary>
-    /// Verifies that approving a non-pending application throws an exception.
+    /// Tests that approving an application which is not pending
+    /// throws <see cref="InvalidOperationException"/> with the correct message.
     /// </summary>
     [Fact]
     public void Approve_WhenNotPending_ShouldThrowInvalidOperationException()
     {
         // Arrange
-        var application = AdoptionApplication.Create(Guid.NewGuid(), Guid.NewGuid(), null);
-        application.Reject("Reason");
-
-        // Act & Assert
-        var ex = Assert.Throws<InvalidOperationException>(() =>
-            application.Approve(Guid.NewGuid()));
-        Assert.Equal("Затверджуються лише ті заявки, які знаходяться на розгляді.", ex.Message);
-    }
-
-    /// <summary>
-    /// Verifies that a pending application can be rejected correctly.
-    /// </summary>
-    [Fact]
-    public void Reject_ShouldUpdateStatusAndReason()
-    {
-        // Arrange
-        var application = AdoptionApplication.Create(Guid.NewGuid(), Guid.NewGuid(), null);
-        var reason = "Відсутність належних умов для проживання";
+        var app = AdoptionApplication.Create(Guid.NewGuid(), Guid.NewGuid(), null);
+        var adminId = Guid.NewGuid();
+        app.Approve(adminId);
 
         // Act
-        application.Reject(reason);
+        Action act = () => app.Approve(adminId);
 
         // Assert
-        Assert.Equal(AdoptionStatus.Rejected, application.Status);
-        Assert.Equal(reason, application.RejectionReason);
-        Assert.True(application.IsRejected);
-        Assert.False(application.IsApproved);
-        Assert.False(application.IsPending);
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Затверджуються лише ті заявки, які знаходяться на розгляді.");
     }
 
     /// <summary>
-    /// Verifies that rejecting a non-pending application throws an exception.
+    /// Tests that rejecting a pending application sets the status to Rejected,
+    /// sets the rejection reason, updates the timestamp, and adds the rejected event.
+    /// </summary>
+    [Fact]
+    public void Reject_WhenPending_ShouldSetStatusRejectedAndAddEvent()
+    {
+        // Arrange
+        var app = AdoptionApplication.Create(Guid.NewGuid(), Guid.NewGuid(), null);
+        var reason = "Not suitable";
+
+        // Act
+        app.Reject(reason);
+
+        // Assert
+        app.Status.Should().Be(AdoptionStatus.Rejected);
+        app.RejectionReason.Should().Be(reason);
+        app.IsRejected.Should().BeTrue();
+        app.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        app.DomainEvents.Should().ContainSingle(e => e is AdoptionApplicationRejectedEvent);
+    }
+
+    /// <summary>
+    /// Tests that rejecting an application which is not pending
+    /// throws <see cref="InvalidOperationException"/> with the correct message.
     /// </summary>
     [Fact]
     public void Reject_WhenNotPending_ShouldThrowInvalidOperationException()
     {
         // Arrange
-        var application = AdoptionApplication.Create(Guid.NewGuid(), Guid.NewGuid(), null);
-        application.Approve(Guid.NewGuid());
-
-        // Act & Assert
-        var ex = Assert.Throws<InvalidOperationException>(() =>
-            application.Reject("Reason"));
-        Assert.Equal("Відхилити можна лише ті заявки, що перебувають на розгляді.", ex.Message);
-    }
-
-    /// <summary>
-    /// Verifies that admin notes can be added and updated correctly.
-    /// </summary>
-    [Fact]
-    public void AddAdminNotes_WithValidText_ShouldUpdateNotes()
-    {
-        // Arrange
-        var application = AdoptionApplication.Create(Guid.NewGuid(), Guid.NewGuid(), null);
-        var notes = "Перевірено адміністратором притулку";
+        var app = AdoptionApplication.Create(Guid.NewGuid(), Guid.NewGuid(), null);
+        app.Reject("reason");
 
         // Act
-        application.AddAdminNotes(notes);
+        Action act = () => app.Reject("another reason");
 
         // Assert
-        Assert.Equal(notes, application.AdminNotes);
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Відхилити можна лише ті заявки, що перебувають на розгляді.");
     }
 
     /// <summary>
-    /// Verifies that adding empty admin notes throws an exception.
+    /// Tests that adding valid administrative notes updates the notes,
+    /// updates the timestamp, and adds the notes updated event.
     /// </summary>
     [Fact]
-    public void AddAdminNotes_WithEmptyString_ShouldThrowArgumentException()
+    public void AddAdminNotes_WithValidNotes_ShouldUpdateNotesAndAddEvent()
     {
         // Arrange
-        var application = AdoptionApplication.Create(Guid.NewGuid(), Guid.NewGuid(), null);
+        var app = AdoptionApplication.Create(Guid.NewGuid(), Guid.NewGuid(), null);
+        var notes = "Admin note";
 
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(() =>
-            application.AddAdminNotes(" "));
-        Assert.Equal("Адміністративні нотатки не можуть бути порожніми. (Parameter 'notes')", ex.Message);
+        // Act
+        app.AddAdminNotes(notes);
+
+        // Assert
+        app.AdminNotes.Should().Be(notes);
+        app.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        app.DomainEvents.Should().ContainSingle(e => e is AdoptionApplicationNotesUpdatedEvent);
+    }
+
+    /// <summary>
+    /// Tests that adding null, empty, or whitespace administrative notes
+    /// throws <see cref="ArgumentException"/> with the correct parameter name.
+    /// </summary>
+    /// <param name="invalidNotes">The invalid notes string.</param>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void AddAdminNotes_WithNullOrWhitespace_ShouldThrowArgumentException(string invalidNotes)
+    {
+        // Arrange
+        var app = AdoptionApplication.Create(Guid.NewGuid(), Guid.NewGuid(), null);
+
+        // Act
+        Action act = () => app.AddAdminNotes(invalidNotes);
+
+        // Assert
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("Адміністративні нотатки не можуть бути порожніми.*")
+            .Where(ex => ex.ParamName == "notes");
     }
 }

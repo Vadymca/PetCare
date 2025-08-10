@@ -1,11 +1,7 @@
-﻿// <copyright file="SpeciesConfiguration.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Infrastructure.Persistence.Configurations;
+﻿namespace PetCare.Infrastructure.Persistence.Configurations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PetCare.Domain.Entities;
+using PetCare.Domain.Aggregates;
 using PetCare.Domain.ValueObjects;
 
 /// <summary>

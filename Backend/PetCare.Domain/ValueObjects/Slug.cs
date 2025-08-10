@@ -1,8 +1,5 @@
-﻿// <copyright file="Slug.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
+﻿namespace PetCare.Domain.ValueObjects;
 
-namespace PetCare.Domain.ValueObjects;
 using PetCare.Domain.Common;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -62,7 +59,9 @@ public sealed class Slug : ValueObject
         normalized = Regex.Replace(normalized, @"-+", "-");
         normalized = normalized.Trim('-');
 
-        return normalized;
+        var randomSuffix = GenerateRandomSuffix(6);
+
+        return $"{normalized}-{randomSuffix}";
     }
 
     /// <summary>
@@ -80,6 +79,14 @@ public sealed class Slug : ValueObject
 
     /// <inheritdoc/>
     protected override IEnumerable<object> GetEqualityComponents() => new[] { this.Value };
+
+    private static string GenerateRandomSuffix(int length)
+    {
+        const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+        var random = new Random();
+        return new string(Enumerable.Repeat(chars, length)
+            .Select(s => s[random.Next(s.Length)]).ToArray());
+    }
 
     /// <summary>
     /// Simple Ukrainian-to-Latin transliteration.

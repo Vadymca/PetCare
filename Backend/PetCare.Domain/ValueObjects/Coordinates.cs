@@ -1,7 +1,4 @@
-﻿// <copyright file="Coordinates.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-namespace PetCare.Domain.ValueObjects;
+﻿namespace PetCare.Domain.ValueObjects;
 using NetTopologySuite.Geometries;
 using PetCare.Domain.Common;
 using System.Device.Location;

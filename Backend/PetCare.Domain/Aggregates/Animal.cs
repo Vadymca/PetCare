@@ -1,8 +1,6 @@
-﻿// <copyright file="Animal.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
+﻿namespace PetCare.Domain.Aggregates;
 
-namespace PetCare.Domain.Aggregates;
+using PetCare.Domain.Abstractions;
 using PetCare.Domain.Common;
 using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
@@ -11,7 +9,7 @@ using PetCare.Domain.ValueObjects;
 /// <summary>
 /// Represents an animal in the system.
 /// </summary>
-public sealed class Animal : BaseEntity
+public sealed class Animal : AggregateRoot
 {
     private readonly List<string> photos = new();
     private readonly List<string> videos = new();
@@ -390,53 +388,117 @@ public sealed class Animal : BaseEntity
     }
 
     /// <summary>
-    /// Adds a photo to the animal.
+    /// Asynchronously adds a photo to the success story with validation and uploads the file using the file storage service.
     /// </summary>
-    /// <param name="url">The URL of the photo to add.</param>
-    public void AddPhoto(string url)
+    /// <param name="fileStorage">The file storage service for uploading the file.</param>
+    /// <param name="fileStream">The stream of the photo file.</param>
+    /// <param name="fileName">The file name for validation and upload.</param>
+    /// <param name="fileSizeBytes">The size of the file in bytes for validation.</param>
+    /// <param name="config">The media configuration for validation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentException">Thrown when validation fails.</exception>
+    public async Task AddPhotoAsync(
+        IFileStorageService fileStorage,
+        Stream fileStream,
+        string fileName,
+        long fileSizeBytes,
+        MediaConfig config)
     {
-        if (!string.IsNullOrWhiteSpace(url) && !this.photos.Contains(url))
+        if (fileStream == null)
         {
-            this.photos.Add(url);
-            this.UpdatedAt = DateTime.UtcNow;
+            throw new ArgumentNullException(nameof(fileStream));
         }
+
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            throw new ArgumentException("Ім'я файлу не може містити нуль або пробіли.", nameof(fileName));
+        }
+
+        config.Validate(fileName, fileSizeBytes);
+
+        var photoUrl = await fileStorage.UploadAsync(fileStream, fileName, config.maxSizeBytes, config.allowedExtensions);
+        this.photos.Add(photoUrl);
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
-    /// Removes a photo from the animal.
+    /// Asynchronously removes a photo from the success story and deletes the file using the file storage service.
     /// </summary>
-    /// <param name="url">The URL of the photo to remove.</param>
-    public void RemovePhoto(string url)
+    /// <param name="fileStorage">The file storage service for deleting the file.</param>
+    /// <param name="photoUrl">The photo URL to remove and delete.</param>
+    /// <returns>A task representing the asynchronous operation. Returns <c>true</c> if photo was removed; otherwise, <c>false</c>.</returns>
+    public async Task<bool> RemovePhotoAsync(IFileStorageService fileStorage, string photoUrl)
     {
-        if (this.photos.Remove(url))
+        if (string.IsNullOrWhiteSpace(photoUrl))
         {
+            return false;
+        }
+
+        var removed = this.photos.Remove(photoUrl);
+        if (removed)
+        {
+            await fileStorage.DeleteAsync(photoUrl);
             this.UpdatedAt = DateTime.UtcNow;
         }
+
+        return removed;
     }
 
     /// <summary>
-    /// Adds a video to the animal.
+    /// Asynchronously adds a video to the success story with validation and uploads the file using the file storage service.
     /// </summary>
-    /// <param name="url">The URL of the video to add.</param>
-    public void AddVideo(string url)
+    /// <param name="fileStorage">The file storage service for uploading the file.</param>
+    /// <param name="fileStream">The stream of the video file.</param>
+    /// <param name="fileName">The file name for validation and upload.</param>
+    /// <param name="fileSizeBytes">The size of the file in bytes for validation.</param>
+    /// <param name="config">The media configuration for validation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentException">Thrown when validation fails.</exception>
+    public async Task AddVideoAsync(
+        IFileStorageService fileStorage,
+        Stream fileStream,
+        string fileName,
+        long fileSizeBytes,
+        MediaConfig config)
     {
-        if (!string.IsNullOrWhiteSpace(url) && !this.videos.Contains(url))
+        if (fileStream == null)
         {
-            this.videos.Add(url);
-            this.UpdatedAt = DateTime.UtcNow;
+            throw new ArgumentNullException(nameof(fileStream));
         }
+
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            throw new ArgumentException("File name cannot be null or whitespace.", nameof(fileName));
+        }
+
+        config.Validate(fileName, fileSizeBytes);
+
+        var videoUrl = await fileStorage.UploadAsync(fileStream, fileName, config.maxSizeBytes, config.allowedExtensions);
+        this.videos.Add(videoUrl);
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
-    /// Removes a video from the animal.
+    /// Asynchronously removes a video from the success story and deletes the file using the file storage service.
     /// </summary>
-    /// <param name="url">The URL of the video to remove.</param>
-    public void RemoveVideo(string url)
+    /// <param name="fileStorage">The file storage service for deleting the file.</param>
+    /// <param name="videoUrl">The video URL to remove and delete.</param>
+    /// <returns>A task representing the asynchronous operation. Returns <c>true</c> if video was removed; otherwise, <c>false</c>.</returns>
+    public async Task<bool> RemoveVideoAsync(IFileStorageService fileStorage, string videoUrl)
     {
-        if (this.videos.Remove(url))
+        if (string.IsNullOrWhiteSpace(videoUrl))
         {
+            return false;
+        }
+
+        var removed = this.videos.Remove(videoUrl);
+        if (removed)
+        {
+            await fileStorage.DeleteAsync(videoUrl);
             this.UpdatedAt = DateTime.UtcNow;
         }
+
+        return removed;
     }
 
     /// <summary>

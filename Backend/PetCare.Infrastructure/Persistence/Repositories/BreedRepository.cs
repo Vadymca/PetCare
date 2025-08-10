@@ -1,11 +1,7 @@
-﻿// <copyright file="BreedRepository.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Infrastructure.Persistence.Repositories;
+﻿namespace PetCare.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
+using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Entities;
-using PetCare.Domain.Interfaces;
 using PetCare.Infrastructure.Persistence;
 
 /// <summary>

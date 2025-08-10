@@ -1,8 +1,4 @@
-﻿// <copyright file="VolunteerTaskAssignedEvent.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Domain.Events;
+﻿namespace PetCare.Domain.Events;
 
 /// <summary>
 /// Event raised when a volunteer task is assigned to a user.

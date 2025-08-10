@@ -1,10 +1,6 @@
-﻿// <copyright file="GenericRepository.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Infrastructure.Persistence;
+﻿namespace PetCare.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using PetCare.Domain.Interfaces;
+using PetCare.Domain.Abstractions.Repositories;
 
 /// <summary>
 /// A generic repository for performing basic CRUD operations.

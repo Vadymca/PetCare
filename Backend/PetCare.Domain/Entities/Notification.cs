@@ -1,8 +1,4 @@
-﻿// <copyright file="Notification.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Domain.Entities;
+﻿namespace PetCare.Domain.Entities;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 using PetCare.Domain.ValueObjects;
@@ -12,6 +8,29 @@ using PetCare.Domain.ValueObjects;
 /// </summary>
 public sealed class Notification : BaseEntity
 {
+    private static readonly HashSet<string> AllowedNotifiableEntities = new(StringComparer.OrdinalIgnoreCase)
+    {
+        nameof(AdoptionApplication),
+        nameof(Animal),
+        nameof(AnimalAidRequest),
+        nameof(Article),
+        nameof(Donation),
+        nameof(Event),
+        nameof(LostPet),
+        nameof(Shelter),
+        nameof(Specie),
+        nameof(SuccessStory),
+        nameof(User),
+        nameof(VolunteerTask),
+        nameof(AnimalAidDonation),
+        nameof(AnimalSubscription),
+        nameof(ArticleComment),
+        nameof(Breed),
+        nameof(EventParticipant),
+        nameof(ShelterSubscription),
+        nameof(VolunteerTaskAssignment),
+    };
+
     private Notification()
     {
     }
@@ -37,6 +56,27 @@ public sealed class Notification : BaseEntity
         if (string.IsNullOrWhiteSpace(message))
         {
             throw new ArgumentException("Повідомлення не може бути порожнім.", nameof(message));
+        }
+
+        if (!string.IsNullOrWhiteSpace(notifiableEntity))
+        {
+            if (!AllowedNotifiableEntities.Contains(notifiableEntity))
+            {
+                throw new ArgumentException(
+                    $"Недопустиме значення для {nameof(this.NotifiableEntity)}: '{notifiableEntity}'. " +
+                    $"Дозволені значення: {string.Join(", ", AllowedNotifiableEntities)}");
+            }
+
+            if (notifiableEntityId == null || notifiableEntityId == Guid.Empty)
+            {
+                throw new ArgumentException(
+                    $"Для {nameof(this.NotifiableEntity)} '{notifiableEntity}' потрібно вказати валідний {nameof(this.NotifiableEntityId)}.");
+            }
+        }
+        else if (notifiableEntityId != null)
+        {
+            throw new ArgumentException(
+                $"Не можна вказати {nameof(this.NotifiableEntityId)} без {nameof(this.NotifiableEntity)}.");
         }
 
         this.UserId = userId;
