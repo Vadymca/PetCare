@@ -1,8 +1,4 @@
-﻿// <copyright file="AdoptionApplicationApprovedHandler.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-
-namespace PetCare.Application.EventHandlers;
+﻿namespace PetCare.Application.EventHandlers;
 using PetCare.Application.Common;
 using PetCare.Domain.Events;
 using System.Threading;

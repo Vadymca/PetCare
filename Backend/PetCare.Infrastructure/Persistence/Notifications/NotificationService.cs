@@ -1,9 +1,6 @@
-﻿// <copyright file="NotificationService.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
+﻿namespace PetCare.Infrastructure.Persistence.Notifications;
 
-namespace PetCare.Infrastructure.Persistence.Notifications;
-using PetCare.Domain.DomainServices;
+using PetCare.Domain.Abstractions.Repositories;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

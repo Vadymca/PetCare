@@ -1,8 +1,4 @@
-﻿// <copyright file="VolunteerTaskTests.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Tests.Domain.Aggregates;
+﻿namespace PetCare.Tests.Domain.Aggregates;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
@@ -11,430 +7,420 @@ using System.Collections.Generic;
 using Xunit;
 
 /// <summary>
-/// Unit tests for the <see cref="VolunteerTask"/> aggregate.
+/// Тести для агрегату <see cref="VolunteerTask"/>.
 /// </summary>
-public sealed class VolunteerTaskTests
+public class VolunteerTaskTests
 {
-    private static readonly Guid ShelterId = Guid.NewGuid();
+    private readonly Guid shelterId = Guid.NewGuid();
+    private readonly DateOnly taskDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
     /// <summary>
-    /// Tests that creating a volunteer task with valid data succeeds.
+    /// Тестує створення завдання волонтера з валідними параметрами.
     /// </summary>
     [Fact]
-    public void Create_WithValidData_ShouldSucceed()
+    public void Create_ValidParameters_CreatesVolunteerTask()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
-        var skills = new Dictionary<string, string> { { "Skill1", "Description1" } };
+        // Arrange
+        string title = "Volunteer Cleanup";
+        string description = "Clean the shelter";
+        int? duration = 120;
+        int requiredVolunteers = 5;
+        VolunteerTaskStatus status = VolunteerTaskStatus.Open;
+        int pointsReward = 50;
+        var location = Coordinates.From(50.0, 30.0);
+        var skillsRequired = new Dictionary<string, string> { { "Cleaning", "Basic cleaning skills" } };
+
+        // Act
         var task = VolunteerTask.Create(
-            ShelterId,
-            "Help Animals",
-            "Assist with animal care",
-            date,
-            120,
-            5,
-            VolunteerTaskStatus.Open,
-            50,
-            null,
-            skills);
+            shelterId: this.shelterId,
+            title: title,
+            description: description,
+            date: this.taskDate,
+            duration: duration,
+            requiredVolunteers: requiredVolunteers,
+            status: status,
+            pointsReward: pointsReward,
+            location: location,
+            skillsRequired: skillsRequired);
 
-        Assert.Equal(ShelterId, task.ShelterId);
-        Assert.Equal("Help Animals", task.Title.Value);
-        Assert.Equal("Assist with animal care", task.Description);
-        Assert.Equal(date, task.Date);
-        Assert.Equal(120, task.Duration);
-        Assert.Equal(5, task.RequiredVolunteers);
-        Assert.Equal(VolunteerTaskStatus.Open, task.Status);
-        Assert.Equal(50, task.PointsReward);
-        Assert.NotNull(task.SkillsRequired);
-        Assert.Equal("Description1", task.SkillsRequired["Skill1"]);
+        // Assert
+        Assert.NotNull(task);
+        Assert.Equal(this.shelterId, task.ShelterId);
+        Assert.Equal(title, task.Title.Value);
+        Assert.Equal(description, task.Description);
+        Assert.Equal(this.taskDate, task.Date);
+        Assert.Equal(duration, task.Duration);
+        Assert.Equal(requiredVolunteers, task.RequiredVolunteers);
+        Assert.Equal(status, task.Status);
+        Assert.Equal(pointsReward, task.PointsReward);
+        Assert.Equal(location, task.Location);
+        Assert.Equal(skillsRequired, task.SkillsRequired);
+        Assert.True(task.CreatedAt <= DateTime.UtcNow);
+        Assert.InRange(task.UpdatedAt, task.CreatedAt, task.CreatedAt.AddMilliseconds(100)); // Допустима похибка 100 мс
     }
 
     /// <summary>
-    /// Tests that creating with invalid RequiredVolunteers throws.
+    /// Тестує створення завдання волонтера з невалідною кількістю волонтерів.
     /// </summary>
     [Fact]
-    public void Create_WithNonPositiveRequiredVolunteers_ShouldThrow()
+    public void Create_ZeroOrNegativeVolunteers_ThrowsArgumentOutOfRangeException()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        // Arrange
+        string title = "Volunteer Cleanup";
+        int requiredVolunteers = 0;
 
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            VolunteerTask.Create(
-                ShelterId,
-                "Title",
-                null,
-                date,
-                null,
-                0,
-                VolunteerTaskStatus.Open,
-                10,
-                null,
-                null));
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => VolunteerTask.Create(
+                shelterId: this.shelterId,
+                title: title,
+                description: null,
+                date: this.taskDate,
+                duration: null,
+                requiredVolunteers: requiredVolunteers,
+                status: VolunteerTaskStatus.Open,
+                pointsReward: 50,
+                location: null,
+                skillsRequired: null));
     }
 
     /// <summary>
-    /// Tests that creating with non-positive duration throws.
+    /// Тестує створення завдання волонтера з невалідною тривалістю.
     /// </summary>
     [Fact]
-    public void Create_WithNonPositiveDuration_ShouldThrow()
+    public void Create_NegativeDuration_ThrowsArgumentOutOfRangeException()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        // Arrange
+        string title = "Volunteer Cleanup";
+        int? duration = -60;
 
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            VolunteerTask.Create(
-                ShelterId,
-                "Title",
-                null,
-                date,
-                0,
-                1,
-                VolunteerTaskStatus.Open,
-                10,
-                null,
-                null));
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => VolunteerTask.Create(
+                shelterId: this.shelterId,
+                title: title,
+                description: null,
+                date: this.taskDate,
+                duration: duration,
+                requiredVolunteers: 5,
+                status: VolunteerTaskStatus.Open,
+                pointsReward: 50,
+                location: null,
+                skillsRequired: null));
     }
 
     /// <summary>
-    /// Tests that creating with negative points reward throws.
+    /// Тестує створення завдання волонтера з негативною кількістю балів.
     /// </summary>
     [Fact]
-    public void Create_WithNegativePointsReward_ShouldThrow()
+    public void Create_NegativePointsReward_ThrowsArgumentOutOfRangeException()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        // Arrange
+        string title = "Volunteer Cleanup";
+        int pointsReward = -50;
 
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            VolunteerTask.Create(
-                ShelterId,
-                "Title",
-                null,
-                date,
-                null,
-                1,
-                VolunteerTaskStatus.Open,
-                -1,
-                null,
-                null));
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => VolunteerTask.Create(
+                shelterId: this.shelterId,
+                title: title,
+                description: null,
+                date: this.taskDate,
+                duration: null,
+                requiredVolunteers: 5,
+                status: VolunteerTaskStatus.Open,
+                pointsReward: pointsReward,
+                location: null,
+                skillsRequired: null));
     }
 
     /// <summary>
-    /// Tests updating the status of the volunteer task.
+    /// Тестує оновлення статусу завдання волонтера.
     /// </summary>
     [Fact]
-    public void UpdateStatus_ShouldChangeStatusAndUpdateUpdatedAt()
+    public void UpdateStatus_ValidStatus_UpdatesStatusAndTimestamp()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        // Arrange
         var task = VolunteerTask.Create(
-            ShelterId,
-            "Title",
-            null,
-            date,
-            null,
-            1,
-            VolunteerTaskStatus.Open,
-            10,
-            null,
-            null);
+            shelterId: this.shelterId,
+            title: "Volunteer Cleanup",
+            description: null,
+            date: this.taskDate,
+            duration: null,
+            requiredVolunteers: 5,
+            status: VolunteerTaskStatus.Open,
+            pointsReward: 50,
+            location: null,
+            skillsRequired: null);
+        var newStatus = VolunteerTaskStatus.InProgress;
+        var initialUpdatedAt = task.UpdatedAt;
 
-        var beforeUpdate = task.UpdatedAt;
+        // Act
+        task.UpdateStatus(newStatus);
 
-        task.UpdateStatus(VolunteerTaskStatus.Cancelled);
-
-        Assert.Equal(VolunteerTaskStatus.Cancelled, task.Status);
-        Assert.True(task.UpdatedAt > beforeUpdate);
+        // Assert
+        Assert.Equal(newStatus, task.Status);
+        Assert.True(task.UpdatedAt > initialUpdatedAt);
     }
 
     /// <summary>
-    /// Tests updating info with valid data.
+    /// Тестує оновлення інформації про завдання волонтера.
     /// </summary>
     [Fact]
-    public void UpdateInfo_WithValidData_ShouldUpdateFields()
+    public void UpdateInfo_ValidParameters_UpdatesTaskInfo()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
-        var newDate = date.AddDays(1);
+        // Arrange
         var task = VolunteerTask.Create(
-            ShelterId,
-            "Initial Title",
-            "Initial description",
-            date,
-            30,
-            2,
-            VolunteerTaskStatus.Open,
-            5,
-            null,
-            new Dictionary<string, string> { { "OldSkill", "OldDesc" } });
+            shelterId: this.shelterId,
+            title: "Volunteer Cleanup",
+            description: "Initial description",
+            date: this.taskDate,
+            duration: 60,
+            requiredVolunteers: 5,
+            status: VolunteerTaskStatus.Open,
+            pointsReward: 50,
+            location: null,
+            skillsRequired: new Dictionary<string, string> { { "InitialSkill", "Initial description" } });
+        string newTitle = "Updated Cleanup";
+        string newDescription = "Updated description";
+        var newDate = this.taskDate.AddDays(1);
+        int? newDuration = 120;
+        int newRequiredVolunteers = 10;
+        int newPointsReward = 100;
+        var newLocation = Coordinates.From(51.0, 31.0);
+        var newSkillsRequired = new Dictionary<string, string> { { "NewSkill", "New description" } };
+        var initialUpdatedAt = task.UpdatedAt;
 
-        var newSkills = new Dictionary<string, string> { { "NewSkill", "NewDesc" } };
-
-        var location = Coordinates.From(45.0, 90.0);
-
+        // Act
         task.UpdateInfo(
-            "Updated Title",
-            "Updated description",
-            newDate,
-            60,
-            3,
-            10,
-            location,
-            newSkills);
+            title: newTitle,
+            description: newDescription,
+            date: newDate,
+            duration: newDuration,
+            requiredVolunteers: newRequiredVolunteers,
+            pointsReward: newPointsReward,
+            location: newLocation,
+            skillsRequired: newSkillsRequired);
 
-        Assert.Equal("Updated Title", task.Title.Value);
-        Assert.Equal("Updated description", task.Description);
+        // Assert
+        Assert.Equal(newTitle, task.Title.Value);
+        Assert.Equal(newDescription, task.Description);
         Assert.Equal(newDate, task.Date);
-        Assert.Equal(60, task.Duration);
-        Assert.Equal(3, task.RequiredVolunteers);
-        Assert.Equal(10, task.PointsReward);
-        Assert.NotNull(task.Location);
-        Assert.Equal(45.0, task.Location!.Latitude);
-        Assert.Equal(90.0, task.Location.Longitude);
-        Assert.Equal(newSkills, task.SkillsRequired);
+        Assert.Equal(newDuration, task.Duration);
+        Assert.Equal(newRequiredVolunteers, task.RequiredVolunteers);
+        Assert.Equal(newPointsReward, task.PointsReward);
+        Assert.Equal(newLocation, task.Location);
+        Assert.Equal(newSkillsRequired, task.SkillsRequired);
+        Assert.True(task.UpdatedAt > initialUpdatedAt);
     }
 
     /// <summary>
-    /// Tests that updating info with invalid RequiredVolunteers throws.
+    /// Тестує оновлення інформації з невалідною кількістю волонтерів.
     /// </summary>
     [Fact]
-    public void UpdateInfo_WithNonPositiveRequiredVolunteers_ShouldThrow()
+    public void UpdateInfo_ZeroOrNegativeVolunteers_ThrowsArgumentOutOfRangeException()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        // Arrange
         var task = VolunteerTask.Create(
-            ShelterId,
-            "Title",
-            null,
-            date,
-            null,
-            1,
-            VolunteerTaskStatus.Open,
-            10,
-            null,
-            null);
+            shelterId: this.shelterId,
+            title: "Volunteer Cleanup",
+            description: null,
+            date: this.taskDate,
+            duration: null,
+            requiredVolunteers: 5,
+            status: VolunteerTaskStatus.Open,
+            pointsReward: 50,
+            location: null,
+            skillsRequired: null);
 
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            task.UpdateInfo(
-                "Title",
-                null,
-                date,
-                null,
-                0,
-                10,
-                null,
-                null));
+        // Act & Assert
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => task.UpdateInfo(
+                title: "Updated Cleanup",
+                description: null,
+                date: this.taskDate,
+                duration: null,
+                requiredVolunteers: 0,
+                pointsReward: 50,
+                location: null,
+                skillsRequired: null));
     }
 
     /// <summary>
-    /// Tests that updating info with non-positive duration throws.
+    /// Тестує додавання нової навички до завдання волонтера.
     /// </summary>
     [Fact]
-    public void UpdateInfo_WithNonPositiveDuration_ShouldThrow()
+    public void AddOrUpdateSkill_ValidSkill_AddsSkillAndUpdatesTimestamp()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        // Arrange
         var task = VolunteerTask.Create(
-            ShelterId,
-            "Title",
-            null,
-            date,
-            10,
-            1,
-            VolunteerTaskStatus.Open,
-            10,
-            null,
-            null);
+            shelterId: this.shelterId,
+            title: "Volunteer Cleanup",
+            description: null,
+            date: this.taskDate,
+            duration: null,
+            requiredVolunteers: 5,
+            status: VolunteerTaskStatus.Open,
+            pointsReward: 50,
+            location: null,
+            skillsRequired: null);
+        string skillName = "Cleaning";
+        string skillDescription = "Basic cleaning skills";
+        var initialUpdatedAt = task.UpdatedAt;
 
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            task.UpdateInfo(
-                "Title",
-                null,
-                date,
-                0,
-                1,
-                10,
-                null,
-                null));
+        // Act
+        task.AddOrUpdateSkill(skillName, skillDescription);
+
+        // Assert
+        Assert.Equal(skillDescription, task.SkillsRequired[skillName]);
+        Assert.True(task.UpdatedAt > initialUpdatedAt);
+        Assert.Single(task.SkillsRequired);
     }
 
     /// <summary>
-    /// Tests that updating info with negative points reward throws.
+    /// Тестує оновлення існуючої навички завдання волонтера.
     /// </summary>
     [Fact]
-    public void UpdateInfo_WithNegativePointsReward_ShouldThrow()
+    public void AddOrUpdateSkill_ExistingSkill_UpdatesSkillDescription()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        // Arrange
         var task = VolunteerTask.Create(
-            ShelterId,
-            "Title",
-            null,
-            date,
-            null,
-            1,
-            VolunteerTaskStatus.Open,
-            10,
-            null,
-            null);
+            shelterId: this.shelterId,
+            title: "Volunteer Cleanup",
+            description: null,
+            date: this.taskDate,
+            duration: null,
+            requiredVolunteers: 5,
+            status: VolunteerTaskStatus.Open,
+            pointsReward: 50,
+            location: null,
+            skillsRequired: new Dictionary<string, string> { { "Cleaning", "Old description" } });
+        string skillName = "Cleaning";
+        string newSkillDescription = "Updated cleaning skills";
+        var initialUpdatedAt = task.UpdatedAt;
 
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            task.UpdateInfo(
-                "Title",
-                null,
-                date,
-                null,
-                1,
-                -1,
-                null,
-                null));
+        // Act
+        task.AddOrUpdateSkill(skillName, newSkillDescription);
+
+        // Assert
+        Assert.Equal(newSkillDescription, task.SkillsRequired[skillName]);
+        Assert.True(task.UpdatedAt > initialUpdatedAt);
+        Assert.Single(task.SkillsRequired);
     }
 
     /// <summary>
-    /// Tests adding a new skill requirement.
+    /// Тестує додавання навички з невалідною назвою.
     /// </summary>
     [Fact]
-    public void AddOrUpdateSkill_NewSkill_ShouldAdd()
+    public void AddOrUpdateSkill_NullOrWhitespaceSkillName_ThrowsArgumentException()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        // Arrange
         var task = VolunteerTask.Create(
-            ShelterId,
-            "Title",
-            null,
-            date,
-            null,
-            1,
-            VolunteerTaskStatus.Open,
-            0,
-            null,
-            null);
+            shelterId: this.shelterId,
+            title: "Volunteer Cleanup",
+            description: null,
+            date: this.taskDate,
+            duration: null,
+            requiredVolunteers: 5,
+            status: VolunteerTaskStatus.Open,
+            pointsReward: 50,
+            location: null,
+            skillsRequired: null);
 
-        task.AddOrUpdateSkill("Skill1", "Description1");
-
-        Assert.True(task.SkillsRequired.ContainsKey("Skill1"));
-        Assert.Equal("Description1", task.SkillsRequired["Skill1"]);
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => task.AddOrUpdateSkill(null!, "Description"));
+        Assert.Throws<ArgumentException>(() => task.AddOrUpdateSkill(string.Empty, "Description"));
+        Assert.Throws<ArgumentException>(() => task.AddOrUpdateSkill(" ", "Description"));
     }
 
     /// <summary>
-    /// Tests updating an existing skill requirement.
+    /// Тестує видалення існуючої навички.
     /// </summary>
     [Fact]
-    public void AddOrUpdateSkill_ExistingSkill_ShouldUpdate()
+    public void RemoveSkill_ExistingSkill_RemovesSkillAndReturnsTrue()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
-        var skills = new Dictionary<string, string> { { "Skill1", "Desc1" } };
+        // Arrange
         var task = VolunteerTask.Create(
-            ShelterId,
-            "Title",
-            null,
-            date,
-            null,
-            1,
-            VolunteerTaskStatus.Open,
-            0,
-            null,
-            skills);
+            shelterId: this.shelterId,
+            title: "Volunteer Cleanup",
+            description: null,
+            date: this.taskDate,
+            duration: null,
+            requiredVolunteers: 5,
+            status: VolunteerTaskStatus.Open,
+            pointsReward: 50,
+            location: null,
+            skillsRequired: new Dictionary<string, string> { { "Cleaning", "Basic cleaning skills" } });
+        string skillName = "Cleaning";
+        var initialUpdatedAt = task.UpdatedAt;
 
-        task.AddOrUpdateSkill("Skill1", "UpdatedDesc");
+        // Act
+        bool result = task.RemoveSkill(skillName);
 
-        Assert.Equal("UpdatedDesc", task.SkillsRequired["Skill1"]);
+        // Assert
+        Assert.True(result);
+        Assert.False(task.SkillsRequired.ContainsKey(skillName));
+        Assert.True(task.UpdatedAt > initialUpdatedAt);
+        Assert.Empty(task.SkillsRequired);
     }
 
     /// <summary>
-    /// Tests that <see cref="VolunteerTask.AddOrUpdateSkill(string, string)"/>
-    /// throws <see cref="ArgumentException"/> when the skill name is null,
-    /// empty, or whitespace.
-    /// </summary>
-    /// <param name="skillName">The invalid skill name to test.</param>
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("  ")]
-    public void AddOrUpdateSkill_InvalidSkillName_ShouldThrow(string? skillName)
-    {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
-        var task = VolunteerTask.Create(
-            ShelterId,
-            "Title",
-            null,
-            date,
-            null,
-            1,
-            VolunteerTaskStatus.Open,
-            0,
-            null,
-            null);
-
-        Assert.Throws<ArgumentException>(() => task.AddOrUpdateSkill(skillName!, "desc"));
-    }
-
-    /// <summary>
-    /// Tests removing an existing skill requirement.
+    /// Тестує видалення неіснуючої навички.
     /// </summary>
     [Fact]
-    public void RemoveSkill_ExistingSkill_ShouldRemoveAndReturnTrue()
+    public void RemoveSkill_NonExistingSkill_ReturnsFalse()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
-        var skills = new Dictionary<string, string> { { "Skill1", "Desc1" } };
+        // Arrange
         var task = VolunteerTask.Create(
-            ShelterId,
-            "Title",
-            null,
-            date,
-            null,
-            1,
-            VolunteerTaskStatus.Open,
-            0,
-            null,
-            skills);
+            shelterId: this.shelterId,
+            title: "Volunteer Cleanup",
+            description: null,
+            date: this.taskDate,
+            duration: null,
+            requiredVolunteers: 5,
+            status: VolunteerTaskStatus.Open,
+            pointsReward: 50,
+            location: null,
+            skillsRequired: null);
+        string skillName = "NonExistingSkill";
+        var initialUpdatedAt = task.UpdatedAt;
 
-        var removed = task.RemoveSkill("Skill1");
+        // Act
+        bool result = task.RemoveSkill(skillName);
 
-        Assert.True(removed);
-        Assert.DoesNotContain("Skill1", task.SkillsRequired.Keys);
+        // Assert
+        Assert.False(result);
+        Assert.Equal(initialUpdatedAt, task.UpdatedAt);
     }
 
     /// <summary>
-    /// Tests removing a non-existing skill requirement returns false.
+    /// Тестує видалення навички з невалідною назвою.
     /// </summary>
     [Fact]
-    public void RemoveSkill_NonExistingSkill_ShouldReturnFalse()
+    public void RemoveSkill_NullOrWhitespaceSkillName_ReturnsFalse()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        // Arrange
         var task = VolunteerTask.Create(
-            ShelterId,
-            "Title",
-            null,
-            date,
-            null,
-            1,
-            VolunteerTaskStatus.Open,
-            0,
-            null,
-            null);
+            shelterId: this.shelterId,
+            title: "Volunteer Cleanup",
+            description: null,
+            date: this.taskDate,
+            duration: null,
+            requiredVolunteers: 5,
+            status: VolunteerTaskStatus.Open,
+            pointsReward: 50,
+            location: null,
+            skillsRequired: null);
 
-        var removed = task.RemoveSkill("NonExisting");
+        // Act
+        bool result1 = task.RemoveSkill(null!);
+        bool result2 = task.RemoveSkill(string.Empty);
+        bool result3 = task.RemoveSkill(" ");
 
-        Assert.False(removed);
-    }
-
-    /// <summary>
-    /// Tests that <see cref="VolunteerTask.RemoveSkill(string)"/>
-    /// returns false when the skill name is null, empty, or whitespace.
-    /// </summary>
-    /// <param name="skillName">The invalid skill name to test.</param>
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("  ")]
-    public void RemoveSkill_InvalidSkillName_ShouldReturnFalse(string? skillName)
-    {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
-        var task = VolunteerTask.Create(
-            ShelterId,
-            "Title",
-            null,
-            date,
-            null,
-            1,
-            VolunteerTaskStatus.Open,
-            0,
-            null,
-            null);
-
-        var removed = task.RemoveSkill(skillName!);
-
-        Assert.False(removed);
+        // Assert
+        Assert.False(result1);
+        Assert.False(result2);
+        Assert.False(result3);
+        Assert.InRange(task.UpdatedAt, task.CreatedAt, task.CreatedAt.AddMilliseconds(100));
     }
 }

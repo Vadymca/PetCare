@@ -1,8 +1,4 @@
-﻿// <copyright file="MicrochipId.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Domain.ValueObjects;
+﻿namespace PetCare.Domain.ValueObjects;
 using PetCare.Domain.Common;
 using System.Text.RegularExpressions;
 

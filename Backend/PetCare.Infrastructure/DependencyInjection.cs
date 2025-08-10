@@ -1,11 +1,6 @@
-﻿// <copyright file="DependencyInjection.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Infrastructure;
+﻿namespace PetCare.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using PetCare.Domain.DomainServices;
-using PetCare.Domain.Interfaces;
+using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Infrastructure.Persistence.Logging;
 using PetCare.Infrastructure.Persistence.Notifications;
 using PetCare.Infrastructure.Persistence.Repositories;

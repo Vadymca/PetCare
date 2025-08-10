@@ -1,8 +1,4 @@
-﻿// <copyright file="AidCategory.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Domain.Enums;
+﻿namespace PetCare.Domain.Enums;
 
 /// <summary>
 /// Defines categories of aid that can be requested or provided.

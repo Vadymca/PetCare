@@ -1,8 +1,4 @@
-﻿// <copyright file="ValueObject.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Domain.Common;
+﻿namespace PetCare.Domain.Common;
 
 /// <summary>
 /// Represents an abstract base class for value objects, providing equality comparison based on components.

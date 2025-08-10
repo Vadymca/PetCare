@@ -1,8 +1,4 @@
-﻿// <copyright file="Birthday.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Domain.ValueObjects;
+﻿namespace PetCare.Domain.ValueObjects;
 using PetCare.Domain.Common;
 
 /// <summary>
@@ -10,7 +6,7 @@ using PetCare.Domain.Common;
 /// </summary>
 public sealed class Birthday : ValueObject
 {
-    private static readonly DateOnly MinDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-90));
+    private static readonly DateOnly MinDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-120));
 
     private static readonly DateOnly MaxDate = DateOnly.FromDateTime(DateTime.UtcNow);
 

@@ -1,8 +1,4 @@
-﻿// <copyright file="Tag.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Domain.Entities;
+﻿namespace PetCare.Domain.Entities;
 using PetCare.Domain.Common;
 
 /// <summary>

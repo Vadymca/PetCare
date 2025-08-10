@@ -1,8 +1,4 @@
-﻿// <copyright file="IDomainEventHandler.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-
-namespace PetCare.Application.Common;
+﻿namespace PetCare.Application.Common;
 using PetCare.Domain.Events;
 
 /// <summary>

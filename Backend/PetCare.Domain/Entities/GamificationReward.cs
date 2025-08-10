@@ -1,8 +1,4 @@
-﻿// <copyright file="GamificationReward.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Domain.Entities;
+﻿namespace PetCare.Domain.Entities;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 

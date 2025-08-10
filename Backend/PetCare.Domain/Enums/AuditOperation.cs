@@ -1,8 +1,4 @@
-﻿// <copyright file="AuditOperation.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Domain.Enums;
+﻿namespace PetCare.Domain.Enums;
 
 /// <summary>
 /// Represents the types of operations that can be audited.

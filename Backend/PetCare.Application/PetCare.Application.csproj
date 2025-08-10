@@ -17,6 +17,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="NetTopologySuite" Version="2.6.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.NetTopologySuite" Version="9.0.4" />
@@ -38,5 +39,10 @@
   <ItemGroup>
     <ProjectReference Include="..\PetCare.Domain\PetCare.Domain.csproj" />
   </ItemGroup>
+
+	<PropertyGroup>
+		<NoWarn>$(NoWarn);SA1633</NoWarn>
+		<NoWarn>$(NoWarn);SA1000</NoWarn>
+	</PropertyGroup>
 
 </Project>

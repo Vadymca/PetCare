@@ -1,8 +1,4 @@
-﻿// <copyright file="ShelterSubscription.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Domain.Entities;
+﻿namespace PetCare.Domain.Entities;
 
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
@@ -10,7 +6,7 @@ using PetCare.Domain.Common;
 /// <summary>
 /// Represents a value object that associates a user with a shelter subscription.
 /// </summary>
-public sealed class ShelterSubscription : ValueObject
+public sealed class ShelterSubscription : BaseEntity
 {
     private ShelterSubscription()
     {
@@ -67,14 +63,4 @@ public sealed class ShelterSubscription : ValueObject
     /// <exception cref="ArgumentException">Thrown when <paramref name="userId"/> or <paramref name="shelterId"/> is empty.</exception>
     public static ShelterSubscription Create(Guid userId, Guid shelterId) =>
         new ShelterSubscription(userId, shelterId, DateTime.UtcNow);
-
-    /// <summary>
-    /// Returns the components used to determine equality for the <see cref="ShelterSubscription"/> instance.
-    /// </summary>
-    /// <returns>An enumerable of objects representing the equality components.</returns>
-    protected override IEnumerable<object> GetEqualityComponents()
-    {
-        yield return this.UserId;
-        yield return this.ShelterId;
-    }
 }

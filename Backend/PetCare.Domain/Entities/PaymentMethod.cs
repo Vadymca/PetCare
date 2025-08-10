@@ -1,8 +1,4 @@
-﻿// <copyright file="PaymentMethod.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Domain.Entities;
+﻿namespace PetCare.Domain.Entities;
 using PetCare.Domain.Common;
 using PetCare.Domain.ValueObjects;
 
