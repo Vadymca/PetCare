@@ -6,6 +6,7 @@ android {
     namespace = "com.example.petcareapp"
     compileSdk = 35
 
+
     defaultConfig {
         applicationId = "com.example.petcareapp"
         minSdk = 24
@@ -51,12 +52,15 @@ dependencies {
     implementation(libs.navigation.fragment)
     implementation(libs.support.annotations)
     implementation(libs.annotation)
+    implementation(libs.navigation.ui)
+    implementation(libs.swiperefreshlayout)
     annotationProcessor(libs.dagger.compiler) // Для генерації Dagger коду
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
     implementation(libs.okhttp)
     implementation(libs.room.runtime)
     annotationProcessor(libs.room.compiler) // Для Room
+    implementation(libs.paging)
     implementation(libs.glide)
     annotationProcessor(libs.glide.compiler)
     implementation(libs.fragment.ktx)

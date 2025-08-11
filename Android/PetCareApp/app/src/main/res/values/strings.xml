@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">PetCareApp</string>
     <string name="animal_photo_description">Фото тварини</string>
+    <string name="animal_photo">Animal photo</string>
+    <string name="shelter_photo">Shelter photo</string>
+    <string name="error_loading_data">Error loading data</string>
+    <string name="no_animals_available">No animals available</string>
 </resources>

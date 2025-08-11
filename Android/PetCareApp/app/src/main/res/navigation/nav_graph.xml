@@ -4,29 +4,43 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/animalListFragment">
 
-    <!-- Список тварин -->
     <fragment
         android:id="@+id/animalListFragment"
-        android:name="com.example.petcareapp.ui.fragments.AnimalListFragment"
-        android:label="Animal List">
+        android:name="com.example.petcareapp.ui.fragments.AnimalListFragment">
         <action
-            android:id="@+id/action_animalListFragment_to_animalDetailFragment"
-            app:destination="@id/animalDetailFragment"
-            app:enterAnim="@android:anim/fade_in"
-            app:exitAnim="@android:anim/fade_out"
-            app:popEnterAnim="@android:anim/fade_in"
-            app:popExitAnim="@android:anim/fade_out">
+            android:id="@+id/action_animalList_to_animalDetail"
+            app:destination="@id/animalDetailFragment">
             <argument
-                android:name="animalSlug"
-                app:argType="string"
-                android:defaultValue="" />
+                android:name="slug"
+                app:argType="string" />
         </action>
     </fragment>
 
-    <!-- Деталі тварини (буде створено пізніше) -->
     <fragment
         android:id="@+id/animalDetailFragment"
-        android:name="com.example.petcareapp.ui.fragments.AnimalDetailFragment"
-        android:label="Animal Detail" />
+        android:name="com.example.petcareapp.ui.fragments.AnimalDetailFragment">
+        <argument
+            android:name="slug"
+            app:argType="string" />
+    </fragment>
 
+    <fragment
+        android:id="@+id/shelterListFragment"
+        android:name="com.example.petcareapp.ui.fragments.ShelterListFragment">
+        <action
+            android:id="@+id/action_shelterList_to_shelterDetail"
+            app:destination="@id/shelterDetailFragment">
+            <argument
+                android:name="slug"
+                app:argType="string" />
+        </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/shelterDetailFragment"
+        android:name="com.example.petcareapp.ui.fragments.ShelterDetailFragment">
+        <argument
+            android:name="slug"
+            app:argType="string" />
+    </fragment>
 </navigation>
