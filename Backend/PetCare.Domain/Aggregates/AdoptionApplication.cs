@@ -1,8 +1,4 @@
-﻿// <copyright file="AdoptionApplication.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Domain.Aggregates;
+﻿namespace PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 using PetCare.Domain.Enums;
 using PetCare.Domain.Events;
@@ -10,13 +6,8 @@ using PetCare.Domain.Events;
 /// <summary>
 /// Represents an adoption application for an animal in the system.
 /// </summary>
-public sealed class AdoptionApplication : BaseEntity
+public sealed class AdoptionApplication : AggregateRoot
 {
-    /// <summary>
-    /// List of domain events raised by the entity.
-    /// </summary>
-    private readonly List<DomainEvent> domainEvents = new();
-
     private AdoptionApplication()
     {
     }
@@ -136,11 +127,6 @@ public sealed class AdoptionApplication : BaseEntity
     public bool CanBeRejected => this.Status == AdoptionStatus.Pending;
 
     /// <summary>
-    /// Gets the domain events raised by the entity.
-    /// </summary>
-    public IReadOnlyList<DomainEvent> DomainEvents => this.domainEvents.AsReadOnly();
-
-    /// <summary>
     /// Creates a new <see cref="AdoptionApplication"/> instance with the specified parameters.
     /// </summary>
     /// <param name="userId">The unique identifier of the user submitting the application.</param>
@@ -209,15 +195,4 @@ public sealed class AdoptionApplication : BaseEntity
 
         this.AddDomainEvent(new AdoptionApplicationNotesUpdatedEvent(this.Id, this.UserId, notes));
     }
-
-    /// <summary>
-    /// Clears all domain events raised by the entity.
-    /// </summary>
-    public void ClearDomainEvents() => this.domainEvents.Clear();
-
-    /// <summary>
-    /// Adds a domain event to the internal list.
-    /// </summary>
-    /// <param name="domainEvent">The domain event to add.</param>
-    private void AddDomainEvent(DomainEvent domainEvent) => this.domainEvents.Add(domainEvent);
 }

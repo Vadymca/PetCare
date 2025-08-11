@@ -1,8 +1,4 @@
-﻿// <copyright file="SlugTests.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Tests.Domain.ValueObjects;
+﻿namespace PetCare.Tests.Domain.ValueObjects;
 using FluentAssertions;
 using PetCare.Domain.ValueObjects;
 using Xunit;
@@ -26,14 +22,14 @@ public class SlugTests
     [InlineData("    Пробіли   і_підкреслення ", "probily-i-pidkreslennia")]
     [InlineData("123 числа", "123-chysla")]
     [InlineData("slug-with-dashes", "slug-with-dashes")]
-    public void Create_ValidUkrainianAndLatinStrings_ShouldCreateExpectedSlug(string input, string expected)
+    public void Create_ValidUkrainianAndLatinStrings_ShouldCreateExpectedSlug(string input, string expectedBase)
     {
         // Act
         Slug slug = Slug.Create(input);
 
-        // Assert
-        slug.Value.Should().Be(expected);
-        slug.ToString().Should().Be(expected);
+        // Assert: слаг повинен починатись з expectedBase + "-" + 6 символів
+        slug.Value.Should().MatchRegex($"^{expectedBase}-[a-z0-9]{{6}}$");
+        slug.ToString().Should().MatchRegex($"^{expectedBase}-[a-z0-9]{{6}}$");
     }
 
     /// <summary>

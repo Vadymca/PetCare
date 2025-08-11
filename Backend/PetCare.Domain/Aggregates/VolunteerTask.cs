@@ -1,17 +1,14 @@
-﻿// <copyright file="VolunteerTask.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Domain.Aggregates;
+﻿namespace PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 using PetCare.Domain.Enums;
+using PetCare.Domain.Events;
 using PetCare.Domain.ValueObjects;
 using System.Collections.ObjectModel;
 
 /// <summary>
 /// Represents a volunteer task in the system.
 /// </summary>
-public sealed class VolunteerTask : BaseEntity
+public sealed class VolunteerTask : AggregateRoot
 {
     private Dictionary<string, string> skillsRequired;
 
@@ -155,7 +152,7 @@ public sealed class VolunteerTask : BaseEntity
         ValueObjects.Coordinates? location,
         Dictionary<string, string>? skillsRequired)
     {
-        return new VolunteerTask(
+        var task = new VolunteerTask(
             shelterId,
             Title.Create(title),
             description,
@@ -166,6 +163,9 @@ public sealed class VolunteerTask : BaseEntity
             pointsReward,
             location,
             skillsRequired ?? new Dictionary<string, string>());
+
+        task.AddDomainEvent(new VolunteerTaskCreatedEvent(task.Id));
+        return task;
     }
 
     /// <summary>
@@ -176,6 +176,7 @@ public sealed class VolunteerTask : BaseEntity
     {
         this.Status = newStatus;
         this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new VolunteerTaskStatusUpdatedEvent(this.Id, newStatus));
     }
 
     /// <summary>
@@ -225,6 +226,8 @@ public sealed class VolunteerTask : BaseEntity
         this.Location = location;
         this.skillsRequired = skillsRequired ?? new Dictionary<string, string>();
         this.UpdatedAt = DateTime.UtcNow;
+
+        this.AddDomainEvent(new VolunteerTaskInfoUpdatedEvent(this.Id));
     }
 
     /// <summary>
@@ -242,6 +245,7 @@ public sealed class VolunteerTask : BaseEntity
 
         this.skillsRequired[skillName] = description;
         this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new VolunteerTaskSkillAddedOrUpdatedEvent(this.Id, skillName, description));
     }
 
     /// <summary>
@@ -260,6 +264,7 @@ public sealed class VolunteerTask : BaseEntity
         if (removed)
         {
             this.UpdatedAt = DateTime.UtcNow;
+            this.AddDomainEvent(new VolunteerTaskSkillRemovedEvent(this.Id, skillName));
         }
 
         return removed;

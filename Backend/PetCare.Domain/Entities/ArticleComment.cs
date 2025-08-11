@@ -1,8 +1,4 @@
-﻿// <copyright file="ArticleComment.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Domain.Entities;
+﻿namespace PetCare.Domain.Entities;
 
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
@@ -13,12 +9,8 @@ using PetCare.Domain.Enums;
 /// </summary>
 public sealed class ArticleComment : BaseEntity
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ArticleComment"/> class.
-    /// </summary>
-    /// <remarks>
-    /// This constructor is private to support deserialization scenarios and prevent instantiation without using the <see cref="Create"/> method.
-    /// </remarks>
+    private readonly List<Like> likes = new();
+
     private ArticleComment()
     {
         this.Content = string.Empty;
@@ -53,7 +45,6 @@ public sealed class ArticleComment : BaseEntity
         this.UserId = userId;
         this.ParentCommentId = parentCommentId;
         this.Content = content;
-        this.Likes = 0;
         this.Status = status;
         this.ModeratedBy = moderatedBy;
         this.CreatedAt = createdAt;
@@ -96,9 +87,9 @@ public sealed class ArticleComment : BaseEntity
     public string Content { get; private set; }
 
     /// <summary>
-    /// Gets the number of likes the comment has received.
+    /// Gets the collection of likes for this comment.
     /// </summary>
-    public int Likes { get; private set; }
+    public IReadOnlyCollection<Like> Likes => this.likes.AsReadOnly();
 
     /// <summary>
     /// Gets the status of the comment (e.g., Pending, Approved, Rejected).
@@ -175,22 +166,30 @@ public sealed class ArticleComment : BaseEntity
     }
 
     /// <summary>
-    /// Increments the number of likes for the comment and updates the timestamp.
+    /// Adds a like from the specified user.
     /// </summary>
-    public void AddLike()
+    /// <param name="userId">The ID of the user liking the comment.</param>
+    public void AddLike(Guid userId)
     {
-        this.Likes++;
+        if (this.likes.Any(l => l.UserId == userId))
+        {
+            return;
+        }
+
+        this.likes.Add(Like.Create(userId, nameof(ArticleComment), this.Id));
         this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
-    /// Decrements the number of likes for the comment, if positive, and updates the timestamp.
+    /// Removes a like from the specified user.
     /// </summary>
-    public void RemoveLike()
+    /// <param name="userId">The ID of the user unliking the comment.</param>
+    public void RemoveLike(Guid userId)
     {
-        if (this.Likes > 0)
+        var like = this.likes.FirstOrDefault(l => l.UserId == userId);
+        if (like != null)
         {
-            this.Likes--;
+            this.likes.Remove(like);
             this.UpdatedAt = DateTime.UtcNow;
         }
     }

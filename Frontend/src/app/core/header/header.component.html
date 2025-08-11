@@ -11,7 +11,16 @@
 
     <!-- Desktop Nav -->
     <nav class="hidden md:flex gap-6 text-white font-medium">
-      <a
+      @for (menuItemKey of menuItemKeys; track menuItemKey) {
+        <a
+          routerLink="{{ menuItemKey }}"
+          routerLinkActive="underline  font-semibold"
+          class="hover:text-orange-300 transition"
+        >
+          {{ menuItems[menuItemKey] | translate }}
+        </a>
+      }
+      <!-- <a
         routerLink="/animals"
         routerLinkActive="underline  font-semibold"
         class="hover:text-orange-300 transition"
@@ -38,7 +47,7 @@
         class="hover:text-orange-300 transition"
       >
         {{ 'LOST_PETS' | translate }}
-      </a>
+      </a> -->
     </nav>
     <!-- Login/Logout -->
     @if (isAuthenticated()) {
@@ -94,7 +103,16 @@
     [class.hidden]="!isMenuOpen"
     class="md:hidden px-4 pb-4 flex flex-col gap-2 text-white font-medium"
   >
-    <a
+    @for (menuItemKey of menuItemKeys; track menuItemKey) {
+      <a
+        routerLink="{{ menuItemKey }}"
+        (click)="isMenuOpen = false"
+        class="hover:text-orange-300 transition"
+      >
+        {{ menuItems[menuItemKey] | translate }}
+      </a>
+    }
+    <!-- <a
       routerLink="/animals"
       (click)="isMenuOpen = false"
       class="hover:text-orange-300 transition"
@@ -121,6 +139,6 @@
       class="hover:text-orange-300 transition"
     >
       {{ 'LOST_PETS' | translate }}
-    </a>
+    </a> -->
   </div>
 </header>

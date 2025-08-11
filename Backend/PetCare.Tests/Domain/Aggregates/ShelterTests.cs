@@ -1,240 +1,570 @@
-﻿// <copyright file="ShelterTests.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Tests.Domain.Aggregates;
-
+﻿namespace PetCare.Tests.Domain.Aggregates;
+using FluentAssertions;
+using Moq;
+using PetCare.Domain.Abstractions;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 using Xunit;
 
 /// <summary>
-/// Unit tests for the <see cref="Shelter"/> aggregate.
+/// Unit tests for <see cref="Shelter"/> aggregate.
 /// </summary>
-public sealed class ShelterTests
+public class ShelterTests
 {
-    /// <summary>
-    /// Verifies that a shelter is initialized correctly with valid data.
-    /// </summary>
-    [Fact]
-    public void Create_WithValidData_ShouldInitializeProperly()
-    {
-        var shelter = CreateTestShelter();
-
-        Assert.Equal("HAPPY PAWS", shelter.Name.Value.ToUpperInvariant());
-        Assert.Equal(2, shelter.Photos.Count);
-        Assert.Single(shelter.SocialMedia);
-        Assert.Equal(3, shelter.CurrentOccupancy);
-        Assert.Equal(10, shelter.Capacity);
-    }
+    private readonly Guid validManagerId = Guid.NewGuid();
+    private readonly Coordinates validCoordinates = Coordinates.From(50.0, 30.0);
 
     /// <summary>
-    /// Verifies that null collections in Create result in empty collections.
+    /// Tests creation of <see cref="Shelter"/> with valid parameters.
     /// </summary>
     [Fact]
-    public void Create_WithNullCollections_ShouldUseEmpty()
+    public void Create_ShouldReturnShelter_WhenParametersAreValid()
     {
+        // Arrange
+        var slug = "valid-slug";
+        var name = "Shelter Name";
+        var address = "Address 123";
+        var contactPhone = "+380501234567";
+        var contactEmail = "test@shelter.com";
+        var photos = new List<string> { "photo1.jpg", "photo2.jpg" };
+        var socialMedia = new Dictionary<string, string> { { "Facebook", "fb.com/shelter" } };
+        var capacity = 10;
+        var currentOccupancy = 5;
+        var virtualTourUrl = "https://tour.example.com";
+        var workingHours = "9:00-18:00";
+
+        // Act
         var shelter = Shelter.Create(
-            slug: "slug",
-            name: "Name",
-            address: "Address",
-            coordinates: Coordinates.From(10, 10),
-            contactPhone: "+380501111111",
-            contactEmail: "test@example.com",
-            description: null,
-            capacity: 5,
-            currentOccupancy: 2,
-            photos: null,
-            virtualTourUrl: null,
-            workingHours: null,
-            socialMedia: null,
-            managerId: Guid.NewGuid());
+            slug,
+            name,
+            address,
+            this.validCoordinates,
+            contactPhone,
+            contactEmail,
+            "A nice shelter",
+            capacity,
+            currentOccupancy,
+            photos,
+            virtualTourUrl,
+            workingHours,
+            socialMedia,
+            this.validManagerId);
 
-        Assert.Empty(shelter.Photos);
-        Assert.Empty(shelter.SocialMedia);
+        // Assert
+        shelter.Should().NotBeNull();
+        shelter.Slug.Value.Should().StartWith("valid-slug");
+        shelter.Name.Value.Should().Be(name);
+        shelter.Address.Value.Should().Be(address);
+        shelter.Coordinates.Should().Be(this.validCoordinates);
+        shelter.ContactPhone.Value.Should().Be(contactPhone);
+        shelter.ContactEmail.Value.Should().Be(contactEmail);
+        shelter.Description.Should().Be("A nice shelter");
+        shelter.Capacity.Should().Be(capacity);
+        shelter.CurrentOccupancy.Should().Be(currentOccupancy);
+        shelter.Photos.Should().BeEquivalentTo(photos);
+        shelter.VirtualTourUrl.Should().Be(virtualTourUrl);
+        shelter.WorkingHours.Should().Be(workingHours);
+        shelter.SocialMedia.Should().BeEquivalentTo(socialMedia);
+        shelter.ManagerId.Should().Be(this.validManagerId);
+        shelter.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        shelter.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
     }
 
     /// <summary>
-    /// Verifies that only provided properties are updated in shelter.
+    /// Tests updating shelter with some parameters.
     /// </summary>
     [Fact]
-    public void Update_WithNewNameAndAddress_ShouldUpdateOnlyThose()
+    public void Update_ShouldChangeProperties_WhenValidDataProvided()
     {
-        var shelter = CreateTestShelter();
-        var oldPhone = shelter.ContactPhone;
-        var newName = "New Name";
-        var newAddress = "456 Updated St";
+        // Arrange
+        var shelter = this.CreateDefaultShelter();
 
-        shelter.Update(name: newName, address: newAddress);
-
-        Assert.Equal(newName, shelter.Name.Value);
-        Assert.Equal(newAddress, shelter.Address.Value);
-        Assert.Equal(oldPhone, shelter.ContactPhone);
-    }
-
-    /// <summary>
-    /// Verifies that new photos and social media collections replace existing ones.
-    /// </summary>
-    [Fact]
-    public void Update_WithNewPhotosAndSocialMedia_ShouldReplaceCollections()
-    {
-        var shelter = CreateTestShelter();
+        var newName = "New Shelter Name";
+        var newAddress = "New Address 456";
+        var newCoordinates = Coordinates.From(51.0, 31.0);
+        var newPhone = "+380509876543";
+        var newEmail = "new@shelter.com";
+        var newDescription = "Updated description";
+        var newCapacity = 20;
+        var newOccupancy = 10;
         var newPhotos = new List<string> { "new1.jpg", "new2.jpg" };
-        var newSocial = new Dictionary<string, string> { { "Instagram", "insta.com/happypaws" } };
+        var newVirtualTourUrl = "https://newtour.example.com";
+        var newWorkingHours = "10:00-19:00";
+        var newSocialMedia = new Dictionary<string, string> { { "Instagram", "instagram.com/new" } };
 
-        shelter.Update(photos: newPhotos, socialMedia: newSocial);
+        // Act
+        shelter.Update(
+            name: newName,
+            address: newAddress,
+            coordinates: newCoordinates,
+            contactPhone: newPhone,
+            contactEmail: newEmail,
+            description: newDescription,
+            capacity: newCapacity,
+            currentOccupancy: newOccupancy,
+            photos: newPhotos,
+            virtualTourUrl: newVirtualTourUrl,
+            workingHours: newWorkingHours,
+            socialMedia: newSocialMedia);
 
-        Assert.Equal(2, shelter.Photos.Count);
-        Assert.Single(shelter.SocialMedia);
-        Assert.Contains("new1.jpg", shelter.Photos);
-        Assert.Contains("Instagram", shelter.SocialMedia.Keys);
+        // Assert
+        shelter.Name.Value.Should().Be(newName);
+        shelter.Address.Value.Should().Be(newAddress);
+        shelter.Coordinates.Should().Be(newCoordinates);
+        shelter.ContactPhone.Value.Should().Be(newPhone);
+        shelter.ContactEmail.Value.Should().Be(newEmail);
+        shelter.Description.Should().Be(newDescription);
+        shelter.Capacity.Should().Be(newCapacity);
+        shelter.CurrentOccupancy.Should().Be(newOccupancy);
+        shelter.Photos.Should().BeEquivalentTo(newPhotos);
+        shelter.VirtualTourUrl.Should().Be(newVirtualTourUrl);
+        shelter.WorkingHours.Should().Be(newWorkingHours);
+        shelter.SocialMedia.Should().BeEquivalentTo(newSocialMedia);
+        shelter.UpdatedAt.Should().BeAfter(shelter.CreatedAt);
     }
 
     /// <summary>
-    /// Verifies that adding an animal increases occupancy and registers the ID.
+    /// Tests updating shelter with null or empty parameters does not change those fields.
     /// </summary>
     [Fact]
-    public void AddAnimal_WithFreeCapacity_ShouldSucceed()
+    public void Update_ShouldNotChangeProperties_WhenParametersAreNullOrEmpty()
     {
-        var shelter = CreateTestShelter();
-        var newAnimalId = Guid.NewGuid();
+        // Arrange
+        var shelter = this.CreateDefaultShelter();
+        var originalName = shelter.Name;
+        var originalAddress = shelter.Address;
+        var originalCoordinates = shelter.Coordinates;
+        var originalPhone = shelter.ContactPhone;
+        var originalEmail = shelter.ContactEmail;
+        var originalDescription = shelter.Description;
+        var originalCapacity = shelter.Capacity;
+        var originalOccupancy = shelter.CurrentOccupancy;
+        var originalPhotos = shelter.Photos;
+        var originalVirtualTourUrl = shelter.VirtualTourUrl;
+        var originalWorkingHours = shelter.WorkingHours;
+        var originalSocialMedia = shelter.SocialMedia;
 
-        shelter.AddAnimal(newAnimalId);
-
-        Assert.Contains(newAnimalId, shelter.AnimalIds);
-        Assert.Equal(4, shelter.CurrentOccupancy);
-    }
-
-    /// <summary>
-    /// Verifies that adding an animal when shelter is full throws an exception.
-    /// </summary>
-    [Fact]
-    public void AddAnimal_WhenFull_ShouldThrow()
-    {
-        var shelter = Shelter.Create(
-            slug: "slug",
-            name: "Name",
-            address: "Address",
-            coordinates: Coordinates.From(10, 10),
-            contactPhone: "+380501111111",
-            contactEmail: "test@example.com",
+        // Act
+        shelter.Update(
+            name: string.Empty,
+            address: " ",
+            coordinates: null,
+            contactPhone: null,
+            contactEmail: string.Empty,
             description: null,
-            capacity: 1,
-            currentOccupancy: 1,
+            capacity: null,
+            currentOccupancy: null,
             photos: null,
             virtualTourUrl: null,
             workingHours: null,
-            socialMedia: null,
-            managerId: Guid.NewGuid());
+            socialMedia: null);
 
+        // Assert
+        shelter.Name.Should().Be(originalName);
+        shelter.Address.Should().Be(originalAddress);
+        shelter.Coordinates.Should().Be(originalCoordinates);
+        shelter.ContactPhone.Should().Be(originalPhone);
+        shelter.ContactEmail.Should().Be(originalEmail);
+        shelter.Description.Should().Be(originalDescription);
+        shelter.Capacity.Should().Be(originalCapacity);
+        shelter.CurrentOccupancy.Should().Be(originalOccupancy);
+        shelter.Photos.Should().BeEquivalentTo(originalPhotos);
+        shelter.VirtualTourUrl.Should().Be(originalVirtualTourUrl);
+        shelter.WorkingHours.Should().Be(originalWorkingHours);
+        shelter.SocialMedia.Should().BeEquivalentTo(originalSocialMedia);
+    }
+
+    /// <summary>
+    /// Tests adding animal to shelter increases occupancy.
+    /// </summary>
+    [Fact]
+    public void AddAnimal_ShouldAddAnimal_WhenCapacityNotExceeded()
+    {
+        // Arrange
+        var shelter = this.CreateDefaultShelter(capacity: 2, currentOccupancy: 1);
         var animalId = Guid.NewGuid();
 
-        var ex = Assert.Throws<InvalidOperationException>(() => shelter.AddAnimal(animalId));
-        Assert.Contains("Притулок заповнений", ex.Message);
+        // Act
+        shelter.AddAnimal(animalId);
+
+        // Assert
+        shelter.AnimalIds.Should().Contain(animalId);
+        shelter.CurrentOccupancy.Should().Be(2);
+        shelter.UpdatedAt.Should().BeAfter(shelter.CreatedAt);
     }
 
     /// <summary>
-    /// Verifies that adding the same animal twice throws an exception.
+    /// Tests adding animal throws if capacity exceeded.
     /// </summary>
     [Fact]
-    public void AddAnimal_AlreadyExists_ShouldThrow()
+    public void AddAnimal_ShouldThrow_WhenCapacityExceeded()
     {
-        var shelter = CreateTestShelter();
-        var existingId = Guid.NewGuid();
-        shelter.AddAnimal(existingId);
+        // Arrange
+        var shelter = this.CreateDefaultShelter(capacity: 1, currentOccupancy: 1);
+        var animalId = Guid.NewGuid();
 
-        var ex = Assert.Throws<InvalidOperationException>(() => shelter.AddAnimal(existingId));
-        Assert.Contains("Ця тварина вже перебуває у притулку", ex.Message);
+        // Act
+        Action act = () => shelter.AddAnimal(animalId);
+
+        // Assert
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("Притулок заповнений. Неможливо додати нову тварину.");
     }
 
     /// <summary>
-    /// Verifies that removing an existing animal decreases occupancy.
+    /// Tests adding the same animal twice throws.
     /// </summary>
     [Fact]
-    public void RemoveAnimal_ExistingAnimal_ShouldSucceed()
+    public void AddAnimal_ShouldThrow_WhenAnimalAlreadyAdded()
     {
-        var shelter = CreateTestShelter();
+        // Arrange
+        var shelter = this.CreateDefaultShelter(capacity: 2, currentOccupancy: 0);
         var animalId = Guid.NewGuid();
         shelter.AddAnimal(animalId);
-        var before = shelter.CurrentOccupancy;
 
+        // Act
+        Action act = () => shelter.AddAnimal(animalId);
+
+        // Assert
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("Ця тварина вже перебуває у притулку.");
+    }
+
+    /// <summary>
+    /// Tests removing animal decreases occupancy.
+    /// </summary>
+    [Fact]
+    public void RemoveAnimal_ShouldRemoveAnimal_WhenExists()
+    {
+        // Arrange
+        var shelter = this.CreateDefaultShelter(capacity: 5, currentOccupancy: 0);
+        var animalId = Guid.NewGuid();
+        shelter.AddAnimal(animalId);
+
+        // Act
         shelter.RemoveAnimal(animalId);
 
-        Assert.DoesNotContain(animalId, shelter.AnimalIds);
-        Assert.Equal(before - 1, shelter.CurrentOccupancy);
+        // Assert
+        shelter.AnimalIds.Should().NotContain(animalId);
+        shelter.CurrentOccupancy.Should().Be(0);
+        shelter.UpdatedAt.Should().BeAfter(shelter.CreatedAt);
     }
 
     /// <summary>
-    /// Verifies that removing a non-existent animal throws an exception.
+    /// Tests removing animal throws if animal not found.
     /// </summary>
     [Fact]
-    public void RemoveAnimal_NotFound_ShouldThrow()
+    public void RemoveAnimal_ShouldThrow_WhenAnimalNotFound()
     {
-        var shelter = CreateTestShelter();
-        var missingId = Guid.NewGuid();
+        // Arrange
+        var shelter = this.CreateDefaultShelter();
 
-        var ex = Assert.Throws<InvalidOperationException>(() => shelter.RemoveAnimal(missingId));
-        Assert.Contains("Тварину не знайдено", ex.Message);
+        // Act
+        Action act = () => shelter.RemoveAnimal(Guid.NewGuid());
+
+        // Assert
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("Тварину не знайдено у притулку.");
     }
 
     /// <summary>
-    /// Verifies that HasFreeCapacity returns true when there is space.
+    /// Tests HasFreeCapacity returns true when occupancy less than capacity.
     /// </summary>
     [Fact]
-    public void HasFreeCapacity_WhenSpaceAvailable_ShouldReturnTrue()
+    public void HasFreeCapacity_ShouldReturnTrue_WhenCapacityAvailable()
     {
-        var shelter = CreateTestShelter();
+        // Arrange
+        var shelter = this.CreateDefaultShelter(capacity: 5, currentOccupancy: 3);
 
-        Assert.True(shelter.HasFreeCapacity());
+        // Act
+        var hasCapacity = shelter.HasFreeCapacity();
+
+        // Assert
+        hasCapacity.Should().BeTrue();
     }
 
     /// <summary>
-    /// Verifies that HasFreeCapacity returns false when shelter is full.
+    /// Tests HasFreeCapacity returns false when occupancy equals capacity.
     /// </summary>
     [Fact]
-    public void HasFreeCapacity_WhenFull_ShouldReturnFalse()
+    public void HasFreeCapacity_ShouldReturnFalse_WhenCapacityFull()
     {
-        var shelter = Shelter.Create(
-            slug: "slug",
-            name: "Full Shelter",
-            address: "Full Street",
-            coordinates: Coordinates.From(1, 1),
-            contactPhone: "+380501111111",
-            contactEmail: "full@example.com",
-            description: null,
-            capacity: 2,
-            currentOccupancy: 2,
-            photos: null,
-            virtualTourUrl: null,
-            workingHours: null,
-            socialMedia: null,
-            managerId: Guid.NewGuid());
+        // Arrange
+        var shelter = this.CreateDefaultShelter(capacity: 3, currentOccupancy: 3);
 
-        Assert.False(shelter.HasFreeCapacity());
+        // Act
+        var hasCapacity = shelter.HasFreeCapacity();
+
+        // Assert
+        hasCapacity.Should().BeFalse();
     }
 
     /// <summary>
-    /// Creates a test shelter with predefined data.
+    /// Tests AddOrUpdateSocialMedia adds a new platform.
     /// </summary>
-    /// <returns>A new <see cref="Shelter"/> instance.</returns>
-    private static Shelter CreateTestShelter()
+    [Fact]
+    public void AddOrUpdateSocialMedia_ShouldAddPlatform_WhenValidData()
+    {
+        // Arrange
+        var shelter = this.CreateDefaultShelter();
+        var platform = "Twitter";
+        var url = "https://twitter.com/shelter";
+
+        // Act
+        shelter.AddOrUpdateSocialMedia(platform, url);
+
+        // Assert
+        shelter.SocialMedia.Should().ContainKey(platform);
+        shelter.SocialMedia[platform].Should().Be(url);
+        shelter.UpdatedAt.Should().BeAfter(shelter.CreatedAt);
+    }
+
+    /// <summary>
+    /// Tests AddOrUpdateSocialMedia updates existing platform url.
+    /// </summary>
+    [Fact]
+    public void AddOrUpdateSocialMedia_ShouldUpdatePlatform_WhenAlreadyExists()
+    {
+        // Arrange
+        var shelter = this.CreateDefaultShelter();
+        var platform = "Facebook";
+        var url1 = "https://facebook.com/old";
+        var url2 = "https://facebook.com/new";
+
+        shelter.AddOrUpdateSocialMedia(platform, url1);
+
+        // Act
+        shelter.AddOrUpdateSocialMedia(platform, url2);
+
+        // Assert
+        shelter.SocialMedia[platform].Should().Be(url2);
+    }
+
+    /// <summary>
+    /// Tests AddOrUpdateSocialMedia throws when platform is null or whitespace.
+    /// </summary>
+    /// <param name="invalidPlatform">Invalid platform name (null, empty, or whitespace).</param>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void AddOrUpdateSocialMedia_ShouldThrow_WhenPlatformInvalid(string? invalidPlatform)
+    {
+        // Arrange
+        var shelter = this.CreateDefaultShelter();
+
+        // Act
+        Action act = () => shelter.AddOrUpdateSocialMedia(invalidPlatform!, "https://url.com");
+
+        // Assert
+        act.Should()
+            .Throw<ArgumentException>()
+            .WithMessage("Назва платформи не може бути порожньою.*");
+    }
+
+    /// <summary>
+    /// Tests AddOrUpdateSocialMedia throws when url is null or whitespace.
+    /// </summary>
+    /// <param name="invalidUrl">Invalid URL value (null, empty, or whitespace).</param>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void AddOrUpdateSocialMedia_ShouldThrow_WhenUrlInvalid(string? invalidUrl)
+    {
+        // Arrange
+        var shelter = this.CreateDefaultShelter();
+
+        // Act
+        Action act = () => shelter.AddOrUpdateSocialMedia("Facebook", invalidUrl!);
+
+        // Assert
+        act.Should()
+            .Throw<ArgumentException>()
+            .WithMessage("URL не може бути порожнім.*");
+    }
+
+    /// <summary>
+    /// Tests RemoveSocialMedia removes platform if exists.
+    /// </summary>
+    [Fact]
+    public void RemoveSocialMedia_ShouldRemovePlatform_WhenExists()
+    {
+        // Arrange
+        var shelter = this.CreateDefaultShelter();
+        var platform = "Instagram";
+        shelter.AddOrUpdateSocialMedia(platform, "https://instagram.com/shelter");
+
+        // Act
+        var removed = shelter.RemoveSocialMedia(platform);
+
+        // Assert
+        removed.Should().BeTrue();
+        shelter.SocialMedia.Should().NotContainKey(platform);
+        shelter.UpdatedAt.Should().BeAfter(shelter.CreatedAt);
+    }
+
+    /// <summary>
+    /// Tests RemoveSocialMedia returns false when platform does not exist.
+    /// </summary>
+    [Fact]
+    public void RemoveSocialMedia_ShouldReturnFalse_WhenPlatformNotExists()
+    {
+        // Arrange
+        var shelter = this.CreateDefaultShelter();
+
+        // Act
+        var removed = shelter.RemoveSocialMedia("NonExisting");
+
+        // Assert
+        removed.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Tests that <see cref="Shelter.AddPhotoAsync"/> adds the photo URL to the shelter's photos
+    /// after a successful upload via the file storage service.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test operation.</returns>
+    [Fact]
+    public async Task AddPhotoAsync_ShouldAddPhotoUrl_WhenUploadSucceeds()
+    {
+        // Arrange
+        var fileStorageMock = new Mock<IFileStorageService>();
+        fileStorageMock
+            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<string[]>()))
+            .ReturnsAsync("uploaded-photo-url");
+
+        var shelter = this.CreateDefaultShelter();
+
+        var mediaConfig = new MediaConfig(1024 * 1024, new[] { ".jpg" });
+        using var stream = new MemoryStream(new byte[10]);
+
+        // Act
+        await shelter.AddPhotoAsync(fileStorageMock.Object, stream, "photo.jpg", 10, mediaConfig);
+
+        // Assert
+        shelter.Photos.Should().Contain("uploaded-photo-url");
+        shelter.UpdatedAt.Should().BeAfter(shelter.CreatedAt);
+        fileStorageMock.Verify(x => x.UploadAsync(It.IsAny<Stream>(), "photo.jpg", mediaConfig.maxSizeBytes, mediaConfig.allowedExtensions), Times.Once);
+    }
+
+    /// <summary>
+    /// Tests that <see cref="Shelter.AddPhotoAsync"/> throws an <see cref="ArgumentNullException"/>
+    /// when the file stream parameter is null.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test operation.</returns>
+    [Fact]
+    public async Task AddPhotoAsync_ShouldThrow_WhenFileStreamIsNull()
+    {
+        // Arrange
+        var shelter = this.CreateDefaultShelter();
+        var mediaConfig = new MediaConfig(1024 * 1024, new[] { ".jpg" });
+
+        // Act
+        Func<Task> act = () => shelter.AddPhotoAsync(Mock.Of<IFileStorageService>(), null!, "file.jpg", 10, mediaConfig);
+
+        // Assert
+        await act.Should().ThrowAsync<ArgumentNullException>();
+    }
+
+    /// <summary>
+    /// Tests AddPhotoAsync throws when file name is null or whitespace.
+    /// </summary>
+    /// <param name="invalidFileName">Invalid file name value (null, empty, or whitespace).</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test operation.</returns>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public async Task AddPhotoAsync_ShouldThrow_WhenFileNameInvalid(string? invalidFileName)
+    {
+        // Arrange
+        var shelter = this.CreateDefaultShelter();
+        var mediaConfig = new MediaConfig(1024 * 1024, new[] { ".jpg" });
+        using var stream = new MemoryStream(new byte[10]);
+
+        // Act
+        Func<Task> act = () => shelter.AddPhotoAsync(Mock.Of<IFileStorageService>(), stream, invalidFileName!, 10, mediaConfig);
+
+        // Assert
+        await act.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("Ім'я файлу не може бути порожнім.*");
+    }
+
+    /// <summary>
+    /// Tests RemovePhotoAsync removes photo and calls DeleteAsync.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test operation.</returns>
+    [Fact]
+    public async Task RemovePhotoAsync_ShouldRemovePhoto_WhenPhotoExists()
+    {
+        // Arrange
+        var fileStorageMock = new Mock<IFileStorageService>();
+        fileStorageMock.Setup(x => x.DeleteAsync(It.IsAny<string>())).Returns(Task.CompletedTask);
+
+        var shelter = this.CreateDefaultShelter();
+        shelter.Update(photos: new List<string> { "photo-to-remove.jpg" });
+
+        // Act
+        var result = await shelter.RemovePhotoAsync(fileStorageMock.Object, "photo-to-remove.jpg");
+
+        // Assert
+        result.Should().BeTrue();
+        shelter.Photos.Should().NotContain("photo-to-remove.jpg");
+        fileStorageMock.Verify(x => x.DeleteAsync("photo-to-remove.jpg"), Times.Once);
+        shelter.UpdatedAt.Should().BeAfter(shelter.CreatedAt);
+    }
+
+    /// <summary>
+    /// Tests RemovePhotoAsync returns false if photoUrl is null or whitespace.
+    /// </summary>
+    /// <param name="invalidPhotoUrl">Invalid photo URL (null, empty, or whitespace).</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous test operation.</returns>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public async Task RemovePhotoAsync_ShouldReturnFalse_WhenPhotoUrlInvalid(string? invalidPhotoUrl)
+    {
+        // Arrange
+        var shelter = this.CreateDefaultShelter();
+
+        // Act
+        var result = await shelter.RemovePhotoAsync(Mock.Of<IFileStorageService>(), invalidPhotoUrl!);
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Creates a default shelter instance for testing.
+    /// </summary>
+    /// <param name="capacity">Optional capacity override.</param>
+    /// <param name="currentOccupancy">Optional current occupancy override.</param>
+    /// <returns>New <see cref="Shelter"/> instance.</returns>
+    private Shelter CreateDefaultShelter(int capacity = 10, int currentOccupancy = 0)
     {
         return Shelter.Create(
-            slug: "test-shelter",
-            name: "Happy Paws",
-            address: "123 Main St",
-            coordinates: Coordinates.From(50.4501, 30.5234),
-            contactPhone: "+380501234567",
-            contactEmail: "info@happypaws.org",
-            description: "A friendly shelter",
-            capacity: 10,
-            currentOccupancy: 3,
-            photos: new List<string> { "photo1.jpg", "photo2.jpg" },
-            virtualTourUrl: "https://tour.example.com",
-            workingHours: "9:00 - 18:00",
-            socialMedia: new Dictionary<string, string> { { "Facebook", "fb.com/happypaws" } },
-            managerId: Guid.NewGuid());
+            "default-slug",
+            "Default Name",
+            "Default Address",
+            this.validCoordinates,
+            "+380501112233",
+            "default@shelter.com",
+            "Default description",
+            capacity,
+            currentOccupancy,
+            new List<string> { "photo1.jpg" },
+            "https://defaulttour.com",
+            "9-17",
+            new Dictionary<string, string> { { "Facebook", "fb.com/default" } },
+            this.validManagerId);
     }
 }

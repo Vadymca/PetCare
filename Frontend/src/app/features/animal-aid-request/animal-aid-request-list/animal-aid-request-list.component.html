@@ -1,0 +1,43 @@
+<div class="gap-4 p-4">
+  <h1 class="text-3xl font-bold mb-4">
+    {{ 'ANIMAL_AID_REQUEST' | translate }}
+  </h1>
+</div>
+@if (loading()) {
+  <div class="text-center text-gray-500 text-lg mt-10">
+    <app-loading-spinner></app-loading-spinner>
+  </div>
+} @else if (animalAidRequests().length === 0) {
+  <div class="text-center text-gray-500 text-lg mt-10">
+    {{ 'NO_REQUESTS_FOUND' | translate }}
+  </div>
+} @else if (error()) {
+  <div class="p-4 text-red-600 font-medium">
+    {{ error() ?? '' | translate }}
+  </div>
+} @else {
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+    @for (animalAidRequest of animalAidRequests(); track animalAidRequest.id) {
+      <a
+        [routerLink]="['/animal-aid-requests', animalAidRequest.id]"
+        class="block p-4 bg-white rounded-2xl shadow hover:shadow-lg transition"
+      >
+        <h2 class="text-xl font-semibold">{{ animalAidRequest.title }}</h2>
+        <p class="text-gray-600">
+          {{ 'AID_REQUEST_CATEGORY' | translate }}:
+          {{ animalAidRequest.category || ('UNKNOWN' | translate) }}
+        </p>
+        <p class="text-gray-600">
+          {{ 'AID_REQUEST_STATUS' | translate }}:
+          {{ animalAidRequest.status || ('UNKNOWN' | translate) }}
+        </p>
+        <p class="text-gray-600">
+          {{ 'AID_REQUEST_ESTIMATED_COST' | translate }}:
+          {{ animalAidRequest.estimatedCost || ('UNKNOWN' | translate) }}
+          {{ 'CURRENCY' | translate }}
+        </p>
+				
+      </a>
+    }
+  </div>
+}

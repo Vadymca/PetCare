@@ -98,7 +98,7 @@ export class AnimalSubscriptionService {
       animalSubscription
     );
   }
-  deleteAnimalSubscription(id: string): Observable<AnimalSubscription> {
-    return this.api.delete<AnimalSubscription>(this.endpoint, id);
+  deleteAnimalSubscription(id: string): Observable<void> {
+    return this.api.delete<void>(this.endpoint, id);
   }
 }

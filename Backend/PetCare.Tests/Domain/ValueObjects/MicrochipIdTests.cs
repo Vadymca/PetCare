@@ -1,8 +1,4 @@
-﻿// <copyright file="MicrochipIdTests.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Tests.Domain.ValueObjects;
+﻿namespace PetCare.Tests.Domain.ValueObjects;
 using FluentAssertions;
 using PetCare.Domain.ValueObjects;
 using Xunit;

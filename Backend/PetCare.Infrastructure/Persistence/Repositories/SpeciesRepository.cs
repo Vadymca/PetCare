@@ -1,11 +1,7 @@
-﻿// <copyright file="SpeciesRepository.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Infrastructure.Persistence.Repositories;
+﻿namespace PetCare.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
-using PetCare.Domain.Entities;
-using PetCare.Domain.Interfaces;
+using PetCare.Domain.Abstractions.Repositories;
+using PetCare.Domain.Aggregates;
 using PetCare.Infrastructure.Persistence;
 
 /// <summary>

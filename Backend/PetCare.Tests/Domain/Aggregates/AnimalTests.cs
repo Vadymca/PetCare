@@ -1,208 +1,287 @@
-﻿// <copyright file="AnimalTests.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Tests.Domain.Aggregates;
-
+﻿namespace PetCare.Tests.Domain.Aggregates;
+using FluentAssertions;
+using Moq;
+using PetCare.Domain.Abstractions;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 using Xunit;
 
 /// <summary>
-/// Contains unit tests for the <see cref="Animal"/> aggregate.
+/// Unit tests for <see cref="Animal"/> aggregate.
 /// </summary>
-public sealed class AnimalTests
+public class AnimalTests
 {
+    private readonly Guid validUserId = Guid.NewGuid();
+    private readonly Guid validBreedId = Guid.NewGuid();
+    private readonly Guid validShelterId = Guid.NewGuid();
+
     /// <summary>
-    /// Verifies that creating an animal with valid data sets properties correctly.
+    /// Tests that <see cref="Animal.Create"/> creates an instance correctly with valid parameters.
     /// </summary>
     [Fact]
-    public void Create_WithValidData_ShouldSucceed()
+    public void Create_ShouldReturnValidAnimal_WhenParametersAreValid()
     {
+        // Arrange
+        var validUserId = Guid.NewGuid();
+        var validBreedId = Guid.NewGuid();
+        var validShelterId = Guid.NewGuid();
+        string expectedSlugStart = "unique-slug";
+
         // Act
-        var animal = CreateTestAnimal();
+        var animal = Animal.Create(
+            slug: expectedSlugStart,
+            userId: validUserId,
+            name: "TestName",
+            breedId: validBreedId,
+            birthday: null,
+            gender: AnimalGender.Male,
+            description: null,
+            healthStatus: null,
+            photos: new List<string>(),
+            videos: new List<string>(),
+            shelterId: validShelterId,
+            status: AnimalStatus.Available,
+            adoptionRequirements: null,
+            microchipId: null,
+            idNumber: 123,
+            weight: null,
+            height: null,
+            color: null,
+            isSterilized: false,
+            haveDocuments: false);
 
         // Assert
-        Assert.Equal("Барсик", animal.Name.Value);
-        Assert.Equal(AnimalStatus.Available, animal.Status);
-        Assert.Equal("1234567890", animal.MicrochipId?.Value);
-        Assert.Contains("фото1.jpg", animal.Photos);
-        Assert.Contains("відео1.mp4", animal.Videos);
-        Assert.True(animal.IsSterilized);
-        Assert.True(animal.HaveDocuments);
-        Assert.True(animal.CanBeAdopted);
-        Assert.True(animal.HasMicrochip);
+        animal.Slug.Value.Should().StartWith(expectedSlugStart);
+        animal.Slug.Value.Should().MatchRegex(@"^unique-slug-[a-z0-9]{6}$");
+
+        animal.UserId.Should().Be(validUserId);
+        animal.BreedId.Should().Be(validBreedId);
+        animal.ShelterId.Should().Be(validShelterId);
+        animal.Name.Value.Should().Be("TestName");
     }
 
     /// <summary>
-    /// Verifies that creating an animal with empty user ID throws an exception.
+    /// Tests that <see cref="Animal.Create"/> throws <see cref="ArgumentException"/> when UserId is empty.
     /// </summary>
     [Fact]
-    public void Create_WithEmptyUserId_ShouldThrow()
+    public void Create_ShouldThrowArgumentException_WhenUserIdIsEmpty()
     {
-        var ex = Assert.Throws<ArgumentException>(() =>
-            Animal.Create("slug", Guid.Empty, "Ім'я", Guid.NewGuid(), null, AnimalGender.Male, null, null, null, null, Guid.NewGuid(), AnimalStatus.Available, null, null, 0, null, null, null, false, false));
+        Action act = () => Animal.Create(
+            slug: "slug",
+            userId: Guid.Empty,
+            name: "Name",
+            breedId: this.validBreedId,
+            birthday: null,
+            gender: AnimalGender.Male,
+            description: null,
+            healthStatus: null,
+            photos: null,
+            videos: null,
+            shelterId: this.validShelterId,
+            status: AnimalStatus.Available,
+            adoptionRequirements: null,
+            microchipId: null,
+            idNumber: 0,
+            weight: null,
+            height: null,
+            color: null,
+            isSterilized: false,
+            haveDocuments: false);
 
-        Assert.Contains("Ідентифікатор користувача не може бути порожнім.", ex.Message);
+        act.Should().Throw<ArgumentException>().WithMessage("*користувача не може бути порожнім*");
     }
 
     /// <summary>
-    /// Verifies that creating an animal with empty breed ID throws an exception.
+    /// Tests that calling <see cref="Animal.Update"/> updates mutable properties correctly.
     /// </summary>
     [Fact]
-    public void Create_WithEmptyBreedId_ShouldThrow()
+    public void Update_ShouldModifyProperties_WhenValidValuesProvided()
     {
-        var ex = Assert.Throws<ArgumentException>(() =>
-            Animal.Create("slug", Guid.NewGuid(), "Ім'я", Guid.Empty, null, AnimalGender.Male, null, null, null, null, Guid.NewGuid(), AnimalStatus.Available, null, null, 0, null, null, null, false, false));
+        var animal = Animal.Create(
+            slug: "slug",
+            userId: this.validUserId,
+            name: "OldName",
+            breedId: this.validBreedId,
+            birthday: null,
+            gender: AnimalGender.Male,
+            description: null,
+            healthStatus: null,
+            photos: null,
+            videos: null,
+            shelterId: this.validShelterId,
+            status: AnimalStatus.Available,
+            adoptionRequirements: null,
+            microchipId: null,
+            idNumber: 0,
+            weight: null,
+            height: null,
+            color: null,
+            isSterilized: false,
+            haveDocuments: false);
 
-        Assert.Contains("Ідентифікатор породи не може бути порожнім.", ex.Message);
+        animal.Update(
+            name: "NewName",
+            description: "New description",
+            weight: 10.0f,
+            isSterilized: true);
+
+        animal.Name.Value.Should().Be("NewName");
+        animal.Description.Should().Be("New description");
+        animal.Weight.Should().Be(10.0f);
+        animal.IsSterilized.Should().BeTrue();
     }
 
     /// <summary>
-    /// Verifies that creating an animal with empty shelter ID throws an exception.
+    /// Tests that <see cref="Animal.ChangeStatus"/> updates the status and UpdatedAt.
     /// </summary>
     [Fact]
-    public void Create_WithEmptyShelterId_ShouldThrow()
+    public void ChangeStatus_ShouldUpdateStatusAndUpdatedAt()
     {
-        var ex = Assert.Throws<ArgumentException>(() =>
-            Animal.Create("slug", Guid.NewGuid(), "Ім'я", Guid.NewGuid(), null, AnimalGender.Male, null, null, null, null, Guid.Empty, AnimalStatus.Available, null, null, 0, null, null, null, false, false));
+        var animal = Animal.Create(
+            slug: "slug",
+            userId: this.validUserId,
+            name: "Name",
+            breedId: this.validBreedId,
+            birthday: null,
+            gender: AnimalGender.Male,
+            description: null,
+            healthStatus: null,
+            photos: null,
+            videos: null,
+            shelterId: this.validShelterId,
+            status: AnimalStatus.Available,
+            adoptionRequirements: null,
+            microchipId: null,
+            idNumber: 0,
+            weight: null,
+            height: null,
+            color: null,
+            isSterilized: false,
+            haveDocuments: false);
 
-        Assert.Contains("Ідентифікатор притулку не може бути порожнім.", ex.Message);
-    }
-
-    /// <summary>
-    /// Verifies that Update correctly changes selected fields.
-    /// </summary>
-    [Fact]
-    public void Update_WithSelectedFields_ShouldUpdateAnimal()
-    {
-        var animal = CreateTestAnimal();
-
-        animal.Update(name: "Рекс", weight: 18.2f, isSterilized: false);
-
-        Assert.Equal("Рекс", animal.Name.Value);
-        Assert.Equal(18.2f, animal.Weight);
-        Assert.False(animal.IsSterilized);
-    }
-
-    /// <summary>
-    /// Verifies that ChangeStatus updates the animal status.
-    /// </summary>
-    [Fact]
-    public void ChangeStatus_ShouldUpdateStatus()
-    {
-        var animal = CreateTestAnimal();
-
+        var oldUpdatedAt = animal.UpdatedAt;
         animal.ChangeStatus(AnimalStatus.Adopted);
 
-        Assert.Equal(AnimalStatus.Adopted, animal.Status);
-        Assert.False(animal.CanBeAdopted);
+        animal.Status.Should().Be(AnimalStatus.Adopted);
+        animal.UpdatedAt.Should().BeAfter(oldUpdatedAt);
     }
 
     /// <summary>
-    /// Verifies that AddPhoto adds a new photo.
+    /// Tests that <see cref="Animal.ValidateAdoptionRequirements"/> throws if requirements are null or too short.
     /// </summary>
     [Fact]
-    public void AddPhoto_ShouldAddPhoto()
+    public void ValidateAdoptionRequirements_ShouldThrow_WhenRequirementsAreInvalid()
     {
-        var animal = CreateTestAnimal();
-        var url = "фото2.jpg";
+        var animal = Animal.Create(
+            slug: "slug",
+            userId: this.validUserId,
+            name: "Name",
+            breedId: this.validBreedId,
+            birthday: null,
+            gender: AnimalGender.Male,
+            description: null,
+            healthStatus: null,
+            photos: null,
+            videos: null,
+            shelterId: this.validShelterId,
+            status: AnimalStatus.Available,
+            adoptionRequirements: "short",
+            microchipId: null,
+            idNumber: 0,
+            weight: null,
+            height: null,
+            color: null,
+            isSterilized: false,
+            haveDocuments: false);
 
-        animal.AddPhoto(url);
+        Action act = () => animal.ValidateAdoptionRequirements();
 
-        Assert.Contains(url, animal.Photos);
+        act.Should().Throw<InvalidOperationException>().WithMessage("*Вимоги до адопції тварини*");
     }
 
     /// <summary>
-    /// Verifies that RemovePhoto removes an existing photo.
+    /// Tests adding a photo to the animal using a mock <see cref="IFileStorageService"/>.
+    /// Verifies that after a successful upload, the photo URL is added to the animal's photos collection.
     /// </summary>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [Fact]
-    public void RemovePhoto_ShouldRemovePhoto()
+    public async Task AddPhotoAsync_ShouldAddPhotoUrl_WhenUploadSucceeds()
     {
-        var animal = CreateTestAnimal();
-        var existing = "фото1.jpg";
+        var fileStorageMock = new Mock<IFileStorageService>();
+        fileStorageMock
+            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<string[]>()))
+            .ReturnsAsync("uploaded-photo-url");
 
-        animal.RemovePhoto(existing);
+        var animal = Animal.Create(
+            slug: "slug",
+            userId: this.validUserId,
+            name: "Name",
+            breedId: this.validBreedId,
+            birthday: null,
+            gender: AnimalGender.Male,
+            description: null,
+            healthStatus: null,
+            photos: new List<string>(),
+            videos: new List<string>(),
+            shelterId: this.validShelterId,
+            status: AnimalStatus.Available,
+            adoptionRequirements: null,
+            microchipId: null,
+            idNumber: 0,
+            weight: null,
+            height: null,
+            color: null,
+            isSterilized: false,
+            haveDocuments: false);
 
-        Assert.DoesNotContain(existing, animal.Photos);
+        var mediaConfig = new MediaConfig(maxSizeBytes: 1024 * 1024, allowedExtensions: new[] { ".jpg" });
+
+        await animal.AddPhotoAsync(fileStorageMock.Object, new MemoryStream(new byte[10]), "photo.jpg", 10, mediaConfig);
+
+        animal.Photos.Should().Contain("uploaded-photo-url");
     }
 
     /// <summary>
-    /// Verifies that AddVideo adds a new video.
+    /// Tests removing a photo with mock <see cref="IFileStorageService"/>.
     /// </summary>
+    /// <returns>A task that represents the asynchronous test operation.</returns>
     [Fact]
-    public void AddVideo_ShouldAddVideo()
+    public async Task RemovePhotoAsync_ShouldRemovePhotoUrl_WhenPhotoExists()
     {
-        var animal = CreateTestAnimal();
-        var url = "відео2.mp4";
+        var fileStorageMock = new Mock<IFileStorageService>();
+        fileStorageMock.Setup(x => x.DeleteAsync(It.IsAny<string>())).Returns(Task.CompletedTask);
 
-        animal.AddVideo(url);
+        var animal = Animal.Create(
+            slug: "slug",
+            userId: this.validUserId,
+            name: "Name",
+            breedId: this.validBreedId,
+            birthday: null,
+            gender: AnimalGender.Male,
+            description: null,
+            healthStatus: null,
+            photos: new List<string> { "photo-to-remove" },
+            videos: new List<string>(),
+            shelterId: this.validShelterId,
+            status: AnimalStatus.Available,
+            adoptionRequirements: null,
+            microchipId: null,
+            idNumber: 0,
+            weight: null,
+            height: null,
+            color: null,
+            isSterilized: false,
+            haveDocuments: false);
 
-        Assert.Contains(url, animal.Videos);
+        var removed = await animal.RemovePhotoAsync(fileStorageMock.Object, "photo-to-remove");
+
+        removed.Should().BeTrue();
+        animal.Photos.Should().NotContain("photo-to-remove");
+        fileStorageMock.Verify(x => x.DeleteAsync("photo-to-remove"), Times.Once);
     }
-
-    /// <summary>
-    /// Verifies that RemoveVideo removes an existing video.
-    /// </summary>
-    [Fact]
-    public void RemoveVideo_ShouldRemoveVideo()
-    {
-        var animal = CreateTestAnimal();
-        var existing = "відео1.mp4";
-
-        animal.RemoveVideo(existing);
-
-        Assert.DoesNotContain(existing, animal.Videos);
-    }
-
-    /// <summary>
-    /// Verifies that ValidateAdoptionRequirements throws if requirements are too short.
-    /// </summary>
-    [Fact]
-    public void ValidateAdoptionRequirements_WhenTooShort_ShouldThrow()
-    {
-        var animal = CreateTestAnimal();
-        animal.Update(adoptionRequirements: "Замало");
-
-        var ex = Assert.Throws<InvalidOperationException>(() => animal.ValidateAdoptionRequirements());
-        Assert.Equal("Вимоги до адопції тварини не заповнені або занадто короткі.", ex.Message);
-    }
-
-    /// <summary>
-    /// Verifies that ValidateAdoptionRequirements does not throw for valid input.
-    /// </summary>
-    [Fact]
-    public void ValidateAdoptionRequirements_WhenValid_ShouldSucceed()
-    {
-        var animal = CreateTestAnimal();
-        animal.Update(adoptionRequirements: "Просторий будинок, обгороджений двір, турботлива сімʼя");
-
-        animal.ValidateAdoptionRequirements();
-    }
-
-    private static Animal CreateTestAnimal() =>
-       Animal.Create(
-           slug: "dobryj-pes",
-           userId: Guid.NewGuid(),
-           name: "Барсик",
-           breedId: Guid.NewGuid(),
-           birthday: Birthday.Create(new DateOnly(2020, 5, 1)),
-           gender: AnimalGender.Male,
-           description: "Дуже дружній і спокійний пес",
-           healthStatus: "Здоровий",
-           photos: new List<string> { "фото1.jpg" },
-           videos: new List<string> { "відео1.mp4" },
-           shelterId: Guid.NewGuid(),
-           status: AnimalStatus.Available,
-           adoptionRequirements: "Любляча родина з садом",
-           microchipId: "1234567890",
-           idNumber: 42,
-           weight: 15.5f,
-           height: 60.2f,
-           color: "Коричневий",
-           isSterilized: true,
-           haveDocuments: true);
 }

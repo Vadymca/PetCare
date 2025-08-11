@@ -1,8 +1,4 @@
-﻿// <copyright file="AppDbContext.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Infrastructure.Persistence;
+﻿namespace PetCare.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Entities;

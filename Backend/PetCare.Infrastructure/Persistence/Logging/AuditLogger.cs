@@ -1,10 +1,6 @@
-﻿// <copyright file="AuditLogger.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
+﻿namespace PetCare.Infrastructure.Persistence.Logging;
 
-namespace PetCare.Infrastructure.Persistence.Logging;
-
-using PetCare.Domain.DomainServices;
+using PetCare.Domain.Abstractions.Repositories;
 using Serilog;
 using System.Threading;
 using System.Threading.Tasks;

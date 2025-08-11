@@ -1,15 +1,14 @@
-﻿// <copyright file="Shelter.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
+﻿namespace PetCare.Domain.Aggregates;
 
-namespace PetCare.Domain.Aggregates;
+using PetCare.Domain.Abstractions;
 using PetCare.Domain.Common;
+using PetCare.Domain.Events;
 using PetCare.Domain.ValueObjects;
 
 /// <summary>
 /// Represents a shelter in the system.
 /// </summary>
-public sealed class Shelter : BaseEntity
+public sealed class Shelter : AggregateRoot
 {
     private readonly List<Guid> animalIds = new();
     private readonly List<string> photos = new();
@@ -189,7 +188,7 @@ public sealed class Shelter : BaseEntity
         Dictionary<string, string>? socialMedia,
         Guid managerId)
     {
-        return new Shelter(
+        var shelter = new Shelter(
             Slug.Create(slug),
             Name.Create(name),
             Address.Create(address),
@@ -204,6 +203,9 @@ public sealed class Shelter : BaseEntity
             workingHours,
             socialMedia ?? new(),
             managerId);
+
+        shelter.AddDomainEvent(new ShelterCreatedEvent(shelter.Id));
+        return shelter;
     }
 
     /// <summary>
@@ -302,6 +304,7 @@ public sealed class Shelter : BaseEntity
         }
 
         this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new ShelterUpdatedEvent(this.Id));
     }
 
     /// <summary>
@@ -324,6 +327,7 @@ public sealed class Shelter : BaseEntity
         this.animalIds.Add(animalId);
         this.CurrentOccupancy++;
         this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new AnimalAddedToShelterEvent(this.Id, animalId, this.CurrentOccupancy));
     }
 
     /// <summary>
@@ -340,6 +344,106 @@ public sealed class Shelter : BaseEntity
 
         this.CurrentOccupancy--;
         this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new AnimalRemovedFromShelterEvent(this.Id, animalId, this.CurrentOccupancy));
+    }
+
+    /// <summary>
+    /// Asynchronously adds a photo to the shelter with validation and uploads it via the file storage service.
+    /// </summary>
+    /// <param name="fileStorage">The file storage service.</param>
+    /// <param name="fileStream">The stream of the file to upload.</param>
+    /// <param name="fileName">The name of the file for validation and storage.</param>
+    /// <param name="fileSizeBytes">The size of the file in bytes for validation.</param>
+    /// <param name="config">The media validation configuration (size and extensions).</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentException">Thrown when validation fails.</exception>
+    public async Task AddPhotoAsync(
+        IFileStorageService fileStorage,
+        Stream fileStream,
+        string fileName,
+        long fileSizeBytes,
+        MediaConfig config)
+    {
+        if (fileStream == null)
+        {
+            throw new ArgumentNullException(nameof(fileStream));
+        }
+
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            throw new ArgumentException("Ім'я файлу не може бути порожнім.", nameof(fileName));
+        }
+
+        config.Validate(fileName, fileSizeBytes);
+
+        var photoUrl = await fileStorage.UploadAsync(fileStream, fileName, config.maxSizeBytes, config.allowedExtensions);
+        this.photos.Add(photoUrl);
+        this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new ShelterPhotoAddedEvent(this.Id, photoUrl));
+    }
+
+    /// <summary>
+    /// Asynchronously removes a photo from the shelter and deletes the file via the file storage service.
+    /// </summary>
+    /// <param name="fileStorage">The file storage service.</param>
+    /// <param name="photoUrl">The URL of the photo to remove.</param>
+    /// <returns>A task with a result indicating whether the photo was successfully removed.</returns>
+    public async Task<bool> RemovePhotoAsync(IFileStorageService fileStorage, string photoUrl)
+    {
+        if (string.IsNullOrWhiteSpace(photoUrl))
+        {
+            return false;
+        }
+
+        var removed = this.photos.Remove(photoUrl);
+        if (removed)
+        {
+            await fileStorage.DeleteAsync(photoUrl);
+            this.UpdatedAt = DateTime.UtcNow;
+            this.AddDomainEvent(new ShelterPhotoRemovedEvent(this.Id, photoUrl));
+        }
+
+        return removed;
+    }
+
+    /// <summary>
+    /// Adds or updates a social media link for the shelter.
+    /// </summary>
+    /// <param name="platform">The social media platform name (e.g. "Facebook").</param>
+    /// <param name="url">The URL to the social media page.</param>
+    /// <exception cref="ArgumentException">Thrown when platform or url is null or whitespace.</exception>
+    public void AddOrUpdateSocialMedia(string platform, string url)
+    {
+        if (string.IsNullOrWhiteSpace(platform))
+        {
+            throw new ArgumentException("Назва платформи не може бути порожньою.", nameof(platform));
+        }
+
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            throw new ArgumentException("URL не може бути порожнім.", nameof(url));
+        }
+
+        this.socialMedia[platform] = url;
+        this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new ShelterSocialMediaAddedOrUpdatedEvent(this.Id, platform, url));
+    }
+
+    /// <summary>
+    /// Removes a social media link from the shelter.
+    /// </summary>
+    /// <param name="platform">The social media platform name to remove.</param>
+    /// <returns>True if the link was removed; otherwise, false.</returns>
+    public bool RemoveSocialMedia(string platform)
+    {
+        var removed = this.socialMedia.Remove(platform);
+        if (removed)
+        {
+            this.UpdatedAt = DateTime.UtcNow;
+            this.AddDomainEvent(new ShelterSocialMediaRemovedEvent(this.Id, platform));
+        }
+
+        return removed;
     }
 
     /// <summary>

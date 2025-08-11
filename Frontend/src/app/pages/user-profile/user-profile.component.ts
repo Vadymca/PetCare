@@ -147,11 +147,6 @@ export class UserProfileComponent {
       return;
     }
 
-    if (!this.passwordsMatch) {
-      alert('Паролі не збігаються');
-      return;
-    }
-
     const updatedData = {
       ...this.profileForm.value,
       photo: this.profilePhoto(),

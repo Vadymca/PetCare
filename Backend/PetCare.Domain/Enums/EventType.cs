@@ -1,8 +1,4 @@
-﻿// <copyright file="EventType.cs" company="PetCare">
-// Copyright (c) PetCare. All rights reserved.
-// </copyright>
-
-namespace PetCare.Domain.Enums;
+﻿namespace PetCare.Domain.Enums;
 
 /// <summary>
 /// Represents the types of events supported by the system.
