@@ -24,4 +24,14 @@ public enum AnimalStatus
     /// The animal is currently undergoing treatment.
     /// </summary>
     InTreatment,
+
+    /// <summary>
+    /// The animal has passed away.
+    /// </summary>
+    Dead,
+
+    /// <summary>
+    /// The animal has been euthanized.
+    /// </summary>
+    Euthanized,
 }

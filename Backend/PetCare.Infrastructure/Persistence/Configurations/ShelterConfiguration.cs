@@ -23,35 +23,34 @@ public class ShelterConfiguration : IEntityTypeConfiguration<Shelter>
         builder.HasKey(s => s.Id);
 
         builder.Property(s => s.Id)
-       .HasColumnType("uuid")
-       .HasDefaultValueSql("gen_random_uuid()");
+            .HasDefaultValueSql("gen_random_uuid()");
 
         builder.Property(s => s.Slug)
-        .HasConversion(
-            slug => slug.Value,
-            value => Slug.Create(value))
-        .HasMaxLength(64)
-        .IsRequired();
+            .HasConversion(
+                slug => slug.Value,
+                value => Slug.Create(value))
+            .HasMaxLength(64)
+            .IsRequired();
 
         builder.HasIndex(s => s.Slug)
-        .IsUnique();
+            .IsUnique();
 
         builder.Property(s => s.Name)
-       .HasConversion(name => name.Value, value => Name.Create(value))
-       .HasMaxLength(100)
-       .IsRequired();
+            .HasConversion(
+                name => name.Value,
+                value => Name.Create(value))
+            .HasMaxLength(100)
+            .IsRequired();
 
         builder.Property(s => s.Address)
-        .HasConversion(
-            addr => addr.ToString(),
-            str => Address.Create(str))
-        .HasColumnType("text")
-        .IsRequired();
+            .HasConversion(
+                addr => addr.ToString(),
+                str => Address.Create(str))
+            .IsRequired();
 
         builder.OwnsOne(s => s.Coordinates, cb =>
         {
             cb.Property(c => c.Point)
-              .HasColumnName("Coordinates")
               .HasColumnType("geometry (point,4326)")
               .IsRequired();
         });
@@ -60,55 +59,52 @@ public class ShelterConfiguration : IEntityTypeConfiguration<Shelter>
             .HasMethod("GIST");
 
         builder.Property(s => s.ContactPhone)
-        .HasConversion(
-            phone => phone.Value,
-            value => PhoneNumber.Create(value))
-        .HasMaxLength(20)
-        .IsRequired();
+            .HasConversion(
+                phone => phone.Value,
+                value => PhoneNumber.Create(value))
+            .HasMaxLength(20)
+            .IsRequired();
 
         builder.Property(s => s.ContactEmail)
-        .HasConversion(
-            email => email.Value,
-            value => Email.Create(value))
-        .HasMaxLength(255)
-        .IsRequired();
+            .HasConversion(
+                email => email.Value,
+                value => Email.Create(value))
+            .HasMaxLength(255)
+            .IsRequired();
 
         builder.Property(s => s.Description)
-        .HasColumnType("text");
+             .IsRequired(false);
 
         builder.Property(s => s.Capacity)
-        .IsRequired();
+            .IsRequired();
 
         builder.Property(s => s.CurrentOccupancy)
-        .IsRequired();
+            .IsRequired();
 
         builder.Property(s => s.Photos)
-       .HasColumnType("jsonb");
+            .HasColumnType("jsonb");
 
         builder.Property(s => s.VirtualTourUrl)
-        .HasMaxLength(255);
+            .HasMaxLength(255);
 
         builder.Property(s => s.WorkingHours)
-        .HasMaxLength(100);
+            .HasMaxLength(100);
 
         builder.Property(s => s.SocialMedia)
-       .HasColumnType("jsonb");
+            .HasColumnType("jsonb");
 
         builder.Property(s => s.ManagerId)
-        .HasColumnType("uuid")
-        .IsRequired(false);
+            .IsRequired(false);
 
         builder.HasOne(s => s.Manager)
-        .WithMany()
-        .HasForeignKey(s => s.ManagerId)
-        .OnDelete(DeleteBehavior.SetNull);
+            .WithMany()
+            .HasForeignKey(s => s.ManagerId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.Property(s => s.CreatedAt)
-        .HasColumnType("timestamptz")
-        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.Property(s => s.UpdatedAt)
-       .HasColumnType("timestamptz")
-       .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
     }
 }

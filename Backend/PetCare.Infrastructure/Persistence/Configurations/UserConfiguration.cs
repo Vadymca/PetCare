@@ -24,7 +24,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasKey(u => u.Id);
 
         builder.Property(u => u.Id)
-            .HasColumnType("uuid")
             .HasDefaultValueSql("gen_random_uuid()");
 
         builder.Property(u => u.Email)
@@ -60,7 +59,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsUnique();
 
         builder.Property(u => u.Role)
-            .HasColumnType("varchar(20)")
+            .HasColumnType("user_role")
             .IsRequired();
 
         builder.Property(u => u.Preferences)
@@ -77,16 +76,13 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(255);
 
         builder.Property(u => u.Language)
-            .HasColumnType("varchar(10)")
             .HasDefaultValue("uk")
             .IsRequired();
 
         builder.Property(u => u.CreatedAt)
-            .HasColumnType("timestamptz")
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.Property(u => u.UpdatedAt)
-            .HasColumnType("timestamptz")
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
     }
 }

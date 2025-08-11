@@ -20,7 +20,6 @@ public class SpeciesConfiguration : IEntityTypeConfiguration<Specie>
         builder.HasKey(s => s.Id);
 
         builder.Property(s => s.Id)
-            .HasColumnType("uuid")
             .HasDefaultValueSql("gen_random_uuid()");
 
         builder.Property(s => s.Name)
