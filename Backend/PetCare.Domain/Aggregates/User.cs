@@ -593,6 +593,7 @@ public sealed class User : AggregateRoot
         if (removed)
         {
             this.UpdatedAt = DateTime.UtcNow;
+
             this.AddDomainEvent(new GamificationRewardRemovedEvent(this.Id, rewardId));
         }
 

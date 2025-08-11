@@ -36,10 +36,6 @@
 		<AdditionalFiles Include="stylecop.json" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="DomainServices\" />
-	</ItemGroup>
-
 	<PropertyGroup>
 		<NoWarn>$(NoWarn);SA1633</NoWarn>
 		<NoWarn>$(NoWarn);SA1000</NoWarn>

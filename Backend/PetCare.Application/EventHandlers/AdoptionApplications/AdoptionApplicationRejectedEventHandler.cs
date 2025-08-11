@@ -1,17 +1,17 @@
 ﻿namespace PetCare.Application.EventHandlers.AdoptionApplications;
-
 using PetCare.Application.Abstractions.Events;
 using PetCare.Domain.Events;
+using System.Threading.Tasks;
 
 /// <summary>
-/// Handles the event raised when an adoption application is rejected.
+/// Handles AdoptionApplicationRejectedEvent.
 /// </summary>
-public sealed class AdoptionApplicationRejectedHandler : IDomainEventHandler<AdoptionApplicationRejectedEvent>
+public sealed class AdoptionApplicationRejectedEventHandler : IDomainEventHandler<AdoptionApplicationRejectedEvent>
 {
     /// <inheritdoc/>
     public async Task HandleAsync(AdoptionApplicationRejectedEvent domainEvent, CancellationToken cancellationToken = default)
     {
-        // Логіка
+        // логіка
         await Task.CompletedTask;
     }
 }

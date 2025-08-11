@@ -1,7 +1,12 @@
 ﻿namespace PetCare.Application;
 using Microsoft.Extensions.DependencyInjection;
 using PetCare.Application.Abstractions.Events;
-using System.Reflection;
+using PetCare.Application.EventHandlers.AdoptionApplications;
+using PetCare.Application.EventHandlers.Animals;
+using PetCare.Application.EventHandlers.Shelters;
+using PetCare.Application.EventHandlers.Species;
+using PetCare.Application.EventHandlers.VolunteerTasks;
+using PetCare.Domain.Events;
 
 /// <summary>
 /// Configures dependencies for the Application layer.
@@ -11,33 +16,41 @@ public static class DependencyInjection
     /// <summary>
     /// Adds Application-layer services.
     /// </summary>
-    /// <param name="services">The service collection to which Application services will be added.</param>
+    /// <param name="services">The service collection.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddAplication(this IServiceCollection services)
     {
-        services.RegisterAllDomainEventHandlers();
-        return services;
-    }
+        services.AddScoped<IDomainEventHandler<AdoptionApplicationCreatedEvent>, AdoptionApplicationCreatedEventHandler>();
+        services.AddScoped<IDomainEventHandler<AdoptionApplicationApprovedEvent>, AdoptionApplicationApprovedEventHandler>();
+        services.AddScoped<IDomainEventHandler<AdoptionApplicationRejectedEvent>, AdoptionApplicationRejectedEventHandler>();
+        services.AddScoped<IDomainEventHandler<AdoptionApplicationNotesUpdatedEvent>, AdoptionApplicationNotesUpdatedEventHandler>();
 
-    /// <summary>
-    /// Automatically registers all domain event handlers from the current assembly.
-    /// </summary>
-    private static IServiceCollection RegisterAllDomainEventHandlers(this IServiceCollection services)
-    {
-        var assembly = Assembly.GetExecutingAssembly();
-        var handlerInterfaceType = typeof(IDomainEventHandler<>);
+        services.AddScoped<IDomainEventHandler<AnimalCreatedEvent>, AnimalCreatedEventHandler>();
+        services.AddScoped<IDomainEventHandler<AnimalPhotoAddedEvent>, AnimalPhotoAddedEventHandler>();
+        services.AddScoped<IDomainEventHandler<AnimalPhotoRemovedEvent>, AnimalPhotoRemovedEventHandler>();
+        services.AddScoped<IDomainEventHandler<AnimalStatusChangedEvent>, AnimalStatusChangedEventHandler>();
+        services.AddScoped<IDomainEventHandler<AnimalVideoAddedEvent>, AnimalVideoAddedEventHandler>();
+        services.AddScoped<IDomainEventHandler<AnimalVideoRemovedEvent>, AnimalVideoRemovedEventHandler>();
 
-        var handlers = assembly.GetTypes()
-            .Where(t => !t.IsAbstract && !t.IsInterface)
-            .SelectMany(t => t.GetInterfaces()
-                .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == handlerInterfaceType)
-                .Select(i => new { Interface = i, Implementation = t }))
-            .Distinct();
+        services.AddScoped<IDomainEventHandler<AnimalAddedToShelterEvent>, AnimalAddedToShelterEventHandler>();
+        services.AddScoped<IDomainEventHandler<AnimalRemovedFromShelterEvent>, AnimalRemovedFromShelterEventHandler>();
+        services.AddScoped<IDomainEventHandler<ShelterCreatedEvent>, ShelterCreatedEventHandler>();
+        services.AddScoped<IDomainEventHandler<ShelterPhotoAddedEvent>, ShelterPhotoAddedEventHandler>();
+        services.AddScoped<IDomainEventHandler<ShelterPhotoRemovedEvent>, ShelterPhotoRemovedEventHandler>();
+        services.AddScoped<IDomainEventHandler<ShelterSocialMediaAddedOrUpdatedEvent>, ShelterSocialMediaAddedOrUpdatedEventHandler>();
+        services.AddScoped<IDomainEventHandler<ShelterSocialMediaRemovedEvent>, ShelterSocialMediaRemovedEventHandler>();
+        services.AddScoped<IDomainEventHandler<ShelterUpdatedEvent>, ShelterUpdatedEventHandler>();
 
-        foreach (var handler in handlers)
-        {
-            services.AddScoped(handler.Interface, handler.Implementation);
-        }
+        services.AddScoped<IDomainEventHandler<SpecieCreatedEvent>, SpecieCreatedEventHandler>();
+        services.AddScoped<IDomainEventHandler<SpecieRenamedEvent>, SpecieRenamedEventHandler>();
+        services.AddScoped<IDomainEventHandler<BreedAddedEvent>, BreedAddedEventHandler>();
+        services.AddScoped<IDomainEventHandler<BreedRemovedEvent>, BreedRemovedEventHandler>();
+
+        services.AddScoped<IDomainEventHandler<VolunteerTaskCreatedEvent>, VolunteerTaskCreatedEventHandler>();
+        services.AddScoped<IDomainEventHandler<VolunteerTaskStatusUpdatedEvent>, VolunteerTaskStatusUpdatedEventHandler>();
+        services.AddScoped<IDomainEventHandler<VolunteerTaskInfoUpdatedEvent>, VolunteerTaskInfoUpdatedEventHandler>();
+        services.AddScoped<IDomainEventHandler<VolunteerTaskSkillAddedOrUpdatedEvent>, VolunteerTaskSkillAddedOrUpdatedEventHandler>();
+        services.AddScoped<IDomainEventHandler<VolunteerTaskSkillRemovedEvent>, VolunteerTaskSkillRemovedEventHandler>();
 
         return services;
     }

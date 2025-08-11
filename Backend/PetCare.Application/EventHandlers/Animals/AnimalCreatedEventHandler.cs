@@ -2,7 +2,6 @@
 using PetCare.Application.Abstractions.Events;
 using PetCare.Domain.Events;
 
-
 /// <summary>
 /// Handles AnimalCreatedEvent.
 /// </summary>
