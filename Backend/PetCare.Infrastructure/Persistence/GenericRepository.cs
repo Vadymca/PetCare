@@ -15,7 +15,7 @@ public class GenericRepository<T> : IRepository<T>
     /// <param name="context">The application database context.</param>
     public GenericRepository(AppDbContext context)
     {
-        Context = context;
+        this.Context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
     /// <summary>
@@ -31,8 +31,13 @@ public class GenericRepository<T> : IRepository<T>
     /// <returns>The added entity.</returns>
     public async Task<T> AddAsync(T entity, CancellationToken cancellationToken = default)
     {
-        Context.Set<T>().Add(entity);
-        await Context.SaveChangesAsync(cancellationToken);
+        if (entity == null)
+        {
+            throw new ArgumentNullException(nameof(entity));
+        }
+
+        this.Context.Set<T>().Add(entity);
+        await this.Context.SaveChangesAsync(cancellationToken);
         return entity;
     }
 
@@ -44,10 +49,44 @@ public class GenericRepository<T> : IRepository<T>
     /// <returns>The updated entity.</returns>
     public async Task<T> UpdateAsync(T entity, CancellationToken cancellationToken = default)
     {
-        Context.Set<T>().Update(entity);
-        await Context.SaveChangesAsync(cancellationToken);
+        if (entity == null)
+        {
+            throw new ArgumentNullException(nameof(entity));
+        }
+
+        var key = this.Context.Model.FindEntityType(typeof(T))?.FindPrimaryKey();
+
+        if (key == null || key.Properties.Count != 1)
+        {
+            throw new InvalidOperationException("Сутність повинна мати єдиний первинний ключ");
+        }
+
+        var keyProperty = key.Properties[0];
+
+        var keyValue = typeof(T).GetProperty(keyProperty.Name)?.GetValue(entity);
+
+        if (keyValue == null)
+        {
+            throw new InvalidOperationException("Значення ключа не може бути нульовимl");
+        }
+
+        var exists = await this.Context.Set<T>()
+            .AsNoTracking()
+            .AnyAsync(e => EF.Property<object>(e, keyProperty.Name)!.Equals(keyValue), cancellationToken);
+
+        if (!exists)
+        {
+            throw new InvalidOperationException($"Сутність типу {typeof(T).Name} з ключем {keyValue} не знайдено.");
+        }
+
+        this.Context.Set<T>().Attach(entity);
+        this.Context.Entry(entity).State = EntityState.Modified;
+
+        await this.Context.SaveChangesAsync(cancellationToken);
+
         return entity;
     }
+
 
     /// <summary>
     /// Deletes an entity from the database.
@@ -57,8 +96,38 @@ public class GenericRepository<T> : IRepository<T>
     /// <returns>A task that represents the asynchronous delete operation.</returns>
     public async Task DeleteAsync(T entity, CancellationToken cancellationToken = default)
     {
-        Context.Set<T>().Remove(entity);
-        await Context.SaveChangesAsync(cancellationToken);
+        if (entity == null)
+        {
+            throw new ArgumentNullException(nameof(entity));
+        }
+
+        var key = this.Context.Model.FindEntityType(typeof(T))?.FindPrimaryKey();
+
+        if (key == null)
+        {
+            throw new InvalidOperationException($"Сутність {typeof(T).Name} не має визначеного первинного ключа.");
+        }
+
+        if (key.Properties.Count != 1)
+        {
+            throw new NotSupportedException("У цій реалізації сховища не підтримуються складені ключі.");
+        }
+
+        var keyProperty = key.Properties[0];
+        var keyValue = typeof(T).GetProperty(keyProperty.Name)?.GetValue(entity);
+
+        if (keyValue == null)
+        {
+            throw new InvalidOperationException("Значення ключа не може бути нульовим.");
+        }
+
+        var parameter = System.Linq.Expressions.Expression.Parameter(typeof(T), "x");
+        var propertyAccess = System.Linq.Expressions.Expression.Property(parameter, keyProperty.Name);
+        var constant = System.Linq.Expressions.Expression.Constant(keyValue);
+        var equal = System.Linq.Expressions.Expression.Equal(propertyAccess, constant);
+        var lambda = System.Linq.Expressions.Expression.Lambda<Func<T, bool>>(equal, parameter);
+
+        await this.Context.Set<T>().Where(lambda).ExecuteDeleteAsync(cancellationToken);
     }
 
     /// <summary>
@@ -69,7 +138,9 @@ public class GenericRepository<T> : IRepository<T>
     /// <returns>The entity if found; otherwise, <c>null</c>.</returns>
     public async Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await Context.Set<T>().FindAsync(new object[] { id }, cancellationToken);
+        return await this.Context.Set<T>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => EF.Property<Guid>(e, "Id") == id, cancellationToken);
     }
 
     /// <summary>
@@ -79,6 +150,18 @@ public class GenericRepository<T> : IRepository<T>
     /// <returns>A read-only list of all entities.</returns>
     public async Task<IReadOnlyList<T>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await Context.Set<T>().ToListAsync(cancellationToken);
+        return await this.Context.Set<T>()
+           .AsNoTracking()
+           .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Counts the number of entities in the database.
+    /// </summary>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>The total number of entities.</returns>
+    public async Task<int> CountAsync(CancellationToken cancellationToken = default)
+    {
+        return await this.Context.Set<T>().CountAsync(cancellationToken);
     }
 }

@@ -20,7 +20,6 @@ public class BreedConfiguration : IEntityTypeConfiguration<Breed>
         builder.HasKey(b => b.Id);
 
         builder.Property(b => b.Id)
-            .HasColumnType("uuid")
             .HasDefaultValueSql("gen_random_uuid()");
 
         builder.Property(b => b.Name)
@@ -31,11 +30,9 @@ public class BreedConfiguration : IEntityTypeConfiguration<Breed>
             .IsRequired();
 
         builder.Property(b => b.Description)
-            .HasColumnType("text");
+            .IsRequired(false);
 
         builder.Property(b => b.SpeciesId)
-            .HasColumnName("species_id")
-            .HasColumnType("uuid")
             .IsRequired();
 
         builder.HasOne(b => b.Specie)

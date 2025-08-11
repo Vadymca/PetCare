@@ -17,13 +17,12 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
             t.HasCheckConstraint("CK_Animals_Weight", "\"Weight\" > 0");
             t.HasCheckConstraint("CK_Animals_Height", "\"Height\" > 0");
             t.HasCheckConstraint("CK_Animals_Gender", "\"Gender\" IN ('Male', 'Female', 'Unknown')");
-            t.HasCheckConstraint("CK_Animals_Status", "\"Status\" IN ('Available', 'Adopted', 'Reserved', 'InTreatment')");
+            t.HasCheckConstraint("CK_Animals_Status", "\"Status\" IN ('Available', 'Adopted', 'Reserved', 'InTreatment', 'Dead', 'Euthanized')");
         });
 
         builder.HasKey(a => a.Id);
 
         builder.Property(a => a.Id)
-            .HasColumnType("uuid")
             .HasDefaultValueSql("gen_random_uuid()");
 
         builder.Property(a => a.Slug)
@@ -37,7 +36,7 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
             .IsUnique();
 
         builder.Property(a => a.UserId)
-           .HasColumnType("uuid");
+           .IsRequired(false);
 
         builder.HasOne(a => a.User)
             .WithMany()
@@ -52,7 +51,6 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
             .IsRequired();
 
         builder.Property(a => a.BreedId)
-           .HasColumnType("uuid")
            .IsRequired();
 
         builder.HasOne(a => a.Breed)
@@ -66,23 +64,24 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
             value => value != null ? Birthday.Create(value.Value) : null);
 
         builder.Property(a => a.Gender)
-            .HasColumnType("varchar(10)")
+            .HasColumnType("animal_gender")
             .IsRequired();
 
         builder.Property(a => a.Description)
-            .HasColumnType("text");
+            .IsRequired(false);
 
         builder.Property(a => a.HealthStatus)
-            .HasColumnType("text");
+            .IsRequired(false);
 
         builder.Property(a => a.Photos)
-           .HasColumnType("jsonb");
+           .HasColumnType("jsonb")
+           .IsRequired(false);
 
         builder.Property(a => a.Videos)
-            .HasColumnType("jsonb");
+            .HasColumnType("jsonb")
+            .IsRequired(false);
 
         builder.Property(a => a.ShelterId)
-           .HasColumnType("uuid")
            .IsRequired();
 
         builder.HasOne(a => a.Shelter)
@@ -91,11 +90,11 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(a => a.Status)
-           .HasColumnType("varchar(20)")
+           .HasColumnType("animal_status")
            .IsRequired();
 
         builder.Property(a => a.AdoptionRequirements)
-            .HasColumnType("text");
+           .IsRequired(false);
 
         builder.Property(a => a.MicrochipId)
            .HasConversion(
@@ -113,10 +112,10 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
             .IsUnique();
 
         builder.Property(a => a.Weight)
-            .HasColumnType("float");
+            .IsRequired(false);
 
         builder.Property(a => a.Height)
-            .HasColumnType("float");
+            .IsRequired(false);
 
         builder.Property(a => a.Color)
             .HasMaxLength(50);
@@ -130,11 +129,9 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
             .IsRequired();
 
         builder.Property(a => a.CreatedAt)
-           .HasColumnType("timestamptz")
            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.Property(a => a.UpdatedAt)
-            .HasColumnType("timestamptz")
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.HasIndex(a => a.BreedId);

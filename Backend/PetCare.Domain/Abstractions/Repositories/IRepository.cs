@@ -47,4 +47,11 @@ public interface IRepository<T>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A task that returns a read-only list of all entities.</returns>
     Task<IReadOnlyList<T>> GetAllAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Counts the number of entities in the repository.
+    /// </summary>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>The total number of entities.</returns>
+    Task<int> CountAsync(CancellationToken cancellationToken = default);
 }
