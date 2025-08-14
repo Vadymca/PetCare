@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PetCare.Domain.Aggregates;
+using PetCare.Domain.Entities;
 using PetCare.Domain.ValueObjects;
 
 /// <summary>
@@ -16,8 +17,6 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
         {
             t.HasCheckConstraint("CK_Animals_Weight", "\"Weight\" > 0");
             t.HasCheckConstraint("CK_Animals_Height", "\"Height\" > 0");
-            t.HasCheckConstraint("CK_Animals_Gender", "\"Gender\" IN ('Male', 'Female', 'Unknown')");
-            t.HasCheckConstraint("CK_Animals_Status", "\"Status\" IN ('Available', 'Adopted', 'Reserved', 'InTreatment', 'Dead', 'Euthanized')");
         });
 
         builder.HasKey(a => a.Id);
@@ -35,8 +34,7 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
         builder.HasIndex(a => a.Slug)
             .IsUnique();
 
-        builder.Property(a => a.UserId)
-           .IsRequired(false);
+        builder.Property(a => a.UserId);
 
         builder.HasOne(a => a.User)
             .WithMany()
@@ -60,8 +58,8 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
 
         builder.Property(a => a.Birthday)
             .HasConversion(
-            birthday => birthday != null ? birthday.Value : (DateOnly?)null,
-            value => value != null ? Birthday.Create(value.Value) : null);
+                birthday => birthday.Value,
+                value => Birthday.Create(value));
 
         builder.Property(a => a.Gender)
             .HasColumnType("animal_gender")
@@ -98,8 +96,8 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
 
         builder.Property(a => a.MicrochipId)
            .HasConversion(
-           microchipId => microchipId == null ? null : microchipId.Value,
-           value => value == null ? null : MicrochipId.Create(value))
+           microchipId => microchipId.Value,
+           value => MicrochipId.Create(value))
            .HasMaxLength(50);
 
         builder.HasIndex(a => a.MicrochipId)
@@ -136,5 +134,24 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
 
         builder.HasIndex(a => a.BreedId);
         builder.HasIndex(a => a.ShelterId);
+
+        builder.HasMany(a => a.Tags)
+           .WithMany()
+           .UsingEntity<Dictionary<string, object>>(
+               "AnimalTags",
+               j => j
+                   .HasOne<Tag>()
+                   .WithMany()
+                   .HasForeignKey("TagId")
+                   .OnDelete(DeleteBehavior.Cascade),
+               j => j
+                   .HasOne<Animal>()
+                   .WithMany()
+                   .HasForeignKey("AnimalId")
+                   .OnDelete(DeleteBehavior.Cascade),
+               j =>
+               {
+                   j.HasKey("AnimalId", "TagId");
+               });
     }
 }

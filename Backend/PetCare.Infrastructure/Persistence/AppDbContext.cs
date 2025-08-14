@@ -2,7 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Entities;
-using PetCare.Infrastructure.Persistence.Configurations;
+using PetCare.Domain.Enums;
+using PetCare.Domain.Events;
 
 /// <summary>
 /// Represents the application's database context.
@@ -164,15 +165,27 @@ public class AppDbContext : DbContext
     /// <param name="modelBuilder">The builder used to construct the model for the context.</param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasPostgresEnum("animal_gender", new[] { "Male", "Female", "Unknown" });
-        modelBuilder.HasPostgresEnum("animal_status", new[] { "Available", "Adopted", "Reserved", "InTreatment", " Dead", "Euthanized" });
-        modelBuilder.HasPostgresEnum("user_role", new[] { "User", "Admin", "Moderator" });
+        modelBuilder.Ignore<DomainEvent>();
+
+        modelBuilder.HasPostgresEnum<AdoptionStatus>();
+        modelBuilder.HasPostgresEnum<AidCategory>();
+        modelBuilder.HasPostgresEnum<AidStatus>();
+        modelBuilder.HasPostgresEnum<AnimalGender>();
+        modelBuilder.HasPostgresEnum<AnimalStatus>();
+        modelBuilder.HasPostgresEnum<ArticleStatus>();
+        modelBuilder.HasPostgresEnum<AuditOperation>();
+        modelBuilder.HasPostgresEnum<CommentStatus>();
+        modelBuilder.HasPostgresEnum<DonationStatus>();
+        modelBuilder.HasPostgresEnum<EventStatus>();
+        modelBuilder.HasPostgresEnum<EventType>();
+        modelBuilder.HasPostgresEnum<IoTDeviceStatus>();
+        modelBuilder.HasPostgresEnum<IoTDeviceType>();
+        modelBuilder.HasPostgresEnum<LostPetStatus>();
+        modelBuilder.HasPostgresEnum<UserRole>();
+        modelBuilder.HasPostgresEnum<VolunteerTaskStatus>();
+
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
         base.OnModelCreating(modelBuilder);
-        modelBuilder.ApplyConfiguration(new SpeciesConfiguration());
-        modelBuilder.ApplyConfiguration(new BreedConfiguration());
-        modelBuilder.ApplyConfiguration(new ShelterConfiguration());
-        modelBuilder.ApplyConfiguration(new AnimalConfiguration());
-        modelBuilder.ApplyConfiguration(new UserConfiguration());
     }
 }

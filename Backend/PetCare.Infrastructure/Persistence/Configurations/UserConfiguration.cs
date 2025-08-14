@@ -17,7 +17,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
     {
         builder.ToTable("Users", t =>
         {
-            t.HasCheckConstraint("CK_Users_Role", "\"Role\" IN ('User', 'Admin', 'Moderator')");
             t.HasCheckConstraint("CK_Users_Points", "\"Points\" >= 0");
         });
 
@@ -28,8 +27,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.Email)
             .HasConversion(
-            email => email.Value,
-            value => Email.Create(value))
+                email => email.Value,
+                value => Email.Create(value))
             .HasMaxLength(255)
             .IsRequired();
 
@@ -50,8 +49,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.Phone)
             .HasConversion(
-            phone => phone.Value,
-            value => PhoneNumber.Create(value))
+                phone => phone.Value,
+                value => PhoneNumber.Create(value))
             .HasMaxLength(20)
             .IsRequired();
 

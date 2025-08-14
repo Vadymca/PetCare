@@ -1,5 +1,6 @@
 ﻿namespace PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
+using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
 using PetCare.Domain.Events;
 using PetCare.Domain.ValueObjects;
@@ -10,6 +11,8 @@ using System.Collections.ObjectModel;
 /// </summary>
 public sealed class VolunteerTask : AggregateRoot
 {
+    private readonly List<VolunteerTaskAssignment> assignments = new();
+    private readonly List<GamificationReward> rewards = new();
     private Dictionary<string, string> skillsRequired;
 
     private VolunteerTask()
@@ -103,6 +106,16 @@ public sealed class VolunteerTask : AggregateRoot
     /// Gets the skills required for the task.
     /// </summary>
     public IReadOnlyDictionary<string, string> SkillsRequired => new ReadOnlyDictionary<string, string>(this.skillsRequired);
+
+    /// <summary>
+    /// Gets the assignments for this volunteer task.
+    /// </summary>
+    public IReadOnlyList<VolunteerTaskAssignment> Assignments => this.assignments.AsReadOnly();
+
+    /// <summary>
+    /// Gets the list of gamification rewards associated with this volunteer task.
+    /// </summary>
+    public IReadOnlyList<GamificationReward> Rewards => this.rewards.AsReadOnly();
 
     /// <summary>
     /// Gets the date and time when the volunteer task was created.
@@ -268,5 +281,88 @@ public sealed class VolunteerTask : AggregateRoot
         }
 
         return removed;
+    }
+
+    // VolunteerTaskAssignment
+
+    /// <summary>
+    /// Adds a new assignment to this volunteer task.
+    /// </summary>
+    /// <param name="assignment">The assignment entity to add.</param>
+    /// <param name="requestingUserId">The ID of the user performing the operation. Must be shelter manager or admin/moderator.</param>
+    /// <exception cref="ArgumentNullException">Thrown if assignment is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if assignment already exists.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown if the requesting user cannot assign this task.</exception>
+    public void AddAssignment(VolunteerTaskAssignment assignment, Guid requestingUserId)
+    {
+        if (assignment is null)
+        {
+            throw new ArgumentNullException(nameof(assignment), "Призначення не може бути null.");
+        }
+
+        if (this.assignments.Any(a => a.Id == assignment.Id))
+        {
+            throw new InvalidOperationException("Це призначення вже додано.");
+        }
+
+        this.assignments.Add(assignment);
+        this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new VolunteerTaskAssignmentAddedEvent(this.Id, assignment.Id));
+    }
+
+    /// <summary>
+    /// Removes an assignment from this volunteer task.
+    /// </summary>
+    /// <param name="assignmentId">The ID of the assignment to remove.</param>
+    /// <param name="requestingUserId">The ID of the user performing the operation. Must be shelter manager or admin/moderator.</param>
+    /// <exception cref="InvalidOperationException">Thrown if assignment is not found.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown if the requesting user cannot remove this assignment.</exception>
+    public void RemoveAssignment(Guid assignmentId, Guid requestingUserId)
+    {
+        var assignment = this.assignments.FirstOrDefault(a => a.Id == assignmentId);
+        if (assignment == null)
+        {
+            throw new InvalidOperationException("Призначення не знайдено.");
+        }
+
+        this.assignments.Remove(assignment);
+        this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new VolunteerTaskAssignmentRemovedEvent(this.Id, assignmentId));
+    }
+
+    /// <summary>
+    /// Adds a gamification reward to the volunteer task.
+    /// </summary>
+    /// <param name="reward">The reward to add.</param>
+    /// <exception cref="ArgumentNullException">Thrown if reward is null.</exception>
+    public void AddReward(GamificationReward reward)
+    {
+        if (reward is null)
+        {
+            throw new ArgumentNullException(nameof(reward), "Reward cannot be null.");
+        }
+
+        this.rewards.Add(reward);
+        this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new VolunteerTaskRewardAddedEvent(this.Id, reward.Id));
+    }
+
+    /// <summary>
+    /// Removes a gamification reward from the volunteer task.
+    /// </summary>
+    /// <param name="rewardId">The ID of the reward to remove.</param>
+    /// <returns>True if removed, otherwise false.</returns>
+    public bool RemoveReward(Guid rewardId)
+    {
+        var reward = this.rewards.FirstOrDefault(r => r.Id == rewardId);
+        if (reward is null)
+        {
+            return false;
+        }
+
+        this.rewards.Remove(reward);
+        this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new VolunteerTaskRewardRemovedEvent(this.Id, rewardId));
+        return true;
     }
 }

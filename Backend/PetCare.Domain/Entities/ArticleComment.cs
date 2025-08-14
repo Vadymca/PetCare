@@ -10,6 +10,7 @@ using PetCare.Domain.Enums;
 public sealed class ArticleComment : BaseEntity
 {
     private readonly List<Like> likes = new();
+    private readonly List<ArticleComment> replies = new();
 
     private ArticleComment()
     {
@@ -22,7 +23,7 @@ public sealed class ArticleComment : BaseEntity
         Guid? parentCommentId,
         string content,
         CommentStatus status,
-        Guid? moderatedBy,
+        Guid? moderatedById,
         DateTime createdAt,
         DateTime updatedAt)
     {
@@ -46,7 +47,7 @@ public sealed class ArticleComment : BaseEntity
         this.ParentCommentId = parentCommentId;
         this.Content = content;
         this.Status = status;
-        this.ModeratedBy = moderatedBy;
+        this.ModeratedById = moderatedById;
         this.CreatedAt = createdAt;
         this.UpdatedAt = updatedAt;
     }
@@ -92,6 +93,11 @@ public sealed class ArticleComment : BaseEntity
     public IReadOnlyCollection<Like> Likes => this.likes.AsReadOnly();
 
     /// <summary>
+    /// Gets the list of replies to this comment.
+    /// </summary>
+    public IReadOnlyList<ArticleComment> Replies => this.replies.AsReadOnly();
+
+    /// <summary>
     /// Gets the status of the comment (e.g., Pending, Approved, Rejected).
     /// </summary>
     public CommentStatus Status { get; private set; }
@@ -99,7 +105,12 @@ public sealed class ArticleComment : BaseEntity
     /// <summary>
     /// Gets the unique identifier of the user who moderated the comment, if applicable. Can be null.
     /// </summary>
-    public Guid? ModeratedBy { get; private set; }
+    public Guid? ModeratedById { get; private set; }
+
+    /// <summary>
+    /// Gets the user who moderated this comment.
+    /// </summary>
+    public User? ModeratedBy { get; private set; }
 
     /// <summary>
     /// Gets the date and time when the comment was created.
@@ -157,11 +168,11 @@ public sealed class ArticleComment : BaseEntity
     /// Sets the status of the comment and updates the moderated user and timestamp.
     /// </summary>
     /// <param name="status">The new status of the comment (e.g., Pending, Approved, Rejected).</param>
-    /// <param name="moderatedBy">The unique identifier of the user who moderated the comment, if applicable. Can be null.</param>
-    public void SetStatus(CommentStatus status, Guid? moderatedBy)
+    /// <param name="moderatedById">The unique identifier of the user who moderated the comment, if applicable. Can be null.</param>
+    public void SetStatus(CommentStatus status, Guid? moderatedById)
     {
         this.Status = status;
-        this.ModeratedBy = moderatedBy;
+        this.ModeratedById = moderatedById;
         this.UpdatedAt = DateTime.UtcNow;
     }
 
@@ -176,7 +187,8 @@ public sealed class ArticleComment : BaseEntity
             return;
         }
 
-        this.likes.Add(Like.Create(userId, nameof(ArticleComment), this.Id));
+        var like = Like.Create(userId, nameof(ArticleComment), this.Id);
+        this.likes.Add(like);
         this.UpdatedAt = DateTime.UtcNow;
     }
 
@@ -192,5 +204,44 @@ public sealed class ArticleComment : BaseEntity
             this.likes.Remove(like);
             this.UpdatedAt = DateTime.UtcNow;
         }
+    }
+
+    /// <summary>
+    /// Adds a reply to this comment.
+    /// </summary>
+    /// <param name="reply">The reply comment to add.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="reply"/> is null.</exception>
+    public void AddReply(ArticleComment reply)
+    {
+        if (reply is null)
+        {
+            throw new ArgumentNullException(nameof(reply), "Відповідь не може бути null.");
+        }
+
+        reply.ParentCommentId = this.Id;
+        this.replies.Add(reply);
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Removes a reply from this comment.
+    /// </summary>
+    /// <param name="replyId">The identifier of the reply to remove.</param>
+    /// <returns>True if the reply was removed; otherwise false.</returns>
+    public bool RemoveReply(Guid replyId)
+    {
+        var reply = this.replies.Find(r => r.Id == replyId);
+        if (reply is null)
+        {
+            return false;
+        }
+
+        var removed = this.replies.Remove(reply);
+        if (removed)
+        {
+            this.UpdatedAt = DateTime.UtcNow;
+        }
+
+        return removed;
     }
 }

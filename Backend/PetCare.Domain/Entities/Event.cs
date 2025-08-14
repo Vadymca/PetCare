@@ -9,9 +9,11 @@ using PetCare.Domain.ValueObjects;
 /// </summary>
 public sealed class Event : BaseEntity
 {
+    private readonly List<EventParticipant> participants = new();
+
     private Event()
     {
-        Title = Title.Create(string.Empty);
+        this.Title = Title.Create(string.Empty);
     }
 
     private Event(
@@ -29,16 +31,16 @@ public sealed class Event : BaseEntity
             throw new ArgumentException("Дата події повинна бути в майбутньому.", nameof(eventDate));
         }
 
-        ShelterId = shelterId;
-        Title = title ?? throw new ArgumentNullException(nameof(title));
-        Description = description;
-        EventDate = eventDate;
-        Location = location;
-        Address = address;
-        Type = type;
-        Status = status;
-        CreatedAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
+        this.ShelterId = shelterId;
+        this.Title = title ?? throw new ArgumentNullException(nameof(title));
+        this.Description = description;
+        this.EventDate = eventDate;
+        this.Location = location;
+        this.Address = address;
+        this.Type = type;
+        this.Status = status;
+        this.CreatedAt = DateTime.UtcNow;
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -85,6 +87,11 @@ public sealed class Event : BaseEntity
     /// Gets the date and time when the event was last updated.
     /// </summary>
     public DateTime UpdatedAt { get; private set; }
+
+    /// <summary>
+    /// Gets the participants of the event.
+    /// </summary>
+    public IReadOnlyCollection<EventParticipant> Participants => this.participants.AsReadOnly();
 
     /// <summary>
     /// Gets the unique identifier of the shelter associated with the event, if any. Can be null.
@@ -150,35 +157,35 @@ public sealed class Event : BaseEntity
     {
         if (!string.IsNullOrWhiteSpace(title))
         {
-            Title = Title.Create(title);
+            this.Title = Title.Create(title);
         }
 
         if (description is not null)
         {
-            Description = description;
+            this.Description = description;
         }
 
         if (eventDate is not null)
         {
-            EventDate = eventDate;
+            this.EventDate = eventDate;
         }
 
         if (location is not null)
         {
-            Location = location;
+            this.Location = location;
         }
 
         if (address is not null)
         {
-            Address = Address.Create(address);
+            this.Address = Address.Create(address);
         }
 
         if (status is not null)
         {
-            Status = status.Value;
+            this.Status = status.Value;
         }
 
-        UpdatedAt = DateTime.UtcNow;
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -186,13 +193,13 @@ public sealed class Event : BaseEntity
     /// </summary>
     public void Cancel()
     {
-        if (Status == EventStatus.Cancelled)
+        if (this.Status == EventStatus.Cancelled)
         {
             throw new InvalidOperationException("Подія вже скасована.");
         }
 
-        Status = EventStatus.Cancelled;
-        UpdatedAt = DateTime.UtcNow;
+        this.Status = EventStatus.Cancelled;
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -200,13 +207,13 @@ public sealed class Event : BaseEntity
     /// </summary>
     public void Complete()
     {
-        if (Status == EventStatus.Completed)
+        if (this.Status == EventStatus.Completed)
         {
             throw new InvalidOperationException("Подія вже завершена.");
         }
 
-        Status = EventStatus.Completed;
-        UpdatedAt = DateTime.UtcNow;
+        this.Status = EventStatus.Completed;
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -222,15 +229,15 @@ public sealed class Event : BaseEntity
             throw new ArgumentException("Нова дата повинна бути в майбутньому.", nameof(newDate));
         }
 
-        EventDate = newDate;
+        this.EventDate = newDate;
 
-        if (Status is EventStatus.Completed or EventStatus.Cancelled)
+        if (this.Status is EventStatus.Completed or EventStatus.Cancelled)
         {
             throw new InvalidOperationException("Не можна перенести завершену або скасовану подію.");
         }
 
-        Status = EventStatus.Planned;
-        UpdatedAt = DateTime.UtcNow;
+        this.Status = EventStatus.Planned;
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -239,8 +246,8 @@ public sealed class Event : BaseEntity
     /// <param name="coordinates">The new geographical coordinates of the event.</param>
     public void UpdateCoordinates(Coordinates coordinates)
     {
-        Location = coordinates;
-        UpdatedAt = DateTime.UtcNow;
+        this.Location = coordinates;
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -249,8 +256,8 @@ public sealed class Event : BaseEntity
     /// <param name="address">The new address of the event as a single-line string.</param>
     public void UpdateAddress(string address)
     {
-        Address = Address.Create(address);
-        UpdatedAt = DateTime.UtcNow;
+        this.Address = Address.Create(address);
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -259,7 +266,7 @@ public sealed class Event : BaseEntity
     /// <param name="shelterId">The unique identifier of the shelter.</param>
     public void AssignToShelter(Guid shelterId)
     {
-        ShelterId = shelterId;
-        UpdatedAt = DateTime.UtcNow;
+        this.ShelterId = shelterId;
+        this.UpdatedAt = DateTime.UtcNow;
     }
 }

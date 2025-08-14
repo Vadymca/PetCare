@@ -24,8 +24,8 @@ public class BreedConfiguration : IEntityTypeConfiguration<Breed>
 
         builder.Property(b => b.Name)
             .HasConversion(
-            name => name.Value,
-            value => Name.Create(value))
+                name => name.Value,
+                value => Name.Create(value))
             .HasMaxLength(100)
             .IsRequired();
 

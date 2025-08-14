@@ -48,12 +48,12 @@ public class ShelterConfiguration : IEntityTypeConfiguration<Shelter>
                 str => Address.Create(str))
             .IsRequired();
 
-        builder.OwnsOne(s => s.Coordinates, cb =>
-        {
-            cb.Property(c => c.Point)
-              .HasColumnType("geometry (point,4326)")
-              .IsRequired();
-        });
+        builder.Property(s => s.Coordinates)
+            .HasConversion(
+                c => c.Point,
+                p => Coordinates.From(p.Y, p.X))
+            .HasColumnType("geometry(Point, 4326)")
+            .IsRequired();
 
         builder.HasIndex(s => s.Coordinates)
             .HasMethod("GIST");

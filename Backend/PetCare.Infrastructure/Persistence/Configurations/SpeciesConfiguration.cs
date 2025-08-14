@@ -24,8 +24,8 @@ public class SpeciesConfiguration : IEntityTypeConfiguration<Specie>
 
         builder.Property(s => s.Name)
             .HasConversion(
-            name => name.Value,
-            value => Name.Create(value))
+                name => name.Value,
+                value => Name.Create(value))
             .HasMaxLength(100)
             .IsRequired();
 

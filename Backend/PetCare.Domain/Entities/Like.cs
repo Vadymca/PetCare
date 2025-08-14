@@ -11,7 +11,7 @@ public sealed class Like : BaseEntity
     {
     }
 
-    private Like(Guid userId, string likedEntity, Guid likedEntityId)
+    private Like(Guid userId, string likedEntity, Guid likedEntityId, Guid? articleCommentId)
     {
         if (userId == Guid.Empty)
         {
@@ -31,6 +31,7 @@ public sealed class Like : BaseEntity
         this.UserId = userId;
         this.LikedEntity = likedEntity;
         this.LikedEntityId = likedEntityId;
+        this.ArticleCommentId = articleCommentId;
         this.CreatedAt = DateTime.UtcNow;
     }
 
@@ -60,12 +61,24 @@ public sealed class Like : BaseEntity
     public DateTime CreatedAt { get; private set; }
 
     /// <summary>
+    /// Gets optional foreign key for ArticleComment.
+    /// </summary>
+    public Guid? ArticleCommentId { get; private set; }
+
+    /// <summary>
+    /// Gets optional navigation to the ArticleComment.
+    /// </summary>
+    public ArticleComment? ArticleComment { get; private set; }
+
+    /// <summary>
     /// Creates a new like instance.
     /// </summary>
     /// <param name="userId">The ID of the user who liked the entity.</param>
     /// <param name="likedEntity">The type of the liked entity.</param>
     /// <param name="likedEntityId">The ID of the liked entity.</param>
+    /// <param name="articleCommentId">The ID of the articleComment.</param>
     /// <returns>A new like instance.</returns>
-    public static Like Create(Guid userId, string likedEntity, Guid likedEntityId)
-        => new(userId, likedEntity, likedEntityId);
+    public static Like Create(Guid userId, string likedEntity, Guid likedEntityId, Guid? articleCommentId = null)
+        => new(userId, likedEntity, likedEntityId, articleCommentId);
+
 }

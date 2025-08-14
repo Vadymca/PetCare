@@ -15,8 +15,8 @@ public sealed class SuccessStory : BaseEntity
 
     private SuccessStory()
     {
-        Title = Title.Create(string.Empty);
-        Content = string.Empty;
+        this.Title = Title.Create(string.Empty);
+        this.Content = string.Empty;
     }
 
     private SuccessStory(
@@ -37,16 +37,16 @@ public sealed class SuccessStory : BaseEntity
             throw new ArgumentException("Контент обов'язковий.", nameof(content));
         }
 
-        AnimalId = animalId;
-        UserId = userId;
-        Title = title;
-        Content = content;
+        this.AnimalId = animalId;
+        this.UserId = userId;
+        this.Title = title;
+        this.Content = content;
         this.photos = photos ?? new List<string>();
         this.videos = videos ?? new List<string>();
-        Views = 0;
-        PublishedAt = DateTime.UtcNow;
-        CreatedAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
+        this.Views = 0;
+        this.PublishedAt = DateTime.UtcNow;
+        this.CreatedAt = DateTime.UtcNow;
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -62,12 +62,12 @@ public sealed class SuccessStory : BaseEntity
     /// <summary>
     /// Gets the list of photo URLs for the success story.
     /// </summary>
-    public IReadOnlyList<string> Photos => photos.AsReadOnly();
+    public IReadOnlyList<string> Photos => this.photos.AsReadOnly();
 
     /// <summary>
     /// Gets the list of video URLs for the success story.
     /// </summary>
-    public IReadOnlyList<string> Videos => videos.AsReadOnly();
+    public IReadOnlyList<string> Videos => this.videos.AsReadOnly();
 
     /// <summary>
     /// Gets the date and time when the success story was published.
@@ -143,7 +143,7 @@ public sealed class SuccessStory : BaseEntity
     /// </summary>
     public void IncrementViews()
     {
-        Views++;
+        this.Views++;
     }
 
     /// <summary>
@@ -162,12 +162,12 @@ public sealed class SuccessStory : BaseEntity
     {
         if (title is not null)
         {
-            Title = Title.Create(title);
+            this.Title = Title.Create(title);
         }
 
         if (content is not null)
         {
-            Content = content;
+            this.Content = content;
         }
 
         if (photos is not null)
@@ -182,7 +182,7 @@ public sealed class SuccessStory : BaseEntity
             this.videos.AddRange(videos);
         }
 
-        UpdatedAt = DateTime.UtcNow;
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -215,8 +215,8 @@ public sealed class SuccessStory : BaseEntity
         config.Validate(fileName, fileSizeBytes);
 
         var photoUrl = await fileStorage.UploadAsync(fileStream, fileName, config.maxSizeBytes, config.allowedExtensions);
-        photos.Add(photoUrl);
-        UpdatedAt = DateTime.UtcNow;
+        this.photos.Add(photoUrl);
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -232,11 +232,11 @@ public sealed class SuccessStory : BaseEntity
             return false;
         }
 
-        var removed = photos.Remove(photoUrl);
+        var removed = this.photos.Remove(photoUrl);
         if (removed)
         {
             await fileStorage.DeleteAsync(photoUrl);
-            UpdatedAt = DateTime.UtcNow;
+            this.UpdatedAt = DateTime.UtcNow;
         }
 
         return removed;
@@ -272,8 +272,8 @@ public sealed class SuccessStory : BaseEntity
         config.Validate(fileName, fileSizeBytes);
 
         var videoUrl = await fileStorage.UploadAsync(fileStream, fileName, config.maxSizeBytes, config.allowedExtensions);
-        videos.Add(videoUrl);
-        UpdatedAt = DateTime.UtcNow;
+        this.videos.Add(videoUrl);
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -289,11 +289,11 @@ public sealed class SuccessStory : BaseEntity
             return false;
         }
 
-        var removed = videos.Remove(videoUrl);
+        var removed = this.videos.Remove(videoUrl);
         if (removed)
         {
             await fileStorage.DeleteAsync(videoUrl);
-            UpdatedAt = DateTime.UtcNow;
+            this.UpdatedAt = DateTime.UtcNow;
         }
 
         return removed;
@@ -304,7 +304,7 @@ public sealed class SuccessStory : BaseEntity
     /// </summary>
     public void Publish()
     {
-        PublishedAt = DateTime.UtcNow;
+        this.PublishedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -312,6 +312,6 @@ public sealed class SuccessStory : BaseEntity
     /// </summary>
     public void Unpublish()
     {
-        PublishedAt = default;
+        this.PublishedAt = default;
     }
 }

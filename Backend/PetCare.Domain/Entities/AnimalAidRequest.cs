@@ -12,6 +12,7 @@ using PetCare.Domain.ValueObjects;
 public sealed class AnimalAidRequest : BaseEntity
 {
     private readonly List<string> photos = new();
+    private readonly List<AnimalAidDonation> donations = new();
     private decimal collectedAmount;
 
     private AnimalAidRequest()
@@ -85,6 +86,11 @@ public sealed class AnimalAidRequest : BaseEntity
     /// Gets the date and time when the aid request was last updated.
     /// </summary>
     public DateTime UpdatedAt { get; private set; }
+
+    /// <summary>
+    /// Gets the list of donations linked to this AnimalAidRequest.
+    /// </summary>
+    public IReadOnlyList<AnimalAidDonation> Donations => this.donations.AsReadOnly();
 
     /// <summary>
     /// Gets the unique identifier of the user making the request, if any. Can be null.
@@ -251,5 +257,44 @@ public sealed class AnimalAidRequest : BaseEntity
         }
 
         return removed;
+    }
+
+    /// <summary>
+    /// Adds a donation link to this AnimalAidRequest.
+    /// </summary>
+    /// <param name="link">The donation link to add.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="link"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the link already exists.</exception>
+    public void AddDonationLink(AnimalAidDonation link)
+    {
+        if (link == null)
+        {
+            throw new ArgumentNullException(nameof(link), "Зв'язок пожертви не може бути null.");
+        }
+
+        if (this.donations.Any(d => d.Id == link.Id))
+        {
+            throw new InvalidOperationException("Цей зв'язок вже додано до запиту.");
+        }
+
+        this.donations.Add(link);
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Removes a donation link from this AnimalAidRequest.
+    /// </summary>
+    /// <param name="linkId">The ID of the link to remove.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the link is not found.</exception>
+    public void RemoveDonationLink(Guid linkId)
+    {
+        var link = this.donations.FirstOrDefault(d => d.Id == linkId);
+        if (link == null)
+        {
+            throw new InvalidOperationException("Зв'язок пожертви не знайдено у запиті.");
+        }
+
+        this.donations.Remove(link);
+        this.UpdatedAt = DateTime.UtcNow;
     }
 }

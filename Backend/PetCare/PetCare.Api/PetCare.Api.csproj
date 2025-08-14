@@ -36,7 +36,6 @@
     </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" />
     <PackageReference Include="System.Device.Location.Portable" Version="1.0.0" />
-	<AdditionalFiles Include="..\stylecop.json" Link="stylecop.json" />
   </ItemGroup>
 
 	<ItemGroup>

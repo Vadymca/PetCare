@@ -29,12 +29,12 @@ public sealed class GamificationReward : BaseEntity
             throw new ArgumentOutOfRangeException(nameof(points), "Бали не можуть бути від'ємними.");
         }
 
-        UserId = userId;
-        TaskId = taskId;
-        Points = points;
-        Description = description;
-        Used = used;
-        AwardedAt = awardedAt;
+        this.UserId = userId;
+        this.TaskId = taskId;
+        this.Points = points;
+        this.Description = description;
+        this.Used = used;
+        this.AwardedAt = awardedAt;
     }
 
     /// <summary>
@@ -109,7 +109,7 @@ public sealed class GamificationReward : BaseEntity
     /// </summary>
     public void MarkAsUsed()
     {
-        Used = true;
+        this.Used = true;
     }
 
     /// <summary>
@@ -118,6 +118,6 @@ public sealed class GamificationReward : BaseEntity
     /// <param name="description">The new description of the reward. Can be null.</param>
     public void UpdateDescription(string? description)
     {
-        Description = description;
+        this.Description = description;
     }
 }

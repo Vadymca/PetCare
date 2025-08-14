@@ -14,6 +14,10 @@ public sealed class Animal : AggregateRoot
 {
     private readonly List<string> photos = new();
     private readonly List<string> videos = new();
+    private readonly List<AdoptionApplication> adoptionApplications = new();
+    private readonly List<Tag> tags = new();
+    private readonly List<SuccessStory> successStories = new();
+    private readonly List<AnimalSubscription> subscribers = new();
 
     private Animal()
     {
@@ -114,6 +118,17 @@ public sealed class Animal : AggregateRoot
     public IReadOnlyList<string> Videos => this.videos.AsReadOnly();
 
     /// <summary>
+    /// Gets the adoption applications associated with this animal.
+    /// </summary>
+    public IReadOnlyList<AdoptionApplication> AdoptionApplications =>
+        this.adoptionApplications.AsReadOnly();
+
+    /// <summary>
+    /// Gets the list of tags associated with the animal.
+    /// </summary>
+    public IReadOnlyCollection<Tag> Tags => this.tags.AsReadOnly();
+
+    /// <summary>
     /// Gets the current status of the animal.
     /// </summary>
     public AnimalStatus Status { get; private set; }
@@ -171,7 +186,7 @@ public sealed class Animal : AggregateRoot
     /// <summary>
     /// Gets the unique identifier of the user associated with the animal.
     /// </summary>
-    public Guid UserId { get; private set; }
+    public Guid? UserId { get; private set; }
 
     /// <summary>
     /// Gets the user associated with the animal, if any. Can be null.
@@ -207,6 +222,16 @@ public sealed class Animal : AggregateRoot
     /// Gets a value indicating whether the animal has a microchip.
     /// </summary>
     public bool HasMicrochip => this.MicrochipId is not null;
+
+    /// <summary>
+    /// Gets the success stories related to this animal.
+    /// </summary>
+    public IReadOnlyCollection<SuccessStory> SuccessStories => this.successStories.AsReadOnly();
+
+    /// <summary>
+    /// Gets the subscribers of the animal.
+    /// </summary>
+    public IReadOnlyCollection<AnimalSubscription> Subscribers => this.subscribers.AsReadOnly();
 
     /// <summary>
     /// Creates a new <see cref="Animal"/> instance with the specified parameters.
@@ -523,4 +548,169 @@ public sealed class Animal : AggregateRoot
             throw new InvalidOperationException("Вимоги до адопції тварини не заповнені або занадто короткі.");
         }
     }
+
+    // AdoptionApplication
+
+    /// <summary>
+    /// Adds a new adoption application for the animal.
+    /// </summary>
+    /// <param name="application">The adoption application to add.</param>
+    /// <param name="requestingUserId">The ID of the user performing the operation. Must be the owner of the application or admin/moderator.</param>
+    /// <exception cref="ArgumentNullException">Thrown if application is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the application already exists.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown if the requesting user is not authorized to add the application.</exception>
+    public void AddAdoptionApplication(AdoptionApplication application, Guid requestingUserId)
+    {
+        if (application is null)
+        {
+            throw new ArgumentNullException(nameof(application), "Заявка на усиновлення не може бути null.");
+        }
+
+        if (this.adoptionApplications.Any(a => a.Id == application.Id))
+        {
+            throw new InvalidOperationException("Ця заявка вже додана для цієї тварини.");
+        }
+
+        if (!this.CanManageAdoptionApplications(requestingUserId))
+        {
+            throw new UnauthorizedAccessException("Тільки власник заявки або адміністратор/модератор може додавати заявку.");
+        }
+
+        this.adoptionApplications.Add(application);
+        this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new AdoptionApplicationAddedEvent(this.Id, application.Id));
+    }
+
+    /// <summary>
+    /// Removes an adoption application from the animal.
+    /// </summary>
+    /// <param name="applicationId">The ID of the adoption application to remove.</param>
+    /// <param name="requestingUserId">The ID of the user performing the operation. Must be the owner or admin/moderator.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the application is not found.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown if the requesting user is not authorized to remove the application.</exception>
+    public void RemoveAdoptionApplication(Guid applicationId, Guid requestingUserId)
+    {
+        var application = this.adoptionApplications.FirstOrDefault(a => a.Id == applicationId);
+        if (application == null)
+        {
+            throw new InvalidOperationException("Заявка на усиновлення не знайдена.");
+        }
+
+        if (!this.CanManageAdoptionApplications(requestingUserId))
+        {
+            throw new UnauthorizedAccessException("Недостатньо прав для видалення цієї заявки.");
+        }
+
+        this.adoptionApplications.Remove(application);
+        this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new AdoptionApplicationRemovedEvent(this.Id, applicationId));
+    }
+
+    // Tag
+
+    /// <summary>
+    /// Adds a new tag to the animal.
+    /// </summary>
+    /// <param name="tag">The tag entity to add.</param>
+    /// <exception cref="ArgumentNullException">Thrown when the tag is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the tag already exists for this animal.</exception>
+    public void AddTag(Tag tag)
+    {
+        if (tag is null)
+        {
+            throw new ArgumentNullException(nameof(tag), "Тег не може бути null.");
+        }
+
+        if (this.tags.Any(t => t.Id == tag.Id))
+        {
+            throw new InvalidOperationException($"Тег '{tag.Name}' вже додано до тварини.");
+        }
+
+        this.tags.Add(tag);
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Removes an existing tag from the animal.
+    /// </summary>
+    /// <param name="tagId">The ID of the tag to remove.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the tag is not found for this animal.</exception>
+    public void RemoveTag(Guid tagId)
+    {
+        var tag = this.tags.FirstOrDefault(t => t.Id == tagId);
+
+        if (tag is null)
+        {
+            throw new InvalidOperationException($"Тег з ID '{tagId}' не знайдено у тварини.");
+        }
+
+        this.tags.Remove(tag);
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    // SuccessStory
+
+    /// <summary>
+    /// Adds a new success story for this animal.
+    /// </summary>
+    /// <param name="story">The success story to add.</param>
+    /// <param name="userId">The ID of the user performing the action.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the user is not allowed to add a story.</exception>
+    public void AddSuccessStory(SuccessStory story, Guid userId)
+    {
+        if (!this.CanManageAdoptionApplications(userId))
+        {
+            throw new InvalidOperationException("Ви не маєте права додавати історію успіху для цієї тварини.");
+        }
+
+        if (story == null)
+        {
+            throw new ArgumentNullException(nameof(story), "Історія успіху не може бути null.");
+        }
+
+        this.successStories.Add(story);
+        this.UpdatedAt = DateTime.UtcNow;
+
+        this.AddDomainEvent(new SuccessStoryAddedEvent(this.Id, story.Id));
+    }
+
+    /// <summary>
+    /// Removes a success story from this animal.
+    /// </summary>
+    /// <param name="storyId">The ID of the story to remove.</param>
+    /// <param name="userId">The ID of the user performing the action.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the user is not allowed to remove the story.</exception>
+    public void RemoveSuccessStory(Guid storyId, Guid userId)
+    {
+        if (!this.CanManageAdoptionApplications(userId))
+        {
+            throw new InvalidOperationException("Ви не маєте права видаляти історію успіху для цієї тварини.");
+        }
+
+        var story = this.successStories.FirstOrDefault(s => s.Id == storyId);
+        if (story == null)
+        {
+            throw new InvalidOperationException("Історія успіху не знайдена.");
+        }
+
+        this.successStories.Remove(story);
+        this.UpdatedAt = DateTime.UtcNow;
+
+        this.AddDomainEvent(new SuccessStoryRemovedEvent(this.Id, storyId));
+    }
+
+    /// <summary>
+    /// Checks if the given user is the owner of the animal.
+    /// </summary>
+    /// <param name="userId">The ID of the user to check.</param>
+    /// <returns>True if the user is the owner of the animal; otherwise, false.</returns>
+    public bool IsOwner(Guid userId) => this.UserId == userId;
+
+    /// <summary>
+    /// Checks if the given user can manage adoption applications (owner or admin/moderator).
+    /// </summary>
+    /// <param name="userId">The ID of the user to check.</param>
+    /// <returns>True if the user is the owner or has Admin/Moderator role; otherwise, false.</returns>
+    public bool CanManageAdoptionApplications(Guid userId) =>
+        this.IsOwner(userId) || (this.User != null && (this.User.Role == UserRole.Admin || this.User.Role == UserRole.Moderator));
 }

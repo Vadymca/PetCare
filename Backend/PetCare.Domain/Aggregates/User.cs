@@ -23,6 +23,9 @@ public sealed class User : AggregateRoot
     private readonly List<LostPet> lostPets = new();
     private readonly List<Event> events = new();
     private readonly List<Donation> donations = new();
+    private readonly List<VolunteerTaskAssignment> volunteerTaskAssignments = new();
+    private readonly List<EventParticipant> eventParticipations = new();
+    private readonly List<AnimalSubscription> animalSubscriptions = new();
 
     private User()
     {
@@ -182,6 +185,22 @@ public sealed class User : AggregateRoot
     /// Gets the collection of donations made by the user.
     /// </summary>
     public IReadOnlyCollection<Donation> Donations => this.donations.AsReadOnly();
+
+    /// <summary>
+    /// Gets the participants of the event.
+    /// </summary>
+    public IReadOnlyCollection<EventParticipant> EventParticipations => this.eventParticipations.AsReadOnly();
+
+    /// <summary>
+    /// Gets the volunteer task assignments of the user.
+    /// </summary>
+    public IReadOnlyCollection<VolunteerTaskAssignment> VolunteerTaskAssignments =>
+        this.volunteerTaskAssignments.AsReadOnly();
+
+    /// <summary>
+    /// Gets the animalSubscriptions of the user.
+    /// </summary>
+    public IReadOnlyCollection<AnimalSubscription> AnimalSubscriptions => this.animalSubscriptions.AsReadOnly();
 
     /// <summary>
     /// Creates a new <see cref="User"/> instance with the specified parameters.
@@ -1089,6 +1108,63 @@ public sealed class User : AggregateRoot
         this.donations.Remove(donation);
         this.UpdatedAt = DateTime.UtcNow;
         this.AddDomainEvent(new DonationRemovedEvent(this.Id, donationId));
+    }
+
+    // VolunteerTaskAssignment
+
+    /// <summary>
+    /// Adds a new volunteer task assignment for the user.
+    /// </summary>
+    /// <param name="assignment">The assignment entity to add.</param>
+    /// <param name="requestingUserId">The ID of the user performing the operation. Must be the owner or admin/moderator.</param>
+    /// <exception cref="ArgumentNullException">Thrown if assignment is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the assignment already exists.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown if the requesting user is not authorized.</exception>
+    public void AddVolunteerTaskAssignment(VolunteerTaskAssignment assignment, Guid requestingUserId)
+    {
+        if (assignment is null)
+        {
+            throw new ArgumentNullException(nameof(assignment), "Призначення волонтера не може бути null.");
+        }
+
+        if (this.volunteerTaskAssignments.Any(a => a.Id == assignment.Id))
+        {
+            throw new InvalidOperationException("Це призначення вже додано для користувача.");
+        }
+
+        if (requestingUserId != this.Id && !this.IsAdminOrModerator())
+        {
+            throw new UnauthorizedAccessException("Тільки власник або адміністратор/модератор може додавати призначення.");
+        }
+
+        this.volunteerTaskAssignments.Add(assignment);
+        this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new VolunteerTaskAssignmentAddedEvent(this.Id, assignment.Id));
+    }
+
+    /// <summary>
+    /// Removes a volunteer task assignment from the user.
+    /// </summary>
+    /// <param name="assignmentId">The ID of the assignment to remove.</param>
+    /// <param name="requestingUserId">The ID of the user performing the operation. Must be the owner or admin/moderator.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the assignment is not found.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown if the requesting user is not authorized.</exception>
+    public void RemoveVolunteerTaskAssignment(Guid assignmentId, Guid requestingUserId)
+    {
+        var assignment = this.volunteerTaskAssignments.FirstOrDefault(a => a.Id == assignmentId);
+        if (assignment == null)
+        {
+            throw new InvalidOperationException("Призначення волонтера не знайдено.");
+        }
+
+        if (requestingUserId != this.Id && !this.IsAdminOrModerator())
+        {
+            throw new UnauthorizedAccessException("Недостатньо прав для видалення призначення.");
+        }
+
+        this.volunteerTaskAssignments.Remove(assignment);
+        this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new VolunteerTaskAssignmentRemovedEvent(this.Id, assignmentId));
     }
 
     /// <summary>

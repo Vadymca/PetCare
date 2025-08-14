@@ -8,6 +8,8 @@ using PetCare.Domain.Enums;
 /// </summary>
 public sealed class Donation : BaseEntity
 {
+    private readonly List<AnimalAidDonation> animalAidLinks = new();
+
     private Donation()
     {
     }
@@ -30,20 +32,20 @@ public sealed class Donation : BaseEntity
             throw new ArgumentException("Сума повинна бути більшою за 0.", nameof(amount));
         }
 
-        UserId = userId;
-        Amount = amount;
-        ShelterId = shelterId;
-        PaymentMethodId = paymentMethodId;
-        Status = status;
-        TransactionId = transactionId;
-        Purpose = purpose;
-        Recurring = recurring;
-        Anonymous = anonymous;
-        DonationDate = donationDate ?? DateTime.UtcNow;
-        Report = report;
+        this.UserId = userId;
+        this.Amount = amount;
+        this.ShelterId = shelterId;
+        this.PaymentMethodId = paymentMethodId;
+        this.Status = status;
+        this.TransactionId = transactionId;
+        this.Purpose = purpose;
+        this.Recurring = recurring;
+        this.Anonymous = anonymous;
+        this.DonationDate = donationDate ?? DateTime.UtcNow;
+        this.Report = report;
 
-        CreatedAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
+        this.CreatedAt = DateTime.UtcNow;
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -127,6 +129,11 @@ public sealed class Donation : BaseEntity
     public PaymentMethod? PaymentMethod { get; private set; }
 
     /// <summary>
+    /// Gets the list of AnimalAidRequest links associated with this donation.
+    /// </summary>
+    public IReadOnlyList<AnimalAidDonation> AnimalAidLinks => this.animalAidLinks.AsReadOnly();
+
+    /// <summary>
     /// Creates a new <see cref="Donation"/> instance with the specified parameters.
     /// </summary>
     /// <param name="userId">The unique identifier of the user making the donation, if any. Can be null.</param>
@@ -175,8 +182,8 @@ public sealed class Donation : BaseEntity
     /// <param name="report">The new report for the donation.</param>
     public void UpdateReport(string report)
     {
-        Report = report;
-        UpdatedAt = DateTime.UtcNow;
+        this.Report = report;
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -185,13 +192,13 @@ public sealed class Donation : BaseEntity
     /// <param name="transactionId">The new transaction identifier, if provided. If null or empty, the transaction identifier remains unchanged.</param>
     public void MarkAsCompleted(string? transactionId = null)
     {
-        Status = DonationStatus.Completed;
+        this.Status = DonationStatus.Completed;
         if (!string.IsNullOrWhiteSpace(transactionId))
         {
-            TransactionId = transactionId;
+            this.TransactionId = transactionId;
         }
 
-        UpdatedAt = DateTime.UtcNow;
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -199,8 +206,8 @@ public sealed class Donation : BaseEntity
     /// </summary>
     public void MarkAsFailed()
     {
-        Status = DonationStatus.Failed;
-        UpdatedAt = DateTime.UtcNow;
+        this.Status = DonationStatus.Failed;
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -209,7 +216,46 @@ public sealed class Donation : BaseEntity
     /// <param name="status">The new status of the donation.</param>
     public void SetStatus(DonationStatus status)
     {
-        Status = status;
-        UpdatedAt = DateTime.UtcNow;
+        this.Status = status;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Adds a link between this donation and an AnimalAidRequest.
+    /// </summary>
+    /// <param name="link">The link to add.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="link"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the link already exists.</exception>
+    public void AddAnimalAidLink(AnimalAidDonation link)
+    {
+        if (link == null)
+        {
+            throw new ArgumentNullException(nameof(link), "Зв'язок не може бути null.");
+        }
+
+        if (this.animalAidLinks.Any(l => l.Id == link.Id))
+        {
+            throw new InvalidOperationException("Цей зв'язок вже додано.");
+        }
+
+        this.animalAidLinks.Add(link);
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Removes a link between this donation and an AnimalAidRequest.
+    /// </summary>
+    /// <param name="linkId">The ID of the link to remove.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the link is not found.</exception>
+    public void RemoveAnimalAidLink(Guid linkId)
+    {
+        var link = this.animalAidLinks.FirstOrDefault(l => l.Id == linkId);
+        if (link == null)
+        {
+            throw new InvalidOperationException("Зв'язок не знайдено.");
+        }
+
+        this.animalAidLinks.Remove(link);
+        this.UpdatedAt = DateTime.UtcNow;
     }
 }

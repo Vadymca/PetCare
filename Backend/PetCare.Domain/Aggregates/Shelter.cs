@@ -2,6 +2,8 @@
 
 using PetCare.Domain.Abstractions;
 using PetCare.Domain.Common;
+using PetCare.Domain.Entities;
+using PetCare.Domain.Enums;
 using PetCare.Domain.Events;
 using PetCare.Domain.ValueObjects;
 
@@ -10,9 +12,15 @@ using PetCare.Domain.ValueObjects;
 /// </summary>
 public sealed class Shelter : AggregateRoot
 {
-    private readonly List<Guid> animalIds = new();
+    private readonly List<Animal> animals = new();
     private readonly List<string> photos = new();
     private readonly Dictionary<string, string> socialMedia = new();
+    private readonly List<Donation> donations = new();
+    private readonly List<VolunteerTask> volunteerTasks = new();
+    private readonly List<AnimalAidRequest> animalAidRequests = new();
+    private readonly List<IoTDevice> ioTDevices = new();
+    private readonly List<Event> events = new();
+    private readonly List<ShelterSubscription> subscribers = new();
 
     private Shelter()
     {
@@ -124,6 +132,36 @@ public sealed class Shelter : AggregateRoot
     public IReadOnlyDictionary<string, string> SocialMedia => this.socialMedia;
 
     /// <summary>
+    /// Gets the collection of donations made by the shelter.
+    /// </summary>
+    public IReadOnlyCollection<Donation> Donations => this.donations.AsReadOnly();
+
+    /// <summary>
+    /// Gets the collection of volunteer tasks for the shelter.
+    /// </summary>
+    public IReadOnlyCollection<VolunteerTask> VolunteerTasks => this.volunteerTasks.AsReadOnly();
+
+    /// <summary>
+    /// Gets the collection of animal aid requests associated with the shelter.
+    /// </summary>
+    public IReadOnlyCollection<AnimalAidRequest> AnimalAidRequests => this.animalAidRequests.AsReadOnly();
+
+    /// <summary>
+    /// Gets the list of IoT devices assigned to the shelter.
+    /// </summary>
+    public IReadOnlyCollection<IoTDevice> IoTDevices => this.ioTDevices.AsReadOnly();
+
+    /// <summary>
+    /// Gets the events organized by this shelter.
+    /// </summary>
+    public IReadOnlyCollection<Event> Events => this.events.AsReadOnly();
+
+    /// <summary>
+    /// Gets the subscribers by this shelter.
+    /// </summary>
+    public IReadOnlyCollection<ShelterSubscription> Subscribers => this.subscribers.AsReadOnly();
+
+    /// <summary>
     /// Gets the date and time when the shelter record was created.
     /// </summary>
     public DateTime CreatedAt { get; private set; }
@@ -146,12 +184,7 @@ public sealed class Shelter : AggregateRoot
     /// <summary>
     /// Gets the identifiers of animals in the shelter.
     /// </summary>
-    public IReadOnlyList<Guid> AnimalIds => this.animalIds.AsReadOnly();
-
-    /// <summary>
-    /// Gets the animals in the shelter (EF Core navigation).
-    /// </summary>
-    public ICollection<Animal>? Animals { get; private set; }
+    public IReadOnlyCollection<Animal> Animals => this.animals.AsReadOnly();
 
     /// <summary>
     /// Creates a new <see cref="Shelter"/> instance with the specified parameters.
@@ -307,27 +340,36 @@ public sealed class Shelter : AggregateRoot
         this.AddDomainEvent(new ShelterUpdatedEvent(this.Id));
     }
 
+    // Animals
+
     /// <summary>
-    /// Adds an animal to the shelter, updating the occupancy count.
+    /// Adds a new animal to the shelter.
     /// </summary>
-    /// <param name="animalId">The identifier of the animal.</param>
-    /// <exception cref="InvalidOperationException">Thrown if the shelter is already full or animal is already added.</exception>
-    public void AddAnimal(Guid animalId)
+    /// <param name="animal">The animal to add.</param>
+    /// <param name="userId">The ID of the user performing the action.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the user does not have permission to add animals.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when the animal is null.</exception>
+    public void AddAnimal(Animal animal, Guid userId)
     {
-        if (this.CurrentOccupancy >= this.Capacity)
+        if (animal is null)
         {
-            throw new InvalidOperationException("Притулок заповнений. Неможливо додати нову тварину.");
+            throw new ArgumentNullException(nameof(animal), "Тварина не може бути null.");
         }
 
-        if (this.animalIds.Contains(animalId))
+        if (!this.IsManager(userId) && !this.IsAdminOrModerator())
         {
-            throw new InvalidOperationException("Ця тварина вже перебуває у притулку.");
+            throw new InvalidOperationException("Ви не маєте права додавати тварин до цього притулку.");
         }
 
-        this.animalIds.Add(animalId);
+        if (this.animals.Any(a => a.Id == animal.Id))
+        {
+            throw new InvalidOperationException("Ця тварина вже є у притулку.");
+        }
+
+        this.animals.Add(animal);
         this.CurrentOccupancy++;
         this.UpdatedAt = DateTime.UtcNow;
-        this.AddDomainEvent(new AnimalAddedToShelterEvent(this.Id, animalId, this.CurrentOccupancy));
+        this.AddDomainEvent(new AnimalAddedToShelterEvent(this.Id, animal.Id, this.CurrentOccupancy));
     }
 
     /// <summary>
@@ -335,17 +377,77 @@ public sealed class Shelter : AggregateRoot
     /// </summary>
     /// <param name="animalId">The identifier of the animal.</param>
     /// <exception cref="InvalidOperationException">Thrown if the animal is not found.</exception>
-    public void RemoveAnimal(Guid animalId)
+    public void RemoveAnimal(Guid animalId, Guid userId)
     {
-        if (!this.animalIds.Remove(animalId))
+        if (!this.IsManager(userId) && !this.IsAdminOrModerator())
         {
-            throw new InvalidOperationException("Тварину не знайдено у притулку.");
+            throw new InvalidOperationException("Ви не маєте права видаляти тварин з цього притулку.");
         }
 
+        var animal = this.animals.FirstOrDefault(a => a.Id == animalId);
+        if (animal is null)
+        {
+            throw new KeyNotFoundException("Тварину з таким ID не знайдено у притулку.");
+        }
+
+        this.animals.Remove(animal);
         this.CurrentOccupancy--;
         this.UpdatedAt = DateTime.UtcNow;
         this.AddDomainEvent(new AnimalRemovedFromShelterEvent(this.Id, animalId, this.CurrentOccupancy));
     }
+
+    // AnimalAidRequest
+
+    /// <summary>
+    /// Adds a new animal aid request to the shelter.
+    /// </summary>
+    /// <param name="request">The request to add.</param>
+    /// <param name="requestingUserId">The ID of the user requesting the operation. Must be the shelter manager or admin/moderator.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is null.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown when the requesting user is not authorized to add the request.</exception>
+    public void AddAnimalAidRequest(AnimalAidRequest request, Guid requestingUserId)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request), "Запит допомоги тварині не може бути null.");
+        }
+
+        if (!this.IsManager(requestingUserId) && !this.IsAdminOrModerator())
+        {
+            throw new UnauthorizedAccessException("Тільки менеджер притулку або адміністратор/модератор може додавати запит.");
+        }
+
+        this.animalAidRequests.Add(request);
+        this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new AnimalAidRequestAddedEvent(this.Id, request.Id));
+    }
+
+    /// <summary>
+    /// Removes an animal aid request from the shelter.
+    /// </summary>
+    /// <param name="requestId">The ID of the request to remove.</param>
+    /// <param name="requestingUserId">The ID of the user requesting the operation. Must be the shelter manager or admin/moderator.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the request is not found.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown when the requesting user is not authorized to remove the request.</exception>
+    public void RemoveAnimalAidRequest(Guid requestId, Guid requestingUserId)
+    {
+        var request = this.animalAidRequests.FirstOrDefault(r => r.Id == requestId);
+        if (request == null)
+        {
+            throw new InvalidOperationException("Запит допомоги тварині не знайдено.");
+        }
+
+        if (!this.IsManager(requestingUserId) && !this.IsAdminOrModerator())
+        {
+            throw new UnauthorizedAccessException("Тільки менеджер притулку або адміністратор/модератор може видаляти запит.");
+        }
+
+        this.animalAidRequests.Remove(request);
+        this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new AnimalAidRequestRemovedEvent(this.Id, requestId));
+    }
+
+    // Photos
 
     /// <summary>
     /// Asynchronously adds a photo to the shelter with validation and uploads it via the file storage service.
@@ -406,6 +508,8 @@ public sealed class Shelter : AggregateRoot
         return removed;
     }
 
+    // SocialMedia
+
     /// <summary>
     /// Adds or updates a social media link for the shelter.
     /// </summary>
@@ -446,9 +550,230 @@ public sealed class Shelter : AggregateRoot
         return removed;
     }
 
+    // Donations
+
+    /// <summary>
+    /// Adds a new donation made by the shelter.
+    /// </summary>
+    /// <param name="donation">The donation to add.</param>
+    /// <param name="requestingUserId">The ID of the user requesting the operation. Must be the owner or admin/moderator.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="donation"/> is null.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown when the requesting user is not authorized to add the donation.</exception>
+    public void AddDonation(Donation donation, Guid requestingUserId)
+    {
+        if (donation is null)
+        {
+            throw new ArgumentNullException(nameof(donation), "Пожертва не може бути null.");
+        }
+
+        if (!this.IsManager(requestingUserId))
+        {
+            throw new UnauthorizedAccessException("Тільки менеджер може додавати пожертву.");
+        }
+
+        this.donations.Add(donation);
+        this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new DonationAddedToShelterEvent(this.Id, donation.Id));
+    }
+
+    /// <summary>
+    /// Removes a donation made by the shelter.
+    /// </summary>
+    /// <param name="donationId">The ID of the donation to remove.</param>
+    /// <param name="requestingUserId">The ID of the user requesting the operation. Must be the owner or admin/moderator.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the donation is not found.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown when the requesting user is not authorized to remove the donation.</exception>
+    public void RemoveDonation(Guid donationId, Guid requestingUserId)
+    {
+        var donation = this.donations.FirstOrDefault(d => d.Id == donationId);
+        if (donation == null)
+        {
+            throw new InvalidOperationException("Пожертва не знайдена.");
+        }
+
+        if (!this.IsManager(requestingUserId))
+        {
+            throw new UnauthorizedAccessException("Недостатньо прав для видалення чужої пожертви.");
+        }
+
+        this.donations.Remove(donation);
+        this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new DonationRemovedFromShelterEvent(this.Id, donationId));
+    }
+
+    // VolunteerTask
+
+    /// <summary>
+    /// Adds a new volunteer task to the shelter.
+    /// </summary>
+    /// <param name="task">The volunteer task to add.</param>
+    /// <param name="requestingUserId">The ID of the user requesting the operation. Must be the manager or admin/moderator.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="task"/> is null.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown when the requesting user is not authorized to add the task.</exception>
+    public void AddVolunteerTask(VolunteerTask task, Guid requestingUserId)
+    {
+        if (task is null)
+        {
+            throw new ArgumentNullException(nameof(task), "Завдання волонтера не може бути null.");
+        }
+
+        if (!this.IsManager(requestingUserId))
+        {
+            throw new UnauthorizedAccessException("Тільки менеджер може додавати завдання волонтера.");
+        }
+
+        this.volunteerTasks.Add(task);
+        this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new VolunteerTaskAddedToShelterEvent(this.Id, task.Id));
+    }
+
+    /// <summary>
+    /// Removes a volunteer task from the shelter.
+    /// </summary>
+    /// <param name="taskId">The ID of the volunteer task to remove.</param>
+    /// <param name="requestingUserId">The ID of the user requesting the operation. Must be the manager or admin/moderator.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the task is not found.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown when the requesting user is not authorized to remove the task.</exception>
+    public void RemoveVolunteerTask(Guid taskId, Guid requestingUserId)
+    {
+        var task = this.volunteerTasks.FirstOrDefault(t => t.Id == taskId);
+        if (task == null)
+        {
+            throw new InvalidOperationException("Завдання волонтера не знайдено.");
+        }
+
+        if (!this.IsManager(requestingUserId))
+        {
+            throw new UnauthorizedAccessException("Недостатньо прав для видалення чужого завдання волонтера.");
+        }
+
+        this.volunteerTasks.Remove(task);
+        this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new VolunteerTaskRemovedFromShelterEvent(this.Id, taskId));
+    }
+
+    // IoTDevice
+
+    /// <summary>
+    /// Adds a new IoT device to the shelter.
+    /// </summary>
+    /// <param name="device">The IoT device to add.</param>
+    /// <param name="requestingUserId">The ID of the user requesting the operation.</param>
+    /// <exception cref="ArgumentNullException">Thrown when device is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the device is already linked to the shelter.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown when the user is not a manager, admin, or moderator.</exception>
+    public void AddIoTDevice(IoTDevice device, Guid requestingUserId)
+    {
+        if (device is null)
+        {
+            throw new ArgumentNullException(nameof(device), "IoT-пристрій не може бути null.");
+        }
+
+        if (this.ioTDevices.Any(d => d.Id == device.Id))
+        {
+            throw new InvalidOperationException("Цей IoT-пристрій вже доданий до притулку.");
+        }
+
+        if (!this.IsManager(requestingUserId) && !this.IsAdminOrModerator())
+        {
+            throw new UnauthorizedAccessException("Недостатньо прав для додавання IoT-пристрою.");
+        }
+
+        this.ioTDevices.Add(device);
+        this.UpdatedAt = DateTime.UtcNow;
+
+        this.AddDomainEvent(new IoTDeviceAddedEvent(this.Id, device.Id));
+    }
+
+    /// <summary>
+    /// Removes an IoT device from the shelter.
+    /// </summary>
+    /// <param name="deviceId">The ID of the device to remove.</param>
+    /// <param name="requestingUserId">The ID of the user requesting the operation.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the device is not found in the shelter.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown when the user is not a manager, admin, or moderator.</exception>
+    public void RemoveIoTDevice(Guid deviceId, Guid requestingUserId)
+    {
+        var device = this.ioTDevices.FirstOrDefault(d => d.Id == deviceId);
+        if (device == null)
+        {
+            throw new InvalidOperationException("IoT-пристрій не знайдено у притулку.");
+        }
+
+        if (!this.IsManager(requestingUserId) && !this.IsAdminOrModerator())
+        {
+            throw new UnauthorizedAccessException("Недостатньо прав для видалення IoT-пристрою.");
+        }
+
+        this.ioTDevices.Remove(device);
+        this.UpdatedAt = DateTime.UtcNow;
+
+        this.AddDomainEvent(new IoTDeviceRemovedEvent(this.Id, deviceId));
+    }
+
+    // Event
+
+    /// <summary>
+    /// Adds an event to the shelter.
+    /// </summary>
+    /// <param name="event">The event to add.</param>
+    /// <param name="userId">The ID of the user performing the action.</param>
+    /// <exception cref="ArgumentNullException">Thrown when the event is null.</exception>
+    /// <exception cref="UnauthorizedAccessException">Thrown when the user does not have permission to add the event.</exception>
+    public void AddEvent(Event @event, Guid userId)
+    {
+        if (@event is null)
+        {
+            throw new ArgumentNullException(nameof(@event), "Подія не може бути null.");
+        }
+
+        if (!this.IsManager(userId) && !this.IsAdminOrModerator())
+        {
+            throw new UnauthorizedAccessException("У вас немає прав для додавання події до притулку.");
+        }
+
+        this.events.Add(@event);
+        this.UpdatedAt = DateTime.UtcNow;
+
+        this.AddDomainEvent(new ShelterEventAddedEvent(this.Id, @event.Id));
+    }
+
+    /// <summary>
+    /// Removes an event from the shelter.
+    /// </summary>
+    /// <param name="eventId">The ID of the event to remove.</param>
+    /// <param name="userId">The ID of the user performing the action.</param>
+    /// <returns>True if the event was removed; otherwise, false.</returns>
+    /// <exception cref="UnauthorizedAccessException">Thrown when the user does not have permission to remove the event.</exception>
+    public bool RemoveEvent(Guid eventId, Guid userId)
+    {
+        if (!this.IsManager(userId) && !this.IsAdminOrModerator())
+        {
+            throw new UnauthorizedAccessException("У вас немає прав для видалення події з притулку.");
+        }
+
+        var existingEvent = this.events.FirstOrDefault(e => e.Id == eventId);
+        if (existingEvent is null)
+        {
+            return false;
+        }
+
+        this.events.Remove(existingEvent);
+        this.UpdatedAt = DateTime.UtcNow;
+
+        this.AddDomainEvent(new ShelterEventRemovedEvent(this.Id, eventId));
+        return true;
+    }
+
     /// <summary>
     /// Checks if the shelter has free capacity.
     /// </summary>
     /// <returns>True if there is available capacity, otherwise false.</returns>
     public bool HasFreeCapacity() => this.CurrentOccupancy < this.Capacity;
+
+    private bool IsManager(Guid userId) => this.ManagerId.HasValue && this.ManagerId.Value == userId;
+
+    private bool IsAdminOrModerator() =>
+        this.Manager != null && (this.Manager.Role == UserRole.Admin || this.Manager.Role == UserRole.Moderator);
+
 }
