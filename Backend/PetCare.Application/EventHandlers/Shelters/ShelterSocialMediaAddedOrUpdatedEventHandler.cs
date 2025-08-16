@@ -1,14 +1,15 @@
 ﻿namespace PetCare.Application.EventHandlers.Shelters;
-using PetCare.Application.Abstractions.Events;
+
+using MediatR;
 using PetCare.Domain.Events;
 
 /// <summary>
 /// Handles ShelterSocialMediaAddedOrUpdatedEvent.
 /// </summary>
-public sealed class ShelterSocialMediaAddedOrUpdatedEventHandler : IDomainEventHandler<ShelterSocialMediaAddedOrUpdatedEvent>
+public sealed class ShelterSocialMediaAddedOrUpdatedEventHandler : INotificationHandler<ShelterSocialMediaAddedOrUpdatedEvent>
 {
     /// <inheritdoc/>
-    public async Task HandleAsync(ShelterSocialMediaAddedOrUpdatedEvent domainEvent, CancellationToken cancellationToken = default)
+    public async Task Handle(ShelterSocialMediaAddedOrUpdatedEvent notification, CancellationToken cancellationToken)
     {
         // Логіка
         await Task.CompletedTask;

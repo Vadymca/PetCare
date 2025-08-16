@@ -234,3 +234,9 @@ C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\obj\Debug\net9.0\PetCare.Tes
 C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\obj\Debug\net9.0\ref\PetCare.Tests.dll
 C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\bin\Debug\net9.0\Castle.Core.dll
 C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\bin\Debug\net9.0\Moq.dll
+C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\bin\Debug\net9.0\MediatR.dll
+C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\bin\Debug\net9.0\MediatR.Contracts.dll
+C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\bin\Debug\net9.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\bin\Debug\net9.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\bin\Debug\net9.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\Vadim\StepIT\PetCare\Backend\PetCare.Tests\bin\Debug\net9.0\Microsoft.IdentityModel.Tokens.dll

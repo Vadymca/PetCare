@@ -366,6 +366,11 @@ public sealed class Shelter : AggregateRoot
             throw new InvalidOperationException("Ця тварина вже є у притулку.");
         }
 
+        if (this.CurrentOccupancy >= this.Capacity)
+        {
+            throw new InvalidOperationException("Притулок заповнений. Неможливо додати нову тварину.");
+        }
+
         this.animals.Add(animal);
         this.CurrentOccupancy++;
         this.UpdatedAt = DateTime.UtcNow;
@@ -377,6 +382,7 @@ public sealed class Shelter : AggregateRoot
     /// </summary>
     /// <param name="animalId">The identifier of the animal.</param>
     /// <exception cref="InvalidOperationException">Thrown if the animal is not found.</exception>
+    /// <param name="userId">The ID of the user performing the action.</param>
     public void RemoveAnimal(Guid animalId, Guid userId)
     {
         if (!this.IsManager(userId) && !this.IsAdminOrModerator())
@@ -387,7 +393,7 @@ public sealed class Shelter : AggregateRoot
         var animal = this.animals.FirstOrDefault(a => a.Id == animalId);
         if (animal is null)
         {
-            throw new KeyNotFoundException("Тварину з таким ID не знайдено у притулку.");
+            throw new InvalidOperationException("Тварину не знайдено у притулку.");
         }
 
         this.animals.Remove(animal);

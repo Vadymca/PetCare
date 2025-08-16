@@ -1,15 +1,16 @@
 ﻿namespace PetCare.Application.EventHandlers.Users;
-using PetCare.Application.Abstractions.Events;
+
+using MediatR;
 using PetCare.Domain.Events;
 using System.Threading.Tasks;
 
 /// <summary>
 /// Handles NotificationRemovedEvent.
 /// </summary>
-public sealed class NotificationRemovedEventHandler : IDomainEventHandler<NotificationRemovedEvent>
+public sealed class NotificationRemovedEventHandler : INotificationHandler<NotificationRemovedEvent>
 {
     /// <inheritdoc/>
-    public async Task HandleAsync(NotificationRemovedEvent domainEvent, CancellationToken cancellationToken = default)
+    public async Task Handle(NotificationRemovedEvent notification, CancellationToken cancellationToken)
     {
         // Логіка
         await Task.CompletedTask;

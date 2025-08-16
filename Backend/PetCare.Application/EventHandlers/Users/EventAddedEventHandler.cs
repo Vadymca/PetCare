@@ -1,15 +1,16 @@
 ﻿namespace PetCare.Application.EventHandlers.Users;
-using PetCare.Application.Abstractions.Events;
+
+using MediatR;
 using PetCare.Domain.Events;
 using System.Threading.Tasks;
 
 /// <summary>
 /// Handles EventAddedEvent.
 /// </summary>
-public sealed class EventAddedEventHandler : IDomainEventHandler<EventAddedEvent>
+public sealed class EventAddedEventHandler : INotificationHandler<EventAddedEvent>
 {
     /// <inheritdoc/>
-    public async Task HandleAsync(EventAddedEvent domainEvent, CancellationToken cancellationToken = default)
+    public async Task Handle(EventAddedEvent notification, CancellationToken cancellationToken)
     {
         // Логіка
         await Task.CompletedTask;

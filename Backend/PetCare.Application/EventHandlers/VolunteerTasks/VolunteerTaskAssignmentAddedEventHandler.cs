@@ -1,15 +1,16 @@
 ﻿namespace PetCare.Application.EventHandlers.VolunteerTasks;
-using PetCare.Application.Abstractions.Events;
+
+using MediatR;
 using PetCare.Domain.Events;
 using System.Threading.Tasks;
 
 /// <summary>
 /// Handles VolunteerTaskAssignmentAddedEvent.
 /// </summary>
-public sealed class VolunteerTaskAssignmentAddedEventHandler : IDomainEventHandler<VolunteerTaskAssignmentAddedEvent>
+public sealed class VolunteerTaskAssignmentAddedEventHandler : INotificationHandler<VolunteerTaskAssignmentAddedEvent>
 {
     /// <inheritdoc/>
-    public async Task HandleAsync(VolunteerTaskAssignmentAddedEvent domainEvent, CancellationToken cancellationToken = default)
+    public async Task Handle(VolunteerTaskAssignmentAddedEvent notification, CancellationToken cancellationToken)
     {
         // Логіка
         await Task.CompletedTask;

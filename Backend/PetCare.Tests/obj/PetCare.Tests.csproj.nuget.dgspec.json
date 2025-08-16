@@ -58,6 +58,10 @@
               "target": "Package",
               "version": "[8.5.0, )"
             },
+            "MediatR": {
+              "target": "Package",
+              "version": "[13.0.0, )"
+            },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
               "version": "[9.0.7, )"
@@ -182,6 +186,10 @@
             "FluentAssertions": {
               "target": "Package",
               "version": "[8.5.0, )"
+            },
+            "MediatR": {
+              "target": "Package",
+              "version": "[13.0.0, )"
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
@@ -315,6 +323,10 @@
             "FluentAssertions": {
               "target": "Package",
               "version": "[8.5.0, )"
+            },
+            "MediatR": {
+              "target": "Package",
+              "version": "[13.0.0, )"
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
@@ -453,6 +465,10 @@
             "FluentAssertions": {
               "target": "Package",
               "version": "[8.5.0, )"
+            },
+            "MediatR": {
+              "target": "Package",
+              "version": "[13.0.0, )"
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
@@ -601,6 +617,10 @@
             "FluentAssertions": {
               "target": "Package",
               "version": "[8.5.0, )"
+            },
+            "MediatR": {
+              "target": "Package",
+              "version": "[13.0.0, )"
             },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",

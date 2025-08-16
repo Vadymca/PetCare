@@ -1,15 +1,16 @@
 ﻿namespace PetCare.Application.EventHandlers.Users;
-using PetCare.Application.Abstractions.Events;
+
+using MediatR;
 using PetCare.Domain.Events;
 using System.Threading.Tasks;
 
 /// <summary>
 /// Handles GamificationRewardRemovedEvent.
 /// </summary>
-public sealed class GamificationRewardRemovedEventHandler : IDomainEventHandler<GamificationRewardRemovedEvent>
+public sealed class GamificationRewardRemovedEventHandler : INotificationHandler<GamificationRewardRemovedEvent>
 {
     /// <inheritdoc/>
-    public async Task HandleAsync(GamificationRewardRemovedEvent domainEvent, CancellationToken cancellationToken = default)
+    public async Task Handle(GamificationRewardRemovedEvent notification, CancellationToken cancellationToken)
     {
         // Логіка
         await Task.CompletedTask;

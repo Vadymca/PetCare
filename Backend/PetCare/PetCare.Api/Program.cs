@@ -35,7 +35,7 @@ public class Program
                     builder.Configuration.GetConnectionString("DefaultConnection"),
                     npgsql => npgsql.UseNetTopologySuite()));
 
-            builder.Services.AddAplication();
+            builder.Services.AddApplication();
             builder.Services.AddInfrastructure();
 
             builder.Host.UseSerilog();

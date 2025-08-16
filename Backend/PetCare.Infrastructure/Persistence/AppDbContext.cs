@@ -1,6 +1,8 @@
 ﻿namespace PetCare.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using PetCare.Domain.Abstractions.Events;
 using PetCare.Domain.Aggregates;
+using PetCare.Domain.Common;
 using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
 using PetCare.Domain.Events;
@@ -10,13 +12,17 @@ using PetCare.Domain.Events;
 /// </summary>
 public class AppDbContext : DbContext
 {
+    private readonly IDomainEventDispatcher dispatcher;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AppDbContext"/> class.
     /// </summary>
     /// <param name="options">The options to be used by a <see cref="DbContext"/>.</param>
-    public AppDbContext(DbContextOptions<AppDbContext> options)
+    /// <param name="dispatcher">The dispatcher to be used by a <see cref="DbContext"/>.</param>
+    public AppDbContext(DbContextOptions<AppDbContext> options, IDomainEventDispatcher dispatcher)
         : base(options)
     {
+        this.dispatcher = dispatcher;
     }
 
     /// <summary>
@@ -158,6 +164,36 @@ public class AppDbContext : DbContext
     /// Gets the volunteerTaskAssignment entities.
     /// </summary>
     public DbSet<VolunteerTaskAssignment> VolunteerTaskAssignments => this.Set<VolunteerTaskAssignment>();
+
+    /// <inheritdoc/>
+    /// <summary>
+    /// Saves all changes made in this context to the database.
+    /// In addition to persisting data, this method collects all domain events
+    /// from tracked aggregate roots, dispatches them using the configured
+    /// <see cref="IDomainEventDispatcher"/>, and then clears the events
+    /// from the entities to prevent re-dispatching.
+    /// </summary>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>The number of state entries written to the database.</returns>
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var domainEntities = this.ChangeTracker
+            .Entries<AggregateRoot>()
+            .Where(e => e.Entity.DomainEvents.Any())
+            .ToList();
+
+        var domainEvents = domainEntities
+            .SelectMany(e => e.Entity.DomainEvents)
+            .ToList();
+
+        var result = await base.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        await this.dispatcher.DispatchAsync(domainEvents, cancellationToken).ConfigureAwait(false);
+
+        domainEntities.ForEach(e => e.Entity.ClearDomainEvents());
+
+        return result;
+    }
 
     /// <summary>
     /// Configures the model by applying entity configurations.

@@ -1,5 +1,6 @@
 ﻿namespace PetCare.Application.EventHandlers.Shelters;
-using PetCare.Application.Abstractions.Events;
+
+using MediatR;
 using PetCare.Domain.Events;
 using System.Threading.Tasks;
 
@@ -7,10 +8,10 @@ using System.Threading.Tasks;
 /// Handles IoTDeviceAddedEvent.
 /// </summary>
 
-public sealed class IoTDeviceAddedEventHandler : IDomainEventHandler<IoTDeviceAddedEvent>
+public sealed class IoTDeviceAddedEventHandler : INotificationHandler<IoTDeviceAddedEvent>
 {
     /// <inheritdoc/>
-    public async Task HandleAsync(IoTDeviceAddedEvent domainEvent, CancellationToken cancellationToken = default)
+    public async Task Handle(IoTDeviceAddedEvent notification, CancellationToken cancellationToken)
     {
         // Логіка
         await Task.CompletedTask;

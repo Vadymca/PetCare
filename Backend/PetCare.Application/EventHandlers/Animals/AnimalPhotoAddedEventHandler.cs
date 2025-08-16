@@ -1,14 +1,15 @@
 ﻿namespace PetCare.Application.EventHandlers.Animals;
-using PetCare.Application.Abstractions.Events;
+
+using MediatR;
 using PetCare.Domain.Events;
 
 /// <summary>
 /// Handles AnimalPhotoAddedEventHandler.
 /// </summary>
-public sealed class AnimalPhotoAddedEventHandler : IDomainEventHandler<AnimalPhotoAddedEvent>
+public sealed class AnimalPhotoAddedEventHandler : INotificationHandler<AnimalPhotoAddedEvent>
 {
     /// <inheritdoc/>
-    public async Task HandleAsync(AnimalPhotoAddedEvent domainEvent, CancellationToken cancellationToken = default)
+    public async Task Handle(AnimalPhotoAddedEvent notification, CancellationToken cancellationToken)
     {
         // логіка
         await Task.CompletedTask;

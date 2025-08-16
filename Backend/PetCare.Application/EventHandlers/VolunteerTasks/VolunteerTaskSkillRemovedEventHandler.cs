@@ -1,15 +1,16 @@
 ﻿namespace PetCare.Application.EventHandlers.VolunteerTasks;
-using PetCare.Application.Abstractions.Events;
+
+using MediatR;
 using PetCare.Domain.Events;
 using System.Threading.Tasks;
 
 /// <summary>
 /// Handles VolunteerTaskSkillRemovedEvent.
 /// </summary>
-public sealed class VolunteerTaskSkillRemovedEventHandler : IDomainEventHandler<VolunteerTaskSkillRemovedEvent>
+public sealed class VolunteerTaskSkillRemovedEventHandler : INotificationHandler<VolunteerTaskSkillRemovedEvent>
 {
     /// <inheritdoc/>
-    public async Task HandleAsync(VolunteerTaskSkillRemovedEvent domainEvent, CancellationToken cancellationToken)
+    public async Task Handle(VolunteerTaskSkillRemovedEvent notification, CancellationToken cancellationToken)
     {
         // Логіка
         await Task.CompletedTask;

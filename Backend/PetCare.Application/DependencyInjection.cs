@@ -2,6 +2,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using PetCare.Application.Abstractions.Events;
+using PetCare.Domain.Abstractions.Events;
 using System.Reflection;
 
 /// <summary>
@@ -10,35 +11,17 @@ using System.Reflection;
 public static class DependencyInjection
 {
     /// <summary>
-    /// Adds Application-layer services.
+    /// Adds Application-layer services, including MediatR handlers and domain event dispatcher.
     /// </summary>
     /// <param name="services">The service collection to which application services are added.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddAplication(this IServiceCollection services)
+    public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.RegisterAllDomainEventHandlers();
-        return services;
-    }
+        // Реєструємо всі INotificationHandler<T> з поточної збірки
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
-    /// <summary>
-    /// Automatically registers all domain event handlers from the current assembly.
-    /// </summary>
-    private static IServiceCollection RegisterAllDomainEventHandlers(this IServiceCollection services)
-    {
-        var assembly = Assembly.GetExecutingAssembly();
-        var handlerInterfaceType = typeof(IDomainEventHandler<>);
-
-        var handlers = assembly.GetTypes()
-            .Where(t => !t.IsAbstract && !t.IsInterface)
-            .SelectMany(t => t.GetInterfaces()
-                .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == handlerInterfaceType)
-                .Select(i => new { Interface = i, Implementation = t }))
-            .Distinct();
-
-        foreach (var handler in handlers)
-        {
-            services.AddScoped(handler.Interface, handler.Implementation);
-        }
+        // Реєструємо Dispatcher, який використовує MediatR
+        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
         return services;
     }

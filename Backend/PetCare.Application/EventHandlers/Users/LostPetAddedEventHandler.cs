@@ -1,15 +1,16 @@
 ﻿namespace PetCare.Application.EventHandlers.Users;
-using PetCare.Application.Abstractions.Events;
+
+using MediatR;
 using PetCare.Domain.Events;
 using System.Threading.Tasks;
 
 /// <summary>
 /// Handles LostPetAddedEvent.
 /// </summary>
-public sealed class LostPetAddedEventHandler : IDomainEventHandler<LostPetAddedEvent>
+public sealed class LostPetAddedEventHandler : INotificationHandler<LostPetAddedEvent>
 {
     /// <inheritdoc/>
-    public async Task HandleAsync(LostPetAddedEvent domainEvent, CancellationToken cancellationToken = default)
+    public async Task Handle(LostPetAddedEvent notification, CancellationToken cancellationToken)
     {
         // Логіка
         await Task.CompletedTask;

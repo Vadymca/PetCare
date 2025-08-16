@@ -1,15 +1,16 @@
 ﻿namespace PetCare.Application.EventHandlers.Species;
-using PetCare.Application.Abstractions.Events;
+
+using MediatR;
 using PetCare.Domain.Events;
 using System.Threading.Tasks;
 
 /// <summary>
 /// Handles BreedRemovedEvent.
 /// </summary>
-public sealed class BreedRemovedEventHandler : IDomainEventHandler<BreedRemovedEvent>
+public sealed class BreedRemovedEventHandler : INotificationHandler<BreedRemovedEvent>
 {
     /// <inheritdoc/>
-    public async Task HandleAsync(BreedRemovedEvent domainEvent, CancellationToken cancellationToken = default)
+    public async Task Handle(BreedRemovedEvent notification, CancellationToken cancellationToken)
     {
         // Логіка
         await Task.CompletedTask;

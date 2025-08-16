@@ -1,17 +1,18 @@
 ﻿namespace PetCare.Application.EventHandlers.Users;
-using PetCare.Application.Abstractions.Events;
+
+using MediatR;
 using PetCare.Domain.Events;
 using System.Threading.Tasks;
 
 /// <summary>
 /// Handles UserPasswordChangedEvent.
 /// </summary>
-public class UserPasswordChangedEventHandler : IDomainEventHandler<UserPasswordChangedEvent>
+public class UserPasswordChangedEventHandler : INotificationHandler<UserPasswordChangedEvent>
 {
     /// <inheritdoc/>
-    public Task HandleAsync(UserPasswordChangedEvent domainEvent, CancellationToken cancellationToken = default)
+    public async Task Handle(UserPasswordChangedEvent notification, CancellationToken cancellationToken)
     {
         // Логіка
-        return Task.CompletedTask;
+        await Task.CompletedTask;
     }
 }

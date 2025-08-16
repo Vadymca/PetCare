@@ -3,28 +3,28 @@ using PetCare.Domain.Enums;
 using System;
 
 public sealed record VolunteerTaskCreatedEvent(Guid volunteerTaskId)
-    : DomainEvent(Guid.NewGuid(), DateTime.UtcNow);
+    : DomainEvent;
 
 public sealed record VolunteerTaskStatusUpdatedEvent(Guid volunteerTaskId, VolunteerTaskStatus newStatus)
-    : DomainEvent(Guid.NewGuid(), DateTime.UtcNow);
+    : DomainEvent;
 
 public sealed record VolunteerTaskInfoUpdatedEvent(Guid volunteerTaskId)
-    : DomainEvent(Guid.NewGuid(), DateTime.UtcNow);
+    : DomainEvent;
 
 public sealed record VolunteerTaskSkillAddedOrUpdatedEvent(Guid volunteerTaskId, string skillName, string description)
-    : DomainEvent(Guid.NewGuid(), DateTime.UtcNow);
+    : DomainEvent;
 
 public sealed record VolunteerTaskSkillRemovedEvent(Guid volunteerTaskId, string skillName)
-    : DomainEvent(Guid.NewGuid(), DateTime.UtcNow);
+    : DomainEvent;
 
 public record VolunteerTaskAssignmentAddedEvent(Guid taskId, Guid assignmentId)
-      : DomainEvent(Guid.NewGuid(), DateTime.UtcNow);
+      : DomainEvent;
 
 public record VolunteerTaskAssignmentRemovedEvent(Guid taskId, Guid assignmentId)
-    : DomainEvent(Guid.NewGuid(), DateTime.UtcNow);
+    : DomainEvent;
 
-public record VolunteerTaskRewardAddedEvent(Guid TaskId, Guid RewardId)
-    : DomainEvent(Guid.NewGuid(), DateTime.UtcNow);
+public record VolunteerTaskRewardAddedEvent(Guid taskId, Guid rewardId)
+    : DomainEvent;
 
-public record VolunteerTaskRewardRemovedEvent(Guid TaskId, Guid RewardId)
-    : DomainEvent(Guid.NewGuid(), DateTime.UtcNow);
+public record VolunteerTaskRewardRemovedEvent(Guid taskId, Guid rewardId)
+    : DomainEvent;

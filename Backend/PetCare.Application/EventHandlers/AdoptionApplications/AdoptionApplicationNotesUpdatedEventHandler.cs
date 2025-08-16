@@ -1,15 +1,16 @@
 ﻿namespace PetCare.Application.EventHandlers.AdoptionApplications;
-using PetCare.Application.Abstractions.Events;
+
+using MediatR;
 using PetCare.Domain.Events;
 using System.Threading.Tasks;
 
 /// <summary>
 /// Handles AdoptionApplicationNotesUpdatedEvent.
 /// </summary>
-public sealed class AdoptionApplicationNotesUpdatedEventHandler : IDomainEventHandler<AdoptionApplicationNotesUpdatedEvent>
+public sealed class AdoptionApplicationNotesUpdatedEventHandler : INotificationHandler<AdoptionApplicationNotesUpdatedEvent>
 {
     /// <inheritdoc/>
-    public async Task HandleAsync(AdoptionApplicationNotesUpdatedEvent domainEvent, CancellationToken cancellationToken = default)
+    public async Task Handle(AdoptionApplicationNotesUpdatedEvent notification, CancellationToken cancellationToken)
     {
         // логіка
         await Task.CompletedTask;

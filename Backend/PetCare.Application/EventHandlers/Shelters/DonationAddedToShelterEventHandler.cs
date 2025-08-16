@@ -1,15 +1,16 @@
 ﻿namespace PetCare.Application.EventHandlers.Shelters;
-using PetCare.Application.Abstractions.Events;
+
+using MediatR;
 using PetCare.Domain.Events;
 using System.Threading.Tasks;
 
 /// <summary>
 /// Handles DonationAddedToShelterEvent.
 /// </summary>
-public sealed class DonationAddedToShelterEventHandler : IDomainEventHandler<DonationAddedToShelterEvent>
+public sealed class DonationAddedToShelterEventHandler : INotificationHandler<DonationAddedToShelterEvent>
 {
     /// <inheritdoc/>
-    public async Task HandleAsync(DonationAddedToShelterEvent domainEvent, CancellationToken cancellationToken = default)
+    public async Task Handle(DonationAddedToShelterEvent notification, CancellationToken cancellationToken)
     {
         // Логіка
         await Task.CompletedTask;

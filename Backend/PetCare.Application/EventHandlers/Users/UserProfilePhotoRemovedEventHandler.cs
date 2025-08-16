@@ -1,15 +1,16 @@
 ﻿namespace PetCare.Application.EventHandlers.Users;
-using PetCare.Application.Abstractions.Events;
+
+using MediatR;
 using PetCare.Domain.Events;
 using System.Threading.Tasks;
 
 /// <summary>
 /// Handles UserProfilePhotoRemovedEvent.
 /// </summary>
-public sealed class UserProfilePhotoRemovedEventHandler : IDomainEventHandler<UserProfilePhotoRemovedEvent>
+public sealed class UserProfilePhotoRemovedEventHandler : INotificationHandler<UserProfilePhotoRemovedEvent>
 {
     /// <inheritdoc/>
-    public async Task HandleAsync(UserProfilePhotoRemovedEvent domainEvent, CancellationToken cancellationToken = default)
+    public async Task Handle(UserProfilePhotoRemovedEvent notification, CancellationToken cancellationToken)
     {
         // Логіка
         await Task.CompletedTask;
