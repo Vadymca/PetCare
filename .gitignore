@@ -1,2 +1,87 @@
-
+# --- Frontend ---
 Frontend/.angular/
+
+# --- Backend .NET build folders ---
+bin/
+obj/
+[Bb]uild/
+[Ll]og/
+[Ll]ogs/
+
+# --- .NET / EF Core ---
+**/bin/
+**/obj/
+**/*.dll
+**/*.pdb
+**/*.sourcelink.json
+**/*.cache
+**/*.GeneratedMSBuildEditorConfig.editorconfig
+**/*.AssemblyInfo*.cs
+
+# --- User-specific files ---
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+*.userprefs
+*.rsuser
+
+# --- Visual Studio caches ---
+.vs/
+*.dbmdl
+*.dbproj.schemaview
+
+# --- Rider / JetBrains ---
+.idea/
+*.sln.iml
+
+# --- Test results ---
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.VisualState.xml
+TestResult.xml
+*.coverage
+*.coveragexml
+
+# --- NuGet ---
+*.nupkg
+*.snupkg
+*.nuget.props
+*.nuget.targets
+.nuget/
+
+# --- Package restore ---
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# --- Entity Framework Migrations temp ---
+*.Designer.cs
+*.edmx.diagram
+*.edmx.deploy*
+*.edmx.sql
+
+# --- Other temp files ---
+*.swp
+*.sw?
+*.swn
+*.swo
+*.tmp
+*.bak
+*.log
+*.vspscc
+*.vssscc
+*_i.c
+*_p.c
+*_h.h
+*.db
+
+# --- OS-specific ---
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Local configuration files
+**/appsettings.json
+docker-compose.override.yml
