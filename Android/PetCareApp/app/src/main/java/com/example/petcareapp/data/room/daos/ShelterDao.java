@@ -2,18 +2,19 @@ package com.example.petcareapp.data.room.daos;
 
 import androidx.room.Dao;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import com.example.petcareapp.data.room.entities.ShelterEntity;
 import java.util.List;
 
 @Dao
 public interface ShelterDao {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)  // Додано REPLACE
     void insert(ShelterEntity shelter);
-
     @Query("SELECT * FROM shelters")
     List<ShelterEntity> getAll();
-
     @Query("SELECT * FROM shelters WHERE slug = :slug LIMIT 1")
     ShelterEntity getBySlug(String slug);
+    @Insert(onConflict = OnConflictStrategy.REPLACE)  // Додано REPLACE
+    void insertAll(List<ShelterEntity> entities);
 }

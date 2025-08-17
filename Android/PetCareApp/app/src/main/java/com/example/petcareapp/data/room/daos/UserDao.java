@@ -4,17 +4,19 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-import com.example.petcareapp.data.room.entities.AnimalEntity;
+
+import com.example.petcareapp.data.room.entities.UserEntity;
+
 import java.util.List;
 
 @Dao
-public interface AnimalDao {
+public interface UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)  // Додано REPLACE
-    void insert(AnimalEntity animal);
+    void insertAll(List<UserEntity> users);
     @Insert(onConflict = OnConflictStrategy.REPLACE)  // Додано REPLACE
-    void insertAll(List<AnimalEntity> animals);
-    @Query("SELECT * FROM animals")
-    List<AnimalEntity> getAll();
-    @Query("SELECT * FROM animals WHERE slug = :slug LIMIT 1")
-    AnimalEntity getBySlug(String slug);
+    void insert(UserEntity user);
+    @Query("SELECT * FROM users")
+    List<UserEntity> getAllUsers();
+    @Query("SELECT * FROM users WHERE id = :id")
+    UserEntity getUserById(String id);
 }
