@@ -8,6 +8,32 @@ using PetCare.Domain.Aggregates;
 public interface IAnimalRepository : IRepository<Animal>
 {
     /// <summary>
+<<<<<<< HEAD
+=======
+    /// Retrieves all animals in a specific shelter.
+    /// </summary>
+    /// <param name="shelterId">The unique identifier of the shelter.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>A read-only list of animals.</returns>
+    Task<IReadOnlyList<Animal>> GetByShelterIdAsync(Guid shelterId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves all animals of a specific breed.
+    /// </summary>
+    /// <param name="breedId">The unique identifier of the breed.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>A read-only list of animals.</returns>
+    Task<IReadOnlyList<Animal>> GetByBreedIdAsync(Guid breedId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves all available animals for adoption.
+    /// </summary>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>A read-only list of available animals.</returns>
+    Task<IReadOnlyList<Animal>> GetAvailableForAdoptionAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+>>>>>>> 5e60776 (Implementation of repositories for aggregates)
     /// Retrieves an animal by its unique slug.
     /// </summary>
     /// <param name="slug">The slug of the animal.</param>
@@ -15,6 +41,10 @@ public interface IAnimalRepository : IRepository<Animal>
     /// <returns>
     /// A task that represents the asynchronous operation. The task result contains the animal if found; otherwise, <c>null</c>.
     /// </returns>
+<<<<<<< HEAD
     Task<Animal?> GetBySlugAsync(
         string slug, CancellationToken cancellationToken = default);
+=======
+    Task<Animal?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default);
+>>>>>>> 5e60776 (Implementation of repositories for aggregates)
 }

@@ -2,6 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Aggregates;
+<<<<<<< HEAD
+=======
+using PetCare.Domain.Specifications.Shelter;
+>>>>>>> 5e60776 (Implementation of repositories for aggregates)
 using PetCare.Infrastructure.Persistence;
 
 /// <summary>
@@ -18,6 +22,7 @@ public class ShelterRepository : GenericRepository<Shelter>, IShelterRepository
     {
     }
 
+<<<<<<< HEAD
     /// <inheritdoc/>
     public async Task<Shelter?> GetBySlugAsync(
         string slug,
@@ -36,4 +41,38 @@ public class ShelterRepository : GenericRepository<Shelter>, IShelterRepository
             .Include(s => s.IoTDevices)
             .FirstOrDefaultAsync(s => s.IoTDevices.Any(d => d.Id == deviceId), cancellationToken);
     }
+=======
+    /// <inheritdoc />
+    public Task<Shelter?> GetShelterByDeviceIdAsync(Guid deviceId, CancellationToken cancellationToken = default)
+        => this.FindAsync(new ShelterByDeviceSpecification(deviceId), cancellationToken)
+               .ContinueWith(t => t.Result.FirstOrDefault(), cancellationToken);
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<Shelter>> GetByManagerIdAsync(Guid managerId, CancellationToken cancellationToken = default)
+        => this.FindAsync(new SheltersByManagerSpecification(managerId), cancellationToken);
+
+    /// <inheritdoc />
+    public Task<IReadOnlyList<Shelter>> GetWithFreeCapacityAsync(CancellationToken cancellationToken = default)
+        => this.FindAsync(new SheltersWithFreeCapacitySpecification(), cancellationToken);
+
+    /// <inheritdoc />
+    public async Task<Shelter?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(slug))
+        {
+            throw new ArgumentException("Slug не може бути порожнім.", nameof(slug));
+        }
+
+        return await this.Context.Set<Shelter>()
+            .AsNoTracking()
+            .Include(s => s.Animals)
+            .Include(s => s.Donations)
+            .Include(s => s.VolunteerTasks)
+            .Include(s => s.AnimalAidRequests)
+            .Include(s => s.IoTDevices)
+            .Include(s => s.Events)
+            .Include(s => s.Subscribers)
+            .FirstOrDefaultAsync(s => s.Slug.Value == slug, cancellationToken);
+    }
+>>>>>>> 5e60776 (Implementation of repositories for aggregates)
 }

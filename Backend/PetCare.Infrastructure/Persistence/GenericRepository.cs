@@ -1,6 +1,10 @@
 ﻿namespace PetCare.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using PetCare.Domain.Abstractions.Repositories;
+<<<<<<< HEAD
+=======
+using PetCare.Domain.Specifications;
+>>>>>>> 5e60776 (Implementation of repositories for aggregates)
 
 /// <summary>
 /// A generic repository for performing basic CRUD operations.
@@ -87,7 +91,10 @@ public class GenericRepository<T> : IRepository<T>
         return entity;
     }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5e60776 (Implementation of repositories for aggregates)
     /// <summary>
     /// Deletes an entity from the database.
     /// </summary>
@@ -164,4 +171,28 @@ public class GenericRepository<T> : IRepository<T>
     {
         return await this.Context.Set<T>().CountAsync(cancellationToken);
     }
+<<<<<<< HEAD
+=======
+
+    /// <summary>
+    /// Finds entities based on a specification.
+    /// </summary>
+    /// <param name="specification">The specification to filter entities.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>A read-only list of entities satisfying the specification.</returns>
+    public async Task<IReadOnlyList<T>> FindAsync(
+        Specification<T> specification,
+        CancellationToken cancellationToken = default)
+    {
+        if (specification == null)
+        {
+            throw new ArgumentNullException(nameof(specification));
+        }
+
+        return await this.Context.Set<T>()
+            .AsNoTracking()
+            .Where(specification.ToExpression())
+            .ToListAsync(cancellationToken);
+    }
+>>>>>>> 5e60776 (Implementation of repositories for aggregates)
 }
