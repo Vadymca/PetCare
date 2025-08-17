@@ -777,9 +777,21 @@ public sealed class Shelter : AggregateRoot
     /// <returns>True if there is available capacity, otherwise false.</returns>
     public bool HasFreeCapacity() => this.CurrentOccupancy < this.Capacity;
 
+    /// <summary>
+    /// Determines whether the specified user can manage this shelter.
+    /// A user can manage the shelter if they are the assigned manager,
+    /// or if they have an Admin or Moderator role.
+    /// </summary>
+    /// <param name="userId">The ID of the user to check.</param>
+    /// <returns>
+    /// <c>true</c> if the user can manage the shelter; otherwise, <c>false</c>.
+    /// </returns>
+    public bool CanManageBy(Guid userId) =>
+        (this.ManagerId.HasValue && this.ManagerId.Value == userId)
+        || (this.Manager != null && (this.Manager.Role == UserRole.Admin || this.Manager.Role == UserRole.Moderator));
+
     private bool IsManager(Guid userId) => this.ManagerId.HasValue && this.ManagerId.Value == userId;
 
     private bool IsAdminOrModerator() =>
         this.Manager != null && (this.Manager.Role == UserRole.Admin || this.Manager.Role == UserRole.Moderator);
-
 }

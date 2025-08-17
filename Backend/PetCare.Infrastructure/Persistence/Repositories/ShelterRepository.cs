@@ -24,6 +24,16 @@ public class ShelterRepository : GenericRepository<Shelter>, IShelterRepository
         CancellationToken cancellationToken = default)
     {
         return await this.Context.Shelters
+             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.Slug.Value == slug, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<Shelter?> GetShelterByDeviceIdAsync(Guid deviceId, CancellationToken cancellationToken = default)
+    {
+        return await this.Context.Shelters
+            .AsNoTracking()
+            .Include(s => s.IoTDevices)
+            .FirstOrDefaultAsync(s => s.IoTDevices.Any(d => d.Id == deviceId), cancellationToken);
     }
 }

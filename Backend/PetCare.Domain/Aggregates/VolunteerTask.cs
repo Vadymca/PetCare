@@ -300,6 +300,11 @@ public sealed class VolunteerTask : AggregateRoot
             throw new ArgumentNullException(nameof(assignment), "Призначення не може бути null.");
         }
 
+        if (!this.IsManagerOrAdmin(requestingUserId))
+        {
+            throw new UnauthorizedAccessException("Користувач не має прав для додавання призначення.");
+        }
+
         if (this.assignments.Any(a => a.Id == assignment.Id))
         {
             throw new InvalidOperationException("Це призначення вже додано.");
@@ -319,6 +324,11 @@ public sealed class VolunteerTask : AggregateRoot
     /// <exception cref="UnauthorizedAccessException">Thrown if the requesting user cannot remove this assignment.</exception>
     public void RemoveAssignment(Guid assignmentId, Guid requestingUserId)
     {
+        if (!this.IsManagerOrAdmin(requestingUserId))
+        {
+            throw new UnauthorizedAccessException("Користувач не має прав для видалення призначення.");
+        }
+
         var assignment = this.assignments.FirstOrDefault(a => a.Id == assignmentId);
         if (assignment == null)
         {
@@ -339,7 +349,7 @@ public sealed class VolunteerTask : AggregateRoot
     {
         if (reward is null)
         {
-            throw new ArgumentNullException(nameof(reward), "Reward cannot be null.");
+            throw new ArgumentNullException(nameof(reward), "Винагорода не може бути нульовою.");
         }
 
         this.rewards.Add(reward);
@@ -365,4 +375,6 @@ public sealed class VolunteerTask : AggregateRoot
         this.AddDomainEvent(new VolunteerTaskRewardRemovedEvent(this.Id, rewardId));
         return true;
     }
+
+    private bool IsManagerOrAdmin(Guid userId) => this.Shelter?.CanManageBy(userId) ?? false;
 }
