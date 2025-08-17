@@ -1,8 +1,5 @@
 ﻿namespace PetCare.Domain.Abstractions.Repositories;
-<<<<<<< HEAD
-=======
 using PetCare.Domain.Specifications;
->>>>>>> 5e60776 (Implementation of repositories for aggregates)
 
 /// <summary>
 /// Represents a generic repository interface for performing CRUD operations on entities.
@@ -58,8 +55,6 @@ public interface IRepository<T>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>The total number of entities.</returns>
     Task<int> CountAsync(CancellationToken cancellationToken = default);
-<<<<<<< HEAD
-=======
 
     /// <summary>
     /// Finds entities based on a specification.
@@ -68,5 +63,4 @@ public interface IRepository<T>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A read-only list of entities satisfying the specification.</returns>
     Task<IReadOnlyList<T>> FindAsync(Specification<T> specification, CancellationToken cancellationToken = default);
->>>>>>> 5e60776 (Implementation of repositories for aggregates)
 }

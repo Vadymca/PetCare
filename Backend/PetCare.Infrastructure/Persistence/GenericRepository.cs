@@ -1,10 +1,7 @@
 ﻿namespace PetCare.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using PetCare.Domain.Abstractions.Repositories;
-<<<<<<< HEAD
-=======
 using PetCare.Domain.Specifications;
->>>>>>> 5e60776 (Implementation of repositories for aggregates)
 
 /// <summary>
 /// A generic repository for performing basic CRUD operations.
@@ -91,10 +88,6 @@ public class GenericRepository<T> : IRepository<T>
         return entity;
     }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 5e60776 (Implementation of repositories for aggregates)
     /// <summary>
     /// Deletes an entity from the database.
     /// </summary>
@@ -171,8 +164,6 @@ public class GenericRepository<T> : IRepository<T>
     {
         return await this.Context.Set<T>().CountAsync(cancellationToken);
     }
-<<<<<<< HEAD
-=======
 
     /// <summary>
     /// Finds entities based on a specification.
@@ -194,5 +185,4 @@ public class GenericRepository<T> : IRepository<T>
             .Where(specification.ToExpression())
             .ToListAsync(cancellationToken);
     }
->>>>>>> 5e60776 (Implementation of repositories for aggregates)
 }
