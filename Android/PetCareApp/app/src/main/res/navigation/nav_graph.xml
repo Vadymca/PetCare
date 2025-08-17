@@ -9,11 +9,22 @@
         android:name="com.example.petcareapp.ui.fragments.AnimalListFragment">
         <action
             android:id="@+id/action_animalList_to_animalDetail"
-            app:destination="@id/animalDetailFragment">
+            app:destination="@id/animalDetailFragment"
+            app:enterAnim="@anim/nav_enter"
+            app:exitAnim="@anim/nav_exit"
+            app:popEnterAnim="@anim/nav_pop_enter"
+            app:popExitAnim="@anim/nav_pop_exit">
             <argument
                 android:name="slug"
                 app:argType="string" />
         </action>
+        <action
+            android:id="@+id/action_animalList_to_shelterList"
+            app:destination="@id/shelterListFragment"
+            app:enterAnim="@anim/nav_enter"
+            app:exitAnim="@anim/nav_exit"
+            app:popEnterAnim="@anim/nav_pop_enter"
+            app:popExitAnim="@anim/nav_pop_exit" />
     </fragment>
 
     <fragment
@@ -29,11 +40,22 @@
         android:name="com.example.petcareapp.ui.fragments.ShelterListFragment">
         <action
             android:id="@+id/action_shelterList_to_shelterDetail"
-            app:destination="@id/shelterDetailFragment">
+            app:destination="@id/shelterDetailFragment"
+            app:enterAnim="@anim/nav_enter"
+            app:exitAnim="@anim/nav_exit"
+            app:popEnterAnim="@anim/nav_pop_enter"
+            app:popExitAnim="@anim/nav_pop_exit">
             <argument
                 android:name="slug"
                 app:argType="string" />
         </action>
+        <action
+            android:id="@+id/action_shelterList_to_animalList"
+            app:destination="@id/animalListFragment"
+            app:enterAnim="@anim/nav_enter"
+            app:exitAnim="@anim/nav_exit"
+            app:popEnterAnim="@anim/nav_pop_enter"
+            app:popExitAnim="@anim/nav_pop_exit" />
     </fragment>
 
     <fragment
