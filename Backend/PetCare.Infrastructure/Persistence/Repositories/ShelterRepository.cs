@@ -2,10 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Aggregates;
-<<<<<<< HEAD
-=======
 using PetCare.Domain.Specifications.Shelter;
->>>>>>> 5e60776 (Implementation of repositories for aggregates)
 using PetCare.Infrastructure.Persistence;
 
 /// <summary>
@@ -22,26 +19,6 @@ public class ShelterRepository : GenericRepository<Shelter>, IShelterRepository
     {
     }
 
-<<<<<<< HEAD
-    /// <inheritdoc/>
-    public async Task<Shelter?> GetBySlugAsync(
-        string slug,
-        CancellationToken cancellationToken = default)
-    {
-        return await this.Context.Shelters
-             .AsNoTracking()
-            .FirstOrDefaultAsync(s => s.Slug.Value == slug, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async Task<Shelter?> GetShelterByDeviceIdAsync(Guid deviceId, CancellationToken cancellationToken = default)
-    {
-        return await this.Context.Shelters
-            .AsNoTracking()
-            .Include(s => s.IoTDevices)
-            .FirstOrDefaultAsync(s => s.IoTDevices.Any(d => d.Id == deviceId), cancellationToken);
-    }
-=======
     /// <inheritdoc />
     public Task<Shelter?> GetShelterByDeviceIdAsync(Guid deviceId, CancellationToken cancellationToken = default)
         => this.FindAsync(new ShelterByDeviceSpecification(deviceId), cancellationToken)
@@ -74,5 +51,4 @@ public class ShelterRepository : GenericRepository<Shelter>, IShelterRepository
             .Include(s => s.Subscribers)
             .FirstOrDefaultAsync(s => s.Slug.Value == slug, cancellationToken);
     }
->>>>>>> 5e60776 (Implementation of repositories for aggregates)
 }
