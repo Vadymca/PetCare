@@ -1,5 +1,6 @@
 package com.example.petcareapp.ui.fragments;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -47,7 +48,7 @@ public class AnimalDetailFragment extends Fragment {
         TextView birthdayTextView = view.findViewById(R.id.text_view_birthday);
         TextView descriptionTextView = view.findViewById(R.id.text_view_description);
         TextView statusTextView = view.findViewById(R.id.text_view_status);
-        ImageView photoImageView = view.findViewById(R.id.image_view_photo);
+        @SuppressLint("MissingInflatedId") ImageView photoImageView = view.findViewById(R.id.image_view_photo);
 
         String slug = requireArguments().getString("slug");
         viewModel.getAnimalBySlug(slug).observe(getViewLifecycleOwner(), animal -> {

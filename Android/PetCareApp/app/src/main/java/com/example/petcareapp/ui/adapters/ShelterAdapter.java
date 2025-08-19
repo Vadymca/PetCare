@@ -1,6 +1,7 @@
 package com.example.petcareapp.ui.adapters;
 
 import android.annotation.SuppressLint;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.navigation.Navigation;
 import androidx.paging.PagingDataAdapter;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
@@ -116,6 +118,13 @@ public class ShelterAdapter extends RecyclerView.Adapter<ShelterAdapter.ShelterV
                 .placeholder(R.drawable.placeholder_shelter)  // Базове зображення для притулку
                 .error(R.drawable.error_image)
                 .into(holder.photoImageView);
+
+        // Додаємо обробку кліків для навігації
+        holder.itemView.setOnClickListener(v -> {
+            Bundle bundle = new Bundle();
+            bundle.putString("slug", shelter.getSlug());
+            Navigation.findNavController(v).navigate(R.id.action_shelterList_to_shelterDetail, bundle);
+        });
     }
 
     @Override
