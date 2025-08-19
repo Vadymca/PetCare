@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/animalListFragment"
+        android:title="@string/animals"
+        android:icon="@drawable/placeholder_animal" />
+    <item
+        android:id="@+id/shelterListFragment"
+        android:title="@string/shelters"
+        android:icon="@drawable/placeholder_shelter" />
+</menu>

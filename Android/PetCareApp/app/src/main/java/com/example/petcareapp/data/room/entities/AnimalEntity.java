@@ -43,20 +43,21 @@ public class AnimalEntity {
     private String updatedAt;
 
     public AnimalEntity() {}
-    public AnimalEntity(String id, String slug, String userId, String name, String breedId, List<String> birthday, String gender, String description, String healthStatus, String photos, String videos, String shelterId, List<String> status, String adoptionRequirements, String microchipId, int idNumber, double weight, double height, String color, boolean isSterilized, boolean haveDocuments, String createdAt, String updatedAt) {
+    // Виправлений конструктор з правильними типами
+    public AnimalEntity(String id, String slug, String userId, String name, String breedId, String birthday, String gender, String description, String healthStatus, List<String> photos, List<String> videos, String shelterId, String status, String adoptionRequirements, String microchipId, int idNumber, double weight, double height, String color, boolean isSterilized, boolean haveDocuments, String createdAt, String updatedAt) {
         this.id = id;
         this.slug = slug;
         this.userId = userId;
         this.name = name;
         this.breedId = breedId;
-        this.birthday = String.valueOf(birthday);
+        this.birthday = birthday;
         this.gender = gender;
         this.description = description;
         this.healthStatus = healthStatus;
-        this.photos = Collections.singletonList(photos);
-        this.videos = Collections.singletonList(videos);
+        this.photos = photos;
+        this.videos = videos;
         this.shelterId = shelterId;
-        this.status = String.valueOf(status);
+        this.status = status;
         this.adoptionRequirements = adoptionRequirements;
         this.microchipId = microchipId;
         this.idNumber = idNumber;

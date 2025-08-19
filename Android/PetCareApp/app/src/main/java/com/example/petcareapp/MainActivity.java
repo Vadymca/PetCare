@@ -15,6 +15,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.petcareapp.databinding.ActivityMainBinding;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -37,10 +38,17 @@ public class MainActivity extends AppCompatActivity {
             try {
                 NavController navController = Navigation.findNavController(binding.navHostFragment);
                 Log.d("MainActivity", "NavController: " + navController.toString());
-                AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                        R.id.animalListFragment, R.id.shelterListFragment)
-                        .build();
-                NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+
+                // Налаштування AppBar
+//                AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
+//                        R.id.animalListFragment, R.id.shelterListFragment)
+//                        .build();
+//                NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+
+                // Налаштування BottomNavigationView
+                BottomNavigationView bottomNav = binding.bottomNavigation;
+                NavigationUI.setupWithNavController(bottomNav, navController);
+
                 Log.d("MainActivity", "NavController initialized successfully");
             } catch (IllegalStateException e) {
                 Log.e("MainActivity", "Failed to initialize NavController: " + e.getMessage());
@@ -64,25 +72,3 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 
-
-//public class MainActivity extends AppCompatActivity {
-//    private ActivityMainBinding binding;
-//
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        binding = ActivityMainBinding.inflate(getLayoutInflater());
-//        setContentView(binding.getRoot());
-//
-//        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-//        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-//                R.id.animalListFragment, R.id.shelterListFragment).build();
-//        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-//    }
-//
-//    @Override
-//    public boolean onSupportNavigateUp() {
-//        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-//        return navController.navigateUp() || super.onSupportNavigateUp();
-//    }
-//}
