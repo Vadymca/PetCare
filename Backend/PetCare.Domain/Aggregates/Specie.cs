@@ -13,7 +13,7 @@ public sealed class Specie : AggregateRoot
 
     private Specie()
     {
-        this.Name = Name.Create(string.Empty);
+        this.Name = null!;
     }
 
     private Specie(Name name)

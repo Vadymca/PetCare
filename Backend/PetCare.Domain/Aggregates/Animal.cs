@@ -21,8 +21,8 @@ public sealed class Animal : AggregateRoot
 
     private Animal()
     {
-        this.Slug = Slug.Create(string.Empty);
-        this.Name = Name.Create(string.Empty);
+        this.Slug = null!;
+        this.Name = null!;
     }
 
     private Animal(

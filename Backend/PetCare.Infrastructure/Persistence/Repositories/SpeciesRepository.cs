@@ -19,7 +19,7 @@ public class SpeciesRepository : GenericRepository<Specie>, ISpeciesRepository
     }
 
     /// <inheritdoc/>
-    public Task<Specie?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
-        => this.FindAsync(new SpecieByNameSpecification(name), cancellationToken)
+    public async Task<Specie?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
+        => await this.FindAsync(new SpecieByNameSpecification(name), cancellationToken)
                .ContinueWith(t => t.Result.FirstOrDefault(), cancellationToken);
 }

@@ -21,11 +21,10 @@ public class VolunteerTaskRepository : GenericRepository<VolunteerTask>, IVolunt
     }
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<VolunteerTask>> GetByShelterIdAsync(Guid shelterId, CancellationToken cancellationToken = default)
-        => this.FindAsync(new VolunteerTasksByShelterSpecification(shelterId), cancellationToken);
-
+    public async Task<IReadOnlyList<VolunteerTask>> GetByShelterIdAsync(Guid shelterId, CancellationToken cancellationToken = default)
+        => await this.FindAsync(new VolunteerTasksByShelterSpecification(shelterId), cancellationToken);
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<VolunteerTask>> GetByDateAsync(DateOnly date, CancellationToken cancellationToken = default)
-         => this.FindAsync(new VolunteerTasksByDateSpecification(date), cancellationToken);
+    public async Task<IReadOnlyList<VolunteerTask>> GetByDateAsync(DateOnly date, CancellationToken cancellationToken = default)
+         => await this.FindAsync(new VolunteerTasksByDateSpecification(date), cancellationToken);
 }

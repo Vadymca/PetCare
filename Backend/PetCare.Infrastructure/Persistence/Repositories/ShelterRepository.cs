@@ -20,17 +20,19 @@ public class ShelterRepository : GenericRepository<Shelter>, IShelterRepository
     }
 
     /// <inheritdoc />
-    public Task<Shelter?> GetShelterByDeviceIdAsync(Guid deviceId, CancellationToken cancellationToken = default)
-        => this.FindAsync(new ShelterByDeviceSpecification(deviceId), cancellationToken)
-               .ContinueWith(t => t.Result.FirstOrDefault(), cancellationToken);
+    public async Task<Shelter?> GetShelterByDeviceIdAsync(Guid deviceId, CancellationToken cancellationToken = default)
+        => await this.Context.Set<Shelter>()
+            .Include(s => s.IoTDevices)
+            .Where(new ShelterByDeviceSpecification(deviceId).ToExpression())
+            .FirstOrDefaultAsync(cancellationToken);
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<Shelter>> GetByManagerIdAsync(Guid managerId, CancellationToken cancellationToken = default)
-        => this.FindAsync(new SheltersByManagerSpecification(managerId), cancellationToken);
+    public async Task<IReadOnlyList<Shelter>> GetByManagerIdAsync(Guid managerId, CancellationToken cancellationToken = default)
+        => await this.FindAsync(new SheltersByManagerSpecification(managerId), cancellationToken);
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<Shelter>> GetWithFreeCapacityAsync(CancellationToken cancellationToken = default)
-        => this.FindAsync(new SheltersWithFreeCapacitySpecification(), cancellationToken);
+    public async Task<IReadOnlyList<Shelter>> GetWithFreeCapacityAsync(CancellationToken cancellationToken = default)
+        => await this.FindAsync(new SheltersWithFreeCapacitySpecification(), cancellationToken);
 
     /// <inheritdoc />
     public async Task<Shelter?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)

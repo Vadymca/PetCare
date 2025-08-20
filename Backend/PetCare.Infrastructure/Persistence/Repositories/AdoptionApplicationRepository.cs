@@ -21,14 +21,14 @@ public class AdoptionApplicationRepository : GenericRepository<AdoptionApplicati
     }
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<AdoptionApplication>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
-        => this.FindAsync(new AdoptionApplicationsByUserSpecification(userId), cancellationToken);
+    public async Task<IReadOnlyList<AdoptionApplication>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+        => await this.FindAsync(new AdoptionApplicationsByUserSpecification(userId), cancellationToken);
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<AdoptionApplication>> GetByAnimalIdAsync(Guid animalId, CancellationToken cancellationToken = default)
-        => this.FindAsync(new AdoptionApplicationsByAnimalSpecification(animalId), cancellationToken);
+    public async Task<IReadOnlyList<AdoptionApplication>> GetByAnimalIdAsync(Guid animalId, CancellationToken cancellationToken = default)
+        => await this.FindAsync(new AdoptionApplicationsByAnimalSpecification(animalId), cancellationToken);
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<AdoptionApplication>> GetPendingApplicationsAsync(CancellationToken cancellationToken = default)
-        => this.FindAsync(new PendingAdoptionApplicationsSpecification(), cancellationToken);
+    public async Task<IReadOnlyList<AdoptionApplication>> GetPendingApplicationsAsync(CancellationToken cancellationToken = default)
+        => await this.FindAsync(new PendingAdoptionApplicationsSpecification(), cancellationToken);
 }

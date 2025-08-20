@@ -1,5 +1,6 @@
 ﻿namespace PetCare.Domain.Specifications.User;
 using PetCare.Domain.Aggregates;
+using PetCare.Domain.ValueObjects;
 using System;
 using System.Linq.Expressions;
 
@@ -28,6 +29,6 @@ public sealed class UserByEmailSpecification : Specification<User>
     /// <inheritdoc/>
     public override Expression<Func<User, bool>> ToExpression()
     {
-        return u => u.Email.Value == this.email;
+        return u => u.Email == Email.Create(this.email);
     }
 }

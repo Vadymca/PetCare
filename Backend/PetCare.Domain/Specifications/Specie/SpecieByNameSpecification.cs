@@ -1,5 +1,6 @@
 ﻿namespace PetCare.Domain.Specifications.Specie;
 using PetCare.Domain.Aggregates;
+using PetCare.Domain.ValueObjects;
 using System;
 using System.Linq.Expressions;
 
@@ -28,6 +29,7 @@ public sealed class SpecieByNameSpecification : Specification<Specie>
     /// <inheritdoc />
     public override Expression<Func<Specie, bool>> ToExpression()
     {
-        return s => s.Name.Value == this.name;
+        var nameValueObject = Name.Create(this.name);
+        return s => s.Name == nameValueObject;
     }
 }
