@@ -24,11 +24,11 @@ public sealed class Shelter : AggregateRoot
 
     private Shelter()
     {
-        this.Slug = Slug.Create(string.Empty);
-        this.Name = Name.Create(string.Empty);
-        this.Address = Address.Create(string.Empty);
+        this.Slug = null!;
+        this.Name = null!;
+        this.Address = null!;
         this.Coordinates = ValueObjects.Coordinates.Origin;
-        this.ContactPhone = PhoneNumber.Create(string.Empty);
+        this.ContactPhone = null!;
         this.ContactEmail = Email.Create("default@petcare.com");
     }
 

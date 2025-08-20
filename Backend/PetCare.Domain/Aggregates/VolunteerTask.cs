@@ -17,7 +17,7 @@ public sealed class VolunteerTask : AggregateRoot
 
     private VolunteerTask()
     {
-        this.Title = Title.Create(string.Empty);
+        this.Title = null!;
         this.skillsRequired = new Dictionary<string, string>();
     }
 

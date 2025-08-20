@@ -29,11 +29,11 @@ public sealed class User : AggregateRoot
 
     private User()
     {
-        this.Email = Email.Create("default@example.com");
-        this.PasswordHash = string.Empty;
-        this.FirstName = string.Empty;
-        this.LastName = string.Empty;
-        this.Phone = PhoneNumber.Create("+000000000000");
+        this.Email = Email.Create("default@petcare.com");
+        this.PasswordHash = null!;
+        this.FirstName = null!;
+        this.LastName = null!;
+        this.Phone = null!;
         this.Preferences = new Dictionary<string, string>();
         this.Language = "uk";
     }

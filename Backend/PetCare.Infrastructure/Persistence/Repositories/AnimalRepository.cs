@@ -21,16 +21,16 @@ public class AnimalRepository : GenericRepository<Animal>, IAnimalRepository
     }
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<Animal>> GetByShelterIdAsync(Guid shelterId, CancellationToken cancellationToken = default)
-        => this.FindAsync(new AnimalsByShelterSpecification(shelterId), cancellationToken);
+    public async Task<IReadOnlyList<Animal>> GetByShelterIdAsync(Guid shelterId, CancellationToken cancellationToken = default)
+        => await this.FindAsync(new AnimalsByShelterSpecification(shelterId), cancellationToken);
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<Animal>> GetByBreedIdAsync(Guid breedId, CancellationToken cancellationToken = default)
-        => this.FindAsync(new AnimalsByBreedSpecification(breedId), cancellationToken);
+    public async Task<IReadOnlyList<Animal>> GetByBreedIdAsync(Guid breedId, CancellationToken cancellationToken = default)
+        => await this.FindAsync(new AnimalsByBreedSpecification(breedId), cancellationToken);
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<Animal>> GetAvailableForAdoptionAsync(CancellationToken cancellationToken = default)
-        => this.FindAsync(new AvailableAnimalsSpecification(), cancellationToken);
+    public async Task<IReadOnlyList<Animal>> GetAvailableForAdoptionAsync(CancellationToken cancellationToken = default)
+        => await this.FindAsync(new AvailableAnimalsSpecification(), cancellationToken);
 
     /// <inheritdoc />
     public async Task<Animal?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default)
