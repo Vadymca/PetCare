@@ -2,7 +2,45 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/animalListFragment">
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.petcareapp.ui.fragments.LoginFragment">
+        <action
+            android:id="@+id/action_login_to_twoFactor"
+            app:destination="@id/twoFactorFragment"
+            app:enterAnim="@anim/nav_enter"
+            app:exitAnim="@anim/nav_exit"
+            app:popEnterAnim="@anim/nav_pop_enter"
+            app:popExitAnim="@anim/nav_pop_exit">
+            <argument
+                android:name="userId"
+                app:argType="string" />
+        </action>
+        <action
+            android:id="@+id/action_login_to_animalList"
+            app:destination="@id/animalListFragment"
+            app:enterAnim="@anim/nav_enter"
+            app:exitAnim="@anim/nav_exit"
+            app:popEnterAnim="@anim/nav_pop_enter"
+            app:popExitAnim="@anim/nav_pop_exit" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/twoFactorFragment"
+        android:name="com.example.petcareapp.ui.fragments.TwoFactorFragment">
+        <argument
+            android:name="userId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_twoFactor_to_animalList"
+            app:destination="@id/animalListFragment"
+            app:enterAnim="@anim/nav_enter"
+            app:exitAnim="@anim/nav_exit"
+            app:popEnterAnim="@anim/nav_pop_enter"
+            app:popExitAnim="@anim/nav_pop_exit" />
+    </fragment>
 
     <fragment
         android:id="@+id/animalListFragment"
