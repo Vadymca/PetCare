@@ -1,6 +1,8 @@
 package com.example.petcareapp.di;
 
 import android.app.Application;
+import android.content.Context;
+import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
@@ -9,9 +11,19 @@ import androidx.room.Room;
 import com.example.petcareapp.data.api.ApiClient;
 import com.example.petcareapp.data.api.ApiService;
 import com.example.petcareapp.data.repository.AnimalRepository;
+import com.example.petcareapp.data.repository.AuthRepository;
 import com.example.petcareapp.data.room.PetCareDatabase;
 import com.example.petcareapp.ui.viewmodels.AnimalViewModel;
+import com.example.petcareapp.ui.viewmodels.AuthViewModel;
+
+import java.net.CookieManager;
+import java.net.CookiePolicy;
+
+import okhttp3.Interceptor;
+import okhttp3.JavaNetCookieJar;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -32,10 +44,56 @@ public class AppModule {
 
     @Provides
     @Singleton
-    public OkHttpClient provideOkHttpClient() {
+    public SharedPreferences provideSharedPreferences() {
+        return application.getSharedPreferences("PetCarePrefs", Context.MODE_PRIVATE);
+    }
+
+
+    @Provides
+    @Singleton
+    public OkHttpClient provideOkHttpClient(SharedPreferences prefs) {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+
+        CookieManager cookieManager = new CookieManager();
+        cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+
+        // Interceptor для обробки 401/403 та оновлення JWT
+        Interceptor authInterceptor = chain -> {
+            Request originalRequest = chain.request();
+            Response response = chain.proceed(originalRequest);
+
+            if (response.code() == 401 || response.code() == 403) {
+                // Синхронізований запит до /auth/refresh
+                synchronized (this) {
+                    Retrofit retrofit = new Retrofit.Builder()
+                            .baseUrl(BASE_URL)
+                            .client(new OkHttpClient.Builder()
+                                    .cookieJar(new JavaNetCookieJar(cookieManager))
+                                    .build())
+                            .addConverterFactory(GsonConverterFactory.create())
+                            .build();
+                    ApiService apiService = retrofit.create(ApiService.class);
+
+                    // Виклик refresh token
+                    retrofit2.Response<Void> refreshResponse = apiService.refreshToken().execute();
+                    if (refreshResponse.isSuccessful()) {
+                        // Повторити оригінальний запит з новим токеном у Cookie
+                        response.close();
+                        return chain.proceed(originalRequest);
+                    } else {
+                        // Логаут, якщо refresh не вдався
+                        prefs.edit().remove("userId").apply();
+                        return response;
+                    }
+                }
+            }
+            return response;
+        };
+
         return new OkHttpClient.Builder()
+                .cookieJar(new JavaNetCookieJar(cookieManager))
+                .addInterceptor(authInterceptor)
                 .addInterceptor(logging)
                 .build();
     }
@@ -82,75 +140,49 @@ public class AppModule {
                 database.userDao()
         );
     }
-
+    @Provides
+    @Singleton
+    public AuthRepository provideAuthRepository(ApiService apiService, SharedPreferences prefs) {
+        return new AuthRepository(apiService, prefs);
+    }
     @Provides
     @Singleton
     public AnimalViewModel provideAnimalViewModel(AnimalRepository repository) {
         return new AnimalViewModel(repository);
     }
-
     @Provides
     @Singleton
-    public ViewModelProvider.Factory provideViewModelFactory(AnimalRepository repository) {
+    public AuthViewModel provideAuthViewModel(AuthRepository repository) {
+        return new AuthViewModel(repository);
+    }
+//    @Provides
+//    @Singleton
+//    public ViewModelProvider.Factory provideViewModelFactory(AnimalRepository repository) {
+//        return new ViewModelProvider.Factory() {
+//            @NonNull
+//            @Override
+//            public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+//                if (modelClass.isAssignableFrom(AnimalViewModel.class)) {
+//                    return (T) new AnimalViewModel(repository);
+//                }
+//                throw new IllegalArgumentException("Unknown ViewModel class");
+//            }
+//        };
+//    }
+    @Provides
+    @Singleton
+    public ViewModelProvider.Factory provideViewModelFactory(AnimalRepository animalRepository, AuthRepository authRepository) {
         return new ViewModelProvider.Factory() {
             @NonNull
             @Override
             public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
                 if (modelClass.isAssignableFrom(AnimalViewModel.class)) {
-                    return (T) new AnimalViewModel(repository);
+                    return (T) new AnimalViewModel(animalRepository);
+                } else if (modelClass.isAssignableFrom(AuthViewModel.class)) {
+                    return (T) new AuthViewModel(authRepository);
                 }
                 throw new IllegalArgumentException("Unknown ViewModel class");
             }
         };
     }
 }
-//    private static final String BASE_URL = "http://json-server:3000/";
-//    // private static final String BASE_URL = "https://api.petcare.com/api/";
-//    private final Application application;
-//
-//
-//    @Provides
-//    @Singleton
-//    public OkHttpClient provideOkHttpClient() {
-//        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-//        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
-//        return new OkHttpClient.Builder()
-//                .addInterceptor(logging)
-//                .build();
-//    }
-//
-//    @Provides
-//    @Singleton
-//    public Retrofit provideRetrofit(OkHttpClient okHttpClient) {
-//        return new Retrofit.Builder()
-//                .baseUrl(BASE_URL)
-//                .client(okHttpClient)
-//                .addConverterFactory(GsonConverterFactory.create())
-//                .build();
-//    }
-//
-//    @Provides
-//    @Singleton
-//    public PetCareDatabase provideDatabase() {
-//        return Room.databaseBuilder(application, PetCareDatabase.class, "petcare-db").build();
-//    }
-//
-//    @Provides
-//    @Singleton
-//    public ApiClient provideApiClient(Retrofit retrofit) {
-//        return new ApiClient(retrofit);
-//    }
-//
-//    @Provides
-//    @Singleton
-//    public ApiService provideApiService(Retrofit retrofit) {
-//        return retrofit.create(ApiService.class);
-//    }
-//
-//    @Provides
-//    @Singleton
-//    public AnimalRepository provideAnimalRepository(ApiService apiService, PetCareDatabase database) {
-//        return new AnimalRepository(apiService, database.animalDao(), database.shelterDao());
-//    }
-//
-
