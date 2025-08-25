@@ -58,6 +58,8 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
     implementation(libs.okhttp)
+    //implementation(libs.okhttp3.logging.interceptor)
+    implementation(libs.okhttp3.urlconnection)
     implementation(libs.room.runtime)
     annotationProcessor(libs.room.compiler) // Для Room
     implementation(libs.paging)
@@ -68,4 +70,5 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
 }

@@ -5,9 +5,13 @@ import com.example.petcareapp.data.api.ApiClient;
 import com.example.petcareapp.data.room.PetCareDatabase;
 import com.example.petcareapp.ui.fragments.AnimalDetailFragment;
 import com.example.petcareapp.ui.fragments.AnimalListFragment;
+import com.example.petcareapp.ui.fragments.LoginFragment;
 import com.example.petcareapp.ui.fragments.ShelterDetailFragment;
 import com.example.petcareapp.ui.fragments.ShelterListFragment;
+import com.example.petcareapp.ui.fragments.TwoFactorFragment;
 import com.example.petcareapp.ui.viewmodels.AnimalViewModel; // Додай, якщо ще не додав
+import com.example.petcareapp.ui.viewmodels.AuthViewModel;
+
 import javax.inject.Singleton;
 import dagger.Component;
 
@@ -19,7 +23,10 @@ public interface AppComponent {
     void inject(AnimalDetailFragment fragment);
     void inject(ShelterListFragment fragment);
     void inject(ShelterDetailFragment fragment);
+    void inject(LoginFragment fragment);
+    void inject(TwoFactorFragment fragment);
     ApiClient getApiClient();
     PetCareDatabase getPetCareDatabase();
     AnimalViewModel getAnimalViewModel();
+    AuthViewModel getAuthViewModel();
 }
