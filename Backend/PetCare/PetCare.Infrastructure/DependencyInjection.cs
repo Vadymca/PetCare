@@ -1,7 +1,9 @@
 ﻿namespace PetCare.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using PetCare.Domain.Abstractions.Repositories;
+using PetCare.Domain.Abstractions.Services;
 using PetCare.Infrastructure.Persistence.Repositories;
+using PetCare.Infrastructure.Services.Identity;
 
 /// <summary>
 /// Configures dependencies for the Infrastructure layer.
@@ -21,6 +23,9 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IAdoptionApplicationRepository, AdoptionApplicationRepository>();
         services.AddScoped<IVolunteerTaskRepository, VolunteerTaskRepository>();
+
+        // Додаємо AuthorizationService
+        services.AddScoped<IAuthorizationService, AuthorizationService>();
 
         return services;
     }
