@@ -2,21 +2,49 @@
   db:
     image: postgis/postgis:16-3.4
     container_name: petcare_db
+    environment:
+      POSTGRES_DB: petcare_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
       - '5432:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
 
   petcare.api:
-    image: ${DOCKER_REGISTRY-}petcareapi
     build:
       context: .
       dockerfile: PetCare.Api/Dockerfile
     container_name: petcare_api
     depends_on:
       - db
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: "http://+:80;https://+:443"
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=petcare_db;Username=postgres;Password=postgres"
     ports:
-      - '5000:80'  # HTTP: localhost:5000 → контейнер:80
-  
+      - '5000:80'
+    volumes:
+      - "${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro"
+      - "${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro"
+    restart: unless-stopped
+
+  petcare.api.sdk:
+    image: mcr.microsoft.com/dotnet/sdk:9.0
+    container_name: petcare_api_sdk
+    working_dir: /app
+    volumes:
+      - .:/app                     # Монтуємо всю папку PetCare
+      - dotnet_tools_cache:/root/.dotnet/tools
+    depends_on:
+      - db
+    environment:
+      DOTNET_RUNNING_IN_CONTAINER: true
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=petcare_db;Username=postgres;Password=postgres"
+    entrypoint: ["tail", "-f", "/dev/null"]  # залишаємо контейнер активним для dotnet ef
+    restart: unless-stopped
+
 volumes:
   pgdata:
+  dotnet_tools_cache:

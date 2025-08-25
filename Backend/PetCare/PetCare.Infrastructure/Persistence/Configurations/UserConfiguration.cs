@@ -1,0 +1,80 @@
+﻿namespace PetCare.Infrastructure.Persistence.Configurations;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using PetCare.Domain.Aggregates;
+
+/// <summary>
+/// Configures the <see cref="User"/> entity for Entity Framework Core.
+/// </summary>
+public class UserConfiguration : IEntityTypeConfiguration<User>
+{
+    /// <summary>
+    /// Configures the entity type builder for <see cref="User"/>.
+    /// </summary>
+    /// <param name="builder">The builder to configure the entity.</param>
+    public void Configure(EntityTypeBuilder<User> builder)
+    {
+        builder.HasCheckConstraint("CK_Users_Points", "\"Points\" >= 0");
+
+        builder.HasKey(u => u.Id);
+
+        builder.Property(u => u.Id)
+            .HasDefaultValueSql("gen_random_uuid()");
+
+        builder.Property(u => u.Email)
+             .HasMaxLength(255)
+             .IsRequired();
+
+        builder.HasIndex(u => u.Email)
+            .IsUnique();
+
+        builder.Property(u => u.PasswordHash)
+            .HasMaxLength(255)
+            .IsRequired();
+
+        builder.Property(u => u.FirstName)
+           .HasMaxLength(50)
+           .IsRequired();
+
+        builder.Property(u => u.LastName)
+            .HasMaxLength(50)
+            .IsRequired();
+
+        builder.Property(u => u.Phone)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        builder.HasIndex(u => u.Phone)
+            .IsUnique();
+
+        builder.Property(u => u.Role)
+            .HasColumnType("user_role")
+            .IsRequired();
+
+        builder.Property(u => u.Preferences)
+            .HasColumnType("jsonb");
+
+        builder.Property(u => u.Points)
+            .HasDefaultValue(0)
+            .IsRequired();
+
+        builder.Property(u => u.LastLogin)
+            .HasColumnType("timestamptz");
+
+        builder.Property(u => u.ProfilePhoto)
+            .HasMaxLength(255);
+
+        builder.Property(u => u.Language)
+            .HasDefaultValue("uk")
+            .IsRequired();
+
+        builder.Property(u => u.PostalCode)
+          .HasMaxLength(20);
+
+        builder.Property(u => u.CreatedAt)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        builder.Property(u => u.UpdatedAt)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+    }
+}
