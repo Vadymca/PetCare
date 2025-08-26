@@ -1,0 +1,19 @@
+@font-face {
+  font-family: 'Fixel Display';
+  src:
+    url('/assets/fonts/FixelDisplay-Regular.woff2') format('woff2'),
+    url('/assets/fonts/FixelDisplay-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Fixel Display';
+  src:
+    url('/assets/fonts/FixelDisplay-Bold.woff2') format('woff2'),
+    url('/assets/fonts/FixelDisplay-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* <p class="font-inter">Текст шрифтом Inter</p>
+<p class="font-fixel">Текст шрифтом Fixel</p> */

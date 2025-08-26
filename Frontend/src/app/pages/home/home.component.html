@@ -1,0 +1,240 @@
+<!-- Сторінка №1 обіймаха собака -->
+<div
+  class="w-full flex flex-col text-center justify-center text-secondary-neutral-mineShaft bg-cover bg-center min-h-screen"
+  style="background-image: url('../../../assets/images/background1.png')"
+>
+  <app-icon
+    [name]="'pawPrintBorder'"
+    class="absolute bottom-0 left-0 w-full px-[19px]"
+  ></app-icon>
+  <!-- Контейнер для текстів -->
+  <div
+    class="flex flex-col justify-center text-center w-full px-[97px] leading-none"
+  >
+    <!-- Верхній рядок: лівий і правий текст -->
+    <div class="flex flex-col lg:flex-row justify-between w-full mb-4">
+      <div class="text-secondary-neutral-white font-inter text-2xl">
+        {{ 'FIRST_LINE_LEFT' | translate | uppercase }}
+      </div>
+      <div class="text-secondary-neutral-white font-inter text-2xl">
+        {{ 'FIRST_LINE_RIGHT' | translate | uppercase }}
+      </div>
+    </div>
+
+    <!-- Центрований заголовок -->
+    <div class="flex flex-col lg:flex-row justify-between gap-7 w-full">
+      <div
+        class="text-center text-secondary-neutral-white font-bold"
+        style="font-size: clamp(16px, 6.5vw, 207px)"
+      >
+        {{ 'FIRST_TITLE1' | translate | uppercase }}
+      </div>
+      <div
+        class="text-center text-secondary-neutral-white font-bold"
+        style="font-size: clamp(16px, 6.5vw, 207px)"
+      >
+        {{ 'FIRST_TITLE2' | translate | uppercase }}
+      </div>
+      <div
+        class="text-center text-secondary-neutral-white font-bold"
+        style="font-size: clamp(16px, 6.5vw, 207px)"
+      >
+        {{ 'FIRST_TITLE3' | translate | uppercase }}
+      </div>
+    </div>
+    <div class="flex justify-center mt-5">
+      <app-primary-large-button
+        buttonTitle="FIND_PET"
+        (pressButton)="onFindPetClick()"
+      ></app-primary-large-button>
+    </div>
+  </div>
+</div>
+<!-- Сторінка №2 як допомогти -->
+<div
+  class="w-full flex flex-col text-center justify-center min-h-screen text-secondary-neutral-mineShaft bg-cover bg-center"
+  style="background-image: url('../../../assets/images/background2.png')"
+>
+  <div
+    class="flex flex-col justify-center items-center text-center font-fixel font-bold my-18"
+  >
+    <div class="flex flex-col w-full mb-10 text-[64px]">
+      {{ 'HOW_CAN_HELP' | translate }}
+    </div>
+    <div class="text-[40px] lg:w-[800px]">
+      <div class="text-[40px] text-center lg:text-right">
+        {{ 'CHOOSE_WAY1' | translate }}
+      </div>
+      <div class="text-[40px] text-center">
+        {{ 'CHOOSE_WAY2' | translate }}
+      </div>
+
+      <div class="text-[40px] text-center lg:text-left">
+        {{ 'CHOOSE_WAY3' | translate }}
+      </div>
+    </div>
+
+    <!-- Центрований блок з картинкою і текстом -->
+    <div
+      class="flex items-center flex-col lg:flex-row justify-center gap-7 w-full m-6"
+    >
+      <div>
+        <app-icon [name]="'handAndPaw'"></app-icon>
+      </div>
+      <div class="flex flex-col gap-4 font-inter text-base">
+        <div
+          class="text-center items-center font-bold text-[20px] gap-1 flex flex-row"
+        >
+          <app-icon [name]="'bluePaw'"></app-icon>
+          {{ 'FINANCIAL_SUPPORT' | translate }}
+        </div>
+        <div
+          class="text-center items-center font-bold text-[20px] gap-1 flex flex-row"
+        >
+          <app-icon [name]="'bluePaw'"></app-icon>
+          {{ 'BECOME_VOLUNTEER' | translate }}
+        </div>
+        <div
+          class="text-center items-center font-bold text-[20px] gap-1 flex flex-row"
+        >
+          <app-icon [name]="'bluePaw'"></app-icon>
+          {{ 'ADOPT_PET' | translate }}
+        </div>
+        <div
+          class="text-center items-center font-bold text-[20px] gap-1 flex flex-row"
+        >
+          <app-icon [name]="'bluePaw'"></app-icon>
+          {{ 'TAKE_PET_UNDER_CARE' | translate }}
+        </div>
+        <div
+          class="text-center items-center font-bold text-[20px] gap-1 flex flex-row"
+        >
+          <app-icon [name]="'bluePaw'"></app-icon>
+          {{ 'HELP_WITH_THINGS' | translate }}
+        </div>
+        <div
+          class="text-center items-center font-bold text-[20px] gap-1 flex flex-row"
+        >
+          <app-icon [name]="'bluePaw'"></app-icon>
+          {{ 'MAKE_EVENT' | translate }}
+        </div>
+      </div>
+    </div>
+    <div class="flex justify-center mt-5">
+      <app-secondary-small-button
+        buttonTitle="FIND_OUT_MORE"
+        (pressButton)="onFindPetClick()"
+      ></app-secondary-small-button>
+    </div>
+  </div>
+</div>
+<!-- Сторінка №3 працівники -->
+
+<div
+  class="bg-primary-blue w-full flex flex-col xl:flex-row-reverse xl:items-stretch gap-10 text-center font-inter text-base min-h-screen text-secondary-neutral-white bg-cover bg-center p-10"
+>
+  <div
+    class="flex flex-row gap-2 w-full xl:flex-[2_1_0%] h-auto cursor-pointer"
+  >
+    <section
+      id="0"
+      class="flex flex-[2_1_0%] h-[600px] xl:h-full overflow-hidden"
+      [class.animate-slide-right-with-opacity]="isImageChanging"
+      [class.animation-none]="!isImageChanging"
+    >
+      <img
+        class="w-full h-full object-cover"
+        src="{{ selectedWorker().image }}"
+        alt="{{ selectedWorker().name }}"
+      />
+    </section>
+    <section
+      id="1"
+      class="flex flex-[1_1_0%] h-[600px] xl:h-full overflow-hidden"
+      [class.animate-slide-left-with-opacity]="isImageChanging"
+      [class.animation-none]="!isImageChanging"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="
+        'Select worker ' +
+        workers[(selectedWorker().id + 1) % workers.length].name
+      "
+      (click)="selectWorker((selectedWorker().id + 1) % workers.length)"
+      (keyup.enter)="selectWorker((selectedWorker().id + 1) % workers.length)"
+      (keyup.space)="selectWorker((selectedWorker().id + 1) % workers.length)"
+    >
+      <img
+        class="w-full h-[600px] xl:h-full object-cover"
+        src="{{ workers[(selectedWorker().id + 1) % workers.length].image }}"
+        alt="{{ workers[(selectedWorker().id + 1) % workers.length].name }}"
+      />
+    </section>
+    <section
+      id="2"
+      class="flex flex-[1_1_0%] h-[600px] xl:h-full overflow-hidden"
+      [class.animate-slide-left-with-opacity]="isImageChanging"
+      [class.animation-none]="!isImageChanging"
+      tabindex="1"
+      role="button"
+      [attr.aria-label]="
+        'Select worker ' +
+        workers[(selectedWorker().id + 2) % workers.length].name
+      "
+      (click)="selectWorker((selectedWorker().id + 2) % workers.length)"
+      (keyup.enter)="selectWorker((selectedWorker().id + 2) % workers.length)"
+      (keyup.space)="selectWorker((selectedWorker().id + 2) % workers.length)"
+    >
+      <img
+        class="w-full h-full object-cover"
+        src="{{ workers[(selectedWorker().id + 2) % workers.length].image }}"
+        alt="{{ workers[(selectedWorker().id + 2) % workers.length].name }}"
+      />
+    </section>
+  </div>
+  <div
+    class="flex flex-col w-full xl:flex-[1_1_0%] xl:h-auto mt-4 mb-[60px] text-left"
+    [class.animate-slide-left-with-opacity]="isImageChanging"
+    [class.animation-none]="!isImageChanging"
+  >
+    <div class="flex font-fixel text-[40px] mb-[68px] leading-[1.1] font-bold">
+      {{ selectedWorker().title | translate }}
+    </div>
+    <div
+      class="flex flex-col gap-5 flex-1 font-inter text-base leading-snug mr-[60px]"
+    >
+      <div class="flex">
+        {{ selectedWorker().firstDiv | translate }}
+      </div>
+      <div class="">
+        <span
+          class="text-secondary-neutral-mineShaft bg-primary-light-orange"
+          >{{ selectedWorker().selectedSpan | translate }}</span
+        ><span>{{ selectedWorker().secondDiv | translate }}</span>
+      </div>
+      <div class="flex">
+        {{ selectedWorker().thirdDiv | translate }}
+      </div>
+    </div>
+    <div class="flex">
+      <app-primary-large-orange-button
+        buttonTitle="ABOUT_US"
+        (click)="onAboutUsClick()"
+      ></app-primary-large-orange-button>
+    </div>
+  </div>
+</div>
+<!-- Кнопка "Збір пожертв" -->
+<div
+  class="fixed bottom-14 right-14 text-white flex justify-center mt-5"
+  [ngClass]="{ hidden: isCharityButtonHidden() }"
+>
+  <button
+    type="button"
+    class="hover:scale-125 animate-pulse-slow flex items-center justify-center gap-2 w-[100px] h-[100px] rounded-[100px] bg-primary-orange text-primary-beige disabled:bg-secondary-neutral-alto transition-transform duration-300"
+    (click)="onCharityButtonClick()"
+  >
+    <app-icon [name]="'liveCharityButton'"></app-icon>
+
+    <ng-content select="[icon]"></ng-content>
+  </button>
+</div>

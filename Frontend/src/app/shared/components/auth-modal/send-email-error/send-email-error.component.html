@@ -1,0 +1,26 @@
+<div class="text-center h-full flex flex-col items-center pb-4">
+  <h5 class="text-40 mt-5">
+    {{ 'SEND_EMAIL_ERROR_TITLE' | translate | uppercase }}
+  </h5>
+
+  <p class="mt-8 text-2xl">{{ 'SEND_EMAIL_ERROR_MESSAGE' | translate }}</p>
+
+  <p
+    class="mt-8 text-sm text-secondary-neutral-doveGray ml-3 leading-snug text-left"
+  >
+    {{ 'SEND_EMAIL_ERROR_DESCRIPTION' | translate }}
+  </p>
+
+  <div class="flex-1 flex justify-center items-center w-ful h-full">
+    <app-icon [name]="'logoFailure'" class="relative -top-5"></app-icon>
+  </div>
+  <!-- Submit -->
+  <div class="content-center">
+    <div class="flex justify-center">
+      <app-primary-large-button
+        buttonTitle="LOGIN"
+        (pressButton)="emitSubmitButton()"
+      ></app-primary-large-button>
+    </div>
+  </div>
+</div>

@@ -41,7 +41,7 @@ export class UserProfileComponent {
   private authService = inject(AuthService);
   private animalSubscriptionService = inject(AnimalSubscriptionService);
   private shelterSubscriptionService = inject(ShelterSubscriptionService);
-  public user = signal(this.authService.currentUser());
+  public user = signal(this.authService._currentUser());
   profilePhoto = signal<string | ArrayBuffer | null>(null);
 
   fb = inject(FormBuilder);

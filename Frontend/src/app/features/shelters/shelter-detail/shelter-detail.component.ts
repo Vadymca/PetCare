@@ -59,7 +59,7 @@ export class ShelterDetailComponent {
 
   shelter = signal<Shelter | undefined>(undefined);
   public isAuthenticated: Signal<boolean> = this.authService.isLoggedIn;
-  user: Signal<User | null> = signal(this.authService.currentUser());
+  user: Signal<User | null> = signal(this.authService._currentUser());
   isSubscribed = false; // Поточна підписка на тварину, по замовчуванню false;
   isSubscriptionChecked = false;
   constructor() {

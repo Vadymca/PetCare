@@ -1,0 +1,101 @@
+<div class="text-center h-full flex flex-col">
+  <div class="inline-flex items-center">
+    <div
+      class="hover:text-primary-orange inline-flex items-center cursor-pointer -translate-y-1/2 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-50"
+      (click)="emitOption('welcome')"
+      (keyup.enter)="emitOption('welcome')"
+      (keyup.space)="emitOption('welcome')"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'BACK' | translate"
+    >
+      <app-icon [name]="'arrowLeft'" class=""></app-icon>
+      <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
+    </div>
+  </div>
+  <h5 class="text-40 mt-5">
+    {{ 'LOGIN_TITLE' | translate | uppercase }}
+  </h5>
+
+  <p class="mt-5 text-2xl">{{ 'LOGIN' | translate }}</p>
+  <form
+    [formGroup]="loginForm"
+    (ngSubmit)="onSubmit()"
+    class="group bg-secondary-neutral-white w-full flex-1 flex flex-col justify-center items-center mt-12 mb-4"
+  >
+    <div class="flex-1 flex flex-col w-[360px]">
+      <!-- Email -->
+      <label for="email" class="text-left"> Email </label>
+      <input
+        id="email"
+        type="email"
+        formControlName="email"
+        [placeholder]="'ENTER_YOUR_EMAIL' | translate"
+        class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none group-invalid:ring-2 group-invalid:ring-secondary-semantic-error pr-10"
+        aria-label="Email"
+        autocomplete="email"
+      />
+
+      <!-- Password -->
+      <label for="password" class="mt-5 text-left">
+        {{ 'PASSWORD' | translate }}
+      </label>
+
+      <div class="relative">
+        <input
+          id="password"
+          [placeholder]="'YOUR_PASSWORD' | translate"
+          [type]="showPassword() ? 'text' : 'password'"
+          formControlName="password"
+          class="mt-2 px-3 py-2 border rounded-[12px] h-12 w-full focus:outline-none invalid:ring-2 invalid:ring-secondary-semantic-error pr-10"
+          aria-label="Password"
+        />
+        <button
+          type="button"
+          (click)="togglePasswordVisibility()"
+          aria-label="Toggle password visibility"
+          class="absolute inset-y-0 right-3 flex items-center"
+        >
+          @if (!showPassword()) {
+            <app-icon [name]="'visibleEye'" class="h-5 w-5"></app-icon>
+          }
+          @if (showPassword()) {
+            <app-icon [name]="'hiddenEye'" class="h-5 w-5"></app-icon>
+          }
+        </button>
+      </div>
+
+      @if (!loginForm.valid) {
+        <div class="text-secondary-semantic-error text-center text-sm mt-4">
+          {{ 'INCORRECT_DATA' | translate }}
+        </div>
+      }
+      <p class="flex self-start mt-4">
+        <a
+          (click)="emitOption('forgot-password')"
+          (keyup.enter)="emitOption('forgot-password')"
+          (keyup.space)="emitOption('forgot-password')"
+          tabindex="0"
+          role="button"
+          class="cursor-pointer"
+        >
+          <span class="font-bold underline hover:text-primary-orange">{{
+            'FORGOT_PASSWORD' | translate
+          }}</span>
+        </a>
+      </p>
+    </div>
+
+    <!-- Submit -->
+    <div class="content-center">
+      <div class="flex justify-center">
+        <app-primary-large-button
+          [disabled]="isDisabled"
+          [loading]="loading"
+          buttonTitle="CONTINUE"
+          (pressButton)="onSubmit()"
+        ></app-primary-large-button>
+      </div>
+    </div>
+  </form>
+</div>

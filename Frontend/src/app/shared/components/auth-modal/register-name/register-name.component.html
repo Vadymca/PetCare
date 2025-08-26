@@ -1,0 +1,88 @@
+<div class="text-center h-full flex flex-col">
+  <div class="inline-flex items-center">
+    <div
+      class="hover:text-primary-orange inline-flex items-center cursor-pointer -translate-y-1/2 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-50"
+      (click)="emitOption('register-email')"
+      (keyup.enter)="emitOption('register-email')"
+      (keyup.space)="emitOption('register-email')"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'BACK' | translate"
+    >
+      <app-icon [name]="'arrowLeft'" class=""></app-icon>
+      <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
+    </div>
+  </div>
+  <h5 class="text-40 mt-5">
+    {{ 'YOUR_DATA_TITLE' | translate | uppercase }}
+  </h5>
+
+  <p class="mt-5 text-2xl">{{ 'CREATE_ACCOUNT' | translate }}</p>
+  <form
+    [formGroup]="registerForm"
+    (ngSubmit)="onSubmit()"
+    class="group bg-secondary-neutral-white w-full flex-1 flex flex-col justify-center items-center mt-12 mb-4"
+  >
+    <div class="flex-1 flex flex-col w-[360px]">
+      <!-- First Name -->
+      <label for="firstName" class="text-left">
+        {{ 'FIRST_NAME' | translate }}
+      </label>
+      <input
+        id="firstName"
+        formControlName="firstName"
+        [placeholder]="'ENTER_YOUR_FIRST_NAME' | translate"
+        class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none invalid:ring-2 invalid:ring-secondary-semantic-error pr-10"
+        aria-label="First name"
+      />
+
+      <!-- Last Name -->
+      <label for="lastName" class="mt-5 text-left">
+        {{ 'LAST_NAME' | translate }}
+      </label>
+      <input
+        id="lastName"
+        [placeholder]="'ENTER_YOUR_LAST_NAME' | translate"
+        formControlName="lastName"
+        class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none invalid:ring-2 invalid:ring-secondary-semantic-error pr-10"
+        aria-label="Last name"
+      />
+
+      <!-- Zip Code -->
+      <label for="zipCode" class="mt-5 text-left">
+        {{ 'ZIP_CODE' | translate }}
+      </label>
+      <input
+        id="zipCode"
+        [placeholder]="'ENTER_YOUR_ZIP_CODE' | translate"
+        formControlName="zipCode"
+        class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none invalid:ring-2 invalid:ring-secondary-semantic-error pr-10"
+        aria-label="Last name"
+      />
+      <label
+        for="zipCode"
+        class=" text-sm mt-3 l text-left text-secondary-neutral-doveGray leading-none"
+      >
+        {{ 'ZIP_CODE_DESCRIPTION' | translate }}
+      </label>
+    </div>
+
+    <!-- Submit -->
+    <div class="content-center">
+      <div class="flex justify-center">
+        <app-primary-large-button
+          [disabled]="isDisabled"
+          buttonTitle="CONTINUE"
+          (pressButton)="onSubmit()"
+        ></app-primary-large-button>
+      </div>
+    </div>
+
+    <!-- Error message -->
+    @if (errorMessage()) {
+      <div class="text-secondary-semantic-error text-center text-sm mt-3">
+        {{ errorMessage()! | translate }}
+      </div>
+    }
+  </form>
+</div>
