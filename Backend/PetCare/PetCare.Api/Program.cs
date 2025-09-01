@@ -1,13 +1,18 @@
 namespace PetCare.Api;
 
 using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Npgsql;
 using PetCare.Api.Endpoints.Auth;
+using PetCare.Api.Endpoints.Auth.TwoFactor;
 using PetCare.Application;
 using PetCare.Domain.Aggregates;
+using PetCare.Domain.Enums;
 using PetCare.Infrastructure;
+using PetCare.Infrastructure.Data;
 using PetCare.Infrastructure.Identity;
 using PetCare.Infrastructure.Persistence;
 using Scalar.AspNetCore;
@@ -22,8 +27,7 @@ public class Program
     /// Application entry point.
     /// Configures services, middleware, and runs the web application.
     /// </summary>
-    /// <param name="args">Command line arguments.</param>
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         Log.Logger = new LoggerConfiguration()
             .Enrich.FromLogContext()
@@ -40,33 +44,54 @@ public class Program
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseNpgsql(
                     builder.Configuration.GetConnectionString("DefaultConnection"),
-                    npgsql => npgsql.UseNetTopologySuite())
+                    npgsql =>
+                    {
+                        npgsql.UseNetTopologySuite();
+                        npgsql.MapEnum<UserRole>("user_role");
+                    })
                        .EnableSensitiveDataLogging()
                        .EnableDetailedErrors());
 
             // -------------------- Application & Infrastructure --------------------
             builder.Services.AddApplication();
-            builder.Services.AddInfrastructure();
+            builder.Services.AddInfrastructure(builder.Configuration);
 
-            // -------------------- MediatR --------------------
-            builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
+            // -------------------- MediatR + FluentValidation --------------------
+            builder.Services.AddMediatR(cfg =>
+            {
+                cfg.RegisterServicesFromAssembly(typeof(AssemblyMarker).Assembly);
+            });
+
+            builder.Services.AddValidatorsFromAssembly(typeof(AssemblyMarker).Assembly);
+
+            builder.Services.AddTransient(
+                typeof(IPipelineBehavior<,>),
+                typeof(Application.Common.Behaviors.ValidationBehavior<,>));
 
             // -------------------- Identity --------------------
             builder.Services.AddIdentity<User, AppRole>(options =>
             {
                 options.Password.RequireDigit = true;
-                options.Password.RequiredLength = 6;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = false;
+                options.Password.RequiredLength = 8;
+                options.Password.RequireNonAlphanumeric = true;
+                options.Password.RequireUppercase = true;
                 options.Password.RequireLowercase = true;
 
                 options.User.RequireUniqueEmail = true;
+                options.SignIn.RequireConfirmedEmail = true;
+
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.AllowedForNewUsers = true;
             })
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
-            // -------------------- FluentValidation --------------------
-            builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+            // -------------------- HttpContextAccessor --------------------
+            builder.Services.AddHttpContextAccessor();
+
+            // -------------------- Controllers --------------------
+            builder.Services.AddControllers();
 
             // -------------------- Logging --------------------
             builder.Host.UseSerilog();
@@ -90,25 +115,34 @@ public class Program
                 });
 
                 opt.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
                 {
-                    new OpenApiSecurityScheme
                     {
-                        Reference = new OpenApiReference
+                        new OpenApiSecurityScheme
                         {
-                            Id = "Bearer",
-                            Type = ReferenceType.SecurityScheme,
+                            Reference = new OpenApiReference
+                            {
+                                Id = "Bearer",
+                                Type = ReferenceType.SecurityScheme,
+                            },
                         },
+                        Array.Empty<string>()
                     },
-                    Array.Empty<string>()
-                },
-            });
+                });
             });
 
             var app = builder.Build();
 
             // --------------------Endpoints--------------------
-            app.MapRegisterEndpoint(); // /api/auth/register
+            app.MapRegisterEndpoint();
+            app.MapLoginEndpoint();
+            app.MapLogoutEndpoint();
+            app.MapRefreshEndpoint();
+            app.MapForgotPasswordEndpoint();
+            app.MapResetPasswordEndpoint();
+            app.MapConfirmEmailEndpoint();
+            app.MapResendVerificationEndpoint();
+
+            app.MapSetupTotpEndpoint();
 
             // -------------------- Middleware --------------------
             app.UseSerilogRequestLogging();
@@ -135,17 +169,34 @@ public class Program
                     if (exceptionHandlerPathFeature?.Error != null)
                     {
                         var ex = exceptionHandlerPathFeature.Error;
-                        context.Response.StatusCode = ex switch
-                        {
-                            InvalidOperationException => StatusCodes.Status400BadRequest,
-                            _ => StatusCodes.Status500InternalServerError
-                        };
 
-                        var result = System.Text.Json.JsonSerializer.Serialize(new
+                        switch (ex)
                         {
-                            error = ex.Message
-                        });
-                        await context.Response.WriteAsync(result);
+                            case FluentValidation.ValidationException validationEx:
+                                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                                var validationResult = new
+                                {
+                                    errors = validationEx.Errors.Select(e => e.ErrorMessage).ToArray(),
+                                };
+                                await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(validationResult));
+                                break;
+
+                            case InvalidOperationException:
+                                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                                await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new
+                                {
+                                    error = ex.Message,
+                                }));
+                                break;
+
+                            default:
+                                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                                await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new
+                                {
+                                    error = ex.Message,
+                                }));
+                                break;
+                        }
                     }
                 });
             });
@@ -153,6 +204,15 @@ public class Program
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
+
+            // -------------------- Migrations & Seeding --------------------
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                await dbContext.Database.MigrateAsync();
+
+                await DataSeeder.SeedAsync(scope.ServiceProvider);
+            }
 
             app.Run();
         }
@@ -164,6 +224,5 @@ public class Program
         {
             Log.CloseAndFlush();
         }
-
     }
 }

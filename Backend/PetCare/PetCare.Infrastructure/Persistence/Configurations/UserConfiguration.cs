@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PetCare.Domain.Aggregates;
+using System.Text.Json;
 
 /// <summary>
 /// Configures the <see cref="User"/> entity for Entity Framework Core.
@@ -21,16 +22,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.Id)
             .HasDefaultValueSql("gen_random_uuid()");
 
-        builder.Property(u => u.Email)
-             .HasMaxLength(255)
-             .IsRequired();
-
-        builder.HasIndex(u => u.Email)
-            .IsUnique();
-
-        builder.Property(u => u.PasswordHash)
-            .HasMaxLength(255)
-            .IsRequired();
+        // Email конфігурація наслідується від IdentityUser
 
         builder.Property(u => u.FirstName)
            .HasMaxLength(50)
@@ -41,7 +33,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired();
 
         builder.Property(u => u.Phone)
-            .HasMaxLength(20)
+            .HasMaxLength(30)
             .IsRequired();
 
         builder.HasIndex(u => u.Phone)
@@ -52,7 +44,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired();
 
         builder.Property(u => u.Preferences)
-            .HasColumnType("jsonb");
+            .HasColumnType("jsonb")
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions?)null) ?? new Dictionary<string, string>());
 
         builder.Property(u => u.Points)
             .HasDefaultValue(0)

@@ -1,13 +1,13 @@
 ﻿namespace PetCare.Domain.Events;
 
-public sealed record SpecieCreatedEvent(Guid specieId)
+public sealed record SpecieCreatedEvent(Guid SpecieId)
     : DomainEvent;
 
-public sealed record SpecieRenamedEvent(Guid specieId, string newName)
+public sealed record SpecieRenamedEvent(Guid SpecieId, string NewName)
     : DomainEvent;
 
-public sealed record BreedAddedEvent(Guid specieId, Guid breedId)
+public sealed record BreedAddedEvent(Guid SpecieId, Guid BreedId)
     : DomainEvent;
 
-public sealed record BreedRemovedEvent(Guid specieId, Guid breedId)
+public sealed record BreedRemovedEvent(Guid SpecieId, Guid BreedId)
     : DomainEvent;

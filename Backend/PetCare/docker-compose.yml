@@ -21,8 +21,23 @@
       - db
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: "http://+:80;https://+:443"
+      ASPNETCORE_URLS: "http://+:80"
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=petcare_db;Username=postgres;Password=postgres"
+
+      # Email settings
+      EmailSettings__SmtpServer: "smtp.gmail.com"
+      EmailSettings__Port: "587"
+      EmailSettings__SenderName: "PetCare"
+      EmailSettings__SenderEmail: "petcare.app.noreply@gmail.com"
+      EmailSettings__Username: "petcare.app.noreply@gmail.com"
+      EmailSettings__Password: "zamd hyxb cmro hdgj"
+
+       # JWT settings
+      JWT_SECRET_KEY: "MyVeryLongSecretKeyForJWTTokenGeneration123456789"
+      JWT_ISSUER: "PetCare.Api"
+      JWT_AUDIENCE: "PetCare.Client"
+      JWT_EXPIRATION_MINUTES: "15"          # короткий час для access token
+      JWT_REFRESH_EXPIRATION_DAYS: "7"      # refresh token живе довше
     ports:
       - '5000:80'
     volumes:

@@ -6,9 +6,10 @@ using PetCare.Application.Dtos;
 /// Command for registering a new user.
 /// </summary>
 public sealed record RegisterUserCommand(
-    string email,
-    string password,
-    string firstName,
-    string lastName,
-    string phoneNumber)
+    string Email,
+    string Password,
+    string FirstName,
+    string LastName,
+    string PhoneNumber,
+    string? PostalCode)
     : IRequest<UserDto>;

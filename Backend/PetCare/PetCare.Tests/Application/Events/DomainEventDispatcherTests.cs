@@ -25,11 +25,11 @@ public class DomainEventDispatcherTests
 
         var testEvent = new TestDomainEvent("Hello World");
 
-        await dispatcher.DispatchAsync(new DomainEvent[] { testEvent });
+        await dispatcher.DispatchAsync(new IDomainEvent[] { testEvent });
 
         mediatorMock.Verify(
             m => m.Publish(
-                It.Is<DomainEvent>(e => e as TestDomainEvent == testEvent),
+                It.Is<IDomainEvent>(e => e as TestDomainEvent == testEvent),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -56,7 +56,7 @@ public class DomainEventDispatcherTests
         {
             mediatorMock.Verify(
                 m => m.Publish(
-                    It.Is<DomainEvent>(e => (e as TestDomainEvent) == ev),
+                    It.Is<IDomainEvent>(e => (e as TestDomainEvent) == ev),
                     It.IsAny<CancellationToken>()),
                 Times.Once);
         }
@@ -72,10 +72,10 @@ public class DomainEventDispatcherTests
         var mediatorMock = new Mock<IMediator>();
         var dispatcher = new DomainEventDispatcher(mediatorMock.Object);
 
-        await dispatcher.DispatchAsync(new List<DomainEvent>());
+        await dispatcher.DispatchAsync(new List<IDomainEvent>());
 
         mediatorMock.Verify(
-            m => m.Publish(It.IsAny<DomainEvent>(), It.IsAny<CancellationToken>()),
+            m => m.Publish(It.IsAny<IDomainEvent>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 }
@@ -84,4 +84,4 @@ public class DomainEventDispatcherTests
 /// Represents a test domain event used for unit testing <see cref="DomainEventDispatcher"/>.
 /// </summary>
 /// <param name="message">The message carried by the event.</param>
-public sealed record TestDomainEvent(string message) : DomainEvent;
+public sealed record TestDomainEvent(string message) : IDomainEvent;

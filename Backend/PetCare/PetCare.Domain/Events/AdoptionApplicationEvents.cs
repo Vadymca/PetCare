@@ -1,13 +1,13 @@
 ﻿namespace PetCare.Domain.Events;
 
-public sealed record AdoptionApplicationApprovedEvent(Guid applicationId, Guid userId, Guid animalId, Guid approvedBy)
+public sealed record AdoptionApplicationApprovedEvent(Guid ApplicationId, Guid UserId, Guid AnimalId, Guid ApprovedBy)
     : DomainEvent;
 
-public sealed record AdoptionApplicationCreatedEvent(Guid applicationId, Guid userId, Guid animalId)
+public sealed record AdoptionApplicationCreatedEvent(Guid ApplicationId, Guid UserId, Guid AnimalId)
     : DomainEvent;
 
-public sealed record AdoptionApplicationNotesUpdatedEvent(Guid applicationId, Guid userId, string notes)
+public sealed record AdoptionApplicationNotesUpdatedEvent(Guid ApplicationId, Guid UserId, string Notes)
     : DomainEvent;
 
-public sealed record AdoptionApplicationRejectedEvent(Guid applicationId, Guid userId, Guid animalId, string rejectionReason)
+public sealed record AdoptionApplicationRejectedEvent(Guid ApplicationId, Guid UserId, Guid AnimalId, string RejectionReason)
     : DomainEvent;

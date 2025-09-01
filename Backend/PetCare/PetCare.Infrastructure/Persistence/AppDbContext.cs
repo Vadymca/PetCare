@@ -181,20 +181,32 @@ public class AppDbContext : IdentityDbContext<User, AppRole, Guid>
     /// <returns>The number of state entries written to the database.</returns>
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        var domainEntities = this.ChangeTracker
-            .Entries<AggregateRoot>()
+        // Collect domain events from AggregateRoot entities
+        var aggregateRootEntities = this.ChangeTracker
+             .Entries<AggregateRoot>()
+             .Where(e => e.Entity.DomainEvents.Any())
+             .ToList();
+
+        // Collect domain events from User entities (which inherit from IdentityUser)
+        var userEntities = this.ChangeTracker
+            .Entries<User>()
             .Where(e => e.Entity.DomainEvents.Any())
             .ToList();
 
-        var domainEvents = domainEntities
+        // Combine all domain events
+        var allDomainEvents = aggregateRootEntities
             .SelectMany(e => e.Entity.DomainEvents)
+            .Concat(userEntities.SelectMany(e => e.Entity.DomainEvents))
             .ToList();
 
         var result = await base.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-        await this.dispatcher.DispatchAsync(domainEvents, cancellationToken).ConfigureAwait(false);
+        // Dispatch all domain events
+        await this.dispatcher.DispatchAsync(allDomainEvents, cancellationToken).ConfigureAwait(false);
 
-        domainEntities.ForEach(e => e.Entity.ClearDomainEvents());
+        // Clear domain events from all entities
+        aggregateRootEntities.ForEach(e => e.Entity.ClearDomainEvents());
+        userEntities.ForEach(e => e.Entity.ClearDomainEvents());
 
         return result;
     }

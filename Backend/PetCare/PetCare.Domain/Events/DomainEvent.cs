@@ -1,10 +1,10 @@
 ﻿namespace PetCare.Domain.Events;
-using MediatR;
+using PetCare.Domain.Abstractions.Events;
 
 /// <summary>
 /// Represents a base class for all domain events.
 /// </summary>
-public abstract record DomainEvent : INotification
+public abstract record DomainEvent : IDomainEvent
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="DomainEvent"/> class.

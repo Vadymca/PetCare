@@ -1,11 +1,9 @@
 ﻿namespace PetCare.Application.Features.Auth.Register;
 
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using PetCare.Application.Dtos;
-using PetCare.Domain.Aggregates;
-using PetCare.Domain.Enums;
+using PetCare.Application.Interfaces;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,90 +15,93 @@ using System.Threading.Tasks;
 /// </summary>
 public sealed class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, UserDto>
 {
-    private readonly UserManager<User> userManager;
+    private readonly IUserService userService;
+    private readonly IEmailService emailService;
+    private readonly IEmailTemplateRenderer templateRenderer;
     private readonly ILogger<RegisterUserCommandHandler> logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RegisterUserCommandHandler"/> class.
     /// </summary>
-    /// <param name="userManager">ASP.NET Core Identity user manager for managing user persistence.</param>
-    /// <param name="logger">Logger instance for tracing and error reporting.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="userManager"/> or <paramref name="logger"/> is null.</exception>
-    public RegisterUserCommandHandler(UserManager<User> userManager, ILogger<RegisterUserCommandHandler> logger)
+    /// <param name="userService">The user service used to perform user-related operations.</param>
+    /// <param name="emailService">
+    /// The service used to send emails to users, including confirmation and notification messages.</param>
+    /// <param name="templateRenderer">
+    /// The service responsible for rendering Razor email templates to HTML strings.</param>
+    /// <param name="logger">The logger instance used to record diagnostic and operational messages.</param>
+    public RegisterUserCommandHandler(
+        IUserService userService,
+        IEmailService emailService,
+        IEmailTemplateRenderer templateRenderer,
+        ILogger<RegisterUserCommandHandler> logger)
     {
-        this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+        this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
+        this.emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.templateRenderer = templateRenderer ?? throw new ArgumentNullException(nameof(templateRenderer));
     }
 
     /// <summary>
-    /// Handles the registration request, creates a new user,
-    /// assigns them the <c>User</c> role, and returns the corresponding <see cref="UserDto"/>.
+    /// Handles the <see cref="RegisterUserCommand"/> request by creating a new user,
+    /// generating an email confirmation token, and returning the corresponding <see cref="UserDto"/>.
     /// </summary>
-    /// <param name="request">The command containing user registration data.</param>
-    /// <param name="cancellationToken">Cancellation token for cooperative cancellation.</param>
-    /// <returns>A <see cref="UserDto"/> representing the created user.</returns>
-    /// <exception cref="ArgumentException">Thrown when the username cannot be generated correctly.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when the email already exists, user creation fails, or role assignment fails.</exception>
+    /// <param name="request">The register command containing user details such as email, password, and personal information.</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
+    /// <returns>
+    /// A <see cref="Task{TResult}"/> representing the asynchronous operation,
+    /// with a <see cref="UserDto"/> containing the registered user's details.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when a user with the specified email already exists.
+    /// </exception>
     public async Task<UserDto> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-        this.logger.LogInformation("Спроба реєстрації користувача з email {Email}", request.email);
-
-        // Формуємо username з email
-        var userName = request.email.Replace("@", "_").Replace(".", "_");
-        if (string.IsNullOrWhiteSpace(userName))
-        {
-            throw new ArgumentException("Username некоректний.", nameof(userName));
-        }
-
         // Перевіряємо унікальність email
-        var existingUser = await this.userManager.FindByEmailAsync(request.email);
+        var existingUser = await this.userService.FindByEmailAsync(request.Email);
         if (existingUser != null)
         {
-            this.logger.LogWarning("Користувач із email {Email} уже існує.", request.email);
-            throw new InvalidOperationException($"Користувач із email {request.email} уже зареєстрований.");
+            throw new InvalidOperationException($"Користувач із email {request.Email} уже зареєстрований.");
         }
 
-        // Створюємо користувача через User.Create
-        var user = User.Create(
-            request.email,
-            string.Empty, // passwordHash не потрібен, бо UserManager хешує пароль
-            request.firstName,
-            request.lastName,
-            request.phoneNumber,
-            UserRole.User);
+        // Створюємо користувача через UserService
+        var user = await this.userService.CreateUserAsync(
+            request.Email,
+            request.Password,
+            request.FirstName,
+            request.LastName,
+            request.PhoneNumber,
+            request.PostalCode);
 
-        // Встановлюємо UserName і NormalizedUserName для Identity
-        user.UserName = userName;
-        user.NormalizedUserName = userName.ToUpperInvariant();
-        user.NormalizedEmail = request.email.ToUpperInvariant(); // Identity потребує NormalizedEmail
+        // Генеруємо токен підтвердження email
+        var emailConfirmationToken = await this.userService.GenerateEmailConfirmationTokenAsync(user);
 
-        // Створюємо користувача через UserManager
-        var result = await this.userManager.CreateAsync(user, request.password);
-        if (!result.Succeeded)
-        {
-            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            this.logger.LogError("Помилка створення користувача: {Errors}", errors);
-            throw new InvalidOperationException($"Не вдалося створити користувача: {errors}");
-        }
+        // Формуємо посилання на підтвердження email
+        var confirmationUrl = $"http://localhost:4200/verify-email?token={emailConfirmationToken}";
 
-        // Додаємо роль
-        var roleResult = await this.userManager.AddToRoleAsync(user, "User");
-        if (!roleResult.Succeeded)
-        {
-            var roleErrors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
-            this.logger.LogError("Помилка додавання ролі: {Errors}", roleErrors);
-            throw new InvalidOperationException($"Не вдалося додати роль: {roleErrors}");
-        }
+        // Підготовка email
+        var subject = "Підтвердження Email для PetCare";
+        var htmlBody = await this.templateRenderer.RenderAsync(
+            "PetCare.Application.EmailTemplates.ConfirmEmailTemplate.cshtml",
+            confirmationUrl);
 
-        this.logger.LogInformation("Користувач {Email} успішно зареєстрований з ID {UserId}", request.email, user.Id);
+        // Відправка email через MailKit
+        await this.emailService.SendEmailAsync(user.Email!, subject, htmlBody);
+
+        this.logger.LogInformation(
+            "Згенеровано токен підтвердження email для користувача {Email}. Токен: {Token}",
+            request.Email,
+            emailConfirmationToken);
+
+        this.logger.LogInformation("Користувач {Email} успішно зареєстрований. Очікується підтвердження email.", request.Email);
 
         // Повертаємо DTO
         return new UserDto(
             user.Id,
-            user.Email,
+            user.Email!,
             user.FirstName,
             user.LastName,
             user.Phone,
-            "User");
+            "User",
+            user.PostalCode);
     }
 }

@@ -14,5 +14,5 @@ public interface IDomainEventDispatcher
     /// <param name="events">The collection of domain events.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    Task DispatchAsync(IEnumerable<DomainEvent> events, CancellationToken cancellationToken = default);
+    Task DispatchAsync(IEnumerable<IDomainEvent> events, CancellationToken cancellationToken = default);
 }

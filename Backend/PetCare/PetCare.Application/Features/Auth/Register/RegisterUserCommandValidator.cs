@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Application.Features.Auth.Register;
+
 using FluentValidation;
 
 /// <summary>
@@ -12,22 +13,29 @@ public sealed class RegisterUserCommandValidator : AbstractValidator<RegisterUse
     /// </summary>
     public RegisterUserCommandValidator()
     {
-        this.RuleFor(x => x.email)
-            .NotEmpty().WithMessage("Електронна пошта є обов’язковою.")
-            .EmailAddress().WithMessage("Невірний формат електронної пошти.");
+        this.RuleFor(x => x.Email)
+            .NotEmpty().WithMessage("Електронна пошта є обов'язковою.")
+            .EmailAddress().WithMessage("Невірний формат електронної пошти.")
+            .MaximumLength(255).WithMessage("Електронна пошта не може перевищувати 255 символів.");
 
-        this.RuleFor(x => x.password)
-            .NotEmpty().WithMessage("Пароль є обов’язковим.")
-            .MinimumLength(6).WithMessage("Пароль має містити щонайменше 6 символів.");
+        this.RuleFor(x => x.Password)
+            .NotEmpty().WithMessage("Пароль є обов'язковим.")
+            .MinimumLength(8).WithMessage("Пароль має містити щонайменше 8 символів.")
+            .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]")
+            .WithMessage("Пароль має містити принаймні одну велику літеру, одну малу літеру, одну цифру та один спеціальний символ.");
 
-        this.RuleFor(x => x.firstName)
-            .NotEmpty().WithMessage("Ім’я є обов’язковим.");
+        this.RuleFor(x => x.FirstName)
+            .NotEmpty().WithMessage("Ім'я є обов'язковим.")
+            .MaximumLength(50).WithMessage("Ім'я не може перевищувати 50 символів.")
+            .Matches(@"^[a-zA-Zа-яА-ЯіІїЇєЄ''\s-]+$").WithMessage("Ім'я може містити тільки літери, апострофи, пробіли та дефіси.");
 
-        this.RuleFor(x => x.lastName)
-            .NotEmpty().WithMessage("Прізвище є обов’язковим.");
+        this.RuleFor(x => x.LastName)
+            .NotEmpty().WithMessage("Прізвище є обов'язковим.")
+            .MaximumLength(50).WithMessage("Прізвище не може перевищувати 50 символів.")
+            .Matches(@"^[a-zA-Zа-яА-ЯіІїЇєЄ''\s-]+$").WithMessage("Прізвище може містити тільки літери, апострофи, пробіли та дефіси.");
 
-        this.RuleFor(x => x.phoneNumber)
-            .NotEmpty().WithMessage("Номер телефону є обов’язковим.")
-            .Matches(@"^\+?[1-9]\d{7,14}$").WithMessage("Невірний формат номера телефону.");
+        this.RuleFor(x => x.PhoneNumber)
+            .NotEmpty().WithMessage("Номер телефону є обов'язковим.")
+            .Matches(@"^\+380\d{9}$").WithMessage("Номер телефону має бути у форматі +380XXXXXXXXX.");
     }
 }

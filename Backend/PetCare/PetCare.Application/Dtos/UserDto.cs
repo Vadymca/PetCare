@@ -5,9 +5,10 @@ using System;
 /// Data transfer object representing a user after registration.
 /// </summary>
 public sealed record UserDto(
-    Guid id,
-    string email,
-    string firstName,
-    string lastName,
-    string phoneNumber,
-    string role);
+    Guid Id,
+    string Email,
+    string FirstName,
+    string LastName,
+    string PhoneNumber,
+    string Role,
+    string? PostalCode);

@@ -27,17 +27,19 @@ public sealed class User : IdentityUser<Guid>
     private readonly List<VolunteerTaskAssignment> volunteerTaskAssignments = new();
     private readonly List<EventParticipant> eventParticipations = new();
     private readonly List<AnimalSubscription> animalSubscriptions = new();
+
+    // Domain events - using AggregateRoot pattern
     private readonly List<DomainEvent> domainEvents = new();
 
-    private User()
+    public User()
     {
-        this.Email = "default@petcare.com";
-        this.PasswordHash = null!;
-        this.FirstName = null!;
-        this.LastName = null!;
-        this.Phone = null!;
+        this.FirstName = string.Empty;
+        this.LastName = string.Empty;
+        this.Phone = string.Empty;
         this.Preferences = new Dictionary<string, string>();
         this.Language = "uk";
+        this.CreatedAt = DateTime.UtcNow;
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     private User(
@@ -73,12 +75,20 @@ public sealed class User : IdentityUser<Guid>
     /// <summary>
     /// Gets the email address of the user.
     /// </summary>
-    public string Email { get; private set; }
+    public new string? Email
+    {
+        get => base.Email;
+        set => base.Email = value;
+    }
 
     /// <summary>
     /// Gets the hashed password of the user.
     /// </summary>
-    public string PasswordHash { get; private set; }
+    public new string? PasswordHash
+    {
+        get => base.PasswordHash;
+        set => base.PasswordHash = value;
+    }
 
     /// <summary>
     /// Gets the first name of the user.
@@ -218,25 +228,50 @@ public sealed class User : IdentityUser<Guid>
     public IReadOnlyCollection<DomainEvent> DomainEvents => this.domainEvents.AsReadOnly();
 
     /// <summary>
-    /// Adds a domain event to this user.
+    /// Clears all domain events from the aggregate.
     /// </summary>
-    /// <param name="domainEvent">The domain event to add.</param>
-    public void AddDomainEvent(DomainEvent domainEvent) => this.domainEvents.Add(domainEvent);
+    public void ClearDomainEvents()
+    {
+        this.domainEvents.Clear();
+    }
 
     /// <summary>
-    /// Clears all domain events from this user.
+    /// Adds a domain event to the aggregate's event collection.
     /// </summary>
-    public void ClearDomainEvents() => this.domainEvents.Clear();
+    /// <param name="domainEvent">The domain event to add.</param>
+    private void AddDomainEvent(DomainEvent domainEvent)
+    {
+        this.domainEvents.Add(domainEvent);
+    }
+
+    /// <summary>
+    /// Adds a UserCreatedEvent to the aggregate's event collection.
+    /// This should be called after the user has been persisted and has a valid ID.
+    /// </summary>
+    public void AddUserCreatedEvent()
+    {
+        this.AddDomainEvent(new UserCreatedEvent(this.Id));
+    }
+
+    /// <summary>
+    /// Adds a UserEmailConfirmedEvent to the aggregate's event collection.
+    /// Should be called after the user's email has been confirmed.
+    /// </summary>
+    public void AddEmailConfirmedEvent()
+    {
+        this.AddDomainEvent(new UserEmailConfirmedEvent(this.Id, this.Email!));
+    }
 
     /// <summary>
     /// Creates a new <see cref="User"/> instance with the specified parameters.
     /// </summary>
     /// <param name="email">The email address of the user.</param>
-    /// <param name="passwordHash">The hashed password of the user.</param>
     /// <param name="firstName">The first name of the user.</param>
     /// <param name="lastName">The last name of the user.</param>
     /// <param name="phone">The phone number of the user.</param>
     /// <param name="role">The role of the user.</param>
+    /// <param name="userName">The username (if null, email will be used).</param>
+    /// <param name="passwordHash">The hashed password of the user (optional for external auth).</param>
     /// <param name="preferences">The preferences of the user, if any. Can be null.</param>
     /// <param name="points">The points accumulated by the user. Defaults to 0.</param>
     /// <param name="lastLogin">The date and time of the user's last login, if any. Can be null.</param>
@@ -244,15 +279,16 @@ public sealed class User : IdentityUser<Guid>
     /// <param name="language">The preferred language of the user. Defaults to "uk".</param>
     /// <param name="postalCode">The postal code of the user. Can be null.</param>
     /// <returns>A new instance of <see cref="User"/> with the specified parameters.</returns>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="passwordHash"/>, <paramref name="firstName"/>, <paramref name="lastName"/>, or <paramref name="language"/> is null, whitespace, or exceeds length limits, or when <paramref name="points"/> is negative.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="firstName"/>, <paramref name="lastName"/>, or <paramref name="language"/> is null, whitespace, or exceeds length limits, or when <paramref name="points"/> is negative.</exception>
     /// <exception cref="ArgumentException">Thrown when <paramref name="email"/> or <paramref name="phone"/> is invalid according to their respective <see cref="ValueObject"/> creation methods.</exception>
     public static User Create(
         string email,
-        string passwordHash,
         string firstName,
         string lastName,
         string phone,
         UserRole role,
+        string? userName = null,
+        string? passwordHash = null,
         Dictionary<string, string>? preferences = null,
         int points = 0,
         DateTime? lastLogin = null,
@@ -288,7 +324,7 @@ public sealed class User : IdentityUser<Guid>
 
         var user = new User(
             email,
-            passwordHash,
+            passwordHash ?? string.Empty,
             firstName,
             lastName,
             phone,
@@ -300,7 +336,10 @@ public sealed class User : IdentityUser<Guid>
             language,
             postalCode);
 
-        user.AddDomainEvent(new UserCreatedEvent(user.Id));
+        // Встановлюємо UserName (якщо не надано, використовуємо email)
+        user.UserName = userName ?? email;
+
+        // Domain event will be added in UserService after the user gets an ID from the database
         return user;
     }
 

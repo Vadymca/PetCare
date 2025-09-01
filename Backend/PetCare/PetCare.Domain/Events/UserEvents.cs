@@ -1,94 +1,96 @@
 ﻿namespace PetCare.Domain.Events;
-
-public sealed record UserCreatedEvent(Guid userId)
+public sealed record UserCreatedEvent(Guid UserId)
     : DomainEvent;
 
-public sealed record UserProfileUpdatedEvent(Guid userId)
+public sealed record UserEmailConfirmedEvent(Guid UserId, string Email)
     : DomainEvent;
 
-public sealed record UserProfilePhotoChangedEvent(Guid userId, string? newPhotoUrl)
+public sealed record UserProfileUpdatedEvent(Guid UserId)
     : DomainEvent;
 
-public sealed record UserProfilePhotoRemovedEvent(Guid userId)
+public sealed record UserProfilePhotoChangedEvent(Guid UserId, string? NewPhotoUrl)
     : DomainEvent;
 
-public sealed record UserPointsAddedEvent(Guid userId, int amount)
+public sealed record UserProfilePhotoRemovedEvent(Guid UserId)
     : DomainEvent;
 
-public sealed record UserPointsDeductedEvent(Guid userId, int amount)
+public sealed record UserPointsAddedEvent(Guid UserId, int Amount)
     : DomainEvent;
 
-public sealed record UserPasswordChangedEvent(Guid userId)
+public sealed record UserPointsDeductedEvent(Guid UserId, int Amount)
     : DomainEvent;
 
-public sealed record ShelterSubscriptionAddedEvent(Guid userId, Guid shelterId)
+public sealed record UserPasswordChangedEvent(Guid UserId)
     : DomainEvent;
 
-public sealed record ShelterSubscriptionUpdatedEvent(Guid userId, Guid shelterId)
+public sealed record ShelterSubscriptionAddedEvent(Guid UserId, Guid ShelterId)
     : DomainEvent;
 
-public sealed record ShelterSubscriptionRemovedEvent(Guid userId, Guid shelterId)
+public sealed record ShelterSubscriptionUpdatedEvent(Guid UserId, Guid ShelterId)
     : DomainEvent;
 
-public sealed record GamificationRewardAddedEvent(Guid userId, Guid rewardId, int points)
+public sealed record ShelterSubscriptionRemovedEvent(Guid UserId, Guid ShelterId)
     : DomainEvent;
 
-public sealed record GamificationRewardRemovedEvent(Guid userId, Guid rewardId)
+public sealed record GamificationRewardAddedEvent(Guid UserId, Guid RewardId, int Points)
     : DomainEvent;
 
-public sealed record AdoptionApplicationAddedEvent(Guid userId, Guid applicationId)
+public sealed record GamificationRewardRemovedEvent(Guid UserId, Guid RewardId)
     : DomainEvent;
 
-public sealed record AdoptionApplicationRemovedEvent(Guid userId, Guid applicationId)
+public sealed record AdoptionApplicationAddedEvent(Guid UserId, Guid ApplicationId)
     : DomainEvent;
 
-public sealed record AnimalAidRequestAddedEvent(Guid userId, Guid requestId)
+public sealed record AdoptionApplicationRemovedEvent(Guid UserId, Guid ApplicationId)
     : DomainEvent;
 
-public sealed record AnimalAidRequestRemovedEvent(Guid userId, Guid requestId)
+public sealed record AnimalAidRequestAddedEvent(Guid UserId, Guid RequestId)
     : DomainEvent;
 
-public sealed record ArticleAddedEvent(Guid userId, Guid articleId)
+public sealed record AnimalAidRequestRemovedEvent(Guid UserId, Guid RequestId)
     : DomainEvent;
 
-public sealed record ArticleRemovedEvent(Guid userId, Guid articleId)
+public sealed record ArticleAddedEvent(Guid UserId, Guid ArticleId)
     : DomainEvent;
 
-public sealed record ArticleCommentAddedEvent(Guid userId, Guid commentId)
+public sealed record ArticleRemovedEvent(Guid UserId, Guid ArticleId)
     : DomainEvent;
 
-public sealed record ArticleCommentRemovedEvent(Guid userId, Guid commentId)
+public sealed record ArticleCommentAddedEvent(Guid UserId, Guid CommentId)
     : DomainEvent;
 
-public sealed record NotificationAddedEvent(Guid userId, Guid notificationId)
+public sealed record ArticleCommentRemovedEvent(Guid UserId, Guid CommentId)
     : DomainEvent;
 
-public sealed record NotificationRemovedEvent(Guid userId, Guid notificationId)
+public sealed record NotificationAddedEvent(Guid UserId, Guid NotificationId)
     : DomainEvent;
 
-public sealed record SuccessStoryAddedEvent(Guid userId, Guid storyId)
+public sealed record NotificationRemovedEvent(Guid UserId, Guid NotificationId)
     : DomainEvent;
 
-public sealed record SuccessStoryRemovedEvent(Guid userId, Guid storyId)
+public sealed record SuccessStoryAddedEvent(Guid UserId, Guid StoryId)
     : DomainEvent;
 
-public sealed record LostPetAddedEvent(Guid userId, Guid lostPetId)
+public sealed record SuccessStoryRemovedEvent(Guid UserId, Guid StoryId)
     : DomainEvent;
 
-public sealed record LostPetRemovedEvent(Guid userId, Guid lostPetId)
+public sealed record LostPetAddedEvent(Guid UserId, Guid LostPetId)
     : DomainEvent;
 
-public sealed record EventAddedEvent(Guid userId, Guid eventId)
+public sealed record LostPetRemovedEvent(Guid UserId, Guid LostPetId)
     : DomainEvent;
 
-public sealed record EventRemovedEvent(Guid userId, Guid eventId)
+public sealed record EventAddedEvent(Guid UserId, Guid EventId)
     : DomainEvent;
 
-public sealed record DonationAddedEvent(Guid userId, Guid donationId)
+public sealed record EventRemovedEvent(Guid UserId, Guid EventId)
     : DomainEvent;
 
-public sealed record DonationRemovedEvent(Guid userId, Guid donationId)
+public sealed record DonationAddedEvent(Guid UserId, Guid DonationId)
     : DomainEvent;
 
-public sealed record UserLastLoginSetEvent(Guid userId, DateTime lastLogin)
+public sealed record DonationRemovedEvent(Guid UserId, Guid DonationId)
+    : DomainEvent;
+
+public sealed record UserLastLoginSetEvent(Guid UserId, DateTime LastLogin)
     : DomainEvent;
