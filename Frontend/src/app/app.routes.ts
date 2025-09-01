@@ -9,9 +9,23 @@
 
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
-import { login2faGuard } from './core/guards/login-2fa.guard';
 
 export const routes: Routes = [
+  {
+    path: '',
+    loadComponent: () =>
+      import('./pages/home/home.component').then(c => c.HomeComponent),
+  },
+  {
+    path: 'verify-email',
+    loadComponent: () =>
+      import('./pages/home/home.component').then(c => c.HomeComponent),
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./pages/home/home.component').then(c => c.HomeComponent),
+  },
   {
     path: 'animals',
 
@@ -96,40 +110,48 @@ export const routes: Routes = [
 
     data: { roles: ['Admin'] }, // хто може, крім власника
   },
-  {
-    path: 'login',
-    loadComponent: () =>
-      import('./pages/auth/login/login.component').then(c => c.LoginComponent),
-  },
-  {
-    path: 'login-2fa',
-    canActivate: [login2faGuard],
-    loadComponent: () =>
-      import('./pages/auth/login2fa/login2fa.component').then(
-        c => c.Login2faComponent
-      ),
-  },
-  {
-    path: 'register',
-    loadComponent: () =>
-      import('./pages/auth/register/register.component').then(
-        m => m.RegisterComponent
-      ),
-  },
-  {
-    path: 'forgot-password',
-    loadComponent: () =>
-      import('./pages/auth/forgot-password/forgot-password.component').then(
-        m => m.ForgotPasswordComponent
-      ),
-  },
+  // {
+  //   path: 'login',
+  //   loadComponent: () =>
+  //     import('./pages/auth/login/login.component').then(c => c.LoginComponent),
+  // },
+  // {
+  //   path: 'login-2fa',
+  //   canActivate: [login2faGuard],
+  //   loadComponent: () =>
+  //     import('./pages/auth/login2fa/login2fa.component').then(
+  //       c => c.Login2faComponent
+  //     ),
+  // },
+  // {
+  //   path: 'register',
+  //   loadComponent: () =>
+  //     import('./pages/auth/register/register.component').then(
+  //       m => m.RegisterComponent
+  //     ),
+  // },
+
+  // {
+  //   path: 'forgot-password',
+  //   loadComponent: () =>
+  //     import('./pages/auth/forgot-password/forgot-password.component').then(
+  //       m => m.ForgotPasswordComponent
+  //     ),
+  // },
   //перевірити потім, чи з бека так повертатиметься чи ?token=...
+  // {
+  //   path: 'reset-password/:token',
+  //   loadComponent: () =>
+  //     import('./pages/auth/reset-password/reset-password.component').then(
+  //       m => m.ResetPasswordComponent
+  //     ),
+  // },
   {
-    path: 'reset-password/:token',
+    path: 'terms-and-conditions',
     loadComponent: () =>
-      import('./pages/auth/reset-password/reset-password.component').then(
-        m => m.ResetPasswordComponent
-      ),
+      import(
+        './pages/terms-and-conditions/terms-and-conditions.component'
+      ).then(m => m.TermsAndConditionsComponent),
   },
 
   {
@@ -154,11 +176,6 @@ export const routes: Routes = [
       ).then(c => c.ServiceUnavailableComponent),
   },
 
-  {
-    path: '',
-    redirectTo: 'animals',
-    pathMatch: 'full',
-  },
   {
     path: '**',
     loadComponent: () =>

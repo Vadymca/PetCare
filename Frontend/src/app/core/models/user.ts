@@ -13,4 +13,7 @@ export interface User {
   profilePhoto?: string;
   createdAt?: string;
   updatedAt?: string;
+  zipCode?: string;
+  address?: string;
+  emailConfirmed?: boolean;
 }

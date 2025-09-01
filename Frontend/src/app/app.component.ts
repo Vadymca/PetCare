@@ -3,10 +3,11 @@ import { RouterOutlet } from '@angular/router';
 import { take } from 'rxjs';
 import { HeaderComponent } from './core/header/header.component';
 import { AuthService } from './core/services/auth.service';
+import { AuthModalComponent } from "./shared/components/auth-modal/auth-modal/auth-modal.component";
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent],
+  imports: [RouterOutlet, HeaderComponent, AuthModalComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
@@ -30,5 +31,6 @@ export class AppComponent {
           },
         });
     });
+
   }
 }

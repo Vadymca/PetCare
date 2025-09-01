@@ -22,7 +22,7 @@ export class RoleOrOwnerGuard implements CanActivate {
     const ownerId = route.paramMap.get('id');
     const allowedRoles: string[] = route.data['roles'] || [];
 
-    const user = this.authService.currentUser();
+    const user = this.authService._currentUser();
 
     if (!user) {
       return this.router.createUrlTree(['/login'], {

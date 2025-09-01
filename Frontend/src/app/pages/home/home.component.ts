@@ -1,0 +1,125 @@
+import { CommonModule } from '@angular/common';
+import { Component, effect, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
+import { AuthService } from '../../core/services/auth.service';
+import { ModalService } from '../../core/services/modal.service';
+import { PrimaryLargeButtonComponent } from '../../shared/components/buttons/blue/primary-large-button.component';
+import { SecondarySmallButtonComponent } from '../../shared/components/buttons/blue/secondary-small-button.component';
+import { PrimaryLargeOrangeButtonComponent } from '../../shared/components/buttons/orange/primary-large-orange-button.component';
+import { IconComponent } from '../../shared/components/icon.component';
+
+@Component({
+  selector: 'app-home',
+  standalone: true,
+  imports: [
+    CommonModule,
+    TranslateModule,
+    IconComponent,
+    PrimaryLargeButtonComponent,
+    SecondarySmallButtonComponent,
+    PrimaryLargeOrangeButtonComponent,
+  ],
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.css',
+})
+export class HomeComponent {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private authService = inject(AuthService);
+  private modalService = inject(ModalService);
+  workers = [
+    {
+      id: 0,
+      name: 'director',
+      image: '../../../assets/images/director.png',
+      title: 'DIRECTOR',
+      firstDiv: 'FIRST_DIV_DIRECTOR',
+      selectedSpan: 'SELECTED_SPAN_DIRECTOR',
+      secondDiv: 'SECOND_DIV_DIRECTOR',
+      thirdDiv: 'THIRD_DIV_DIRECTOR',
+    },
+    {
+      id: 1,
+      name: 'volunteer',
+      image: '../../../assets/images/volunteer.png',
+      title: 'VOLUNTEER',
+      firstDiv: 'FIRST_DIV_VOLUNTEER',
+      selectedSpan: 'SELECTED_SPAN_VOLUNTEER',
+      secondDiv: 'SECOND_DIV_VOLUNTEER',
+      thirdDiv: 'THIRD_DIV_VOLUNTEER',
+    },
+    {
+      id: 2,
+      name: 'vet',
+      image: '../../../assets/images/vet.png',
+      title: 'VET',
+      firstDiv: 'FIRST_DIV_VET',
+      selectedSpan: 'SELECTED_SPAN_VET',
+      secondDiv: 'SECOND_DIV_VET',
+      thirdDiv: 'THIRD_DIV_VET',
+    },
+  ];
+  isImageChanging = false;
+  currentWorkerIndex = 0;
+  selectedWorker() {
+    return this.workers[this.currentWorkerIndex];
+  }
+  isCharityButtonHidden = signal<boolean>(false);
+  selectWorker(index: number) {
+    this.isImageChanging = true; // робимо fade-out
+    this.currentWorkerIndex = index; // міняємо картинку після fade-out
+    setTimeout(() => {
+      this.isImageChanging = false; // запускаємо fade-in
+    }, 300); // 300мс = половина твоєї transition-duration
+  }
+  constructor() {
+    effect(() => {
+      if (this.modalService.modalStateReadonly().isOpen) {
+        this.isCharityButtonHidden.set(true);
+      } else {
+        this.isCharityButtonHidden.set(false);
+      }
+    });
+    this.route.queryParams.subscribe(params => {
+      const token = params['token'];
+      const currentPath = this.route.snapshot.routeConfig?.path;
+
+      if (token && currentPath === 'verify-email') {
+        console.log('HomeComponent: Path:', currentPath);
+        console.log('HomeComponent: Token:', token);
+        this.authService.verifyEmail(token).subscribe({
+          next: response => {
+            console.log('Verify email success:', response.message);
+            if (response.success) {
+              this.modalService.openModal('email-confirmed');
+            } else {
+              this.modalService.openModal('email-not-confirmed');
+            }
+            this.router.navigate([''], { queryParams: {}, replaceUrl: true });
+          },
+          error: err => {
+            console.error('Verify email error:', err);
+            this.modalService.openModal('email-not-confirmed');
+            this.router.navigate([''], { queryParams: {}, replaceUrl: true });
+          },
+        });
+      } else if (token && currentPath === 'reset-password') {
+        console.log('HomeComponent: Path:', currentPath);
+        console.log('HomeComponent: Token:', token);
+        this.modalService.setToken(token);
+        this.modalService.openModal('reset-password');
+        this.router.navigate([''], { queryParams: {}, replaceUrl: true });
+      }
+    });
+  }
+  onFindPetClick() {
+    this.router.navigate(['/animals']);
+  }
+  onCharityButtonClick() {
+    this.modalService.openModal('live-donation-collection');
+  }
+  onAboutUsClick() {
+    throw new Error('Method not implemented.');
+  }
+}

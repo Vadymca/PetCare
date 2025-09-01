@@ -1,4 +1,4 @@
-<div *ngIf="animal() as	 data; else loading" class="max-w-4xl mx-auto p-6">
+<div *ngIf="animal() as data; else loading" class="max-w-4xl mx-auto p-6">
   <div
     class="bg-white rounded-2xl shadow-xl p-6 flex flex-col md:flex-row gap-6"
   >
@@ -98,7 +98,7 @@
   </div>
 </div>
 
-<div class="mt-6 text-center">
+<div class="mt-6 flex justify-center items-center">
   @if (isAuthenticated()) {
     @if (isSubscriptionChecked) {
       @if (isSubscribed) {
@@ -118,13 +118,11 @@
       }
     }
   }
-
-  <button
-    class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-    (click)="router.navigate(['/animals'])"
+  <app-primary-large-button
+    buttonTitle="RETURN_TO_LIST"
+    (pressButton)="router.navigate(['/animals'])"
   >
-    {{ 'RETURN_TO_LIST' | translate }}
-  </button>
+  </app-primary-large-button>
 </div>
 <ng-template #loading>
   <div class="text-center text-gray-500 text-lg mt-10">

@@ -1,0 +1,150 @@
+<div class="text-center h-full flex flex-col">
+  <!-- Back button -->
+  <div class="inline-flex items-center">
+    <div
+      class="hover:text-primary-orange inline-flex items-center cursor-pointer -translate-y-1/2 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-50"
+      (click)="emitOption('login')"
+      (keyup.enter)="emitOption('login')"
+      (keyup.space)="emitOption('login')"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'BACK' | translate"
+    >
+      <app-icon [name]="'arrowLeft'" class=""></app-icon>
+      <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
+    </div>
+  </div>
+
+  <!-- Title -->
+  <h5 class="text-40 mt-5">
+    {{ 'TWO_FACTOR_TITLE' | translate | uppercase }}
+  </h5>
+
+  <!-- Descriptions -->
+  @if (!showBackupCodeInput) {
+    @if (totpEnabled()) {
+      <p class="mt-5 text-base">
+        {{ 'TWO_FACTOR_DESCRIPTION_TOTP' | translate }}
+      </p>
+    } @else if (smsEnabled()) {
+      <p class="mt-5 text-2xl">
+        {{ 'TWO_FACTOR_DESCRIPTION_SMS' | translate }}
+        <span>{{ maskedPhoneNumber() }}</span>
+      </p>
+    }
+    <!-- Resend SMS -->
+    @if (smsEnabled()) {
+      <div class="mt-6">
+        <a
+          (click)="emitResendCode()"
+          (keyup.enter)="emitResendCode()"
+          (keyup.space)="emitResendCode()"
+          tabindex="0"
+          role="button"
+          class="cursor-pointer font-bold underline hover:text-primary-orange"
+        >
+          {{ 'RESEND_CODE' | translate }}
+        </a>
+      </div>
+    }
+    <!-- 2FA Form -->
+    <form
+      #formRef
+      [formGroup]="twoFaForm"
+      (ngSubmit)="onSubmit()"
+      class="group bg-secondary-neutral-white w-full flex flex-col justify-center items-center mt-10"
+    >
+      <div class="flex flex-col w-[360px]">
+        <label for="code" class="text-left">
+          {{ 'SIX_DIGIT_CODE' | translate }}
+        </label>
+        <input
+          id="code"
+          type="text"
+          formControlName="code"
+          [placeholder]="'ENTER_YOUR_2FA_CODE' | translate"
+          class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none group-invalid:ring-2 group-invalid:ring-secondary-semantic-error pr-10"
+          aria-label="Code"
+          autocomplete="one-time-code"
+        />
+      </div>
+
+      <div class="mt-10">
+        <app-primary-large-button
+          [disabled]="isDisabled"
+          [loading]="loading"
+          buttonTitle="CONTINUE"
+          (pressButton)="onSubmit()"
+        ></app-primary-large-button>
+      </div>
+    </form>
+  }
+
+  <!-- Recovery Code -->
+  <div class="mt-8">
+    @if (!showBackupCodeInput) {
+      <a
+        (click)="showBackupCodeInput = true"
+        (keyup.enter)="showBackupCodeInput = true"
+        (keyup.space)="showBackupCodeInput = true"
+        tabindex="0"
+        role="button"
+        class="cursor-pointer font-bold underline hover:text-primary-orange"
+      >
+        {{ 'USE_RECOVERY_CODE' | translate }}
+      </a>
+    }
+
+    @if (showBackupCodeInput) {
+      <form
+        #formRef
+        [formGroup]="backupCodeForm"
+        (ngSubmit)="onSubmitBackupCode()"
+        class="group bg-secondary-neutral-white w-full flex flex-col justify-center items-center mt-10"
+      >
+        <div class="flex flex-col w-[360px]">
+          <label for="recoveryCode" class="text-left">
+            {{ 'RECOVERY_CODE' | translate }}
+          </label>
+          <input
+            id="recoveryCode"
+            type="text"
+            formControlName="recoveryCode"
+            [placeholder]="'ENTER_YOUR_RECOVERY_CODE' | translate"
+            class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none group-invalid:ring-2 group-invalid:ring-secondary-semantic-error pr-10"
+            aria-label="recoveryCode"
+            autocomplete="one-time-code"
+          />
+        </div>
+
+        <div class="mt-10">
+          <app-primary-large-button
+            [disabled]="isBackupCodeDisabled"
+            [loading]="loading"
+            buttonTitle="CONTINUE"
+            (pressButton)="onSubmitBackupCode()"
+          ></app-primary-large-button>
+        </div>
+      </form>
+      <div class="mt-8">
+        <a
+          (click)="showBackupCodeInput = false"
+          (keyup.enter)="showBackupCodeInput = false"
+          (keyup.space)="showBackupCodeInput = false"
+          tabindex="0"
+          role="button"
+          class="cursor-pointer font-bold underline hover:text-primary-orange"
+        >
+          {{ 'DONT_USE_RECOVERY_CODE' | translate }}
+        </a>
+      </div>
+    }
+  </div>
+
+  <!-- Error -->
+  @if (errorMessage()) {
+    <div class="text-secondary-semantic-error mt-6 text-sm" id="errorMessage">
+      {{ errorMessage() | translate }}
+    </div>
+  }
+</div>

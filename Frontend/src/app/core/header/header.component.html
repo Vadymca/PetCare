@@ -1,144 +1,101 @@
-<header class="sticky top-0 z-50 bg-gray-800 text-white shadow-md">
-  <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+<header
+  class="fixed top-0 m-4 left-0 w-[calc(100%-40px)] z-50 text-secondary-neutral-white rounded-[40px] font-inter p-[20px] transition-all duration-300"
+  id="mainHeader"
+  [ngClass]="{
+    'bg-transparent': !isFloating() && !isHidden(),
+    'bg-primary-blue    shadow-lg': isFloating(),
+    '-translate-y-full opacity-0 pointer-events-none': isHidden(),
+  }"
+>
+  <div class="flex items-center justify-between w-full">
     <!-- Logo & Title -->
     <div
-      class="flex items-center gap-2 text-orange-400 cursor-pointer"
+      class="ml-4 cursor-pointer hover:text-primary-orange"
       [routerLink]="['/']"
     >
-      <img src="assets/icons/logo.png" alt="PetCare paw" class="w-10 h-10" />
-      <span class="text-xl font-bold text-white">PetCare</span>
+      <app-icon [name]="'logoUkr'"></app-icon>
     </div>
-
-    <!-- Desktop Nav -->
-    <nav class="hidden md:flex gap-6 text-white font-medium">
-      @for (menuItemKey of menuItemKeys; track menuItemKey) {
-        <a
-          routerLink="{{ menuItemKey }}"
-          routerLinkActive="underline  font-semibold"
-          class="hover:text-orange-300 transition"
-        >
-          {{ menuItems[menuItemKey] | translate }}
-        </a>
+    <div class="flex flex-row justify-items-start gap-6">
+      <!-- Search -->
+      <app-round-button-with-icon
+        class="text-secondary-neutral-white"
+        [iconName]="'search'"
+        (click)="openSearch()"
+      ></app-round-button-with-icon>
+      <!-- Desktop Nav -->
+      <nav
+        class="hidden lg:flex gap-6 text-secondary-neutral-white self-center"
+      >
+        @for (menuItemKey of menuItemKeys; track menuItemKey) {
+          <a
+            routerLink="{{ menuItemKey }}"
+            routerLinkActive="underline  font-semibold"
+            class="hover:text-primary-orange transition hover:underline flex items-center justify-center h-10"
+          >
+            {{ menuItems[menuItemKey] | translate | uppercase }}
+          </a>
+        }
+      </nav>
+      <!-- Language Switcher & Burger -->
+      @if (currentLang === 'uk') {
+        <app-round-button-with-icon
+          class="text-secondary-neutral-white"
+          [buttonTitle]="'EN'"
+          (click)="changeLanguage('en')"
+        ></app-round-button-with-icon>
       }
-      <!-- <a
-        routerLink="/animals"
-        routerLinkActive="underline  font-semibold"
-        class="hover:text-orange-300 transition"
-      >
-        {{ 'ANIMALS' | translate }}
-      </a>
-      <a
-        routerLink="/shelters"
-        routerLinkActive="underline  font-semibold"
-        class="hover:text-orange-300 transition"
-      >
-        {{ 'SHELTERS' | translate }}
-      </a>
-      <a
-        routerLink="/articles"
-        routerLinkActive="underline  font-semibold"
-        class="hover:text-orange-300 transition"
-      >
-        {{ 'ARTICLES' | translate }}
-      </a>
-      <a
-        routerLink="/lost-pets"
-        routerLinkActive="underline  font-semibold"
-        class="hover:text-orange-300 transition"
-      >
-        {{ 'LOST_PETS' | translate }}
-      </a> -->
-    </nav>
-    <!-- Login/Logout -->
-    @if (isAuthenticated()) {
-      <app-user-menu
-        [userName]="userName() ?? ''"
-        (logout)="logout()"
-      ></app-user-menu>
-    } @else {
-      <app-auth-buttons></app-auth-buttons>
-    }
+      @if (currentLang === 'en') {
+        <app-round-button-with-icon
+          class="text-secondary-neutral-white"
+          [buttonTitle]="'UA'"
+          (click)="changeLanguage('uk')"
+        ></app-round-button-with-icon>
+      }
+      <!-- Bell -->
+      <app-round-button-with-icon
+        class="text-secondary-neutral-white"
+        [iconName]="'bell'"
+        (click)="openNotification()"
+      ></app-round-button-with-icon>
+      <!-- Heart -->
+      <app-round-button-with-icon
+        class="text-secondary-neutral-white"
+        [iconName]="'heart'"
+        (click)="openFavourite()"
+      ></app-round-button-with-icon>
+      <!-- Login/Logout -->
 
-    <!-- Language Switcher & Burger -->
-    <div class="flex items-center gap-2">
-      <button
-        class="px-3 py-1 rounded border border-gray-400 hover:bg-gray-700 transition"
-        [class.bg-orange-300]="currentLang === 'en'"
-        (click)="changeLanguage('en')"
-      >
-        EN
-      </button>
-      <button
-        class="px-3 py-1 rounded border border-gray-400 hover:bg-gray-700 transition"
-        [class.bg-orange-300]="currentLang === 'uk'"
-        (click)="changeLanguage('uk')"
-      >
-        УКР
-      </button>
-
-      <!-- Burger Button -->
-      <button
-        class="md:hidden ml-2 p-2 rounded hover:bg-gray-100 transition"
-        (click)="isMenuOpen = !isMenuOpen"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            [attr.d]="
-              isMenuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'
-            "
-          />
-        </svg>
-      </button>
+      @if (isAuthenticated()) {
+        <app-user-menu (logout)="logout()"></app-user-menu>
+      } @else {
+        <app-auth-buttons></app-auth-buttons>
+      }
+      <div #menuWrapper class="relative lg:hidden">
+        <!-- Mobile Menu  -->
+        <app-round-button-with-icon
+          class="text-secondary-neutral-white"
+          [iconName]="'alignJustify'"
+          (click)="isMenuOpen = !isMenuOpen"
+        ></app-round-button-with-icon>
+        <!-- Burger Button -->
+        @if (isMenuOpen) {
+          <ul
+            class="absolute right-0 mt-3 w-48 bg-primary-blue text-secondary-neutral-white rounded shadow-lg z-10"
+          >
+            @for (menuItemKey of menuItemKeys; track menuItemKey) {
+              <li>
+                <a
+                  routerLink="{{ menuItemKey }}"
+                  (click)="isMenuOpen = false"
+                  class="block px-4 py-2 hover:text-primary-orange hover:underline transition"
+                >
+                  {{ menuItems[menuItemKey] | translate }}
+                </a>
+              </li>
+            }
+          </ul>
+        }
+      </div>
     </div>
-  </div>
-
-  <!-- Mobile Menu  -->
-  <div
-    [class.hidden]="!isMenuOpen"
-    class="md:hidden px-4 pb-4 flex flex-col gap-2 text-white font-medium"
-  >
-    @for (menuItemKey of menuItemKeys; track menuItemKey) {
-      <a
-        routerLink="{{ menuItemKey }}"
-        (click)="isMenuOpen = false"
-        class="hover:text-orange-300 transition"
-      >
-        {{ menuItems[menuItemKey] | translate }}
-      </a>
-    }
-    <!-- <a
-      routerLink="/animals"
-      (click)="isMenuOpen = false"
-      class="hover:text-orange-300 transition"
-    >
-      {{ 'ANIMALS' | translate }}
-    </a>
-    <a
-      routerLink="/shelters"
-      (click)="isMenuOpen = false"
-      class="hover:text-orange-300 transition"
-    >
-      {{ 'SHELTERS' | translate }}
-    </a>
-    <a
-      routerLink="/articles"
-      (click)="isMenuOpen = false"
-      class="hover:text-orange-300 transition"
-    >
-      {{ 'ARTICLES' | translate }}
-    </a>
-    <a
-      routerLink="/lost-pets"
-      (click)="isMenuOpen = false"
-      class="hover:text-orange-300 transition"
-    >
-      {{ 'LOST_PETS' | translate }}
-    </a> -->
   </div>
 </header>

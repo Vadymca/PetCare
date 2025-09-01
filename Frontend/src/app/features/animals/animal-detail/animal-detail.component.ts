@@ -1,8 +1,10 @@
+import { isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   effect,
   inject,
+  PLATFORM_ID,
   Signal,
   signal,
 } from '@angular/core';
@@ -21,6 +23,7 @@ import { User } from '../../../core/models/user';
 import { AnimalSubscriptionService } from '../../../core/services/animal-subscription.service';
 import { AnimalService } from '../../../core/services/animal.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { PrimaryLargeButtonComponent } from '../../../shared/components/buttons/blue/primary-large-button.component';
 import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
 @Component({
   selector: 'app-animal-detail',
@@ -30,6 +33,7 @@ import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading
     RouterModule,
     TranslateModule,
     LoadingSpinnerComponent,
+    PrimaryLargeButtonComponent,
   ],
   templateUrl: './animal-detail.component.html',
   styleUrls: ['./animal-detail.component.css'], // зверни увагу на styleUrls (замість styleUrl)
@@ -52,10 +56,11 @@ export class AnimalDetailComponent {
       filter((slug): slug is string => slug !== null && slug !== undefined)
     )
   );
+  platformId = inject(PLATFORM_ID);
 
   animal = signal<Animal | undefined>(undefined);
   public isAuthenticated: Signal<boolean> = this.authService.isLoggedIn;
-  user: Signal<User | null> = signal(this.authService.currentUser());
+  user: Signal<User | null> = signal(this.authService._currentUser());
   isSubscribed = false; // Поточна підписка на тварину, по замовчуванню false;
   isSubscriptionChecked = false;
 
@@ -131,6 +136,7 @@ export class AnimalDetailComponent {
     });
   }
   addJsonLd(animal: Animal) {
+    if (!isPlatformBrowser(this.platformId)) return;
     const script = document.createElement('script');
     script.type = 'application/ld+json';
     script.text = JSON.stringify({

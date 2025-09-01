@@ -1,0 +1,40 @@
+<div class="text-center h-full flex flex-col items-center pb-4">
+  <h5 class="text-40 mt-5">
+    {{ 'CONFIRMATION_TITLE' | translate | uppercase }}
+  </h5>
+
+  <p class="mt-8 text-2xl">{{ 'CONFIRMATION_MESSAGE' | translate }}</p>
+  <div class="w-[389px]">
+    <p
+      class="mt-8 text-sm text-secondary-neutral-doveGray ml-3 leading-snug text-left"
+    >
+      {{ 'CONFIRMATION_DESCRIPTION' | translate }}
+    </p>
+  </div>
+  <div class="w-full flex flex-col justify-center items-center mt-4 mb-4">
+    <div class="mt-8 text-sm text-secondary-neutral-doveGray ml-3">
+      <a
+        (click)="emitResendVerificationEmail()"
+        (keyup.enter)="emitResendVerificationEmail()"
+        (keyup.space)="emitResendVerificationEmail()"
+        tabindex="0"
+        role="button"
+        class="hover:text-primary-orange underline cursor-pointer font-semibold font-inter"
+      >
+        {{ 'RESEND_VERIFICATION_EMAIL' | translate }}
+      </a>
+    </div>
+  </div>
+  <div class="flex-1 flex justify-center items-center w-ful h-full">
+    <app-icon [name]="'logoSuccess'" class="relative -top-5"></app-icon>
+  </div>
+  <!-- Submit -->
+  <div class="content-center">
+    <div class="flex justify-center">
+      <app-primary-large-button
+        buttonTitle="LOGIN"
+        (pressButton)="emitOption('login')"
+      ></app-primary-large-button>
+    </div>
+  </div>
+</div>
