@@ -25,13 +25,17 @@
       </div>
     </div>
     <div class="flex-1 flex justify-center items-center w-ful h-full">
-      <app-icon [name]="'logoFailure'" class="relative -top-5"></app-icon>
+      <app-icon
+        [name]="'logoFailure'"
+        class="relative -top-5 text-secondary-neutral-mineShaft"
+      ></app-icon>
     </div>
   </div>
 
   <!-- Submit -->
   <div class="content-center">
     <app-primary-large-button
+      class="w-[260px]"
       buttonTitle="LOGIN"
       (pressButton)="emitSubmitButton()"
     ></app-primary-large-button>

@@ -1,0 +1,26 @@
+<div
+  class="w-full flex flex-col text-center items-center text-secondary-neutral-mineShaft bg-primary-beige pb-[100px]"
+>
+  <h2
+    class="w-full font-fixel text-[40px] font-bold mt-[100px] text-secondary-neutral-mineShaft relative z-10"
+  >
+    {{ 'ANIMALS_PREVIEW' | translate }}
+  </h2>
+  <div
+    class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-[68px] items-center w-full px-4 justify-center justify-items-center mt-10 mx-[50px]"
+  >
+    @for (animal of animals; track animal.id) {
+      <app-animal-card
+        [animal]="animal"
+        (animalDetailClick)="onAnimalDetailClick(animal)"
+        (heartClick)="onHeartClick(animal)"
+      ></app-animal-card>
+    }
+    <!-- <app-animal-card></app-animal-card> -->
+  </div>
+  <app-secondary-large-button
+    buttonTitle="SEE_ALL_ANIMALS"
+    class="mt-[60px]"
+    (click)="onSeeAllAnimalsClick()"
+  ></app-secondary-large-button>
+</div>

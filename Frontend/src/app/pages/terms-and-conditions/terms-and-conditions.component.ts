@@ -16,7 +16,7 @@ export class TermsAndConditionsComponent {
   translate = inject(TranslateService);
   http = inject(HttpClient);
   private router = inject(Router);
-  rulesHtml = '';
+  termsAndConditionsHtml = '';
   constructor() {
     effect(() => {
       this.loadRules();
@@ -29,8 +29,10 @@ export class TermsAndConditionsComponent {
   loadRules() {
     const lang = this.translate.currentLang || this.translate.getDefaultLang();
     this.http
-      .get(`/assets/i18n/rules/${lang}.html`, { responseType: 'text' })
-      .subscribe(html => (this.rulesHtml = html));
+      .get(`/assets/i18n/termsAndConditionsHtml/${lang}.html`, {
+        responseType: 'text',
+      })
+      .subscribe(html => (this.termsAndConditionsHtml = html));
   }
   backButtonClick() {
     this.router.navigate(['/']);

@@ -1,6 +1,14 @@
-import { Component, effect, inject, signal } from '@angular/core';
-
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  Component,
+  DestroyRef,
+  effect,
+  inject,
+  PLATFORM_ID,
+  Renderer2,
+  RendererFactory2,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -23,11 +31,15 @@ export class ArticleDetailComponent {
   private title = inject(Title);
   private meta = inject(Meta);
   private translate = inject(TranslateService);
-
-  // private authService = inject(AuthService);
   private articleService = inject(ArticleService);
+  private platformId = inject(PLATFORM_ID);
+  private renderer: Renderer2 = inject(RendererFactory2).createRenderer(
+    null,
+    null
+  );
+  private destroyRef = inject(DestroyRef);
 
-  mapUrl = signal<SafeResourceUrl | null>(null); // оголошено з дефолтним значенням
+  mapUrl = signal<SafeResourceUrl | null>(null);
 
   slug = toSignal(
     this.route.paramMap.pipe(
@@ -37,63 +49,76 @@ export class ArticleDetailComponent {
   );
 
   article = signal<Article | undefined>(undefined);
-  //public isAuthenticated: Signal<boolean> = this.authService.isLoggedIn;
-  //user: Signal<User | null> = signal(this.authService.currentUser());
 
   constructor() {
     effect(() => {
       const slugValue = this.slug();
       if (!slugValue) return;
 
-      this.articleService.getArticleBySlug(slugValue).subscribe(article => {
-        if (!article) {
-          this.router.navigate(['/not-found']);
-          return;
-        }
+      const subscription = this.articleService
+        .getArticleBySlug(slugValue)
+        .subscribe(article => {
+          if (!article) {
+            this.router.navigate(['/not-found']);
+            return;
+          }
 
-        this.article.set(article);
-        this.addJsonLd(article);
-        this.title.setTitle(article.title);
-        this.meta.updateTag({
-          name: 'description',
-          content: article.content?.slice(0, 150),
-        });
-        this.meta.updateTag({ property: 'og:title', content: article.title });
-        this.meta.updateTag({
-          property: 'og:description',
-          content: article.content,
-        });
-        this.meta.updateTag({ property: 'og:url', content: this.router.url });
-        this.meta.updateTag({ property: 'og:type', content: 'article' });
-        this.meta.updateTag({
-          name: 'twitter:card',
-          content: 'summary_large_image',
-        });
-        this.meta.updateTag({ name: 'twitter:title', content: article.title });
-        this.meta.updateTag({
-          name: 'twitter:description',
-          content: article.content,
+          this.article.set(article);
+          this.title.setTitle(article.title);
+          this.meta.updateTag({
+            name: 'description',
+            content: article.content?.slice(0, 150) || '',
+          });
+          this.meta.updateTag({ property: 'og:title', content: article.title });
+          this.meta.updateTag({
+            property: 'og:description',
+            content: article.content || '',
+          });
+          this.meta.updateTag({ property: 'og:url', content: this.router.url });
+          this.meta.updateTag({ property: 'og:type', content: 'article' });
+          this.meta.updateTag({
+            name: 'twitter:card',
+            content: 'summary_large_image',
+          });
+          this.meta.updateTag({
+            name: 'twitter:title',
+            content: article.title,
+          });
+          this.meta.updateTag({
+            name: 'twitter:description',
+            content: article.content || '',
+          });
+
+          // Add JSON-LD only in the browser
+          if (isPlatformBrowser(this.platformId)) {
+            this.addJsonLd(article);
+          }
         });
 
-        console.log('this.article', this.article());
+      // Clean up subscription on component destruction
+      this.destroyRef.onDestroy(() => {
+        subscription.unsubscribe();
       });
     });
   }
-  addJsonLd(article: Article) {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify({
+
+  private addJsonLd(article: Article) {
+    const script = this.renderer.createElement('script');
+    this.renderer.setAttribute(script, 'type', 'application/ld+json');
+    const jsonLd = {
       '@context': 'https://schema.org',
-      '@type': 'Pet',
+      '@type': 'Article', // Changed from 'Pet' to 'Article' for correct schema
       headline: article.title,
-      description: article.content?.slice(0, 150),
+      description: article.content?.slice(0, 150) || '',
       datePublished: article.createdAt,
       author: {
         '@type': 'Person',
-        name:
-          article.author?.firstName + ' ' + article.author?.lastName || 'Admin',
+        name: article.author?.firstName
+          ? `${article.author.firstName} ${article.author.lastName}`
+          : 'Admin',
       },
-    });
-    document.head.appendChild(script);
+    };
+    this.renderer.setProperty(script, 'text', JSON.stringify(jsonLd));
+    this.renderer.appendChild(document.head, script);
   }
 }

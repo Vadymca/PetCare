@@ -44,6 +44,7 @@
     </div>
     <div class="flex justify-center mt-5">
       <app-primary-large-button
+        class="w-[260px]"
         buttonTitle="FIND_PET"
         (pressButton)="onFindPetClick()"
       ></app-primary-large-button>
@@ -223,6 +224,144 @@
     </div>
   </div>
 </div>
+<!-- Сторінка №4 результати -->
+<div
+  class="bg-primary-beige w-full flex flex-col gap-10 text-center font-inter text-secondary-neutral-mineShaft text-base min-h-screen bg-cover bg-center p-10 pb-[112px]"
+>
+  <h2
+    class="font-fixel text-[40px] font-bold mt-[60px] text-secondary-neutral-mineShaft"
+  >
+    {{ 'RESULTS' | translate }}
+  </h2>
+  <div
+    class="flex justify-center gap-5 font-inter text-base leading-none mt-[100px]"
+  >
+    <div class="flex">
+      <app-icon [name]="'orangeEllipseLeft'"></app-icon>
+    </div>
+    <div class="z-0 flex flex-col justify-between w-[550px]">
+      <p
+        #counter
+        class="font-inter font-bold text-left"
+        style="font-size: clamp(32px, 15.5vw, 150px)"
+      >
+        {{ values[0] }}
+      </p>
+      <p class="text-[22px] leading-[1.2] max-w-[321px] text-left">
+        {{ 'RESULTS_DESCRIPTION1' | translate | uppercase }}
+      </p>
+    </div>
+  </div>
+  <div
+    class="flex flex-col xl:flex-row items-center justify-center xl:justify-between gap-5 text-base leading-none mt-[30px]"
+  >
+    <div class="flex flex-col justify-start relative leading-none w-[550px]">
+      <div class="flex items-start relative leading-none">
+        <app-icon
+          class="z-9999 absolute left-0 top-0"
+          [name]="'orangeEllipseBottom'"
+        ></app-icon>
+        <p
+          #counter
+          class="z-0 font-inter font-bold ml-[81px] mt-4 leading-none"
+          style="font-size: clamp(32px, 15.5vw, 150px)"
+        >
+          {{ values[1] }}
+        </p>
+      </div>
+      <p
+        class="z-0 text-[22px] leading-[1.2] text-center leading-snug mt-9 xl:mt-3"
+      >
+        {{ 'RESULTS_DESCRIPTION2' | translate | uppercase }}
+      </p>
+    </div>
+    <div
+      class="flex flex-col justify-start relative leading-none mt-[30px] xl:mt-0 w-[460px]"
+    >
+      <div class="flex items-start relative leading-none">
+        <app-icon
+          class="z-9999 absolute right-0 top-0 xl:absolute xl:left-0 xl:top-[-147px]"
+          [name]="'orangeEllipseTop'"
+        ></app-icon>
+        <p
+          #counter
+          class="z-0 font-inter font-bold text-left mt-4 leading-none"
+          style="font-size: clamp(32px, 15.5vw, 150px)"
+        >
+          {{ values[2] }}
+        </p>
+      </div>
+      <p
+        class="z-0 text-[22px] leading-[1.2] text-center leading-snug mt-9 lg:mt-3"
+      >
+        {{ 'RESULTS_DESCRIPTION3' | translate | uppercase }}
+      </p>
+    </div>
+  </div>
+</div>
+<!-- Сторінка №5 бухгалтер -->
+<div
+  class="pb-[350px] min-w-full flex flex-col text-center items-center justify-start text-secondary-neutral-mineShaft bg-cover bg-center min-h-screen"
+  style="
+    background-image: url('../../../assets/images/accounter_background.png');
+  "
+>
+  <h2
+    class="font-fixel text-[40px] font-bold mt-12 text-secondary-neutral-mineShaft"
+  >
+    {{ 'TITLE_ACCOUNTANT' | translate }}
+  </h2>
+  <div
+    class="max-w-[660px] xl:grid xl:grid-cols-2 gap-5 justify-center font-inter text-base leading-snug mt-10 text-left"
+  >
+    <div class="flex gap-5">
+      {{ 'ACCOUNTANT_DESCRIPTION1' | translate }}
+    </div>
+    <div class="mt-3 xl:mt-0 flex gap-5">
+      {{ 'ACCOUNTANT_DESCRIPTION2' | translate }}
+    </div>
+    <div class="mt-3 xl:mt-0 flex flex-row justify-start items-center gap-4">
+      <div class="flex gap-5">
+        {{ 'MONTHLY_REPORT' | translate }}
+      </div>
+      <app-download-orange-button-with-icon
+        [iconName]="'downloadArrow'"
+        (pressButton)="onDownloadMonthlyReportClick()"
+      ></app-download-orange-button-with-icon>
+    </div>
+    <div class="mt-3 xl:mt-0 flex flex-col gap-5">
+      <app-secondary-large-button
+        buttonTitle="ALL_REPORTS"
+        (pressButton)="onAllReportsClick()"
+      ></app-secondary-large-button>
+    </div>
+  </div>
+  <div class="relative hidden xl:flex w-full justify-center mt-1 mr-[130px]">
+    <app-icon [name]="'orangeEllipseTop'"></app-icon>
+    <div
+      class="absolute bottom-0 left-0 w-full h-full flex items-end mb-4 justify-center"
+    >
+      <p class="text-[22px] w-[234px] leading-[1.2] text-center leading-snug">
+        {{ 'ACCOUNTANT_DESCRIPTION3' | translate }}
+      </p>
+    </div>
+  </div>
+</div>
+<!-- Сторінка №6 фінансова підтримка -->
+<app-financial-support></app-financial-support>
+<!-- Сторінка №7 тваринки -->
+<app-animals-preview></app-animals-preview>
+<!-- Сторінка №8 проекти -->
+<app-home-projects></app-home-projects>
+
+<div class="mt-20">
+  <app-primary-large-button
+    class="w-[260px]"
+    buttonTitle="TEMP"
+    (pressButton)="onTempClick()"
+  ></app-primary-large-button>
+</div>
+
 <!-- Кнопка "Збір пожертв" -->
 <div
   class="fixed bottom-14 right-14 text-white flex justify-center mt-5"

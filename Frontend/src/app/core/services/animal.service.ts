@@ -132,13 +132,15 @@ export class AnimalService {
           const user$ = animal.userId
             ? this.userService.getUserById(animal.userId)
             : of(undefined);
+          const isChecked$ = of(false);
 
           return forkJoin({
             breed: breed$,
             shelter: shelter$,
             user: user$,
+            isChecked: isChecked$,
           }).pipe(
-            switchMap(({ breed, shelter, user }) => {
+            switchMap(({ breed, shelter, user, isChecked }) => {
               if (!breed) return of(undefined);
               return this.speciesService.getSpeciesById(breed.speciesId).pipe(
                 map(species => {
@@ -149,6 +151,7 @@ export class AnimalService {
                     species,
                     shelter,
                     user,
+                    isChecked,
                     age,
                   } as Animal;
                 })

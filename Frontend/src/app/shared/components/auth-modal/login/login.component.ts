@@ -76,7 +76,6 @@ export class LoginComponent {
     }
 
     this.loading.set(true);
-    console.log('LoginComponent: onSubmit');
     this.submitForm.emit();
   }
 }

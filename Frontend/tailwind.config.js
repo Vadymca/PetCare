@@ -21,8 +21,14 @@ module.exports = {
         'pulse-slow': 'pulseSlow 6s ease-in-out infinite',
         rotate: 'rotate 0.5s ease-in-out',
         bounce: 'bounce 0.5s ease-in-out',
+        'counter-animated': 'counterAnimated 0.5s ease-in-out',
       },
       keyframes: {
+        counterAnimated: {
+          '0%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.05)' },
+          '100%': { transform: 'scale(1)' },
+        },
         pulseSlow: {
           '0%, 100%': { boxShadow: '0 0 0 0 rgba(255,165,0,0.7)' },
           '50%': { boxShadow: '0 0 20px 10px rgba(255,165,0,0.5)' },

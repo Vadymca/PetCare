@@ -1,14 +1,29 @@
-import { CommonModule } from '@angular/common';
-import { Component, effect, inject, signal } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  AfterViewInit,
+  Component,
+  effect,
+  ElementRef,
+  inject,
+  PLATFORM_ID,
+  QueryList,
+  signal,
+  ViewChildren,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 import { ModalService } from '../../core/services/modal.service';
+import { animateCounter } from '../../shared/animation/counter-animation';
+import { AnimalsPreviewComponent } from '../../shared/components/animals-preview/animals-preview.component';
 import { PrimaryLargeButtonComponent } from '../../shared/components/buttons/blue/primary-large-button.component';
+import { SecondaryLargeButtonComponent } from '../../shared/components/buttons/blue/secondary-large-button.component';
 import { SecondarySmallButtonComponent } from '../../shared/components/buttons/blue/secondary-small-button.component';
+import { DownloadOrangeButtonWithIconComponent } from '../../shared/components/buttons/download-orange-button-with-icon.component';
 import { PrimaryLargeOrangeButtonComponent } from '../../shared/components/buttons/orange/primary-large-orange-button.component';
+import { FinancialSupportComponent } from '../../shared/components/financial-support/financial-support.component';
 import { IconComponent } from '../../shared/components/icon.component';
-
+import { HomeProjectsComponent } from "../../shared/components/home-projects/home-projects.component";
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -19,11 +34,38 @@ import { IconComponent } from '../../shared/components/icon.component';
     PrimaryLargeButtonComponent,
     SecondarySmallButtonComponent,
     PrimaryLargeOrangeButtonComponent,
-  ],
+    SecondaryLargeButtonComponent,
+    DownloadOrangeButtonWithIconComponent,
+    FinancialSupportComponent,
+    AnimalsPreviewComponent,
+    HomeProjectsComponent
+],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })
-export class HomeComponent {
+export class HomeComponent implements AfterViewInit {
+  onTempClick() {
+    this.router.navigate(['/not-found.component']);
+  }
+  @ViewChildren('counter') counters!: QueryList<ElementRef>;
+  platformId = inject(PLATFORM_ID);
+  values = [12000, 14067, 10068];
+
+  isPlatformBrowser = isPlatformBrowser;
+
+  ngAfterViewInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      this.counters.forEach((counter: ElementRef, index: number) => {
+        animateCounter(counter.nativeElement, this.values[index], 2000);
+      });
+    }
+  }
+  onDownloadMonthlyReportClick() {
+    throw new Error('Method not implemented.');
+  }
+  onAllReportsClick() {
+    throw new Error('Method not implemented.');
+  }
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private authService = inject(AuthService);
@@ -86,11 +128,8 @@ export class HomeComponent {
       const currentPath = this.route.snapshot.routeConfig?.path;
 
       if (token && currentPath === 'verify-email') {
-        console.log('HomeComponent: Path:', currentPath);
-        console.log('HomeComponent: Token:', token);
         this.authService.verifyEmail(token).subscribe({
           next: response => {
-            console.log('Verify email success:', response.message);
             if (response.success) {
               this.modalService.openModal('email-confirmed');
             } else {
@@ -105,8 +144,6 @@ export class HomeComponent {
           },
         });
       } else if (token && currentPath === 'reset-password') {
-        console.log('HomeComponent: Path:', currentPath);
-        console.log('HomeComponent: Token:', token);
         this.modalService.setToken(token);
         this.modalService.openModal('reset-password');
         this.router.navigate([''], { queryParams: {}, replaceUrl: true });

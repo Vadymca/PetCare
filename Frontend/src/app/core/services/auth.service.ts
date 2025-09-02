@@ -178,10 +178,10 @@ export class AuthService {
   //Приклад роботи на мок-датабазі
 
   login(email: string, password: string): Observable<LoginResponse> {
-    console.log(this.mockUser.email);
+
     // Заміна запиту на мок
     if (email === this.mockUser.email && password === 'password)<>?”!@1Q') {
-      console.log('AUTH SERVICE:Login attempt:', email, password);
+
       this.tempSession = { email, password };
 
       this.authStep.set('2fa');
@@ -207,7 +207,7 @@ export class AuthService {
 
       this._currentUser.set(this.mockUser);
       this.authStep.set('authenticated');
-      console.log('AUTH SERVICE:User:', this._currentUser.name);
+
 
       // у реальному випадку тут би був refresh токен у cookie
       return of(this.mockUser).pipe(delay(500));

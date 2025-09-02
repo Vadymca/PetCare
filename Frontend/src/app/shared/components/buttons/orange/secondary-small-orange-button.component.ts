@@ -15,9 +15,9 @@ import { IconComponent } from '../../icon.component';
       class="flex items-center justify-center gap-2 
 			h-10 rounded-40 p-4 uppercase pr-10 pl-10 
 			font-inter font-bold text-base 
-			bg-primary-lightOrange text-primary-beige
-		hover:bg-primary-beige hover:text-primary-lightOrange 
-    active:bg-secondary-treePoppy-1 active:text-primary-lightOrange 
+			bg-primary-light-orange text-primary-beige
+		hover:bg-primary-beige hover:text-primary-light-orange 
+    active:bg-secondary-treePoppy-2 active:text-primary-light-orange  
      disabled:bg-secondary-neutral-alto disabled:text-secondary-neutral-doveGray"
       (click)="confirm()"
       [disabled]="disabled()"

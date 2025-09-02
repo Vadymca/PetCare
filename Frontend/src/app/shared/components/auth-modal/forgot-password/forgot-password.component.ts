@@ -50,7 +50,6 @@ export class ForgotPasswordComponent {
     }
   }
   emitOption(option: ModalState['component']) {
-    console.log('RegisterEmailComponent: Selected option:', option); // Лог для дебагу
     this.selectOption.emit(option);
   }
 }

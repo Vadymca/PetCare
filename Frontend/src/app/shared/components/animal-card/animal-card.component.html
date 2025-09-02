@@ -1,0 +1,56 @@
+<div
+  class="font-inter text-base text-primary-beige bg-primary-light-orange rounded-40 p-3 w-[284px] h-full"
+>
+  <div
+    class="relative rounded-tl-40 rounded-tr-40 rounded-bl-[136px] rounded-br-[136px] overflow-hidden bg-primary-beige h-[256px] w-full"
+  >
+    <div
+      class="m-y-[3px] absolute top-4 left-0 w-[112px] h-auto rounded-tr-[12px] rounded-br-[12px] bg-primary-blue font-bold text-sm"
+    >
+      {{ animal.status | lowercase }}
+    </div>
+    @if (isChecked()) {
+      <div class="absolute top-4 right-4">
+        @if (animal.isFavorite) {
+          <app-round-filled-white-blue-button-with-icon
+            (click)="onFilledHeartClick()"
+          ></app-round-filled-white-blue-button-with-icon>
+        } @else {
+          <app-round-white-blue-button-with-icon
+            (click)="onHeartClick()"
+          ></app-round-white-blue-button-with-icon>
+        }
+      </div>
+    }
+    <img
+      src="{{ animal.photos[0] }}"
+      alt="{{ animal.name }}"
+      class="w-full h-full object-cover"
+    />
+  </div>
+  <div class="mt-[18px] flex-col">
+    <h5 class="font-bold">{{ animal.name }}</h5>
+    <p class="mt-2">
+      {{ animal.species?.name }}, {{ animal.age[0] }}
+      {{
+        animal.age[0] === 1
+          ? ('YEAR_SINGULAR' | translate)
+          : ('YEAR_PLURAL' | translate)
+      }},
+      {{ animal.age[1] }}
+      {{
+        animal.age[1] === 1
+          ? ('MONTH_SINGULAR' | translate)
+          : ('MONTH_PLURAL' | translate)
+      }},
+      {{ animal.gender }}
+    </p>
+  </div>
+  <div class="mt-[14px] flex-col">
+    <app-primary-large-button
+      class="w-[260px]"
+      buttonTitle="ANIMAL_DETAIL_BUTTON"
+      (pressButton)="onAnimalDetailClick()"
+    ></app-primary-large-button>
+  </div>
+</div>

@@ -1,14 +1,17 @@
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  DestroyRef,
   effect,
   inject,
+  PLATFORM_ID,
+  Renderer2,
+  RendererFactory2,
   Signal,
   signal,
 } from '@angular/core';
-
-import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
   DomSanitizer,
@@ -46,9 +49,15 @@ export class ShelterDetailComponent {
   private cdr = inject(ChangeDetectorRef);
   private authService = inject(AuthService);
   private shelterSubscriptionService = inject(ShelterSubscriptionService);
+  private platformId = inject(PLATFORM_ID);
+  private renderer: Renderer2 = inject(RendererFactory2).createRenderer(
+    null,
+    null
+  );
+  private destroyRef = inject(DestroyRef);
   private shelterSubscriptionId = '';
 
-  mapUrl = signal<SafeResourceUrl | null>(null); // оголошено з дефолтним значенням
+  mapUrl = signal<SafeResourceUrl | null>(null);
 
   slug = toSignal(
     this.route.paramMap.pipe(
@@ -60,55 +69,64 @@ export class ShelterDetailComponent {
   shelter = signal<Shelter | undefined>(undefined);
   public isAuthenticated: Signal<boolean> = this.authService.isLoggedIn;
   user: Signal<User | null> = signal(this.authService._currentUser());
-  isSubscribed = false; // Поточна підписка на тварину, по замовчуванню false;
+  isSubscribed = false;
   isSubscriptionChecked = false;
+
   constructor() {
     effect(() => {
       const slugValue = this.slug();
       if (!slugValue) return;
 
-      this.shelterService.getShelterBySlug(slugValue).subscribe(shelter => {
-        if (!shelter) {
-          this.router.navigate(['/not-found']);
-          return;
-        }
-
-        this.shelter.set(shelter);
-        const translatedName = this.translate.instant('shelter.name', {
-          value: shelter.name,
-        });
-        const translatedDescription = this.translate.instant(
-          'shelter.description',
-          {
-            value: shelter.address,
+      const subscription = this.shelterService
+        .getShelterBySlug(slugValue)
+        .subscribe(shelter => {
+          if (!shelter) {
+            this.router.navigate(['/not-found']);
+            return;
           }
-        );
 
-        this.setMetaTags(translatedName, translatedDescription);
-        this.addJsonLd({
-          name: shelter.name,
-          description: shelter.address,
-          telephone: shelter.contactPhone,
-          address: shelter.address,
-          url: window.location.href,
+          this.shelter.set(shelter);
+          const translatedName = this.translate.instant('shelter.name', {
+            value: shelter.name || '',
+          });
+          const translatedDescription = this.translate.instant(
+            'shelter.description',
+            {
+              value: shelter.address || '',
+            }
+          );
+
+          this.setMetaTags(translatedName, translatedDescription);
+          if (isPlatformBrowser(this.platformId)) {
+            this.addJsonLd({
+              name: shelter.name || '',
+              description: shelter.address || '',
+              telephone: shelter.contactPhone || '',
+              address: shelter.address || '',
+              url: this.router.url,
+            });
+          }
+          this.isSubscriptionChecked = false;
+          this.isSubscribedToShelter().subscribe(isSubscribed => {
+            this.isSubscribed = isSubscribed;
+            this.isSubscriptionChecked = true;
+            this.cdr.detectChanges();
+          });
+          if (shelter.coordinates?.lat && shelter.coordinates?.lng) {
+            const url = `https://maps.google.com/maps?q=${shelter.coordinates.lat},${shelter.coordinates.lng}&z=14&output=embed`;
+            this.mapUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(url));
+          } else {
+            this.mapUrl.set(null);
+          }
         });
-        this.isSubscriptionChecked = false;
-        console.log('this.user', this.user());
-        console.log('this.shelter', this.shelter());
-        this.isSubscribedToShelter().subscribe(isSubscribed => {
-          this.isSubscribed = isSubscribed;
-          this.isSubscriptionChecked = true;
-          this.cdr.detectChanges();
-        });
-        if (shelter.coordinates.lat && shelter.coordinates.lng) {
-          const url = `https://maps.google.com/maps?q=${shelter.coordinates.lat},${shelter.coordinates.lng}&z=14&output=embed`;
-          this.mapUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(url));
-        } else {
-          this.mapUrl.set(null);
-        }
+
+      // Clean up subscription on component destruction
+      this.destroyRef.onDestroy(() => {
+        subscription.unsubscribe();
       });
     });
   }
+
   private setMetaTags(name: string, description: string) {
     this.title.setTitle(`${name} | PetCare`);
     this.meta.updateTag({ name: 'description', content: description || '' });
@@ -123,7 +141,7 @@ export class ShelterDetailComponent {
       content: description || `Details about ${name}`,
     });
     this.meta.updateTag({ property: 'og:type', content: 'localBusiness' });
-    this.meta.updateTag({ property: 'og:url', content: window.location.href });
+    this.meta.updateTag({ property: 'og:url', content: this.router.url });
 
     this.meta.updateTag({ name: 'twitter:card', content: 'summary' });
     this.meta.updateTag({ name: 'twitter:title', content: name });
@@ -140,9 +158,8 @@ export class ShelterDetailComponent {
     address?: string;
     url?: string;
   }) {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-
+    const script = this.renderer.createElement('script');
+    this.renderer.setAttribute(script, 'type', 'application/ld+json');
     const jsonLd = {
       '@context': 'https://schema.org',
       '@type': 'LocalBusiness',
@@ -152,15 +169,14 @@ export class ShelterDetailComponent {
       address: data.address,
       url: data.url,
     };
-
-    script.text = JSON.stringify(jsonLd);
-    document.head.appendChild(script);
+    this.renderer.setProperty(script, 'text', JSON.stringify(jsonLd));
+    this.renderer.appendChild(document.head, script);
   }
+
   isSubscribedToShelter(): Observable<boolean> {
     const shelterValue = this.shelter();
     const userValue = this.user();
-    if (!userValue) return of(false);
-    if (!shelterValue) return of(false);
+    if (!userValue || !shelterValue) return of(false);
 
     return this.shelterSubscriptionService
       .getShelterSubscriptionsByUserId(userValue.id)
@@ -179,9 +195,9 @@ export class ShelterDetailComponent {
         })
       );
   }
+
   unsubscribe() {
-    if (!this.isSubscribed) return;
-    if (this.shelterSubscriptionId === '') return;
+    if (!this.isSubscribed || this.shelterSubscriptionId === '') return;
     this.shelterSubscriptionService
       .deleteShelterSubscription(this.shelterSubscriptionId)
       .subscribe({
@@ -195,6 +211,7 @@ export class ShelterDetailComponent {
         },
       });
   }
+
   subscribe() {
     if (this.isSubscribed) return;
     const shelterValue = this.shelter();
@@ -214,7 +231,7 @@ export class ShelterDetailComponent {
           this.cdr.detectChanges();
         },
         error: err => {
-          console.error('Error craeting shelter subscription:', err);
+          console.error('Error creating shelter subscription:', err);
         },
       });
   }

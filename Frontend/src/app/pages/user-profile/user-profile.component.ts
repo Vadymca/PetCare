@@ -90,26 +90,17 @@ export class UserProfileComponent {
           password: '',
           confirmPassword: '',
         });
-        console.log('userValue.id ' + userValue.id);
+
         this.animalSubscriptionService
           //.getAnimalSubscriptions()
           .getAnimalSubscriptionsByUserId(userValue.id)
           .subscribe(animalSubscriptions => {
-            console.log(animalSubscriptions);
             this.animalSubscriptions.set(animalSubscriptions);
-            console.log(
-              'animalSubscriptions.length ' + this.animalSubscriptions().length
-            );
           });
         this.shelterSubscriptionService
           .getShelterSubscriptionsByUserId(userValue.id)
           .subscribe(shelterSubscriptions => {
-            console.log(shelterSubscriptions);
             this.shelterSubscriptions.set(shelterSubscriptions);
-            console.log(
-              'shelterSubscriptions.length ' +
-                this.shelterSubscriptions().length
-            );
           });
       }
     });
@@ -147,12 +138,22 @@ export class UserProfileComponent {
       return;
     }
 
-    const updatedData = {
-      ...this.profileForm.value,
-      photo: this.profilePhoto(),
-    };
+    // const updatedData = {
+    //   ...this.profileForm.value,
+    //   photo: this.profilePhoto(),
+    // };
 
-    console.log('Дані для збереження:', updatedData);
+    // this.authService.updateUser(this.user().id, updatedData).subscribe({
+    //   next: () => {
+    //     this.successChangePasswordMessage.set(true);
+    //     this.changePasswordForm.reset();
+    //   },
+    //   error: err => {
+    //     alert('помилка з сервера');
+    //     this.errorChangePasswordMessage.set(true);
+    //     console.error('Помилка при зміні пароля:', err);
+    //   },
+    // });
     // Тут виклик API для збереження даних
   }
   onChengePassword(): void {
@@ -161,7 +162,7 @@ export class UserProfileComponent {
       this.changePasswordForm.markAllAsTouched();
       return;
     }
-    console.log('Дані для зміни пароля:', this.changePasswordForm.value);
+
     if (!this.passwordsMatch) {
       alert('Паролі не збігаються');
       return;
@@ -172,7 +173,6 @@ export class UserProfileComponent {
         next: () => {
           this.successChangePasswordMessage.set(true);
           this.changePasswordForm.reset();
-          console.log('Пароль успішно змінено');
         },
         error: err => {
           alert('помилка з сервера');

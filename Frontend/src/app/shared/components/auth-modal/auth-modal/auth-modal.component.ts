@@ -14,6 +14,7 @@ import { EmailNotConfirmedComponent } from '../email-not-confirmed/email-not-con
 import { ExistingEmailErrorComponent } from '../existing-email-error/existing-email-error.component';
 import { ForgotPasswordConfirmationComponent } from '../forgot-password-confirmation/forgot-password-confirmation.component';
 import { ForgotPasswordComponent } from '../forgot-password/forgot-password.component';
+import { LiveDonationCollectionComponent } from '../live-donation-collection/live-donation-collection.component';
 import { LoginComponent } from '../login/login.component';
 import { RegisterEmailComponent } from '../register-email/register-email.component';
 import { RegisterNameComponent } from '../register-name/register-name.component';
@@ -26,7 +27,6 @@ import { ResetPasswordComponent } from '../reset-password/reset-password.compone
 import { SendEmailErrorComponent } from '../send-email-error/send-email-error.component';
 import { TwoFactorComponent } from '../two-factor/two-factor.component';
 import { WelcomeComponent } from '../welcome/welcome.component';
-import { LiveDonationCollectionComponent } from "../live-donation-collection/live-donation-collection.component";
 @Component({
   selector: 'app-auth-modal',
   standalone: true,
@@ -49,8 +49,8 @@ import { LiveDonationCollectionComponent } from "../live-donation-collection/liv
     ResetPasswordComponent,
     ResetPasswordConfirmationComponent,
     ResetPasswordErrorComponent,
-    LiveDonationCollectionComponent
-],
+    LiveDonationCollectionComponent,
+  ],
   template: `
     @if (modalState().isOpen) {
       <div
@@ -175,7 +175,7 @@ import { LiveDonationCollectionComponent } from "../live-donation-collection/liv
                   (submitButton)="handleOption('login')"
                 ></app-reset-password-error>
               }
-							@case ('live-donation-collection') {
+              @case ('live-donation-collection') {
                 <app-live-donation-collection></app-live-donation-collection>
               }
             }
@@ -209,7 +209,6 @@ export class AuthModalComponent {
     });
   }
   handleOption(option: ModalState['component']) {
-    console.log('AuthModalComponent: Вибрана опція:', option);
     // Скидаємо дані при переході до welcome, login або register-email
     if (
       option &&
@@ -246,7 +245,6 @@ export class AuthModalComponent {
   }
 
   handleSubmitRegistrationForm() {
-    console.log('handleSubmitRegistrationForm');
     this.authService
       .register({
         email: this.email,
@@ -264,7 +262,7 @@ export class AuthModalComponent {
             this.modalService.openModal('existing-email-error');
             return;
           }
-          console.log('Registration error:', err);
+          console.error('Registration error:', err);
           this.modalService.openModal('registration-failed');
         },
       });
@@ -282,7 +280,6 @@ export class AuthModalComponent {
           //     this.totpEnabled.set(response.totpEnabled);
           //     this.smsEnabled.set(response.smsEnabled);
           //     this.maskedPhoneNumber.set(`+380*******25`); //поправити потім
-          //     console.log('Get 2FA status success:', response);
           //   },
           //   error: err => {
           //     this.errorMessage.set('GET_2FA_STATUS_ERROR');
@@ -310,7 +307,7 @@ export class AuthModalComponent {
       error: err => {
         this.errorMessage.set('AUTH_ERROR');
         this.isLoading.set(false);
-        console.log('Login error:', err);
+        console.error('Login error:', err);
       },
     });
   }
@@ -326,7 +323,7 @@ export class AuthModalComponent {
     //     error: err => {
     //       this.errorMessage.set('INVALID_2FA_CODE');
     //       this.isLoading.set(false);
-    //       console.log('2FA error:', err);
+    //       console.error('2FA error:', err);
     //     },
     //   });
     // }
@@ -339,7 +336,7 @@ export class AuthModalComponent {
     //     error: err => {
     //       this.errorMessage.set('INVALID_2FA_CODE');
     //       this.isLoading.set(false);
-    //       console.log('2FA error:', err);
+    //       console.error('2FA error:', err);
     //     },
     //   });
     // }
@@ -351,7 +348,7 @@ export class AuthModalComponent {
       error: err => {
         this.errorMessage.set('INVALID_2FA_CODE');
         this.isLoading.set(false);
-        console.log('2FA error:', err);
+        console.error('2FA error:', err);
       },
     });
   }
@@ -364,7 +361,7 @@ export class AuthModalComponent {
       error: err => {
         this.errorMessage.set('SEND_SMS_ERROR');
         this.isLoading.set(false);
-        console.log('Send SMS error:', err);
+        console.error('Send SMS error:', err);
       },
     });
   }
@@ -378,7 +375,7 @@ export class AuthModalComponent {
       error: err => {
         this.errorMessage.set('INVALID_BACKUP_CODE');
         this.isLoading.set(false);
-        console.log('Backup code error:', err);
+        console.error('Backup code error:', err);
       },
     });
   }
@@ -388,7 +385,7 @@ export class AuthModalComponent {
         this.modalService.openModal('registration-confirmation');
       },
       error: err => {
-        console.log('Resend verification email error:', err);
+        console.error('Resend verification email error:', err);
 
         this.modalService.openModal('send-email-error');
       },
@@ -398,11 +395,10 @@ export class AuthModalComponent {
     this.isLoading.set(true);
     this.authService.forgotPassword($event).subscribe({
       next: () => {
-        console.log('Forgot password email sent:');
         this.isLoading.set(false);
       },
       error: err => {
-        console.log('Forgot password error:', err);
+        console.error('Forgot password error:', err);
         this.isLoading.set(false);
       },
     });
@@ -414,11 +410,7 @@ export class AuthModalComponent {
       this.modalService.openModal('reset-password-error');
       return;
     }
-    console.log(
-      'AuthModalComponent: Reset password token:',
-      this.resetPasswordToken
-    );
-    console.log('AuthModalComponent: New password:', newPassword);
+
     this.authService
       .resetPassword(this.resetPasswordToken()!, newPassword)
       .subscribe({
@@ -432,7 +424,7 @@ export class AuthModalComponent {
           }
         },
         error: err => {
-          console.log('Reset password error:', err);
+          console.error('Reset password error:', err);
 
           this.modalService.openModal('reset-password-error');
           this.isLoading.set(false);
@@ -440,7 +432,6 @@ export class AuthModalComponent {
       });
   }
   private resetFormData() {
-    console.log('AuthModalComponent: Скидання даних форми');
     this.isLoading.set(false);
     this.errorMessage.set('');
     this.totpEnabled.set(false);

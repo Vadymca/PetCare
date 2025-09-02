@@ -16,6 +16,10 @@ export interface Animal {
   shelter?: Shelter;
   user?: User; // якщо потрібно
   age: [number, number];
+  //для підписок
+  isChecked: boolean;
+  isFavorite?: boolean;
+  animalSubscriptionId?: string;
 
   slug: string;
   birthday: string; // ISO дата у форматі рядка
