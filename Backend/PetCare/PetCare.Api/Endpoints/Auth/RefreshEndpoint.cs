@@ -33,6 +33,7 @@ public static class RefreshEndpoint
                 return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
             }
         })
+    .RequireRateLimiting("GlobalPolicy")
     .WithName("Refresh")
     .WithTags("Auth")
     .Produces<LoginResponseDto>(StatusCodes.Status200OK)

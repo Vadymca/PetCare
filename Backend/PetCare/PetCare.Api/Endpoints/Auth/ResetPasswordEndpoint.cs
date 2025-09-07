@@ -44,6 +44,7 @@ public static class ResetPasswordEndpoint
                 return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
             }
         })
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("ResetPassword")
         .WithTags("Auth")
         .Produces<ResetPasswordResponseDto>(StatusCodes.Status200OK)

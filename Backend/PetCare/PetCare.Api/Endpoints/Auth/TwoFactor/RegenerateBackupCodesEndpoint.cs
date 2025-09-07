@@ -40,6 +40,7 @@ public static class RegenerateBackupCodesEndpoint
             }
         })
         .RequireAuthorization()
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("RegenerateTotpBackupCodes")
         .WithTags("Auth")
         .Produces(StatusCodes.Status200OK)

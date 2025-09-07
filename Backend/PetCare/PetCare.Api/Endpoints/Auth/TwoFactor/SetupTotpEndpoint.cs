@@ -33,6 +33,7 @@ public static class SetupTotpEndpoint
             }
         })
         .RequireAuthorization()
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("SetupTotp")
         .WithTags("Auth")
         .Produces<SetupTotpResponseDto>(StatusCodes.Status200OK)

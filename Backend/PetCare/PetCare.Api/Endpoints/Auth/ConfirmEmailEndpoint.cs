@@ -59,10 +59,12 @@ public static class ConfirmEmailEndpoint
             }
         })
         .WithName("ConfirmEmail")
+        .RequireRateLimiting("GlobalPolicy")
         .WithTags("Auth")
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError)
-        .Accepts<ConfirmEmailCommand>("application/json");
+        .Accepts<ConfirmEmailCommand>("application/json")
+        .RequireRateLimiting("GlobalPolicy");
     }
 }

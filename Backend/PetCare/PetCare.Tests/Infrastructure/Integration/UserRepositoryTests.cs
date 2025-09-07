@@ -84,36 +84,6 @@ public sealed class UserRepositoryTests : IAsyncLifetime
     }
 
     /// <summary>
-    /// Tests that GetByEmailAsync returns the correct user by email.
-    /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    [Fact]
-    public async Task GetByEmailAsync_ShouldReturnUser()
-    {
-        // Act
-        var fromDb = await this.repository.GetByEmailAsync("user1@example.com");
-
-        // Assert
-        Assert.NotNull(fromDb);
-        Assert.Equal(this.testUser1.Id, fromDb!.Id);
-        Assert.Equal("user1@example.com", fromDb.Email.Value);
-    }
-
-    /// <summary>
-    /// Tests that GetByEmailAsync returns null for non-existing email.
-    /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    [Fact]
-    public async Task GetByEmailAsync_ShouldReturnNull_WhenUserDoesNotExist()
-    {
-        // Act
-        var fromDb = await this.repository.GetByEmailAsync("nonexistent@example.com");
-
-        // Assert
-        Assert.Null(fromDb);
-    }
-
-    /// <summary>
     /// Tests that GetByRoleAsync returns all users with a given role.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>

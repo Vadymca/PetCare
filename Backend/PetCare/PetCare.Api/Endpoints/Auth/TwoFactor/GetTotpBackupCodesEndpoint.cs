@@ -40,6 +40,7 @@ public static class GetTotpBackupCodesEndpoint
             }
         })
         .WithName("GetTotpBackupCodes")
+        .RequireRateLimiting("GlobalPolicy")
         .WithTags("Auth")
         .RequireAuthorization()
         .Produces(StatusCodes.Status200OK)

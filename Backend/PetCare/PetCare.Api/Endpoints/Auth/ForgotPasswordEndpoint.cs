@@ -49,6 +49,7 @@ public static class ForgotPasswordEndpoint
             }
         })
         .WithName("ForgotPassword")
+        .RequireRateLimiting("GlobalPolicy")
         .WithTags("Auth")
         .Produces<ForgotPasswordResponseDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)

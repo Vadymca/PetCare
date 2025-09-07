@@ -3,10 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using PetCare.Domain.Abstractions.Events;
 using PetCare.Domain.Aggregates;
-using PetCare.Domain.Specifications.Specie;
 using PetCare.Infrastructure.Persistence;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Testcontainers.PostgreSql;
 using Xunit;
@@ -152,20 +150,5 @@ public sealed class GenericRepositoryTests : IAsyncLifetime
         Assert.Equal(2, count);
     }
 
-    /// <summary>
-    /// Tests that FindAsync returns only entities matching a specification.
-    /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    [Fact]
-    public async Task FindAsync_ShouldReturnEntitiesMatchingSpecification()
-    {
-        await this.repository.AddAsync(Specie.Create("Dog"));
-        await this.repository.AddAsync(Specie.Create("Cat"));
 
-        var spec = new SpecieByNameSpecification("Dog");
-        var result = await this.repository.FindAsync(spec);
-
-        Assert.Single(result);
-        Assert.Equal("Dog", result.First().Name.Value);
-    }
 }

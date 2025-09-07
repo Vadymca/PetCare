@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Abstractions.Services;
+using PetCare.Infrastructure.Options;
 using PetCare.Infrastructure.Persistence.Repositories;
 using PetCare.Infrastructure.Services;
 using PetCare.Infrastructure.Services.Email;
@@ -23,6 +24,8 @@ public static class DependencyInjection
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddMemoryCache();
+
         // Repositories
         services.AddScoped<IAnimalRepository, AnimalRepository>();
         services.AddScoped<IShelterRepository, ShelterRepository>();
@@ -41,6 +44,12 @@ public static class DependencyInjection
         services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
         services.AddTransient<IEmailService, EmailService>();
         services.AddScoped<IEmailTemplateRenderer, EmailTemplateRenderer>();
+
+        // Sms and Twilio services
+        services.Configure<SmsSettings>(configuration.GetSection("SmsSettings"));
+        services.Configure<TwilioSettings>(configuration.GetSection("TwilioSettings"));
+        services.AddTransient<ISmsService, TwilioSmsService>();
+        services.AddScoped<ISms2FaService, Sms2FaService>();
 
         return services;
     }

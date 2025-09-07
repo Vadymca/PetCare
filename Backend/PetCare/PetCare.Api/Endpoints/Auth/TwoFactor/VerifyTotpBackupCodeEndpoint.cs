@@ -38,6 +38,7 @@ public static class VerifyTotpBackupCodeEndpoint
             }
         })
         .RequireAuthorization()
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("VerifyTotpBackupCode")
         .WithTags("Auth")
         .Produces(StatusCodes.Status200OK)

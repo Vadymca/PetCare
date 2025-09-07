@@ -47,6 +47,7 @@ public static class LoginEndpoint
                 return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
             }
         })
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("Login")
         .WithTags("Auth")
         .Produces<LoginResponseDto>(StatusCodes.Status200OK)

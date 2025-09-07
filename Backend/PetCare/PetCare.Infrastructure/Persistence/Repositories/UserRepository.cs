@@ -20,11 +20,6 @@ public class UserRepository : GenericRepository<User>, IUserRepository
     }
 
     /// <inheritdoc/>
-    public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
-        => await this.FindAsync(new UserByEmailSpecification(email), cancellationToken)
-               .ContinueWith(t => t.Result.FirstOrDefault(), cancellationToken);
-
-    /// <inheritdoc/>
     public async Task<IReadOnlyList<User>> GetByRoleAsync(UserRole role, CancellationToken cancellationToken = default)
         => await this.FindAsync(new UsersByRoleSpecification(role), cancellationToken);
 

@@ -40,6 +40,7 @@ public static class DisableTotpEndpoint
             }
         })
         .RequireAuthorization()
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("DisableTotp")
         .WithTags("Auth")
         .Produces(StatusCodes.Status200OK)

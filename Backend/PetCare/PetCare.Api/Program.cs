@@ -10,6 +10,7 @@ using Microsoft.OpenApi.Models;
 using Npgsql;
 using PetCare.Api.Endpoints.Auth;
 using PetCare.Api.Endpoints.Auth.TwoFactor;
+using PetCare.Api.Endpoints.Auth.TwoFactor.Sms;
 using PetCare.Application;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Enums;
@@ -19,6 +20,7 @@ using PetCare.Infrastructure.Identity;
 using PetCare.Infrastructure.Persistence;
 using Scalar.AspNetCore;
 using Serilog;
+using System.Threading.RateLimiting;
 
 /// <summary>
 /// The main entry point class for the PetCare API application.
@@ -170,34 +172,77 @@ public class Program
                 });
             });
 
+            // -------------------- CORS --------------------
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("PetCarePolicy", policy =>
+                {
+                    policy.WithOrigins("https://petcare.com")
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();
+                });
+            });
+
+            // -------------------- CSRF --------------------
+            builder.Services.AddAntiforgery(options =>
+            {
+                options.HeaderName = "X-CSRF-TOKEN"; // Клієнт повинен відправляти цей заголовок
+            });
+
+            // -------------------- Rate Limiting --------------------
+            builder.Services.AddRateLimiter(options =>
+            {
+                options.AddPolicy("GlobalPolicy", httpContext =>
+                    RateLimitPartition.GetFixedWindowLimiter("global", _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 100,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                        QueueLimit = 10,
+                    }));
+            });
+
             var app = builder.Build();
 
-            // --------------------Endpoints--------------------
-            app.MapRegisterEndpoint(); // /api/auth/register
-            app.MapLoginEndpoint(); // /api/auth/login
-            app.MapLogoutEndpoint(); // /api/auth/logout
-            app.MapRefreshEndpoint(); // /api/auth/refresh
-            app.MapForgotPasswordEndpoint(); // /api/auth/forgot-password
-            app.MapResetPasswordEndpoint(); // /api/auth/reset-password
-            app.MapConfirmEmailEndpoint(); // /api/auth/confirm-email
-            app.MapResendVerificationEndpoint(); // /api/auth/resend-verification
+            // -------------------- Security Middleware --------------------
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseHsts();  // HTTP Strict Transport Security
+            }
 
-            app.MapSetupTotpEndpoint(); // /api/auth/2fa/totp/setup
-            app.MapVerifyTotpSetupEndpoint(); // /api/auth/2fa/totp/verify-setup
-            app.MapVerifyTotpEndpoint(); // /api/auth/2fa/totp/verify
-            app.MapDisableTotpEndpoint(); // /api/auth/2fa/totp/disable
-            app.MapGetTotpBackupCodesEndpoint(); // /api/auth/2fa/totp/backup-codes
-            app.MapRegenerateBackupCodesEndpoint(); // /api/auth/2fa/totp/regenerate-backup-codes
-            app.MapVerifyTotpBackupCodeEndpoint(); // /api/auth/2fa/totp/verify-backup-code
+            app.UseHttpsRedirection();
+            app.UseCors("PetCarePolicy");
+            app.UseRateLimiter();
 
-            // -------------------- Middleware --------------------
+            //app.MapGet("/api/csrf-token", (IAntiforgery antiforgery, HttpContext context) =>
+            //{
+            //    var tokens = antiforgery.GetAndStoreTokens(context);
+            //    return Results.Ok(new { token = tokens.RequestToken });
+            //});
+            //app.Use(async (context, next) =>
+            //{
+            //    var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
+
+            //    if (HttpMethods.IsPost(context.Request.Method) ||
+            //        HttpMethods.IsPut(context.Request.Method) ||
+            //        HttpMethods.IsDelete(context.Request.Method))
+            //    {
+            //        await antiforgery.ValidateRequestAsync(context);
+            //    }
+
+            //    await next();
+            //});
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            // -------------------- Logging & Swagger --------------------
             app.UseSerilogRequestLogging();
-
             app.UseSwagger(opt =>
             {
                 opt.RouteTemplate = "openapi/{documentName}.json";
             });
-
             app.MapScalarApiReference(opt =>
             {
                 opt.Title = "PetCare API";
@@ -205,6 +250,7 @@ public class Program
                 opt.DefaultHttpClient = new(ScalarTarget.Http, ScalarClient.Http11);
             });
 
+            // -------------------- Exception Handler --------------------
             app.UseExceptionHandler(appBuilder =>
             {
                 appBuilder.Run(async context =>
@@ -247,9 +293,38 @@ public class Program
                 });
             });
 
-            app.UseHttpsRedirection();
-            app.UseAuthentication();
-            app.UseAuthorization();
+            // --------------------Endpoints--------------------
+            // ----------------------Auth-----------------------
+            app.MapRegisterEndpoint(); // /api/auth/register
+            app.MapLoginEndpoint(); // /api/auth/login
+            app.MapLogoutEndpoint(); // /api/auth/logout
+            app.MapRefreshEndpoint(); // /api/auth/refresh
+            app.MapForgotPasswordEndpoint(); // /api/auth/forgot-password
+            app.MapResetPasswordEndpoint(); // /api/auth/reset-password
+            app.MapConfirmEmailEndpoint(); // /api/auth/confirm-email
+            app.MapResendVerificationEndpoint(); // /api/auth/resend-verification
+
+            // --------------------TwoFactor----------------------
+            app.MapSetupTotpEndpoint(); // /api/auth/2fa/totp/setup
+            app.MapVerifyTotpSetupEndpoint(); // /api/auth/2fa/totp/verify-setup
+            app.MapVerifyTotpEndpoint(); // /api/auth/2fa/totp/verify
+            app.MapDisableTotpEndpoint(); // /api/auth/2fa/totp/disable
+            app.MapGetTotpBackupCodesEndpoint(); // /api/auth/2fa/totp/backup-codes
+            app.MapRegenerateBackupCodesEndpoint(); // /api/auth/2fa/totp/regenerate-backup-codes
+            app.MapVerifyTotpBackupCodeEndpoint(); // /api/auth/2fa/totp/verify-backup-code
+
+            // --------------------TwoFactor-Sms---------------------
+            app.MapSetupSms2FaEndpoint(); // /api/auth/2fa/sms/setup
+            app.MapVerifySms2FaSetupEndpoint(); // /api/auth/2fa/sms/verify-setup
+            app.MapSendSms2FaCodeEndpoint(); // /api/auth/2fa/sms/send
+            app.MapVerifySms2FaCodeEndpoint(); // /api/auth/2fa/sms/verify
+            app.MapDisableSms2FaEndpoint(); // /api/auth/2fa/sms/disable
+
+            // ------------------TwoFactor-Management-------------------
+            app.MapTwoFactorStatusEndpoint(); // /api/auth/2fa/status
+            app.MapDisableAllTwoFactorEndpoint(); // /api/auth/2fa/disable-all
+            app.MapRecoveryCodesEndpoint(); // /api/auth/2fa/recovery-codes
+            app.MapUseRecoveryCodeEndpoint(); // /api/auth/2fa/use-recovery-code
 
             // -------------------- Migrations & Seeding --------------------
             using (var scope = app.Services.CreateScope())

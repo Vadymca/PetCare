@@ -56,6 +56,7 @@ public static class VerifyTotpEndpoint
             }
         })
         .RequireAuthorization()
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("VerifyTotp")
         .WithTags("Auth")
         .Produces(StatusCodes.Status200OK)

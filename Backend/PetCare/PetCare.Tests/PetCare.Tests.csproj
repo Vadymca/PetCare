@@ -49,6 +49,7 @@
     <PackageReference Include="System.Device.Location.Portable" Version="1.0.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
     <PackageReference Include="Testcontainers.PostgreSql" Version="4.6.0" />
+    <PackageReference Include="Twilio" Version="7.13.0" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
@@ -66,6 +67,10 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Application\" />
   </ItemGroup>
 
 	<PropertyGroup>

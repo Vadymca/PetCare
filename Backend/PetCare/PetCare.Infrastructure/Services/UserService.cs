@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using OtpNet;
+using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Enums;
@@ -411,6 +412,7 @@ public sealed class UserService : IUserService
         {
             throw new ArgumentNullException(nameof(user));
         }
+
         if (string.IsNullOrWhiteSpace(code))
         {
             return false;
@@ -418,5 +420,128 @@ public sealed class UserService : IUserService
 
         var isValid = await this.userManager.RedeemTwoFactorRecoveryCodeAsync(user, code);
         return isValid.Succeeded;
+    }
+
+    /// <summary>
+    /// Confirms the user's phone number by setting <see cref="User.PhoneNumberConfirmed"/> to true.
+    /// </summary>
+    /// <param name="user">The user whose phone number is to be confirmed.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="user"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if updating the user in the database fails.</exception>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public async Task ConfirmPhoneNumberAsync(User user)
+    {
+        if (user == null)
+        {
+            throw new ArgumentNullException(nameof(user));
+        }
+
+        user.PhoneNumberConfirmed = true;
+
+        var result = await this.userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            this.logger.LogWarning("Failed to confirm phone number for user {UserId}", user.Id);
+            throw new InvalidOperationException("Не вдалося підтвердити номер телефону користувача.");
+        }
+
+        this.logger.LogInformation("Phone number confirmed for user {UserId}", user.Id);
+    }
+
+    /// <summary>
+    /// Disables SMS-based 2FA for the specified user.
+    /// Sets <see cref="User.PhoneNumberConfirmed"/> to false and updates the user in the database.
+    /// </summary>
+    /// <param name="user">The user for whom to disable SMS 2FA.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="user"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when updating the user in the database fails.</exception>
+    public async Task DisableSms2FaAsync(User user)
+    {
+        if (user == null)
+        {
+            throw new ArgumentNullException(nameof(user));
+        }
+
+        user.PhoneNumberConfirmed = false;
+
+        var result = await this.userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            this.logger.LogWarning("Failed to disable SMS 2FA for user {UserId}", user.Id);
+            throw new InvalidOperationException("Не вдалося відключити SMS 2FA користувача.");
+        }
+
+        this.logger.LogInformation("SMS 2FA disabled for user {UserId}", user.Id);
+    }
+
+    /// <summary>
+    /// Retrieves the current two-factor authentication (2FA) status for the specified user.
+    /// </summary>
+    /// <param name="user">The user for whom to get the 2FA status.</param>
+    /// <returns>
+    /// A <see cref="TwoFactorStatusResponseDto"/> containing the status of each 2FA method:
+    /// <list type="bullet">
+    /// <item><description><c>IsTwoFactorEnabled</c> — overall 2FA enabled flag.</description></item>
+    /// <item><description><c>IsSms2FaEnabled</c> — SMS 2FA enabled flag based on <see cref="User.PhoneNumberConfirmed"/>.</description></item>
+    /// </list>
+    /// </returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="user"/> is null.</exception>
+    public TwoFactorStatusResponseDto GetTwoFactorStatus(User user)
+    {
+        if (user == null)
+        {
+            throw new ArgumentNullException(nameof(user));
+        }
+
+        return new TwoFactorStatusResponseDto(
+            IsTwoFactorEnabled: user.TwoFactorEnabled,
+            IsSms2FaEnabled: user.PhoneNumberConfirmed);
+    }
+
+    /// <summary>
+    /// Disables all two-factor authentication methods for the specified user.
+    /// </summary>
+    /// <param name="user">The user for whom all 2FA methods will be disabled.</param>
+    /// <returns>True if all 2FA methods were successfully disabled; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="user"/> is null.</exception>
+    public async Task<bool> DisableAllTwoFactorAsync(User user)
+    {
+        if (user == null)
+        {
+            throw new ArgumentNullException(nameof(user));
+        }
+
+        user.TwoFactorEnabled = false;
+        user.PhoneNumberConfirmed = false;
+
+        var result = await this.userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+        {
+            this.logger.LogWarning("Failed to disable all 2FA methods for user {UserId}", user.Id);
+            return false;
+        }
+
+        this.logger.LogInformation("All 2FA methods disabled for user {UserId}", user.Id);
+        return true;
+    }
+
+    /// <summary>
+    /// Redeems a TOTP recovery code for the specified user.
+    /// </summary>
+    /// <param name="user">The user who is redeeming the recovery code.</param>
+    /// <param name="code">The recovery code to redeem.</param>
+    /// <returns>True if the recovery code was successfully redeemed; otherwise, false.</returns>
+    public async Task<bool> RedeemRecoveryCodeAsync(User user, string code)
+    {
+        var result = await this.userManager.RedeemTwoFactorRecoveryCodeAsync(user, code);
+        if (result.Succeeded)
+        {
+            this.logger.LogInformation("Recovery code redeemed successfully for user {UserId}", user.Id);
+            return true;
+        }
+
+        this.logger.LogWarning("Failed recovery code attempt for user {UserId}", user.Id);
+        return false;
     }
 }

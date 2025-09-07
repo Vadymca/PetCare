@@ -45,6 +45,7 @@ public static class ResendVerificationEndpoint
                 return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
             }
         })
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("ResendVerification")
         .WithTags("Auth")
         .Accepts<ResendVerificationCommand>("application/json")

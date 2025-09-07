@@ -57,6 +57,7 @@ public static class RegisterEndpoint
                 return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
             }
         })
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("Register")
         .WithTags("Auth")
         .Produces<UserDto>(StatusCodes.Status201Created)

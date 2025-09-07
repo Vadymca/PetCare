@@ -38,6 +38,21 @@
       JWT_AUDIENCE: "PetCare.Client"
       JWT_EXPIRATION_MINUTES: "15"          # короткий час для access token
       JWT_REFRESH_EXPIRATION_DAYS: "7"      # refresh token живе довше
+
+       # SMS settings
+      SmsSettings__Provider: "Twilio"
+      SmsSettings__ApplicationName: "PetCare"
+      SmsSettings__CodeExpirationMinutes: "5"
+      SmsSettings__MaxAttemptsPerPeriod: "3"
+      SmsSettings__RateLimitPeriodMinutes: "10"
+
+      # Twilio settings
+      TwilioSettings__AccountSid: "AC3736a78f2439de378c907a3ac9face06"
+      TwilioSettings__AuthToken: "0e6c3b0ba254626b5aa9a0bff1e3ef97"
+      TwilioSettings__FromPhoneNumber: "+14195412828"
+      TwilioSettings__EnableLogging: "true"
+      TwilioSettings__TimeoutSeconds: "30"
+
     ports:
       - '5000:80'
     volumes:

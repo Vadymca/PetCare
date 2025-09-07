@@ -1,5 +1,6 @@
 ﻿namespace PetCare.Application.Interfaces;
 
+using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Domain.Aggregates;
 
 /// <summary>
@@ -162,4 +163,46 @@ public interface IUserService
     /// <c>true</c> if the code is valid; otherwise, <c>false</c>.
     /// </returns>
     Task<bool> VerifyTotpBackupCodeAsync(User user, string code);
+
+    /// <summary>
+    /// Marks the user's phone number as confirmed.
+    /// </summary>
+    /// <param name="user">The user whose phone number will be confirmed.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task ConfirmPhoneNumberAsync(User user);
+
+    /// <summary>
+    /// Disables SMS 2FA for the user.
+    /// </summary>
+    /// <param name="user">The user to disable SMS 2FA for.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    Task DisableSms2FaAsync(User user);
+
+    /// <summary>
+    /// Retrieves the current two-factor authentication (2FA) status for the specified user.
+    /// </summary>
+    /// <param name="user">The user for whom to get the 2FA status.</param>
+    /// <returns>
+    /// A <see cref="TwoFactorStatusResponseDto"/> containing the status of each 2FA method:
+    /// <list type="bullet">
+    /// <item><description><c>IsTwoFactorEnabled</c> — overall 2FA enabled flag (e.g., TOTP or other methods).</description></item>
+    /// <item><description><c>IsSms2FaEnabled</c> — SMS 2FA enabled flag.</description></item>
+    /// </list>
+    /// </returns>
+    TwoFactorStatusResponseDto GetTwoFactorStatus(User user);
+
+    /// <summary>
+    /// Disables all 2FA methods for the specified user.
+    /// </summary>
+    /// <param name="user">The user whose 2FA methods should be disabled.</param>
+    /// <returns>A task that represents the asynchronous operation. Returns true if successful.</returns>
+    Task<bool> DisableAllTwoFactorAsync(User user);
+
+    /// <summary>
+    /// Redeems a two-factor authentication recovery code.
+    /// </summary>
+    /// <param name="user">The user who is redeeming the recovery code.</param>
+    /// <param name="code">The recovery code.</param>
+    /// <returns><c>true</c> if the code was valid and successfully redeemed; otherwise <c>false</c>.</returns>
+    Task<bool> RedeemRecoveryCodeAsync(User user, string code);
 }

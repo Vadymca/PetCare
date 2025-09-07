@@ -36,6 +36,7 @@ public static class LogoutEndpoint
                 return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
             }
         })
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("Logout")
         .WithTags("Auth")
         .Produces(StatusCodes.Status200OK)

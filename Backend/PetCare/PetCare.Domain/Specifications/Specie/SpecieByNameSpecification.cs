@@ -1,6 +1,6 @@
 ﻿namespace PetCare.Domain.Specifications.Specie;
+
 using PetCare.Domain.Aggregates;
-using PetCare.Domain.ValueObjects;
 using System;
 using System.Linq.Expressions;
 
@@ -23,13 +23,14 @@ public sealed class SpecieByNameSpecification : Specification<Specie>
             throw new ArgumentException("Ім'я не може бути нульовим або порожнім.", nameof(name));
         }
 
-        this.name = name;
+        this.name = name.Trim();
     }
 
     /// <inheritdoc />
     public override Expression<Func<Specie, bool>> ToExpression()
     {
-        var nameValueObject = Name.Create(this.name);
-        return s => s.Name == nameValueObject;
+        return s => s.Name != null &&
+                s.Name.Value != null &&
+                s.Name.Value.Equals(this.name, StringComparison.OrdinalIgnoreCase);
     }
 }
