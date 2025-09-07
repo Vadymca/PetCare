@@ -88,8 +88,7 @@ export class AnimalDetailComponent {
           }
         );
         this.isSubscriptionChecked = false;
-        console.log('this.user', this.user());
-        console.log('this.animal', this.animal());
+
         this.isSubscribedToAnimal().subscribe(isSubscribed => {
           this.isSubscribed = isSubscribed;
           this.isSubscriptionChecked = true;
@@ -118,7 +117,7 @@ export class AnimalDetailComponent {
             content: animal.photos[0],
           });
         }
-
+        if (!isPlatformBrowser(this.platformId)) return;
         this.meta.updateTag({
           name: 'twitter:card',
           content: 'summary_large_image',
@@ -165,8 +164,7 @@ export class AnimalDetailComponent {
           this.isSubscribed = !!found;
           return !!found;
         }),
-        catchError(err => {
-          console.error('Error fetching animal subscriptions:', err);
+        catchError(() => {
           return of(false);
         })
       );

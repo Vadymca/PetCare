@@ -1,15 +1,28 @@
 <div
-  class="flex flex-col items-center justify-center min-h-screen text-center p-4"
+  class="flex flex-col items-center justify-center text-center p-4 bg-primary-lightBlue"
 >
-  <img src="assets/images/dog503.png" alt="503" class="w-64 mb-6" />
-  <h1 class="text-8xl font-extrabold text-gray-800 mb-4">500</h1>
-  <p class="text-lg mb-6">
-    {{ 'ERROR.503_MESSAGE' | translate }}
-  </p>
-  <button
-    (click)="goHome()"
-    class="px-6 py-2 bg-orange-300 text-white rounded hover:bg-orange-600 transition"
+  <div class="relative mt-[200px]">
+    <h1
+      class="font-fixel font-extrabold text-primary-light-orange text-[320px] mb-1 leading-none"
+    >
+      500
+    </h1>
+    <app-icon
+      [name]="'logo500'"
+      class="absolute top-[12px] left-[-264px]"
+    ></app-icon>
+  </div>
+
+  <p
+    class="text-2xl font-fixel font-bold text-primary-beige leading-none translate-y-[-40px]"
   >
-    {{ 'GO_HOME' | translate }}
-  </button>
+    {{ 'ERROR.500_MESSAGE' | translate }}
+  </p>
+  <app-primary-large-button
+    class="w-[260px] mt-[116px] mb-[100px]"
+    buttonTitle="GO_HOME"
+    (pressButton)="goHome()"
+  >
+    {{ 'BACK_TO_HOME' | translate }}
+  </app-primary-large-button>
 </div>

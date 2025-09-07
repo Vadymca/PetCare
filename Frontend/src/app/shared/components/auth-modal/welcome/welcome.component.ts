@@ -23,7 +23,6 @@ export class WelcomeComponent {
   @Output() selectOption = new EventEmitter<ModalState['component']>();
 
   emitOption(option: ModalState['component']) {
-    console.log('WelcomeComponent: Selected option:', option); // Лог для дебагу
     this.selectOption.emit(option);
   }
 }

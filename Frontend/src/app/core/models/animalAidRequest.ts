@@ -18,6 +18,7 @@ export interface AnimalAidRequest {
   category: AidCategory;
   status: AidRequestStatus;
   estimatedCost: number; // Орієнтовна  вартість
+  allreadyDonated?: number;
   photos: string[]; // Масив URL або ідентифікаторів фото
 
   createdAt: string; // ISO дата рядка

@@ -1,16 +1,28 @@
 <div
-  class="flex flex-col items-center justify-center min-h-screen text-center p-4"
+  class="flex flex-col items-center justify-center text-center p-4 bg-primary-lightBlue"
 >
-  <img src="assets/images/dog.png" alt="Access Denied" class="w-64 mb-6" />
-  <h1 class="text-8xl font-extrabold text-gray-800 mb-4">404</h1>
-  <h2 class="text-3xl font-semibold mb-2">
-    {{ 'NOT_FOUND_TITLE' | translate }}
-  </h2>
-  <p class="text-lg mb-6">{{ 'NOT_FOUND_MESSAGE' | translate }}</p>
-  <button
-    (click)="goHome()"
-    class="px-6 py-2 bg-orange-300 text-white rounded hover:bg-orange-600 transition"
+  <div class="relative mt-[200px] text-primary-beige">
+    <h1
+      class="font-fixel font-extrabold text-primary-light-orange text-[320px] mb-1 leading-none"
+    >
+      404
+    </h1>
+    <app-icon
+      [name]="'logoFailure'"
+      class="text-primary-beige absolute top-[-45px] left-[calc(50%-60px)] translate scale-125"
+    ></app-icon>
+  </div>
+
+  <p
+    class="text-2xl font-fixel font-bold text-primary-beige leading-none translate-y-[-40px]"
+  >
+    {{ 'NOT_FOUND_MESSAGE' | translate }}
+  </p>
+  <app-primary-large-button
+    class="w-[260px] mt-[116px] mb-[100px]"
+    buttonTitle="GO_HOME"
+    (pressButton)="goHome()"
   >
     {{ 'GO_HOME' | translate }}
-  </button>
+  </app-primary-large-button>
 </div>

@@ -32,17 +32,14 @@ export class ModalService {
   private token = signal<string | null>(null);
   setToken(token: string | null) {
     this.token.set(token);
-    console.log('MODAL SERVICE:token', this.token());
   }
   getToken() {
-    console.log('token', this.token());
     return this.token();
   }
   // Публічний доступ до сигналу
   readonly modalStateReadonly = this.modalState.asReadonly();
 
   openModal(component: ModalState['component']) {
-    console.log('openModal', component);
     this.modalState.set({
       isOpen: true,
       component,

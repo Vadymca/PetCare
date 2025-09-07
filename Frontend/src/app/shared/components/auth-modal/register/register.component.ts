@@ -85,11 +85,9 @@ export class RegisterComponent {
 
     this.isDisabled.set(true);
     this.isLoading.set(true);
-    console.log('RegisterComponent: onSubmit');
     this.submitForm.emit();
   }
   emitOption(option: ModalState['component']) {
-    console.log('RegisterComponent: Selected option:', option); // Лог для дебагу
     this.selectOption.emit(option);
   }
 }

@@ -1,5 +1,14 @@
-import { CommonModule } from '@angular/common';
-import { Component, effect, inject, signal } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  Component,
+  DestroyRef,
+  effect,
+  inject,
+  PLATFORM_ID,
+  Renderer2,
+  RendererFactory2,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -28,7 +37,12 @@ export class LostPetsDetailComponent {
   public translate = inject(TranslateService);
   private title = inject(Title);
   private meta = inject(Meta);
-  //private authService = inject(AuthService);
+  private platformId = inject(PLATFORM_ID);
+  private renderer: Renderer2 = inject(RendererFactory2).createRenderer(
+    null,
+    null
+  );
+  private destroyRef = inject(DestroyRef);
 
   slug = toSignal(
     this.route.paramMap.pipe(
@@ -36,43 +50,50 @@ export class LostPetsDetailComponent {
       filter((slug): slug is string => slug !== null && slug !== undefined)
     )
   );
+
   lostPet = signal<LostPet | undefined>(undefined);
-  //public isAuthenticated: Signal<boolean> = this.authService.isLoggedIn;
-  // user: Signal<User | null> = signal(this.authService.currentUser());
 
   constructor() {
     effect(() => {
       const slugValue = this.slug();
       if (!slugValue) return;
 
-      this.lostPetService.getLostPetBySlug(slugValue).subscribe(lostPet => {
-        if (!lostPet) {
-          this.router.navigate(['/not-found']);
-          return;
-        }
-
-        this.lostPet.set(lostPet);
-
-        const translatedName = this.translate.instant('lostPet.name', {
-          value: lostPet.name,
-        });
-        const translatedDescription = this.translate.instant(
-          'lostPet.description',
-          {
-            value: lostPet.description,
+      const subscription = this.lostPetService
+        .getLostPetBySlug(slugValue)
+        .subscribe(lostPet => {
+          if (!lostPet) {
+            this.router.navigate(['/not-found']);
+            return;
           }
-        );
 
-        this.setMetaTags(translatedName, translatedDescription);
-        this.addJsonLd({
-          name: lostPet.name,
-          description: lostPet.description,
+          this.lostPet.set(lostPet);
+
+          const translatedName = this.translate.instant('lostPet.name', {
+            value: lostPet.name || '',
+          });
+          const translatedDescription = this.translate.instant(
+            'lostPet.description',
+            {
+              value: lostPet.description || '',
+            }
+          );
+
+          this.setMetaTags(translatedName, translatedDescription);
+          if (isPlatformBrowser(this.platformId)) {
+            this.addJsonLd({
+              name: lostPet.name || '',
+              description: lostPet.description || '',
+            });
+          }
         });
 
-        console.log('this.lostPet', this.lostPet());
+      // Clean up subscription on component destruction
+      this.destroyRef.onDestroy(() => {
+        subscription.unsubscribe();
       });
     });
   }
+
   private setMetaTags(name: string, description: string) {
     this.title.setTitle(`${name} | PetCare`);
 
@@ -88,7 +109,7 @@ export class LostPetsDetailComponent {
       content: description || `Details about ${name}`,
     });
     this.meta.updateTag({ property: 'og:type', content: 'article' });
-    this.meta.updateTag({ property: 'og:url', content: window.location.href });
+    this.meta.updateTag({ property: 'og:url', content: this.router.url });
 
     this.meta.updateTag({
       name: 'twitter:card',
@@ -102,14 +123,15 @@ export class LostPetsDetailComponent {
   }
 
   private addJsonLd(data: { name: string; description: string }) {
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify({
+    const script = this.renderer.createElement('script');
+    this.renderer.setAttribute(script, 'type', 'application/ld+json');
+    const jsonLd = {
       '@context': 'https://schema.org',
       '@type': 'Pet',
       name: data.name,
       description: data.description,
-    });
-    document.head.appendChild(script);
+    };
+    this.renderer.setProperty(script, 'text', JSON.stringify(jsonLd));
+    this.renderer.appendChild(document.head, script);
   }
 }

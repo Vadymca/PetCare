@@ -49,22 +49,22 @@ export class LoginComponent {
       console.log('Login attempt:', email, password);
       if (!email || !password) return;
       this.errorMessage.set(null);
-      this.auth.login(email, password).subscribe({
-        next: res => {
-          if (res === '2fa_required') {
-            this.router.navigate(['/login-2fa'], {
-              queryParams: { returnUrl: this.returnUrl },
-            });
-          } else {
-            // Якщо звичайна авторизація (наприклад, токен), можна тут зробити редірект далі
-            this.router.navigate([this.returnUrl]);
-          }
-        },
-        error: err => {
-          this.errorMessage.set(err.message || 'AUTH_ERROR');
-          this.loginForm.reset();
-        },
-      });
+      // this.auth.login(email, password).subscribe({
+      //   next: res => {
+      //     // if (res === '2fa_required') {
+      //     //   this.router.navigate(['/login-2fa'], {
+      //     //     queryParams: { returnUrl: this.returnUrl },
+      //     //   });
+      //     // } else {
+      //     //   // Якщо звичайна авторизація (наприклад, токен), можна тут зробити редірект далі
+      //     //   this.router.navigate([this.returnUrl]);
+      //     // }
+      //   },
+      //   error: err => {
+      //     this.errorMessage.set(err.message || 'AUTH_ERROR');
+      //     this.loginForm.reset();
+      //   },
+      // });
     } else {
       this.loginForm.markAllAsTouched();
     }

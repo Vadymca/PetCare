@@ -1,0 +1,77 @@
+<div
+  class="relative box overflow-hidden h-[600px] xl:h-full cursor-pointer"
+  tabindex="0"
+  role="button"
+  (click)="onProjectDetailClick()"
+  (keydown.enter)="onProjectDetailClick()"
+  (keydown.space)="onProjectDetailClick()"
+  (mouseenter)="isHovered = true"
+  (mouseleave)="isHovered = false"
+>
+  <!-- front: картинка + підпис -->
+  <div
+    class="absolute inset-0 w-full h-full transition-opacity duration-1000"
+    [class.opacity-0]="isHovered"
+    [class.opacity-100]="!isHovered"
+  >
+    <img
+      class="w-full h-full object-cover object-center"
+      src="{{ animalAidRequest.photos[0] }}"
+      alt="{{ animalAidRequest.title }}"
+    />
+    <div class="absolute bottom-0 left-0 bg-primary-blue m-5">
+      <h3 class="text-white font-inter text-base text-left font-bold py-1 px-2">
+        {{ animalAidRequest.title }}
+      </h3>
+    </div>
+  </div>
+
+  <!-- back: текст і кнопка -->
+  <div
+    class="absolute inset-0 w-full h-full text-secondary-neutral-mineShaft font-inter bg-white py-5 px-4 flex flex-col justify-center items-start text-left transition-opacity duration-1000"
+    [class.opacity-0]="!isHovered"
+    [class.opacity-100]="isHovered"
+  >
+    <h3 class="font-bold mb-2">
+      {{ 'PROJECT' | translate }}: {{ animalAidRequest.title }}
+    </h3>
+    <p class="mb-4">
+      <span class="font-bold"> {{ 'LOCATION' | translate }}:</span>
+      {{ animalAidRequest.shelter?.name }},
+      {{ animalAidRequest.shelter?.address }}
+    </p>
+    <p class="mb-4">
+      <span class="font-bold"> {{ 'DESCRIPTION' | translate }}:</span>
+      {{ animalAidRequest.description }}
+    </p>
+    <p class="mb-4 bg-primary-light-orange p-1 font-bold">
+      {{ 'DONATED' | translate }}:
+      {{
+        calcDonatedPercent(
+          animalAidRequest.allreadyDonated || 0,
+          animalAidRequest.estimatedCost
+        )
+      }}%
+      {{ 'FROM' | translate }}
+      {{ animalAidRequest.estimatedCost }} UAH
+    </p>
+    <p class="mb-4">
+      <span class="font-bold"> {{ 'TYPE_OF_HELP' | translate }}:</span>
+      {{ animalAidRequest.category }}
+    </p>
+    <div class="">
+      <app-secondary-small-orange-button
+        buttonTitle="MORE"
+        (click)="onProjectDetailClick()"
+      ></app-secondary-small-orange-button>
+    </div>
+  </div>
+</div>
+
+<!-- <div
+    class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-primary-blue to-transparent"
+  >
+    <h3 class="text-white font-fixel text-[24px] font-bold p-6">
+      {{ animalAidRequest.title }}
+    </h3>
+  </div> -->

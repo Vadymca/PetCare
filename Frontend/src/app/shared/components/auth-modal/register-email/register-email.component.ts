@@ -54,7 +54,6 @@ export class RegisterEmailComponent {
     this.emitOption('register-name');
   }
   emitOption(option: ModalState['component']) {
-    console.log('RegisterEmailComponent: Selected option:', option); // Лог для дебагу
     this.selectOption.emit(option);
   }
 }

@@ -153,6 +153,13 @@ export const routes: Routes = [
         './pages/terms-and-conditions/terms-and-conditions.component'
       ).then(m => m.TermsAndConditionsComponent),
   },
+  {
+    path: 'privacy-policy',
+    loadComponent: () =>
+      import('./pages/privacy-policy/privacy-policy.component').then(
+        m => m.PrivacyPolicyComponent
+      ),
+  },
 
   {
     path: 'access-denied',

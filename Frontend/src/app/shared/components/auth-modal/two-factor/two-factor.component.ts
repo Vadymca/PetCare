@@ -73,7 +73,6 @@ export class TwoFactorComponent {
     this.resendCode.emit();
   }
   onSubmit() {
-    console.log('TwoFactorComponent: onSubmit');
     this.showBackupCodeInput = false;
     this.submitted.set(true);
     this.twoFaForm.markAllAsTouched();
@@ -86,7 +85,6 @@ export class TwoFactorComponent {
     }
   }
   onSubmitBackupCode() {
-    console.log('TwoFactorComponent: onSubmitBackupCode');
     this.submitted.set(true);
     this.backupCodeForm.markAllAsTouched();
     if (this.backupCodeForm.invalid) {

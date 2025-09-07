@@ -1,0 +1,108 @@
+<div
+  class="relative w-full flex flex-col text-center items-center text-secondary-neutral-mineShaft bg-primary-lightBlue pb-[22px]"
+>
+  <!-- Garland як фон -->
+  <div class="absolute top-[100px] w-full flex justify-center z-0">
+    <app-icon
+      [name]="'garland'"
+      class="w-full transform scale-x-[1.03] scale-y-[1.03]"
+    ></app-icon>
+  </div>
+
+  <h2
+    class="w-full font-fixel text-[40px] font-bold mt-[108px] text-secondary-neutral-mineShaft relative z-10"
+  >
+    {{ 'FINANCIAL_SUPPORT' | translate }}
+  </h2>
+
+  <!-- Контейнер для текстів -->
+  <div class="flex flex-col w-[680px] mt-10 relative z-10">
+    <div
+      class="flex flex-col justify-start items-center bg-primary-light-orange text-secondary-neutral-mineShaft p-6 w-full h-[278px] rounded-tl-[680px] rounded-tr-[680px] rounded-bl-[3px] rounded-br-[3px]"
+    >
+      <div
+        class="flex flex-1 flex-col gap-4 justify-center items-center h-full"
+      >
+        <button
+          type="button"
+          class="min-w-[260px] h-[52px] rounded-40 p-4 uppercase pr-10 pl-10 font-bold text-base text-primary-beige"
+          (click)="onDonateOnceClick()"
+          [ngClass]="
+            donateOnce()
+              ? 'bg-secondary-jordyBlue-3'
+              : 'bg-primary-lightBlue hover:bg-secondary-jordyBlue-2 hover:text-primary-blue active:bg-secondary-jordyBlue-3 active:text-primary-beige disabled:bg-secondary-neutral-alto disabled:text-secondary-neutral-doveGray'
+          "
+        >
+          <span>{{ 'DONATE_ONCE' | translate | uppercase }}</span>
+        </button>
+        <button
+          type="button"
+          class="min-w-[260px] h-[52px] rounded-40 p-4 uppercase pr-10 pl-10 font-bold text-base text-primary-beige"
+          (click)="onDonateMontlyClick()"
+          [ngClass]="
+            donateOnce()
+              ? 'bg-primary-lightBlue hover:bg-secondary-jordyBlue-2 hover:text-primary-blue active:bg-secondary-jordyBlue-3 active:text-primary-beige disabled:bg-secondary-neutral-alto disabled:text-secondary-neutral-doveGray'
+              : 'bg-secondary-jordyBlue-3'
+          "
+        >
+          <span>{{ 'DONATE_MONTHLY' | translate | uppercase }}</span>
+        </button>
+      </div>
+      <div class="font-fixel font-bold text-[40px] text-primary-beige text-end">
+        {{ 'CHOOSE_AMOUNT' | translate }}
+      </div>
+    </div>
+    <div
+      class="mt-1 flex flex-col items-center bg-secondary-neutral-white text-secondary-neutral-mineShaft p-[50px] w-full rounded-tl-[3px] rounded-tr-[3px] rounded-bl-[40px] rounded-br-[40px]"
+    >
+      <form
+        #formRef
+        [formGroup]="registerForm"
+        (ngSubmit)="onContinueClick()"
+        class="group flex flex-1 gap-4 flex-row flex-wrap justify-between items-end w-full h-full"
+      >
+        @for (sum of sums; track sum) {
+          <div
+            class="cursor-pointer font-bold flex min-w-[260px] h-[52px] rounded-40 border-2 border-secondary-neutral-silverChalice text-center items-center justify-center"
+            (click)="selectSum(sum)"
+            (keydown)="selectSum(sum)"
+            tabindex="0"
+            [ngClass]="{
+              'border-none bg-primary-orange text-primary-beige':
+                chosenSum() === sum,
+              'border-secondary-neutral-silverChalice bg-white':
+                chosenSum() !== sum,
+            }"
+          >
+            {{ sum }} UAH
+          </div>
+        }
+        <!-- Кастомна сума -->
+        <div class="relative w-fit">
+          <input
+            type="number"
+            id="customSum"
+            placeholder="{{ 'OTHER_SUM_PLACEHOLDER' | translate }}"
+            class="text-center font-bold justify-center flex min-w-[260px] h-[52px] rounded-40 border-2 border-secondary-neutral-silverChalice p-2"
+            [ngClass]="{
+              ' border-none bg-primary-orange text-primary-beige  focus:bg-transparent focus:text-secondary-neutral-mineShaft':
+                customSum() && customSum()! > 0,
+              ' bg-transparent text-secondary-neutral-mineShaft':
+                !customSum() || customSum()! <= 0,
+            }"
+            [value]="customSum() ?? ''"
+            formControlName="customSum"
+            (input)="onCustomSumChange()"
+          />
+        </div>
+      </form>
+
+      <div class="flex mt-10">
+        <app-secondary-large-button
+          buttonTitle="CONTINUE"
+          (pressButton)="onContinueClick()"
+        ></app-secondary-large-button>
+      </div>
+    </div>
+  </div>
+</div>
