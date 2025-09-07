@@ -1,7 +1,7 @@
 ﻿namespace PetCare.Api.Endpoints.Auth;
 
 using MediatR;
-using PetCare.Application.Dtos;
+using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.Refresh;
 
 /// <summary>

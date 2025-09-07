@@ -1,4 +1,4 @@
-﻿namespace PetCare.Application.Dtos;
+﻿namespace PetCare.Application.Dtos.AuthDtos;
 
 public sealed record SetupTotpResponseDto(
     bool Success,

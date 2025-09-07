@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using OtpNet;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Enums;
@@ -10,7 +11,6 @@ using PetCare.Infrastructure.Persistence;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 /// <summary>
@@ -29,9 +29,7 @@ public sealed class UserService : IUserService
     /// <param name="userManager">The user manager used to perform user-related operations.</param>
     /// <param name="dbContext">The database context used to save domain events and persist changes.</param>
     /// <param name="logger">The logger instance used to record diagnostic and operational messages.</param>
-    /// /// <param name="domainEventDispatcher">
-    /// The domain event dispatcher responsible for publishing domain events after entity changes.
-    /// </param>
+    /// <param name="httpContextAccessor">Provides access to the current HTTP context.</param>
     public UserService(
         UserManager<User> userManager,
         AppDbContext dbContext,
@@ -52,14 +50,20 @@ public sealed class UserService : IUserService
     /// <param name="firstName">The user's first name.</param>
     /// <param name="lastName">The user's last name.</param>
     /// <param name="phoneNumber">The user's phone number.</param>
-    /// /// <param name="postalCode">
+    /// <param name="postalCode">
     /// Optional postal code (ZIP) of the user's address. Can be <c>null</c> if not provided.
     /// </param>
     /// <returns>The created <see cref="User"/> entity.</returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown when the user creation fails with validation errors.
     /// </exception>
-    public async Task<User> CreateUserAsync(string email, string password, string firstName, string lastName, string phoneNumber, string? postalCode)
+    public async Task<User> CreateUserAsync(
+        string email,
+        string password,
+        string firstName,
+        string lastName,
+        string phoneNumber,
+        string? postalCode)
     {
         this.logger.LogInformation("Creating user with email: {Email}", email);
 
@@ -233,44 +237,186 @@ public sealed class UserService : IUserService
         return await this.userManager.GeneratePasswordResetTokenAsync(user);
     }
 
+    /// <summary>
+    /// Gets the currently authenticated user based on the HTTP context.
+    /// </summary>
+    /// <returns>The current <see cref="User"/> if authenticated; otherwise, <c>null</c>.</returns>
     public async Task<User?> GetCurrentUserAsync()
     {
-        var httpContext = httpContextAccessor.HttpContext;
-        if (httpContext == null) return null;
-
-        var claimsPrincipal = httpContext.User;
-        if (claimsPrincipal.Identity == null || !claimsPrincipal.Identity.IsAuthenticated)
+        var httpContext = this.httpContextAccessor.HttpContext;
+        if (httpContext == null || httpContext.User?.Identity == null || !httpContext.User.Identity.IsAuthenticated)
+        {
             return null;
+        }
 
-        var userIdStr = claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier)
-                        ?? claimsPrincipal.FindFirstValue("id");
-
-        if (!Guid.TryParse(userIdStr, out var userId))
-            return null;
-
-        return await FindByIdAsync(userId);
+        var user = await this.userManager.GetUserAsync(httpContext.User);
+        return user;
     }
 
+    /// <summary>
+    /// Gets the email address of the specified user.
+    /// </summary>
+    /// <param name="user">The user whose email to retrieve.</param>
+    /// <returns>The email address if available; otherwise, an empty string.</returns>
     public async Task<string> GetEmailAsync(User user)
     {
-        return await userManager.GetEmailAsync(user) ?? string.Empty;
+        return await this.userManager.GetEmailAsync(user) ?? string.Empty;
     }
 
+    /// <summary>
+    /// Gets the TOTP authenticator key for the specified user.
+    /// </summary>
+    /// <param name="user">The user whose authenticator key to retrieve.</param>
+    /// <returns>The authenticator key if available; otherwise, <c>null</c>.</returns>
     public async Task<string?> GetAuthenticatorKeyAsync(User user)
     {
-        return await userManager.GetAuthenticatorKeyAsync(user);
+        return await this.userManager.GetAuthenticatorKeyAsync(user);
     }
 
+    /// <summary>
+    /// Resets and generates a new TOTP authenticator key for the specified user.
+    /// </summary>
+    /// <param name="user">The user whose authenticator key to reset.</param>
+    /// <returns>The newly generated authenticator key.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when a new authenticator key could not be generated.</exception>
     public async Task<string> ResetAuthenticatorKeyAsync(User user)
     {
-        await userManager.ResetAuthenticatorKeyAsync(user);
-        var key = await userManager.GetAuthenticatorKeyAsync(user);
+        await this.userManager.ResetAuthenticatorKeyAsync(user);
+        var key = await this.userManager.GetAuthenticatorKeyAsync(user);
         return key ?? throw new InvalidOperationException("Не вдалося згенерувати ключ TOTP.");
     }
 
+    /// <summary>
+    /// Generates new recovery codes for two-factor authentication for the specified user.
+    /// </summary>
+    /// <param name="user">The user for whom to generate recovery codes.</param>
+    /// <param name="count">The number of recovery codes to generate.</param>
+    /// <returns>An array of newly generated recovery codes.</returns>
     public async Task<string[]> GenerateNewTwoFactorRecoveryCodesAsync(User user, int count)
     {
-        var codes = await userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, count);
+        var codes = await this.userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, count);
         return codes?.ToArray() ?? Array.Empty<string>();
+    }
+
+    /// <summary>
+    /// Verifies a TOTP (Time-based One-Time Password) code for the specified user.
+    /// </summary>
+    /// <param name="user">The user whose TOTP code is being verified.</param>
+    /// <param name="code">The TOTP code provided by the user.</param>
+    /// <returns>
+    /// <c>true</c> if the code is valid for the current TOTP window; otherwise, <c>false</c>.
+    /// </returns>
+    public async Task<bool> VerifyTotpCodeAsync(User user, string code)
+    {
+        var secret = await this.userManager.GetAuthenticatorKeyAsync(user);
+        if (string.IsNullOrEmpty(secret))
+        {
+            return false;
+        }
+
+        var totp = new Totp(Base32Encoding.ToBytes(secret));
+        return totp.VerifyTotp(code, out _, VerificationWindow.RfcSpecifiedNetworkDelay);
+    }
+
+    /// <summary>
+    /// Enables two-factor authentication for the specified user.
+    /// </summary>
+    /// <param name="user">The user for whom to enable two-factor authentication.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public async Task EnableTwoFactorAsync(User user)
+    {
+        user.TwoFactorEnabled = true;
+        await this.userManager.UpdateAsync(user);
+    }
+
+    /// <summary>
+    /// Disables two-factor authentication (TOTP) for the specified user.
+    /// </summary>
+    /// <param name="user">The user for whom TOTP should be disabled.</param>
+    /// <returns>
+    /// A <c>true</c> value if TOTP was successfully disabled; otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    /// This method uses ASP.NET Identity's <see cref="UserManager{TUser}.SetTwoFactorEnabledAsync"/>
+    /// to turn off 2FA, which internally updates the user in the database. Then it resets the
+    /// authenticator key using <see cref="UserManager{TUser}.ResetAuthenticatorKeyAsync"/>, ensuring
+    /// the user cannot use the previous TOTP codes.
+    /// </remarks>
+    public async Task<bool> DisableTotpAsync(User user)
+    {
+        var disableResult = await this.userManager.SetTwoFactorEnabledAsync(user, false);
+        if (!disableResult.Succeeded)
+        {
+            return false;
+        }
+
+        await this.userManager.ResetAuthenticatorKeyAsync(user);
+
+        return true;
+    }
+
+    /// <summary>
+    /// Retrieves the TOTP backup (recovery) codes for the specified user.
+    /// </summary>
+    /// <param name="user">The user whose backup codes are requested.</param>
+    /// <returns>A list of backup codes if the user is valid; otherwise, an empty list.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="user"/> is null.</exception>
+    public async Task<IReadOnlyList<string>> GetTotpBackupCodesAsync(User user)
+    {
+        if (user == null)
+        {
+            throw new ArgumentNullException(nameof(user), "При отриманні резервних кодів TOTP користувач не може бути нульовим.");
+        }
+
+        // Generate 10 new two-factor recovery codes for the user
+        var codes = await this.userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10)
+                  ?? Array.Empty<string>();
+
+        return codes.ToList();
+    }
+
+    /// <summary>
+    /// Regenerates new TOTP (two-factor authentication) backup codes for the specified user.
+    /// </summary>
+    /// <param name="user">The user for whom to regenerate backup codes.</param>
+    /// <returns>
+    /// A read-only list of newly generated backup codes.
+    /// If the <paramref name="user"/> is <c>null</c>, an <see cref="ArgumentNullException"/> is thrown.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="user"/> is <c>null</c>.</exception>
+    public async Task<IReadOnlyList<string>> RegenerateTotpBackupCodesAsync(User user)
+    {
+        if (user == null)
+        {
+            throw new ArgumentNullException(nameof(user));
+        }
+
+        var codes = await this.userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
+
+        return codes?.ToList() ?? new List<string>();
+    }
+
+    /// <summary>
+    /// Verifies a TOTP backup code for the specified user.
+    /// </summary>
+    /// <param name="user">The user for whom the backup code should be verified.</param>
+    /// <param name="code">The backup code provided by the user.</param>
+    /// <returns>
+    /// <c>true</c> if the backup code is valid and successfully redeemed; otherwise, <c>false</c>.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="user"/> is <c>null</c>.</exception>
+    public async Task<bool> VerifyTotpBackupCodeAsync(User user, string code)
+    {
+        if (user == null)
+        {
+            throw new ArgumentNullException(nameof(user));
+        }
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            return false;
+        }
+
+        var isValid = await this.userManager.RedeemTwoFactorRecoveryCodeAsync(user, code);
+        return isValid.Succeeded;
     }
 }

@@ -1,3 +1,3 @@
-﻿namespace PetCare.Application.Dtos;
+﻿namespace PetCare.Application.Dtos.AuthDtos;
 
 public sealed record ForgotPasswordResponseDto(bool Success, string Message);

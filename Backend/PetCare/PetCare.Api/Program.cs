@@ -2,8 +2,10 @@ namespace PetCare.Api;
 
 using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using PetCare.Api.Endpoints.Auth;
@@ -39,6 +41,44 @@ public class Program
             Log.Information("Запуск PetCare.Api...");
 
             var builder = WebApplication.CreateBuilder(args);
+
+            var envSecret = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
+            if (!string.IsNullOrEmpty(envSecret))
+            {
+                builder.Configuration["Jwt:Secret"] = envSecret;
+            }
+
+            // -------------------- Authentication & Authorization --------------------
+            builder.Services.AddAuthentication(options =>
+            {
+                // Встановлюємо JWT як схему за замовчуванням
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
+                                ?? builder.Configuration["JwtSettings:SecretKey"]
+                                ?? throw new InvalidOperationException("JWT SecretKey не встановлено");
+
+                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.ASCII.GetBytes(secretKey)),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                };
+            });
+
+            // Застосовуємо схему авторизації за замовчуванням
+            builder.Services.AddAuthorization(options =>
+            {
+                // Якщо потрібно, можна додати політики
+                options.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
+                    .Build();
+            });
 
             // -------------------- DbContext --------------------
             builder.Services.AddDbContext<AppDbContext>(options =>
@@ -133,16 +173,22 @@ public class Program
             var app = builder.Build();
 
             // --------------------Endpoints--------------------
-            app.MapRegisterEndpoint();
-            app.MapLoginEndpoint();
-            app.MapLogoutEndpoint();
-            app.MapRefreshEndpoint();
-            app.MapForgotPasswordEndpoint();
-            app.MapResetPasswordEndpoint();
-            app.MapConfirmEmailEndpoint();
-            app.MapResendVerificationEndpoint();
+            app.MapRegisterEndpoint(); // /api/auth/register
+            app.MapLoginEndpoint(); // /api/auth/login
+            app.MapLogoutEndpoint(); // /api/auth/logout
+            app.MapRefreshEndpoint(); // /api/auth/refresh
+            app.MapForgotPasswordEndpoint(); // /api/auth/forgot-password
+            app.MapResetPasswordEndpoint(); // /api/auth/reset-password
+            app.MapConfirmEmailEndpoint(); // /api/auth/confirm-email
+            app.MapResendVerificationEndpoint(); // /api/auth/resend-verification
 
-            app.MapSetupTotpEndpoint();
+            app.MapSetupTotpEndpoint(); // /api/auth/2fa/totp/setup
+            app.MapVerifyTotpSetupEndpoint(); // /api/auth/2fa/totp/verify-setup
+            app.MapVerifyTotpEndpoint(); // /api/auth/2fa/totp/verify
+            app.MapDisableTotpEndpoint(); // /api/auth/2fa/totp/disable
+            app.MapGetTotpBackupCodesEndpoint(); // /api/auth/2fa/totp/backup-codes
+            app.MapRegenerateBackupCodesEndpoint(); // /api/auth/2fa/totp/regenerate-backup-codes
+            app.MapVerifyTotpBackupCodeEndpoint(); // /api/auth/2fa/totp/verify-backup-code
 
             // -------------------- Middleware --------------------
             app.UseSerilogRequestLogging();

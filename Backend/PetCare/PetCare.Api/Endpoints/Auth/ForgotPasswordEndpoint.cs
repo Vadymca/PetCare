@@ -2,7 +2,7 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using PetCare.Application.Dtos;
+using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.ForgotPassword;
 using System.Text.Json;
 
@@ -36,7 +36,7 @@ public static class ForgotPasswordEndpoint
 
                 logger.LogInformation("Deserialized command: Email='{Email}'", command?.Email ?? "NULL");
 
-                var response = await mediator.Send(command);
+                var response = await mediator.Send(command!);
                 return Results.Ok(response);
             }
             catch (InvalidOperationException ex)

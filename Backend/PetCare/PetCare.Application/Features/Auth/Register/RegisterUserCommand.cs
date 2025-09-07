@@ -1,6 +1,6 @@
 ﻿namespace PetCare.Application.Features.Auth.Register;
 using MediatR;
-using PetCare.Application.Dtos;
+using PetCare.Application.Dtos.AuthDtos;
 
 /// <summary>
 /// Command for registering a new user.

@@ -10,7 +10,7 @@ public sealed class QrCodeGeneratorService : IQrCodeGenerator
     /// <summary>
     /// Generates a QR code image in Base64 format from the specified URI.
     /// </summary>
-    /// <param name="uri">The URI or text to encode into the QR code.</param>
+    /// <param name="totpUri">The URI or text to encode into the QR code.</param>
     /// <returns>
     /// A <see cref="string"/> containing the QR code as a Base64-encoded PNG image,
     /// suitable for embedding directly in an HTML <c>&lt;img&gt;</c> tag.

@@ -80,13 +80,86 @@ public interface IUserService
     /// <returns>The password reset token as a string.</returns>
     Task<string> GeneratePasswordResetTokenAsync(User user);
 
+    /// <summary>
+    /// Gets the currently authenticated user from the HTTP context.
+    /// </summary>
+    /// <returns>The current user if authenticated, null otherwise.</returns>
     Task<User?> GetCurrentUserAsync();
 
+    /// <summary>
+    /// Gets the email address of the specified user.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <returns>The user's email address.</returns>
     Task<string> GetEmailAsync(User user);
 
+    /// <summary>
+    /// Gets the authenticator key for TOTP-based two-factor authentication.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <returns>The authenticator key, or null if none exists.</returns>
     Task<string?> GetAuthenticatorKeyAsync(User user);
 
+    /// <summary>
+    /// Resets the authenticator key for TOTP-based two-factor authentication.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <returns>The newly generated authenticator key.</returns>
     Task<string> ResetAuthenticatorKeyAsync(User user);
 
+    /// <summary>
+    /// Generates new recovery codes for TOTP-based two-factor authentication.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <param name="count">The number of recovery codes to generate.</param>
+    /// <returns>An array of generated recovery codes.</returns>
     Task<string[]> GenerateNewTwoFactorRecoveryCodesAsync(User user, int count);
+
+    /// <summary>
+    /// Verifies a TOTP (Time-based One-Time Password) code for the specified user.
+    /// </summary>
+    /// <param name="user">The user whose TOTP code is being verified.</param>
+    /// <param name="code">The TOTP code provided by the user.</param>
+    /// <returns>
+    /// <c>true</c> if the code is valid for the current TOTP window; otherwise, <c>false</c>.
+    /// </returns>
+    Task<bool> VerifyTotpCodeAsync(User user, string code);
+
+    /// <summary>
+    /// Enables two-factor authentication for the specified user.
+    /// </summary>
+    /// <param name="user">The user for whom to enable two-factor authentication.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task EnableTwoFactorAsync(User user);
+
+    /// <summary>
+    /// Disables TOTP two-factor authentication for the specified user.
+    /// </summary>
+    /// <param name="user">The user whose TOTP is being disabled.</param>
+    /// <returns><c>true</c> if TOTP was disabled successfully; otherwise, <c>false</c>.</returns>
+    Task<bool> DisableTotpAsync(User user);
+
+    /// <summary>
+    /// Retrieves the backup codes for the specified user.
+    /// </summary>
+    /// <param name="user">The user whose backup codes are requested.</param>
+    /// <returns>A list of backup codes.</returns>
+    Task<IReadOnlyList<string>> GetTotpBackupCodesAsync(User user);
+
+    /// <summary>
+    /// Regenerates new TOTP backup codes for the specified user.
+    /// </summary>
+    /// <param name="user">The user for whom to regenerate backup codes.</param>
+    /// <returns>A read-only list of newly generated codes.</returns>
+    Task<IReadOnlyList<string>> RegenerateTotpBackupCodesAsync(User user);
+
+    /// <summary>
+    /// Verifies a TOTP backup code for the specified user.
+    /// </summary>
+    /// <param name="user">The user whose backup code is being verified.</param>
+    /// <param name="code">The backup code provided by the user.</param>
+    /// <returns>
+    /// <c>true</c> if the code is valid; otherwise, <c>false</c>.
+    /// </returns>
+    Task<bool> VerifyTotpBackupCodeAsync(User user, string code);
 }

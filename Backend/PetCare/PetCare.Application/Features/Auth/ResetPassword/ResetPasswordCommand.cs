@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using PetCare.Application.Dtos;
+using PetCare.Application.Dtos.AuthDtos;
 
 namespace PetCare.Application.Features.Auth.ResetPassword
 {

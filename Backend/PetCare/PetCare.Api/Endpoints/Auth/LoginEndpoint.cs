@@ -1,7 +1,7 @@
 ﻿namespace PetCare.Api.Endpoints.Auth;
 
 using MediatR;
-using PetCare.Application.Dtos;
+using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.Login;
 using System.Text.Json;
 
@@ -35,7 +35,7 @@ public static class LoginEndpoint
 
                 logger.LogInformation("Deserialized command: Email='{Email}'", command?.Email ?? "NULL");
 
-                var loginResponse = await mediator.Send(command);
+                var loginResponse = await mediator.Send(command!);
                 return Results.Ok(loginResponse);
             }
             catch (InvalidOperationException ex)

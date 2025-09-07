@@ -1,7 +1,7 @@
 ﻿namespace PetCare.Api.Endpoints.Auth;
 
 using MediatR;
-using PetCare.Application.Dtos;
+using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.Register;
 using System.Text.Json;
 
@@ -43,7 +43,7 @@ public static class RegisterEndpoint
                     command?.PhoneNumber ?? "NULL",
                     command?.PostalCode ?? "NULL");
 
-                var userDto = await mediator.Send(command);
+                var userDto = await mediator.Send(command!);
                 return Results.Created($"/api/users/{userDto.Id}", userDto);
             }
             catch (InvalidOperationException ex)

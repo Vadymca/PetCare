@@ -35,24 +35,24 @@ public sealed class JwtService : IJwtService
     {
         this.logger = logger;
 
-        secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
+        this.secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
                      ?? configuration["JwtSettings:SecretKey"]
                      ?? throw new InvalidOperationException("JWT SecretKey не встановлено");
 
-        issuer = Environment.GetEnvironmentVariable("JWT_ISSUER")
+        this.issuer = Environment.GetEnvironmentVariable("JWT_ISSUER")
                       ?? configuration["JwtSettings:Issuer"]
                       ?? "PetCare.Api";
 
-        audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE")
+        this.audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE")
                         ?? configuration["JwtSettings:Audience"]
                         ?? "PetCare.Client";
 
-        expirationMinutes = int.Parse(
+        this.expirationMinutes = int.Parse(
             Environment.GetEnvironmentVariable("JWT_EXPIRATION_MINUTES")
             ?? configuration["JwtSettings:ExpirationMinutes"]
             ?? "60");
 
-        refreshExpirationDays = int.Parse(
+        this.refreshExpirationDays = int.Parse(
            Environment.GetEnvironmentVariable("JWT_REFRESH_EXPIRATION_DAYS")
            ?? configuration["JwtSettings:RefreshExpirationDays"]
            ?? "7");
@@ -65,7 +65,7 @@ public sealed class JwtService : IJwtService
     /// <returns>Serialized JWT access token.</returns>
     public string GenerateAccessToken(User user)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this.secretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
@@ -79,15 +79,15 @@ public sealed class JwtService : IJwtService
         };
 
         var token = new JwtSecurityToken(
-            issuer: issuer,
-            audience: audience,
+            issuer: this.issuer,
+            audience: this.audience,
             claims: claims,
             notBefore: DateTime.UtcNow,
-            expires: DateTime.UtcNow.AddMinutes(expirationMinutes),
+            expires: DateTime.UtcNow.AddMinutes(this.expirationMinutes),
             signingCredentials: creds);
 
         var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-        logger.LogInformation("JWT згенеровано для користувача {UserId}", user.Id);
+        this.logger.LogInformation("JWT згенеровано для користувача {UserId}", user.Id);
         return tokenString;
     }
 
@@ -98,7 +98,7 @@ public sealed class JwtService : IJwtService
     /// <returns>Serialized JWT refresh token.</returns>
     public string GenerateRefreshToken(Guid userId)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this.secretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         // Використовуємо ClaimsIdentity, щоб явно передати claims
@@ -111,11 +111,11 @@ public sealed class JwtService : IJwtService
         var identity = new ClaimsIdentity(claims);
 
         var token = new JwtSecurityToken(
-            issuer: issuer,
-            audience: audience,
+            issuer: this.issuer,
+            audience: this.audience,
             claims: identity.Claims,
             notBefore: DateTime.UtcNow,
-            expires: DateTime.UtcNow.AddDays(refreshExpirationDays),
+            expires: DateTime.UtcNow.AddDays(this.refreshExpirationDays),
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
@@ -133,12 +133,12 @@ public sealed class JwtService : IJwtService
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.Strict,
-            Expires = DateTime.UtcNow.AddMinutes(expirationMinutes),
+            Expires = DateTime.UtcNow.AddMinutes(this.expirationMinutes),
             Path = "/",
         };
 
         response.Cookies.Append("access_token", token, options);
-        logger.LogInformation("Access token cookie встановлено, екcп.: {Expiration}", options.Expires);
+        this.logger.LogInformation("Access token cookie встановлено, екcп.: {Expiration}", options.Expires);
     }
 
     /// <summary>
@@ -153,12 +153,12 @@ public sealed class JwtService : IJwtService
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.Strict,
-            Expires = DateTime.UtcNow.AddDays(refreshExpirationDays),
+            Expires = DateTime.UtcNow.AddDays(this.refreshExpirationDays),
             Path = "/",
         };
 
         response.Cookies.Append("refresh_token", token, options);
-        logger.LogInformation("Refresh token cookie встановлено, екcп.: {Expiration}", options.Expires);
+        this.logger.LogInformation("Refresh token cookie встановлено, екcп.: {Expiration}", options.Expires);
     }
 
     /// <summary>
@@ -170,7 +170,7 @@ public sealed class JwtService : IJwtService
         response.Cookies.Delete("access_token");
         response.Cookies.Delete("refresh_token");
 
-        logger.LogInformation("JWT cookies очищено");
+        this.logger.LogInformation("JWT cookies очищено");
     }
 
     /// <summary>
@@ -183,16 +183,16 @@ public sealed class JwtService : IJwtService
         try
         {
             var handler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(secretKey);
+            var key = Encoding.UTF8.GetBytes(this.secretKey);
 
             var parameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(key),
                 ValidateIssuer = true,
-                ValidIssuer = issuer,
+                ValidIssuer = this.issuer,
                 ValidateAudience = true,
-                ValidAudience = audience,
+                ValidAudience = this.audience,
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero,
             };
@@ -202,7 +202,7 @@ public sealed class JwtService : IJwtService
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Валідація JWT неуспішна");
+            this.logger.LogWarning(ex, "Валідація JWT неуспішна");
             return null;
         }
     }
@@ -217,16 +217,16 @@ public sealed class JwtService : IJwtService
         try
         {
             var handler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(secretKey);
+            var key = Encoding.UTF8.GetBytes(this.secretKey);
 
             var parameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(key),
                 ValidateIssuer = true,
-                ValidIssuer = issuer,
+                ValidIssuer = this.issuer,
                 ValidateAudience = true,
-                ValidAudience = audience,
+                ValidAudience = this.audience,
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero,
             };

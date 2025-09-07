@@ -1,7 +1,7 @@
 ﻿namespace PetCare.Api.Endpoints.Auth.TwoFactor;
 
 using MediatR;
-using PetCare.Application.Dtos;
+using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.TwoFactor.SetupTotp;
 
 /// <summary>
@@ -29,8 +29,7 @@ public static class SetupTotpEndpoint
                 logger.LogError(ex, "Error while setting up TOTP.");
                 return Results.Problem(
                     detail: ex.Message,
-                    statusCode: StatusCodes.Status500InternalServerError
-                );
+                    statusCode: StatusCodes.Status500InternalServerError);
             }
         })
         .RequireAuthorization()
