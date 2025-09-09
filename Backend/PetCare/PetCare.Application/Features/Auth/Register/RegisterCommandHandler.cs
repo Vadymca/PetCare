@@ -76,7 +76,7 @@ public sealed class RegisterUserCommandHandler : IRequestHandler<RegisterUserCom
         var emailConfirmationToken = await this.userService.GenerateEmailConfirmationTokenAsync(user);
 
         // Формуємо посилання на підтвердження email
-        var confirmationUrl = $"http://localhost:4200/verify-email?token={emailConfirmationToken}";
+        var confirmationUrl = $"http://localhost:4200/verify-email?token={emailConfirmationToken}&email={user.Email}";
 
         // Підготовка email
         var subject = "Підтвердження Email для PetCare";
