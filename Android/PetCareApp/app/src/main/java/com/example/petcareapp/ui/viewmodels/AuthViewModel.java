@@ -1,6 +1,7 @@
 package com.example.petcareapp.ui.viewmodels;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.petcareapp.data.models.LoginResponse;
@@ -38,6 +39,13 @@ public class AuthViewModel extends ViewModel {
         return repository.updateUserProfile(userId, request);
     }
 
+    public LiveData<Boolean> resetPassword(String email) {
+        MutableLiveData<Boolean> result = new MutableLiveData<>();
+        // Тут вызов в репозиторий / API
+        // Например, имитация успешного результата:
+        result.setValue(true);
+        return result;
+    }
     public String getUserId() {
         return repository.getUserId();
     }

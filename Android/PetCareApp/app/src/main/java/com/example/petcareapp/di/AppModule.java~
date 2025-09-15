@@ -15,7 +15,6 @@ import com.example.petcareapp.data.repository.AuthRepository;
 import com.example.petcareapp.data.room.PetCareDatabase;
 import com.example.petcareapp.ui.viewmodels.AnimalViewModel;
 import com.example.petcareapp.ui.viewmodels.AuthViewModel;
-import com.example.petcareapp.ui.viewmodels.HomeViewModel;
 import com.example.petcareapp.ui.viewmodels.OnboardingViewModel;
 
 import java.net.CookieManager;
@@ -176,9 +175,6 @@ public class AppModule {
                     return (T) new AuthViewModel(authRepository);
                 } else if (modelClass.isAssignableFrom(OnboardingViewModel.class)) {
                     return (T) new OnboardingViewModel();  // Add this line
-                }
-                else if (modelClass.isAssignableFrom(HomeViewModel.class)) {
-                    return (T) new HomeViewModel(animalRepository);
                 }
                 throw new IllegalArgumentException("Unknown ViewModel class");
             }

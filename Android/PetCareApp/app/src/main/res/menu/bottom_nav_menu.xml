@@ -1,11 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+
     <item
-        android:id="@+id/animalListFragment"
-        android:title="@string/animals"
-        android:icon="@drawable/placeholder_animal" />
+        android:id="@+id/nav_home"
+        android:icon="@drawable/ic_home"
+        android:title="" />
+
     <item
-        android:id="@+id/shelterListFragment"
-        android:title="@string/shelters"
-        android:icon="@drawable/placeholder_shelter" />
+        android:id="@+id/nav_favorites"
+        android:icon="@drawable/ic_heart"
+        android:title="" />
+
+    <item
+        android:id="@+id/nav_notifications"
+        android:icon="@drawable/ic_bell"
+        android:title="" />
+
+    <item
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/ic_profile"
+        android:title="" />
+
 </menu>
