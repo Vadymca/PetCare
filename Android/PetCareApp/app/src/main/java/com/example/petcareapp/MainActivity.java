@@ -3,6 +3,7 @@ package com.example.petcareapp;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,7 +18,6 @@ import androidx.navigation.ui.NavigationUI;
 import com.example.petcareapp.databinding.ActivityMainBinding;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
@@ -28,7 +28,6 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        Log.d("MainActivity", "NavHostFragment ID: " + R.id.nav_host_fragment);
         if (binding.navHostFragment == null) {
             Log.e("MainActivity", "NavHostFragment is null in binding!");
             return;
@@ -39,15 +38,18 @@ public class MainActivity extends AppCompatActivity {
                 NavController navController = Navigation.findNavController(binding.navHostFragment);
                 Log.d("MainActivity", "NavController: " + navController.toString());
 
-                // Налаштування AppBar
-//                AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-//                        R.id.animalListFragment, R.id.shelterListFragment)
-//                        .build();
-//                NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-
-                // Налаштування BottomNavigationView
-                BottomNavigationView bottomNav = binding.bottomNavigation;
+                BottomNavigationView bottomNav = binding.bottomNavigationView;
                 NavigationUI.setupWithNavController(bottomNav, navController);
+
+                // слушатель смены фрагментов
+                navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+                    int destId = destination.getId();
+                    if (destId == R.id.homeFragment) {
+                        bottomNav.setVisibility(View.VISIBLE);  // показываем на основных экранах
+                    } else {
+                        bottomNav.setVisibility(View.GONE);     // скрываем на онбординге/логине/регистрации
+                    }
+                });
 
                 Log.d("MainActivity", "NavController initialized successfully");
             } catch (IllegalStateException e) {
@@ -71,4 +73,3 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 }
-
