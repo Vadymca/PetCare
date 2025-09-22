@@ -1,5 +1,6 @@
 ﻿namespace PetCare.Application.Features.Auth.Refresh;
 
+using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -22,6 +23,7 @@ public sealed class RefreshUserCommandHandler : IRequestHandler<RefreshUserComma
     private readonly IUserService userService;
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly ILogger<RefreshUserCommandHandler> logger;
+    private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RefreshUserCommandHandler"/> class.
@@ -30,17 +32,20 @@ public sealed class RefreshUserCommandHandler : IRequestHandler<RefreshUserComma
     /// <param name="userService">Service for accessing user information.</param>
     /// <param name="httpContextAccessor">Accessor for the current HTTP context.</param>
     /// <param name="logger">Logger instance for diagnostic information.</param>
+    /// <param name="mapper">The AutoMapper instance for mapping domain entities to DTOs.</param>
     /// <exception cref="ArgumentNullException">Thrown when any of the dependencies are null.</exception>
     public RefreshUserCommandHandler(
         IJwtService jwtService,
         IUserService userService,
         IHttpContextAccessor httpContextAccessor,
-        ILogger<RefreshUserCommandHandler> logger)
+        ILogger<RefreshUserCommandHandler> logger,
+        IMapper mapper)
     {
         this.jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
         this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
         this.httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <summary>
@@ -111,13 +116,13 @@ public sealed class RefreshUserCommandHandler : IRequestHandler<RefreshUserComma
         var newAccessToken = this.jwtService.GenerateAccessToken(user);
         var newRefreshToken = this.jwtService.GenerateRefreshToken(user.Id);
 
-        // Оновлюємо cookie
-        this.jwtService.SetAccessTokenCookie(context.Response, newAccessToken);
-        this.jwtService.SetRefreshTokenCookie(context.Response, newRefreshToken);
-
         this.logger.LogInformation("Refresh token successfully validated for user {UserId}", user.Id);
 
-        var userDto = new UserDto(user.Id, user.Email!, user.FirstName, user.LastName, user.Phone, "User", user.PostalCode);
-        return new LoginResponseDto(newAccessToken, newRefreshToken, userDto);
+        var userDto = this.mapper.Map<UserDto>(user);
+
+        return new LoginResponseDto(
+            Status: "success",
+            AccessToken: newAccessToken,
+            User: userDto);
     }
 }

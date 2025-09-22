@@ -11,7 +11,7 @@ public sealed record UserProfileUpdatedEvent(Guid UserId)
 public sealed record UserProfilePhotoChangedEvent(Guid UserId, string? NewPhotoUrl)
     : DomainEvent;
 
-public sealed record UserProfilePhotoRemovedEvent(Guid UserId)
+public sealed record UserProfilePhotoRemovedEvent(Guid UserId, string OldPhotoUrl)
     : DomainEvent;
 
 public sealed record UserPointsAddedEvent(Guid UserId, int Amount)

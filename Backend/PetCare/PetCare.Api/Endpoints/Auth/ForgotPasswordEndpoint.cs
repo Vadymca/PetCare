@@ -4,7 +4,6 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.ForgotPassword;
-using System.Text.Json;
 
 /// <summary>
 /// Contains the endpoint mapping for forgot password.
@@ -17,36 +16,15 @@ public static class ForgotPasswordEndpoint
     /// <param name="app">The <see cref="WebApplication"/> instance to configure endpoints on.</param>
     public static void MapForgotPasswordEndpoint(this WebApplication app)
     {
-        app.MapPost("/api/auth/forgot-password", async (HttpContext context, IMediator mediator, ILoggerFactory loggerFactory) =>
+        app.MapPost("/api/auth/forgot-password", async (IMediator mediator, ForgotPasswordCommand command, ILoggerFactory loggerFactory) =>
         {
-            try
-            {
-                var logger = loggerFactory.CreateLogger("ForgotPasswordEndpoint");
+            var logger = loggerFactory.CreateLogger("ForgotPasswordEndpoint");
+            logger.LogInformation("Forgot password requested for email: {Email}", command.Email);
 
-                // Read raw JSON from request body
-                using var reader = new StreamReader(context.Request.Body);
-                var json = await reader.ReadToEndAsync();
-                logger.LogInformation("Received raw JSON: {Json}", json);
+            var response = await mediator.Send(command);
 
-                // Deserialize into command
-                var command = JsonSerializer.Deserialize<ForgotPasswordCommand>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                });
-
-                logger.LogInformation("Deserialized command: Email='{Email}'", command?.Email ?? "NULL");
-
-                var response = await mediator.Send(command!);
-                return Results.Ok(response);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
+            logger.LogInformation("Forgot password processed for email: {Email}", command.Email);
+            return Results.Ok(response);
         })
         .WithName("ForgotPassword")
         .RequireRateLimiting("GlobalPolicy")

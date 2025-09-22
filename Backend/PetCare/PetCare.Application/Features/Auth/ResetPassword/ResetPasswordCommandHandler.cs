@@ -47,16 +47,20 @@ public sealed class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordC
             this.logger.LogWarning("ResetPassword requested for non-existing email: {Email}", request.Email);
 
             // Не повідомляємо, що користувач не існує
-            return new ResetPasswordResponseDto(true, "Якщо користувач існує, пароль було скинуто.");
+            return new ResetPasswordResponseDto(
+                Success: true,
+                Message: "Якщо користувач існує, пароль було скинуто.");
         }
 
         var success = await this.userService.ResetPasswordAsync(user, request.Token, request.NewPassword);
 
         if (!success)
         {
-            return new ResetPasswordResponseDto(false, "Не вдалося скинути пароль: Invalid token або пароль не відповідає вимогам.");
+            throw new InvalidOperationException("Не вдалося скинути пароль: Invalid token або пароль не відповідає вимогам.");
         }
 
-        return new ResetPasswordResponseDto(true, "Пароль успішно змінено.");
+        return new ResetPasswordResponseDto(
+            Success: true,
+            Message: "Пароль успішно змінено.");
     }
 }

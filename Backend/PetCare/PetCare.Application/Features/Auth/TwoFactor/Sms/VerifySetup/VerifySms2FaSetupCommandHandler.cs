@@ -45,7 +45,7 @@ public sealed class VerifySms2FaSetupCommandHandler
         if (user == null)
         {
             this.logger.LogWarning("Unauthorized attempt to verify SMS 2FA setup code.");
-            return new VerifySms2FaSetupResponseDto(false, "Користувач не авторизований.");
+            throw new UnauthorizedAccessException("Користувач не авторизований.");
         }
 
         // Перевіряємо код через сервіс SMS 2FA
@@ -53,7 +53,7 @@ public sealed class VerifySms2FaSetupCommandHandler
         if (!isValid)
         {
             this.logger.LogWarning("Invalid SMS 2FA setup code attempt for user {UserId}", user.Id);
-            return new VerifySms2FaSetupResponseDto(false, "Невірний код підтвердження.");
+            throw new InvalidOperationException("Невірний код підтвердження.");
         }
 
         // Підтверджуємо номер телефону користувача

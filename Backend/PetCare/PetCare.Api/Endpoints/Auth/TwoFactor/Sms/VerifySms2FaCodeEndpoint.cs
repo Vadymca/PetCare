@@ -1,6 +1,7 @@
 ﻿namespace PetCare.Api.Endpoints.Auth.TwoFactor.Sms;
 
 using MediatR;
+using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.TwoFactor.Sms.Verify;
 
 /// <summary>
@@ -21,31 +22,19 @@ public static class VerifySms2FaCodeEndpoint
         {
             var logger = loggerFactory.CreateLogger("VerifySms2FaCodeEndpoint");
 
-            try
-            {
-                var result = await mediator.Send(command);
+            logger.LogInformation("Attempting to verify SMS 2FA code.");
+            var result = await mediator.Send(command);
 
-                if (!result.Success)
-                {
-                    logger.LogWarning("Failed to verify SMS 2FA code: {Message}", result.Message);
-                    return Results.BadRequest(new { message = result.Message });
-                }
-
-                logger.LogInformation("SMS 2FA code verified successfully.");
-                return Results.Ok(new { message = result.Message });
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error verifying SMS 2FA code");
-                return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
+            logger.LogInformation("SMS 2FA code verified successfully for user {UserId}", result.User?.Id);
+            return Results.Ok(result);
         })
         .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("VerifySms2FaCode")
         .WithTags("Auth")
-        .Produces(StatusCodes.Status200OK)
+        .Produces<VerifySms2FaCodeResponseDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status500InternalServerError)
         .Accepts<VerifySms2FaCodeCommand>("application/json");
     }

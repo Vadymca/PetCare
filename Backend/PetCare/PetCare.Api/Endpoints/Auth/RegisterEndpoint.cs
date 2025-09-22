@@ -3,7 +3,6 @@
 using MediatR;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.Register;
-using System.Text.Json;
 
 /// <summary>
 /// Contains endpoint mapping for user registration.
@@ -18,51 +17,23 @@ public static class RegisterEndpoint
     /// <param name="app">The <see cref="WebApplication"/> to which the endpoint will be added.</param>
     public static void MapRegisterEndpoint(this WebApplication app)
     {
-        app.MapPost("/api/auth/register", async (HttpContext context, IMediator mediator, ILoggerFactory loggerFactory) =>
+        app.MapPost("/api/auth/register", async (IMediator mediator, RegisterUserCommand command, ILoggerFactory loggerFactory) =>
         {
             var logger = loggerFactory.CreateLogger("RegisterEndpoint");
+            logger.LogInformation("Registration requested for email: {Email}", command.Email);
 
-            try
-            {
-                // Читаємо JSON з body
-                using var reader = new StreamReader(context.Request.Body);
-                var json = await reader.ReadToEndAsync();
-                logger.LogInformation("Received raw JSON: {Json}", json);
+            var userDto = await mediator.Send(command);
 
-                // Десеріалізуємо JSON
-                var command = JsonSerializer.Deserialize<RegisterUserCommand>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                });
+            logger.LogInformation("Registration successful for email: {Email}, UserId: {UserId}", command.Email, userDto.Id);
 
-                logger.LogInformation(
-                    "Deserialized command: Email='{Email}', FirstName='{FirstName}', LastName='{LastName}', PhoneNumber='{PhoneNumber}', PostalCode='{PostalCode}'",
-                    command?.Email ?? "NULL",
-                    command?.FirstName ?? "NULL",
-                    command?.LastName ?? "NULL",
-                    command?.PhoneNumber ?? "NULL",
-                    command?.PostalCode ?? "NULL");
-
-                var userDto = await mediator.Send(command!);
-                return Results.Created($"/api/users/{userDto.Id}", userDto);
-            }
-            catch (InvalidOperationException ex)
-            {
-                logger.LogWarning(ex, "Registration failed");
-                return Results.BadRequest(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Unexpected error during registration");
-                return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
+            return Results.Created($"/api/users/{userDto.Id}", userDto);
         })
-        .RequireRateLimiting("GlobalPolicy")
-        .WithName("Register")
-        .WithTags("Auth")
-        .Produces<UserDto>(StatusCodes.Status201Created)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status500InternalServerError)
-        .Accepts<RegisterUserCommand>("application/json");
+         .RequireRateLimiting("GlobalPolicy")
+         .WithName("Register")
+         .WithTags("Auth")
+         .Produces<UserDto>(StatusCodes.Status201Created)
+         .Produces(StatusCodes.Status400BadRequest)
+         .Produces(StatusCodes.Status500InternalServerError)
+         .Accepts<RegisterUserCommand>("application/json");
     }
 }

@@ -48,12 +48,15 @@ public sealed class RegenerateTotpBackupCodesCommandHandler
         if (user == null)
         {
             this.logger.LogWarning("Unauthorized attempt to regenerate TOTP backup codes.");
-            return new GetTotpBackupCodesResponseDto(false, "Користувач не авторизований.", Array.Empty<string>());
+            throw new UnauthorizedAccessException("Користувач не авторизований.");
         }
 
-        var codes = await this.userService.RegenerateTotpBackupCodesAsync(user); // новий метод сервісу
+        var codes = await this.userService.RegenerateTotpBackupCodesAsync(user);
         this.logger.LogInformation("TOTP backup codes regenerated for user {Email}", user.Email);
 
-        return new GetTotpBackupCodesResponseDto(true, "Резервні коди перегенеровано успішно.", codes);
+        return new GetTotpBackupCodesResponseDto(
+            Success: true,
+            Message: "Резервні коди перегенеровано успішно.",
+            BackupCodes: codes);
     }
 }

@@ -21,22 +21,18 @@ public static class TwoFactorStatusEndpoint
         {
             var logger = loggerFactory.CreateLogger("TwoFactorStatusEndpoint");
 
-            try
-            {
-                var result = await mediator.Send(new GetTwoFactorStatusQuery());
-                return Results.Ok(result);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error retrieving 2FA status");
-                return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
+            var result = await mediator.Send(new GetTwoFactorStatusQuery());
+
+            logger.LogInformation("2FA status retrieved successfully for current user.");
+
+            return Results.Ok(result);
         })
         .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("GetTwoFactorStatus")
         .WithTags("Auth")
         .Produces<TwoFactorStatusResponseDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);
     }
 }

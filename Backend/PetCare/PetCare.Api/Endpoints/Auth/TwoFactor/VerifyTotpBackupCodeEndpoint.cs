@@ -1,6 +1,7 @@
 ﻿namespace PetCare.Api.Endpoints.Auth.TwoFactor;
 
 using MediatR;
+using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.TwoFactor.VerifyTotpBackupCode;
 
 /// <summary>
@@ -18,30 +19,16 @@ public static class VerifyTotpBackupCodeEndpoint
         {
             var logger = loggerFactory.CreateLogger("VerifyTotpBackupCodeEndpoint");
 
-            try
-            {
-                var result = await mediator.Send(command);
+            var result = await mediator.Send(command);
 
-                if (!result.Success)
-                {
-                    logger.LogWarning("Failed to verify TOTP backup code: {Message}", result.Message);
-                    return Results.BadRequest(new { message = result.Message });
-                }
-
-                logger.LogInformation("TOTP backup code successfully verified.");
-                return Results.Ok(new { message = result.Message });
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error verifying TOTP backup code");
-                return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
+            logger.LogInformation("TOTP backup code successfully verified.");
+            return Results.Ok(new { message = result.Message });
         })
         .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("VerifyTotpBackupCode")
         .WithTags("Auth")
-        .Produces(StatusCodes.Status200OK)
+        .Produces<VerifyTotpResponseDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError)
         .Accepts<VerifyTotpBackupCodeCommand>("application/json");

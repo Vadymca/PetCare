@@ -3,9 +3,7 @@
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using MimeKit.Text;
 using PetCare.Application.Interfaces;
-using System.Text;
 using System.Threading.Tasks;
 
 /// <summary>
@@ -14,6 +12,7 @@ using System.Threading.Tasks;
 public sealed class EmailService : IEmailService
 {
     private readonly EmailSettings settings;
+    private readonly IEmailAssetProvider assetProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EmailService"/> class.
@@ -22,10 +21,11 @@ public sealed class EmailService : IEmailService
     /// The <see cref="IOptions{EmailSettings}"/> containing configuration for SMTP email sending,
     /// including server, port, sender name, sender email, username, and password.
     /// </param>
+    /// <param name="assetProvider">Service for providing embedded email assets (e.g., logo).</param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="options"/> is null or <see cref="EmailSettings"/> is null.
     /// </exception>
-    public EmailService(IOptions<EmailSettings> options)
+    public EmailService(IOptions<EmailSettings> options, IEmailAssetProvider assetProvider)
     {
         if (options == null)
         {
@@ -33,6 +33,7 @@ public sealed class EmailService : IEmailService
         }
 
         this.settings = options.Value ?? throw new ArgumentNullException(nameof(options.Value));
+        this.assetProvider = assetProvider ?? throw new ArgumentNullException(nameof(assetProvider));
     }
 
     /// <inheritdoc/>
@@ -42,13 +43,22 @@ public sealed class EmailService : IEmailService
         email.From.Add(new MailboxAddress(this.settings.SenderName, this.settings.SenderEmail));
         email.To.Add(MailboxAddress.Parse(to));
         email.Subject = subject;
-        var body = new TextPart(TextFormat.Html)
+
+        // Create the body builder
+        var builder = new BodyBuilder
         {
-            Text = htmlBody,
+            HtmlBody = htmlBody,
         };
-        body.ContentTransferEncoding = ContentEncoding.QuotedPrintable;
-        body.ContentType.Charset = Encoding.UTF8.WebName;
-        email.Body = body;
+
+        // Embed the logo as a linked resource with ContentId "petcare-logo"
+        var logoBytes = Convert.FromBase64String(this.assetProvider.GetLogoBase64().Split(',')[1]);
+        var logo = builder.LinkedResources.Add("logo.png", logoBytes);
+        logo.ContentId = "petcare-logo";
+        logo.ContentType.MediaType = "image";
+        logo.ContentType.MediaSubtype = "png";
+        logo.ContentDisposition = new ContentDisposition(ContentDisposition.Inline);
+
+        email.Body = builder.ToMessageBody();
 
         using var smtp = new SmtpClient();
         await smtp.ConnectAsync(this.settings.SmtpServer, this.settings.Port, MailKit.Security.SecureSocketOptions.StartTls);

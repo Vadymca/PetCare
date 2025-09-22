@@ -1,12 +1,15 @@
 ﻿namespace PetCare.Application.Features.Auth.Register;
 
+using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using PetCare.Application.Dtos.AuthDtos;
+using PetCare.Application.Features.Auth.ResendVerification;
 using PetCare.Application.Interfaces;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 
 /// <summary>
 /// Handles the <see cref="RegisterUserCommand"/> request.
@@ -19,6 +22,7 @@ public sealed class RegisterUserCommandHandler : IRequestHandler<RegisterUserCom
     private readonly IEmailService emailService;
     private readonly IEmailTemplateRenderer templateRenderer;
     private readonly ILogger<RegisterUserCommandHandler> logger;
+    private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RegisterUserCommandHandler"/> class.
@@ -29,16 +33,20 @@ public sealed class RegisterUserCommandHandler : IRequestHandler<RegisterUserCom
     /// <param name="templateRenderer">
     /// The service responsible for rendering Razor email templates to HTML strings.</param>
     /// <param name="logger">The logger instance used to record diagnostic and operational messages.</param>
+    /// <param name="mapper">The AutoMapper instance used for entity-to-DTO mapping.</param>
     public RegisterUserCommandHandler(
         IUserService userService,
         IEmailService emailService,
         IEmailTemplateRenderer templateRenderer,
-        ILogger<RegisterUserCommandHandler> logger)
+        ILogger<RegisterUserCommandHandler> logger,
+        IMapper mapper)
+
     {
         this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
         this.emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.templateRenderer = templateRenderer ?? throw new ArgumentNullException(nameof(templateRenderer));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <summary>
@@ -63,26 +71,33 @@ public sealed class RegisterUserCommandHandler : IRequestHandler<RegisterUserCom
             throw new InvalidOperationException($"Користувач із email {request.Email} уже зареєстрований.");
         }
 
+        var existingPhoneUser = await this.userService.FindByPhoneAsync(request.Phone);
+        if (existingPhoneUser != null)
+        {
+            throw new InvalidOperationException($"Користувач із номером телефону {request.Phone} уже зареєстрований.");
+        }
+
         // Створюємо користувача через UserService
         var user = await this.userService.CreateUserAsync(
             request.Email,
             request.Password,
             request.FirstName,
             request.LastName,
-            request.PhoneNumber,
+            request.Phone,
             request.PostalCode);
 
-        // Генеруємо токен підтвердження email
-        var emailConfirmationToken = await this.userService.GenerateEmailConfirmationTokenAsync(user);
+        var token = await this.userService.GenerateEmailConfirmationTokenAsync(user);
+        var encodedToken = HttpUtility.UrlEncode(token);
+        var confirmationUrl = $"http://localhost:4200/verify-email?token={encodedToken}&email={user.Email}";
 
-        // Формуємо посилання на підтвердження email
-        var confirmationUrl = $"http://localhost:4200/verify-email?token={emailConfirmationToken}&email={user.Email}";
+        // Формуємо модель для шаблону
+        var model = new ConfirmEmailViewModel(user.FirstName, confirmationUrl);
 
         // Підготовка email
-        var subject = "Підтвердження Email для PetCare";
+        var subject = "Підтвердження Email для Добродій";
         var htmlBody = await this.templateRenderer.RenderAsync(
             "PetCare.Application.EmailTemplates.ConfirmEmailTemplate.cshtml",
-            confirmationUrl);
+            model);
 
         // Відправка email через MailKit
         await this.emailService.SendEmailAsync(user.Email!, subject, htmlBody);
@@ -90,18 +105,11 @@ public sealed class RegisterUserCommandHandler : IRequestHandler<RegisterUserCom
         this.logger.LogInformation(
             "Згенеровано токен підтвердження email для користувача {Email}. Токен: {Token}",
             request.Email,
-            emailConfirmationToken);
+            token);
 
         this.logger.LogInformation("Користувач {Email} успішно зареєстрований. Очікується підтвердження email.", request.Email);
 
         // Повертаємо DTO
-        return new UserDto(
-            user.Id,
-            user.Email!,
-            user.FirstName,
-            user.LastName,
-            user.Phone,
-            "User",
-            user.PostalCode);
+        return this.mapper.Map<UserDto>(user);
     }
 }

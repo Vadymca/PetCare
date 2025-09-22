@@ -40,17 +40,14 @@ public sealed class DisableTotpCommandHandler : IRequestHandler<DisableTotpComma
         if (user == null)
         {
             this.logger.LogWarning("Unauthorized attempt to disable TOTP.");
-            return new VerifyTotpResponseDto(false, "Користувач не авторизований.", null, null);
+            throw new InvalidOperationException("Користувач не авторизований.");
         }
 
-        var result = await this.userService.DisableTotpAsync(user);
-        if (!result)
-        {
-            this.logger.LogError("Failed to disable TOTP for user {Email}", user.Email);
-            return new VerifyTotpResponseDto(false, "Не вдалося відключити двофакторну аутентифікацію.", null, null);
-        }
+        await this.userService.DisableTotpAsync(user);
 
         this.logger.LogInformation("2FA successfully disabled for user {Email}", user.Email);
-        return new VerifyTotpResponseDto(true, "Двофакторну аутентифікацію вимкнено успішно.", null, null);
+        return new VerifyTotpResponseDto(
+            Success: true,
+            Message: "Двофакторну аутентифікацію вимкнено успішно.");
     }
 }

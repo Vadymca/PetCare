@@ -1,15 +1,11 @@
 ﻿namespace PetCare.Tests.Domain.Aggregates;
 
 using FluentAssertions;
-using Moq;
-using PetCare.Domain.Abstractions;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using Xunit;
 
 /// <summary>
@@ -343,105 +339,6 @@ public class ShelterTests
         var shelter = this.CreateDefaultShelter();
 
         shelter.RemoveSocialMedia("NonExisting").Should().BeFalse();
-    }
-
-    /// <summary>
-    /// Verifies that adding a photo uploads it successfully and updates the shelter's photo list.
-    /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
-    public async Task AddPhotoAsync_ShouldAddPhotoUrl_WhenUploadSucceeds()
-    {
-        var fileStorageMock = new Mock<IFileStorageService>();
-        fileStorageMock
-            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<string[]>()))
-            .ReturnsAsync("uploaded-photo-url");
-
-        var shelter = this.CreateDefaultShelter();
-
-        var mediaConfig = new MediaConfig(1024 * 1024, new[] { ".jpg" });
-        using var stream = new MemoryStream(new byte[10]);
-
-        await shelter.AddPhotoAsync(fileStorageMock.Object, stream, "photo.jpg", 10, mediaConfig);
-
-        shelter.Photos.Should().Contain("uploaded-photo-url");
-        shelter.UpdatedAt.Should().BeAfter(shelter.CreatedAt);
-        fileStorageMock.Verify(x => x.UploadAsync(It.IsAny<Stream>(), "photo.jpg", mediaConfig.maxSizeBytes, mediaConfig.allowedExtensions), Times.Once);
-    }
-
-    /// <summary>
-    /// Verifies that an <see cref="ArgumentNullException"/> is thrown when the file stream is null.
-    /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
-    public async Task AddPhotoAsync_ShouldThrow_WhenFileStreamIsNull()
-    {
-        var shelter = this.CreateDefaultShelter();
-        var mediaConfig = new MediaConfig(1024 * 1024, new[] { ".jpg" });
-
-        Func<Task> act = () => shelter.AddPhotoAsync(Mock.Of<IFileStorageService>(), null!, "file.jpg", 10, mediaConfig);
-
-        await act.Should().ThrowAsync<ArgumentNullException>();
-    }
-
-    /// <summary>
-    /// Verifies that adding a photo with an invalid file name throws an <see cref="ArgumentException"/>.
-    /// </summary>
-    /// <param name="invalidFileName">The invalid file name to test (null, empty, or whitespace).</param>
-    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData(" ")]
-    public async Task AddPhotoAsync_ShouldThrow_WhenFileNameInvalid(string? invalidFileName)
-    {
-        var shelter = this.CreateDefaultShelter();
-        var mediaConfig = new MediaConfig(1024 * 1024, new[] { ".jpg" });
-        using var stream = new MemoryStream(new byte[10]);
-
-        Func<Task> act = () => shelter.AddPhotoAsync(Mock.Of<IFileStorageService>(), stream, invalidFileName!, 10, mediaConfig);
-
-        await act.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("Ім'я файлу не може бути порожнім.*");
-    }
-
-    /// <summary>
-    /// Verifies that removing an existing photo deletes it from the shelter and calls the file storage service.
-    /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Fact]
-    public async Task RemovePhotoAsync_ShouldRemovePhoto_WhenPhotoExists()
-    {
-        var fileStorageMock = new Mock<IFileStorageService>();
-        fileStorageMock.Setup(x => x.DeleteAsync(It.IsAny<string>())).Returns(Task.CompletedTask);
-
-        var shelter = this.CreateDefaultShelter();
-        shelter.Update(photos: new List<string> { "photo-to-remove.jpg" });
-
-        var result = await shelter.RemovePhotoAsync(fileStorageMock.Object, "photo-to-remove.jpg");
-
-        result.Should().BeTrue();
-        shelter.Photos.Should().NotContain("photo-to-remove.jpg");
-        fileStorageMock.Verify(x => x.DeleteAsync("photo-to-remove.jpg"), Times.Once);
-        shelter.UpdatedAt.Should().BeAfter(shelter.CreatedAt);
-    }
-
-    /// <summary>
-    /// Verifies that removing a photo with an invalid URL returns false.
-    /// </summary>
-    /// <param name="invalidPhotoUrl">The invalid photo URL to test (null, empty, or whitespace).</param>
-    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData(" ")]
-    public async Task RemovePhotoAsync_ShouldReturnFalse_WhenPhotoUrlInvalid(string? invalidPhotoUrl)
-    {
-        var shelter = this.CreateDefaultShelter();
-
-        var result = await shelter.RemovePhotoAsync(Mock.Of<IFileStorageService>(), invalidPhotoUrl!);
-
-        result.Should().BeFalse();
     }
 
     private Animal CreateTestAnimal(Guid shelterId)

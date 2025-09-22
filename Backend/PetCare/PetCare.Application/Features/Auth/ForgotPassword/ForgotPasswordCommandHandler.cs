@@ -6,6 +6,7 @@ using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
 using System;
 using System.Threading.Tasks;
+using System.Web;
 
 /// <summary>
 /// Handles sending a password reset token to the user's email (mock).
@@ -14,6 +15,8 @@ public sealed class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswor
 {
     private readonly IUserService userService;
     private readonly IEmailService emailService;
+    private readonly IEmailTemplateRenderer templateRenderer;
+    private readonly IEmailAssetProvider emailAssetProvider;
     private readonly ILogger<ForgotPasswordCommandHandler> logger;
 
     /// <summary>
@@ -22,15 +25,22 @@ public sealed class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswor
     /// <param name="userService">Service for user operations.</param>
     /// <param name="logger">Logger instance.</param>
     /// <param name="emailService">Service for sending emails.</param>
+    /// <param name="templateRenderer">
+    /// The service responsible for rendering Razor email templates to HTML strings.</param>
+    ///  <param name="emailAssetProvider">Service for loading and providing email assets (e.g., logo).</param>
     /// <exception cref="ArgumentNullException">Thrown if a dependency is <c>null</c>.</exception>
     public ForgotPasswordCommandHandler(
         IUserService userService,
         ILogger<ForgotPasswordCommandHandler> logger,
+        IEmailTemplateRenderer templateRenderer,
+        IEmailAssetProvider emailAssetProvider,
         IEmailService emailService)
     {
         this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
         this.logger = logger ?? throw new ArgumentException(nameof(logger));
         this.emailService = emailService ?? throw new ArgumentException(nameof(emailService));
+        this.templateRenderer = templateRenderer ?? throw new ArgumentNullException(nameof(templateRenderer));
+        this.emailAssetProvider = emailAssetProvider ?? throw new ArgumentNullException(nameof(emailAssetProvider));
     }
 
     /// <summary>
@@ -49,24 +59,27 @@ public sealed class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswor
         {
             // Не викидаємо помилку, щоб не видати інформацію про існування користувача
             this.logger.LogWarning("ForgotPassword requested for non-existing email: {Email}", request.Email);
-            return new ForgotPasswordResponseDto(true, "Якщо email існує, на нього надіслано лист.");
+            return new ForgotPasswordResponseDto(
+                Success: true,
+                Message: "Якщо email існує, на нього надіслано лист.");
         }
 
         // Генеруємо токен для скидання пароля
         var token = await this.userService.GeneratePasswordResetTokenAsync(user);
-
-        // Формуємо посилання для фронтенду
-        var resetUrl = $"http://localhost:4200/reset-password?token={token}&email={user.Email}";
+        var encodedToken = HttpUtility.UrlEncode(token);
+        var resetUrl = $"http://localhost:4200/reset-password?token={encodedToken}&email={user.Email}";
 
         // Відправка мок листа
         var subject = "Скидання пароля для Добродій";
         var htmlBody = await this.templateRenderer.RenderAsync(
              "PetCare.Application.EmailTemplates.ResetPasswordTemplate.cshtml",
-             model);
+             resetUrl);
         await this.emailService.SendEmailAsync(user.Email!, subject, htmlBody);
 
         this.logger.LogInformation("Reset password email sent to {Email}", user.Email);
 
-        return new ForgotPasswordResponseDto(true, "Якщо email існує, на нього надіслано лист.");
+        return new ForgotPasswordResponseDto(
+            Success: true,
+            Message: "Якщо email існує, на нього надіслано лист.");
     }
 }

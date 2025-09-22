@@ -15,29 +15,22 @@ public static class RefreshEndpoint
     /// <param name="app">The <see cref="WebApplication"/> instance to configure endpoints on.</param>
     public static void MapRefreshEndpoint(this WebApplication app)
     {
-        app.MapPost("/api/auth/refresh", async (HttpContext context, IMediator mediator, ILoggerFactory loggerFactory) =>
+        app.MapPost("/api/auth/refresh", async (IMediator mediator, ILoggerFactory loggerFactory) =>
         {
             var logger = loggerFactory.CreateLogger("RefreshEndpoint");
+            logger.LogInformation("Token refresh requested.");
 
-            try
-            {
-                var response = await mediator.Send(new RefreshUserCommand());
-                return Results.Ok(response);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
+            var response = await mediator.Send(new RefreshUserCommand());
+
+            logger.LogInformation("Token refresh successful.");
+
+            return Results.Ok(response);
         })
-    .RequireRateLimiting("GlobalPolicy")
-    .WithName("Refresh")
-    .WithTags("Auth")
-    .Produces<LoginResponseDto>(StatusCodes.Status200OK)
-    .Produces(StatusCodes.Status400BadRequest)
-    .Produces(StatusCodes.Status500InternalServerError);
+        .RequireRateLimiting("GlobalPolicy")
+        .WithName("Refresh")
+        .WithTags("Auth")
+        .Produces<LoginResponseDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status500InternalServerError);
     }
 }

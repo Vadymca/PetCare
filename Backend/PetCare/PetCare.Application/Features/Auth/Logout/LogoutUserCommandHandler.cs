@@ -1,7 +1,9 @@
 ﻿namespace PetCare.Application.Features.Auth.Logout;
+
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Domain.Abstractions.Services;
 using System.Threading.Tasks;
 
@@ -9,7 +11,7 @@ using System.Threading.Tasks;
 /// Handles <see cref="LogoutUserCommand"/> request.
 /// Deletes JWT cookies for the current user.
 /// </summary>
-public sealed class LogoutUserCommandHandler : IRequestHandler<LogoutUserCommand>
+public sealed class LogoutUserCommandHandler : IRequestHandler<LogoutUserCommand, LogoutResponseDto>
 {
     private readonly IJwtService jwtService;
     private readonly IHttpContextAccessor httpContextAccessor;
@@ -38,7 +40,9 @@ public sealed class LogoutUserCommandHandler : IRequestHandler<LogoutUserCommand
     /// <param name="request">The logout command request.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A completed task once the cookies are cleared.</returns>
-    public Task Handle(LogoutUserCommand request, CancellationToken cancellationToken)
+    /// A <see cref="LogoutResponseDto"/> indicating whether the logout was successful.
+    /// </returns>
+    public Task<LogoutResponseDto> Handle(LogoutUserCommand request, CancellationToken cancellationToken)
     {
         var response = this.httpContextAccessor.HttpContext!.Response;
 
@@ -46,6 +50,8 @@ public sealed class LogoutUserCommandHandler : IRequestHandler<LogoutUserCommand
 
         this.logger.LogInformation("Користувач вийшов, JWT cookies очищено.");
 
-        return Task.CompletedTask;
+        return Task.FromResult(new LogoutResponseDto(
+            Success: true,
+            Message: "Ви успішно вийшли з системи."));
     }
 }

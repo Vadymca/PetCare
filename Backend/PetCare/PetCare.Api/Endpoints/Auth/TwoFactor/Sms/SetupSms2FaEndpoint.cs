@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.TwoFactor.Sms.Setup;
 
 namespace PetCare.Api.Endpoints.Auth.TwoFactor.Sms
@@ -19,32 +20,16 @@ namespace PetCare.Api.Endpoints.Auth.TwoFactor.Sms
             {
                 var logger = loggerFactory.CreateLogger("SetupSms2FaEndpoint");
 
-                try
-                {
-                    var command = new SetupSms2FaCommand();
+                var result = await mediator.Send(new SetupSms2FaCommand());
 
-                    var result = await mediator.Send(command);
-
-                    if (!result.Success)
-                    {
-                        logger.LogWarning("Failed to setup SMS 2FA: {Message}", result.Message);
-                        return Results.BadRequest(new { message = result.Message });
-                    }
-
-                    logger.LogInformation("SMS 2FA setup initiated successfully.");
-                    return Results.Ok(new { message = result.Message });
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "Error during SMS 2FA setup.");
-                    return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-                }
+                logger.LogInformation("SMS 2FA setup initiated successfully.");
+                return Results.Ok(result);
             })
             .RequireAuthorization()
             .RequireRateLimiting("GlobalPolicy")
             .WithName("SetupSms2Fa")
             .WithTags("Auth")
-            .Produces(StatusCodes.Status200OK)
+            .Produces<SetupSms2FaResponseDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status500InternalServerError);
         }

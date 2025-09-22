@@ -3,7 +3,6 @@
 using MediatR;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.Login;
-using System.Text.Json;
 
 /// <summary>
 /// Contains the endpoint mapping for user login.
@@ -16,43 +15,23 @@ public static class LoginEndpoint
     /// <param name="app">The <see cref="WebApplication"/> instance to configure endpoints on.</param>
     public static void MapLoginEndpoint(this WebApplication app)
     {
-        app.MapPost("/api/auth/login", async (HttpContext context, IMediator mediator, ILoggerFactory loggerFactory) =>
+        app.MapPost("/api/auth/login", async (IMediator mediator, LoginUserCommand command, ILoggerFactory loggerFactory) =>
         {
-            try
-            {
-                var logger = loggerFactory.CreateLogger("LoginEndpoint");
+            var logger = loggerFactory.CreateLogger("LoginEndpoint");
+            logger.LogInformation("Login attempt for email: {Email}", command.Email);
 
-                // Читаємо JSON з body
-                using var reader = new StreamReader(context.Request.Body);
-                var json = await reader.ReadToEndAsync();
-                logger.LogInformation("Received raw JSON: {Json}", json);
+            var loginResponse = await mediator.Send(command);
 
-                // Десеріалізуємо JSON
-                var command = JsonSerializer.Deserialize<LoginUserCommand>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                });
+            logger.LogInformation("Login result for email {Email}: {Status}", command.Email, loginResponse.Status);
 
-                logger.LogInformation("Deserialized command: Email='{Email}'", command?.Email ?? "NULL");
-
-                var loginResponse = await mediator.Send(command!);
-                return Results.Ok(loginResponse);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
+            return Results.Ok(loginResponse);
         })
-        .RequireRateLimiting("GlobalPolicy")
-        .WithName("Login")
-        .WithTags("Auth")
-        .Produces<LoginResponseDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status500InternalServerError)
-        .Accepts<LoginUserCommand>("application/json");
+         .RequireRateLimiting("GlobalPolicy")
+         .WithName("Login")
+         .WithTags("Auth")
+         .Produces<LoginResponseDto>(StatusCodes.Status200OK)
+         .Produces(StatusCodes.Status400BadRequest)
+         .Produces(StatusCodes.Status500InternalServerError)
+         .Accepts<LoginUserCommand>("application/json");
     }
 }

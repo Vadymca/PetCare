@@ -11,6 +11,8 @@ using Npgsql;
 using PetCare.Api.Endpoints.Auth;
 using PetCare.Api.Endpoints.Auth.TwoFactor;
 using PetCare.Api.Endpoints.Auth.TwoFactor.Sms;
+using PetCare.Api.Endpoints.Media;
+using PetCare.Api.Middleware;
 using PetCare.Application;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Enums;
@@ -43,6 +45,8 @@ public class Program
             Log.Information("Запуск PetCare.Api...");
 
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 
             var envSecret = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
             if (!string.IsNullOrEmpty(envSecret))
@@ -98,17 +102,20 @@ public class Program
             builder.Services.AddApplication();
             builder.Services.AddInfrastructure(builder.Configuration);
 
-            // -------------------- MediatR + FluentValidation --------------------
-            builder.Services.AddMediatR(cfg =>
-            {
-                cfg.RegisterServicesFromAssembly(typeof(AssemblyMarker).Assembly);
-            });
-
+            // -------------------- MediatR + FluentValidation + AutoMapper--------------------
             builder.Services.AddValidatorsFromAssembly(typeof(AssemblyMarker).Assembly);
 
             builder.Services.AddTransient(
                 typeof(IPipelineBehavior<,>),
                 typeof(Application.Common.Behaviors.ValidationBehavior<,>));
+
+            // -------------------- AutoMapper --------------------
+            // Реєструємо AutoMapper з усіма профілями поточної збірки
+            builder.Services.AddAutoMapper(
+                cfg =>
+            {
+                cfg.AddMaps(typeof(Program).Assembly);
+            }, AppDomain.CurrentDomain.GetAssemblies());
 
             // -------------------- Identity --------------------
             builder.Services.AddIdentity<User, AppRole>(options =>
@@ -177,7 +184,7 @@ public class Program
             {
                 options.AddPolicy("PetCarePolicy", policy =>
                 {
-                    policy.WithOrigins("https://petcare.com")
+                    policy.WithOrigins("http://localhost:4200")
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .AllowCredentials();
@@ -211,6 +218,8 @@ public class Program
                 app.UseHsts();  // HTTP Strict Transport Security
             }
 
+            app.UseExceptionHandling();
+            app.UseStaticFiles();
             app.UseHttpsRedirection();
             app.UseCors("PetCarePolicy");
             app.UseRateLimiter();
@@ -250,49 +259,6 @@ public class Program
                 opt.DefaultHttpClient = new(ScalarTarget.Http, ScalarClient.Http11);
             });
 
-            // -------------------- Exception Handler --------------------
-            app.UseExceptionHandler(appBuilder =>
-            {
-                appBuilder.Run(async context =>
-                {
-                    context.Response.ContentType = "application/json";
-
-                    var exceptionHandlerPathFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>();
-                    if (exceptionHandlerPathFeature?.Error != null)
-                    {
-                        var ex = exceptionHandlerPathFeature.Error;
-
-                        switch (ex)
-                        {
-                            case FluentValidation.ValidationException validationEx:
-                                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                                var validationResult = new
-                                {
-                                    errors = validationEx.Errors.Select(e => e.ErrorMessage).ToArray(),
-                                };
-                                await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(validationResult));
-                                break;
-
-                            case InvalidOperationException:
-                                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                                await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new
-                                {
-                                    error = ex.Message,
-                                }));
-                                break;
-
-                            default:
-                                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                                await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new
-                                {
-                                    error = ex.Message,
-                                }));
-                                break;
-                        }
-                    }
-                });
-            });
-
             // --------------------Endpoints--------------------
             // ----------------------Auth-----------------------
             app.MapRegisterEndpoint(); // /api/auth/register
@@ -325,6 +291,8 @@ public class Program
             app.MapDisableAllTwoFactorEndpoint(); // /api/auth/2fa/disable-all
             app.MapRecoveryCodesEndpoint(); // /api/auth/2fa/recovery-codes
             app.MapUseRecoveryCodeEndpoint(); // /api/auth/2fa/use-recovery-code
+
+            app.MapUploadMediaEndpoint(); // /api/media/upload
 
             // -------------------- Migrations & Seeding --------------------
             using (var scope = app.Services.CreateScope())

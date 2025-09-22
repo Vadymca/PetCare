@@ -1,5 +1,6 @@
 ﻿namespace PetCare.Application.Features.Auth.ConfirmEmail;
 using MediatR;
+using PetCare.Application.Dtos.AuthDtos;
 
 /// <summary>
 /// Command for confirming user email.
@@ -7,4 +8,4 @@ using MediatR;
 public sealed record ConfirmEmailCommand(
     string Email,
     string Token)
-    : IRequest<bool>;
+    : IRequest<ConfirmEmailResponseDto>;

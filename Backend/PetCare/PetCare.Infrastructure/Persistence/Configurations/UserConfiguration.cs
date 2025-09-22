@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PetCare.Domain.Aggregates;
+using PetCare.Domain.ValueObjects;
 using System.Text.Json;
 
 /// <summary>
@@ -65,6 +66,12 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.PostalCode)
           .HasMaxLength(20);
+
+        builder.Property(u => u.Address)
+           .HasConversion(
+               addr => addr.ToString(),
+               str => Address.Create(str))
+           .IsRequired(false);
 
         builder.Property(u => u.CreatedAt)
             .HasDefaultValueSql("CURRENT_TIMESTAMP");

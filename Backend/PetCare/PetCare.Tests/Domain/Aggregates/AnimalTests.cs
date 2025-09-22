@@ -1,14 +1,9 @@
 ﻿namespace PetCare.Tests.Domain.Aggregates;
 using FluentAssertions;
-using Moq;
-using PetCare.Domain.Abstractions;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Enums;
-using PetCare.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using Xunit;
 
 /// <summary>
@@ -202,86 +197,5 @@ public class AnimalTests
         Action act = () => animal.ValidateAdoptionRequirements();
 
         act.Should().Throw<InvalidOperationException>().WithMessage("*Вимоги до адопції тварини*");
-    }
-
-    /// <summary>
-    /// Tests adding a photo to the animal using a mock <see cref="IFileStorageService"/>.
-    /// Verifies that after a successful upload, the photo URL is added to the animal's photos collection.
-    /// </summary>
-    /// <returns>A task representing the asynchronous test operation.</returns>
-    [Fact]
-    public async Task AddPhotoAsync_ShouldAddPhotoUrl_WhenUploadSucceeds()
-    {
-        var fileStorageMock = new Mock<IFileStorageService>();
-        fileStorageMock
-            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<string[]>()))
-            .ReturnsAsync("uploaded-photo-url");
-
-        var animal = Animal.Create(
-            slug: "slug",
-            userId: this.validUserId,
-            name: "Name",
-            breedId: this.validBreedId,
-            birthday: null,
-            gender: AnimalGender.Male,
-            description: null,
-            healthStatus: null,
-            photos: new List<string>(),
-            videos: new List<string>(),
-            shelterId: this.validShelterId,
-            status: AnimalStatus.Available,
-            adoptionRequirements: null,
-            microchipId: null,
-            idNumber: 0,
-            weight: null,
-            height: null,
-            color: null,
-            isSterilized: false,
-            haveDocuments: false);
-
-        var mediaConfig = new MediaConfig(maxSizeBytes: 1024 * 1024, allowedExtensions: new[] { ".jpg" });
-
-        await animal.AddPhotoAsync(fileStorageMock.Object, new MemoryStream(new byte[10]), "photo.jpg", 10, mediaConfig);
-
-        animal.Photos.Should().Contain("uploaded-photo-url");
-    }
-
-    /// <summary>
-    /// Tests removing a photo with mock <see cref="IFileStorageService"/>.
-    /// </summary>
-    /// <returns>A task that represents the asynchronous test operation.</returns>
-    [Fact]
-    public async Task RemovePhotoAsync_ShouldRemovePhotoUrl_WhenPhotoExists()
-    {
-        var fileStorageMock = new Mock<IFileStorageService>();
-        fileStorageMock.Setup(x => x.DeleteAsync(It.IsAny<string>())).Returns(Task.CompletedTask);
-
-        var animal = Animal.Create(
-            slug: "slug",
-            userId: this.validUserId,
-            name: "Name",
-            breedId: this.validBreedId,
-            birthday: null,
-            gender: AnimalGender.Male,
-            description: null,
-            healthStatus: null,
-            photos: new List<string> { "photo-to-remove" },
-            videos: new List<string>(),
-            shelterId: this.validShelterId,
-            status: AnimalStatus.Available,
-            adoptionRequirements: null,
-            microchipId: null,
-            idNumber: 0,
-            weight: null,
-            height: null,
-            color: null,
-            isSterilized: false,
-            haveDocuments: false);
-
-        var removed = await animal.RemovePhotoAsync(fileStorageMock.Object, "photo-to-remove");
-
-        removed.Should().BeTrue();
-        animal.Photos.Should().NotContain("photo-to-remove");
-        fileStorageMock.Verify(x => x.DeleteAsync("photo-to-remove"), Times.Once);
     }
 }

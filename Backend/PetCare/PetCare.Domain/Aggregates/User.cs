@@ -1,7 +1,6 @@
 ﻿namespace PetCare.Domain.Aggregates;
 
 using Microsoft.AspNetCore.Identity;
-using PetCare.Domain.Abstractions;
 using PetCare.Domain.Common;
 using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
@@ -134,6 +133,11 @@ public sealed class User : IdentityUser<Guid>
     /// Gets the postal code of the user (optional).
     /// </summary>
     public string? PostalCode { get; private set; }
+
+    /// <summary>
+    /// Gets the user's postal address.
+    /// </summary>
+    public Address? Address { get; private set; }
 
 
     /// <summary>
@@ -408,22 +412,21 @@ public sealed class User : IdentityUser<Guid>
     }
 
     /// <summary>
-    /// Updates the profile photo for the current user.
+    /// Updates the user's address.
     /// </summary>
-    /// <param name="fileStorage">The file storage service used to upload and delete files.</param>
-    /// <param name="fileStream">The stream containing the new profile photo data.</param>
-    /// <param name="fileName">The name of the new profile photo file.</param>
-    /// <param name="config">The configuration for profile photo validation (size and allowed extensions).</param>
-    /// <param name="requestingUserId">The ID of the user requesting the update. Must match the current user's ID.</param>
-    /// <param name="postalCode">The new postal code of the user, if provided.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    /// <exception cref="ArgumentException">Thrown if the requesting user ID does not match the current user's ID.</exception>
-    public async Task UpdateProfilePhotoAsync(
-        IFileStorageService fileStorage,
-        Stream fileStream,
-        string fileName,
-        ProfilePhotoConfig config,
-        Guid requestingUserId)
+    /// <param name="address">The new address.</param>
+    public void UpdateAddress(Address address)
+    {
+        this.Address = address;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Updates the user's profile photo with the given URL.
+    /// </summary>
+    /// <param name="newPhotoUrl">The new profile photo URL.</param>
+    /// <param name="requestingUserId">The ID of the user requesting the update.</param>
+    public void UpdateProfilePhoto(string newPhotoUrl, Guid requestingUserId)
     {
         if (this.Id != requestingUserId && !this.IsAdminOrModerator())
         {
@@ -432,24 +435,19 @@ public sealed class User : IdentityUser<Guid>
 
         if (!string.IsNullOrWhiteSpace(this.ProfilePhoto))
         {
-            await fileStorage.DeleteAsync(this.ProfilePhoto);
+            this.AddDomainEvent(new UserProfilePhotoRemovedEvent(this.Id, this.ProfilePhoto));
         }
 
-        var newPhotoUrl = await fileStorage.UploadAsync(fileStream, fileName, config.maxSizeBytes, config.allowedExtensions);
         this.ProfilePhoto = newPhotoUrl;
         this.UpdatedAt = DateTime.UtcNow;
         this.AddDomainEvent(new UserProfilePhotoChangedEvent(this.Id, newPhotoUrl));
     }
 
     /// <summary>
-    /// Removes the current profile photo.
+    /// Removes the user's profile photo.
     /// </summary>
-    /// <param name="fileStorage">The file storage service used to delete the profile photo.</param>
-    /// <param name="requestingUserId">The ID of the user requesting the update. Must match the current user's ID.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    public async Task RemoveProfilePhotoAsync(
-        IFileStorageService fileStorage,
-        Guid requestingUserId)
+    /// <param name="requestingUserId">The ID of the user requesting the removal.</param>
+    public void RemoveProfilePhoto(Guid requestingUserId)
     {
         if (this.Id != requestingUserId && !this.IsAdminOrModerator())
         {
@@ -461,10 +459,10 @@ public sealed class User : IdentityUser<Guid>
             return;
         }
 
-        await fileStorage.DeleteAsync(this.ProfilePhoto);
+        this.AddDomainEvent(new UserProfilePhotoRemovedEvent(this.Id, this.ProfilePhoto));
+
         this.ProfilePhoto = null;
         this.UpdatedAt = DateTime.UtcNow;
-        this.AddDomainEvent(new UserProfilePhotoRemovedEvent(this.Id));
     }
 
     /// <summary>

@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="15.0.1" />
     <PackageReference Include="coverlet.collector" Version="6.0.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -67,6 +68,11 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\PetCare.Application\PetCare.Application.csproj" />
 	  <ProjectReference Include="..\PetCare.Infrastructure\PetCare.Infrastructure.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="wwwroot\images\" />
+	  <Folder Include="wwwroot\uploads\" />
 	</ItemGroup>
 
 	<PropertyGroup>

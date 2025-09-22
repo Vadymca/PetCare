@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OtpNet;
 using PetCare.Application.Dtos.AuthDtos;
@@ -22,6 +23,7 @@ public sealed class UserService : IUserService
     private readonly UserManager<User> userManager;
     private readonly AppDbContext dbContext;
     private readonly ILogger<UserService> logger;
+    private readonly IZipcodebaseService zipcodebaseService;
     private readonly IHttpContextAccessor httpContextAccessor;
 
     /// <summary>
@@ -34,11 +36,13 @@ public sealed class UserService : IUserService
     public UserService(
         UserManager<User> userManager,
         AppDbContext dbContext,
+        IZipcodebaseService zipcodebaseService,
         ILogger<UserService> logger,
         IHttpContextAccessor httpContextAccessor)
     {
         this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         this.dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        this.zipcodebaseService = zipcodebaseService ?? throw new ArgumentNullException(nameof(zipcodebaseService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
     }
@@ -59,22 +63,49 @@ public sealed class UserService : IUserService
     /// Thrown when the user creation fails with validation errors.
     /// </exception>
     public async Task<User> CreateUserAsync(
-        string email,
-        string password,
-        string firstName,
-        string lastName,
-        string phoneNumber,
-        string? postalCode)
+     string email,
+     string password,
+     string firstName,
+     string lastName,
+     string phone,
+     string? postalCode)
     {
         this.logger.LogInformation("Creating user with email: {Email}", email);
 
+        // Створюємо агрегат User
         var user = User.Create(
             email: email,
             firstName: firstName,
             lastName: lastName,
-            phone: phoneNumber,
+            phone: phone,
             role: UserRole.User,
             postalCode: postalCode);
+
+        // Якщо заданий postalCode, отримуємо адресу через ZipcodebaseService
+        if (!string.IsNullOrWhiteSpace(postalCode))
+        {
+            try
+            {
+                // Передаємо CancellationToken для можливості скасування
+                var address = await this.zipcodebaseService.ResolveAddressAsync(postalCode, default);
+                if (address != null)
+                {
+                    user.UpdateAddress(address);
+                    this.logger.LogInformation(
+                        "Address resolved for postal code {PostalCode}: {Address}",
+                        postalCode,
+                        address.Value);
+                }
+                else
+                {
+                    this.logger.LogWarning("Could not resolve address for postal code: {PostalCode}", postalCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogWarning(ex, "Не вдалося згенерувати адресу для postal code {PostalCode}", postalCode);
+            }
+        }
 
         this.logger.LogInformation("User ID before CreateAsync: {UserId}", user.Id);
 
@@ -88,19 +119,41 @@ public sealed class UserService : IUserService
 
         this.logger.LogInformation("User ID after CreateAsync: {UserId}", user.Id);
 
-        // After UserManager.CreateAsync, the user object should have the correct ID
-        // Add the domain event with the correct ID
+        // Додаємо доменну подію
         user.AddUserCreatedEvent();
         this.logger.LogInformation("UserCreatedEvent added to user {UserId}", user.Id);
 
-        // Manually trigger SaveChangesAsync to publish domain events
-        // UserManager doesn't go through our AppDbContext.SaveChangesAsync override
+        // Збереження змін, щоб подія була опублікована
         await this.dbContext.SaveChangesAsync();
 
         user.ClearDomainEvents();
 
         this.logger.LogInformation("User created successfully: {UserId}", user.Id);
         return user;
+    }
+
+    /// <summary>
+    /// Updates the <see cref="User.LastLogin"/> property to the specified date and time,
+    /// adds a domain event, and persists the changes via <see cref="UserManager{User}.UpdateAsync"/>.
+    /// </summary>
+    /// <param name="user">The user whose last login timestamp will be updated.</param>
+    /// <param name="lastLogin">The date and time of the last login.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="user"/> is <c>null</c>.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if updating the user in the database fails.</exception>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public async Task SetLastLoginAsync(User user, DateTime lastLogin)
+    {
+        if (user == null)
+        {
+            throw new ArgumentNullException(nameof(user));
+        }
+
+        // Агрегат оновлює стан і додає доменну подію
+        user.SetLastLogin(lastLogin);
+
+        await this.dbContext.SaveChangesAsync();
+
+        this.logger.LogInformation("Last login updated for user {UserId}", user.Id);
     }
 
     /// <summary>
@@ -111,6 +164,20 @@ public sealed class UserService : IUserService
     public async Task<User?> FindByEmailAsync(string email)
     {
         return await this.userManager.FindByEmailAsync(email);
+    }
+
+    /// <summary>
+    /// Asynchronously searches for a user by their phone number.
+    /// </summary>
+    /// <param name="phone">The phone number to search for.</param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains the
+    /// <see cref="User"/> if one exists with the specified phone number; otherwise, <c>null</c>.
+    /// </returns>
+    public async Task<User?> FindByPhoneAsync(string phone)
+    {
+        return await this.userManager.Users
+            .FirstOrDefaultAsync(u => u.Phone == phone);
     }
 
     /// <summary>

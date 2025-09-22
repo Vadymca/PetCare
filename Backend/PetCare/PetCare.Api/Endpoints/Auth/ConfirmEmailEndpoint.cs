@@ -3,9 +3,8 @@
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.ConfirmEmail;
-using System.IO;
-using System.Text.Json;
 
 /// <summary>
 /// Maps the POST /api/auth/confirm-email endpoint.
@@ -18,53 +17,28 @@ public static class ConfirmEmailEndpoint
     /// <param name="app">The <see cref="WebApplication"/> instance to add the endpoint to.</param>
     public static void MapConfirmEmailEndpoint(this WebApplication app)
     {
-        app.MapPost("/api/auth/confirm-email", async (HttpContext context, IMediator mediator, ILoggerFactory loggerFactory) =>
+        app.MapPost("/api/auth/confirm-email", async (IMediator mediator, ConfirmEmailCommand command, ILoggerFactory loggerFactory) =>
         {
             var logger = loggerFactory.CreateLogger("ConfirmEmailEndpoint");
+            logger.LogInformation("Confirm email request for: {Email}", command.Email);
 
-            try
+            var response = await mediator.Send(command);
+
+            if (response.Success)
             {
-                using var reader = new StreamReader(context.Request.Body);
-                var json = await reader.ReadToEndAsync();
-                logger.LogInformation("Received raw JSON: {Json}", json);
-
-                var command = JsonSerializer.Deserialize<ConfirmEmailCommand>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                });
-
-                if (command is null || string.IsNullOrWhiteSpace(command.Email) || string.IsNullOrWhiteSpace(command.Token))
-                {
-                    logger.LogWarning("Missing email or token in request body.");
-                    return Results.BadRequest(new { error = "Email та token обов'язкові." });
-                }
-
-                logger.LogInformation("Deserialized command: Email={Email}, Token={Token}", command.Email, command.Token);
-
-                var success = await mediator.Send(command);
-
-                if (success)
-                {
-                    logger.LogInformation("Email successfully confirmed for {Email}", command.Email);
-                    return Results.Ok(new { message = "Email успішно підтверджений." });
-                }
-
-                logger.LogWarning("Failed to confirm email for {Email}", command.Email);
-                return Results.BadRequest(new { message = "Не вдалося підтвердити email." });
+                logger.LogInformation("Email confirmed for {Email}", command.Email);
+                return Results.Ok(response);
             }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error while confirming email");
-                return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
+
+            logger.LogWarning("Email confirmation failed for {Email}: {Message}", command.Email, response.Message);
+            return Results.BadRequest(response);
         })
-        .WithName("ConfirmEmail")
-        .RequireRateLimiting("GlobalPolicy")
-        .WithTags("Auth")
-        .Produces(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status500InternalServerError)
-        .Accepts<ConfirmEmailCommand>("application/json")
-        .RequireRateLimiting("GlobalPolicy");
+         .WithName("ConfirmEmail")
+         .RequireRateLimiting("GlobalPolicy")
+         .WithTags("Auth")
+         .Produces<ConfirmEmailResponseDto>(StatusCodes.Status200OK)
+         .Produces(StatusCodes.Status400BadRequest)
+         .Produces(StatusCodes.Status500InternalServerError)
+         .Accepts<ConfirmEmailCommand>("application/json");
     }
 }

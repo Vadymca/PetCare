@@ -40,25 +40,27 @@ public sealed class SetupSms2FaCommandHandler : IRequestHandler<SetupSms2FaComma
         if (user == null)
         {
             this.logger.LogWarning("Unauthorized attempt to setup SMS 2FA.");
-            return new SetupSms2FaResponseDto(false, "Користувач не авторизований.");
+            throw new UnauthorizedAccessException("Користувач не авторизований.");
         }
 
         if (string.IsNullOrWhiteSpace(user.Phone))
         {
-            return new SetupSms2FaResponseDto(false, "Номер телефону не вказаний у профілі.");
+            throw new InvalidOperationException("Номер телефону не вказаний у профілі.");
         }
 
         // Відправляємо SMS-код на номер користувача
         var sent = await this.sms2FaService.SendSetupCodeAsync(user.Id.ToString(), user.Phone);
         if (!sent)
         {
-            return new SetupSms2FaResponseDto(false, "Не вдалося відправити SMS. Спробуйте пізніше.");
+            throw new InvalidOperationException("Не вдалося відправити SMS. Спробуйте пізніше.");
         }
 
         var maskedPhone = MaskPhoneNumber(user.Phone);
         this.logger.LogInformation("SMS 2FA setup code sent to user {UserId} at {PhoneNumber}", user.Id, maskedPhone);
 
-        return new SetupSms2FaResponseDto(true, $"SMS 2FA код відправлено успішно на номер {maskedPhone}.");
+        return new SetupSms2FaResponseDto(
+            Success: true,
+            Message: $"SMS 2FA код відправлено успішно на номер {maskedPhone}.");
     }
 
     /// <summary>

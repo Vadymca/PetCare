@@ -39,19 +39,13 @@ public sealed class GetTotpBackupCodesCommandHandler
         if (user is null)
         {
             this.logger.LogWarning("Unauthorized attempt to retrieve TOTP backup codes.");
-            return new GetTotpBackupCodesResponseDto(
-                Success: false,
-                Message: "Користувач не авторизований.",
-                BackupCodes: null);
+            throw new UnauthorizedAccessException("Користувач не авторизований.");
         }
 
         // Перевіряємо, чи увімкнено 2FA
         if (!user.TwoFactorEnabled)
         {
-            return new GetTotpBackupCodesResponseDto(
-                Success: false,
-                Message: "Двофакторна аутентифікація не активована.",
-                BackupCodes: null);
+            throw new InvalidOperationException("Двофакторна аутентифікація не активована.");
         }
 
         // Отримуємо резервні коди через сервіс користувача

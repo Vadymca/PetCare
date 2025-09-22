@@ -41,12 +41,15 @@ public sealed class GetRecoveryCodesQueryHandler
         if (user == null)
         {
             this.logger.LogWarning("Unauthorized attempt to get recovery codes.");
-            return new RecoveryCodesResponseDto(Array.Empty<string>());
+            throw new UnauthorizedAccessException("Користувач не авторизований.");
         }
 
         var codes = await this.userService.GetTotpBackupCodesAsync(user);
         this.logger.LogInformation("Generated {Count} recovery codes for user {UserId}", codes.Count, user.Id);
 
-        return new RecoveryCodesResponseDto(codes);
+        return new RecoveryCodesResponseDto(
+             Success: true,
+             Message: "Коди відновлення успішно згенеровані.",
+             Codes: codes);
     }
 }

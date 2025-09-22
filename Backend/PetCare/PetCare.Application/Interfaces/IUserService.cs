@@ -22,11 +22,29 @@ public interface IUserService
     Task<User> CreateUserAsync(string email, string password, string firstName, string lastName, string phoneNumber, string? postalCode);
 
     /// <summary>
+    /// Updates the last login date of a user.
+    /// </summary>
+    /// <param name="user">The user aggregate.</param>
+    /// <param name="date">The date and time of the last login.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    Task SetLastLoginAsync(User user, DateTime date);
+
+    /// <summary>
     /// Finds a user by email.
     /// </summary>
     /// <param name="email">User email.</param>
     /// <returns>The user if found, null otherwise.</returns>
     Task<User?> FindByEmailAsync(string email);
+
+    /// <summary>
+    /// Finds a user by their phone number, if one exists.
+    /// </summary>
+    /// <param name="phone">The phone number to search for.</param>
+    /// <returns>
+    /// A task representing the asynchronous operation, containing the <see cref="User"/>
+    /// if found, or <c>null</c> if no user is associated with the given phone number.
+    /// </returns>
+    Task<User?> FindByPhoneAsync(string phone);
 
     /// <summary>
     /// Finds a user by ID.

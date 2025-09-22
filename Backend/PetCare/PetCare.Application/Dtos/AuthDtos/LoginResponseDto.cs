@@ -1,6 +1,9 @@
 ﻿namespace PetCare.Application.Dtos.AuthDtos;
 
 public record LoginResponseDto(
-    string AccessToken,
-    string RefreshToken,
-    UserDto User);
+    string Status,
+    string? AccessToken = null,
+    UserDto? User = null,
+    string? Method = null,
+    string? HiddenPhoneNumber = null,
+    string? Message = null);

@@ -3,5 +3,5 @@
 public record VerifyTotpResponseDto(
     bool Success,
     string Message,
-    string? AccessToken,
-    string? RefreshToken);
+    string? AccessToken = null,
+    UserDto? User = null);

@@ -36,12 +36,12 @@ public sealed class DisableSms2FaCommandHandler : IRequestHandler<DisableSms2FaC
         if (user == null)
         {
             this.logger.LogWarning("Unauthorized attempt to disable SMS 2FA.");
-            return new DisableSms2FaResponseDto(false, "Користувач не авторизований.");
+            throw new UnauthorizedAccessException("Користувач не авторизований.");
         }
 
         if (!user.PhoneNumberConfirmed)
         {
-            return new DisableSms2FaResponseDto(false, "SMS 2FA вже відключено або номер телефону не підтверджений.");
+            throw new InvalidOperationException("SMS 2FA вже відключено або номер телефону не підтверджений.");
         }
 
         await this.userService.DisableSms2FaAsync(user);

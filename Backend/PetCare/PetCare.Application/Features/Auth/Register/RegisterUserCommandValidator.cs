@@ -34,8 +34,8 @@ public sealed class RegisterUserCommandValidator : AbstractValidator<RegisterUse
             .MaximumLength(50).WithMessage("Прізвище не може перевищувати 50 символів.")
             .Matches(@"^[a-zA-Zа-яА-ЯіІїЇєЄ''\s-]+$").WithMessage("Прізвище може містити тільки літери, апострофи, пробіли та дефіси.");
 
-        this.RuleFor(x => x.PhoneNumber)
+        this.RuleFor(x => x.Phone)
             .NotEmpty().WithMessage("Номер телефону є обов'язковим.")
-            .Matches(@"^\+380\d{9}$").WithMessage("Номер телефону має бути у форматі +380XXXXXXXXX.");
+            .Matches(@"^\+\d{8,15}$").WithMessage("Номер телефону має бути у міжнародному форматі, наприклад +380XXXXXXXXX.");
     }
 }

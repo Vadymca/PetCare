@@ -46,18 +46,14 @@ public sealed class VerifyTotpSetupCommandHandler
         if (user is null)
         {
             this.logger.LogWarning("Unauthorized attempt to verify TOTP setup.");
-            return new VerifyTotpSetupResponseDto(
-                Success: false,
-                Message: "Користувач не авторизований.");
+            throw new UnauthorizedAccessException("Користувач не авторизований.");
         }
 
         // Перевіряємо TOTP код
         var isValid = await this.userService.VerifyTotpCodeAsync(user, request.Code);
         if (!isValid)
         {
-            return new VerifyTotpSetupResponseDto(
-                Success: false,
-                Message: "Невірний код.");
+            throw new InvalidOperationException("Невірний код.");
         }
 
         // Активуємо двофакторну автентифікацію

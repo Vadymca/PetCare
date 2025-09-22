@@ -1,8 +1,8 @@
 ﻿namespace PetCare.Api.Endpoints.Auth.TwoFactor;
 
 using MediatR;
+using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.TwoFactor.VerifyTotp;
-using System.Text.Json;
 
 /// <summary>
 /// Maps the POST /api/auth/2fa/totp/verify endpoint.
@@ -15,51 +15,21 @@ public static class VerifyTotpEndpoint
     /// <param name="app">The <see cref="WebApplication"/> instance to add the endpoint to.</param>
     public static void MapVerifyTotpEndpoint(this WebApplication app)
     {
-        app.MapPost("/api/auth/2fa/totp/verify", async (HttpContext context, IMediator mediator, ILoggerFactory loggerFactory) =>
+        app.MapPost("/api/auth/2fa/totp/verify", async (VerifyTotpCommand command, IMediator mediator, ILoggerFactory loggerFactory) =>
         {
             var logger = loggerFactory.CreateLogger("VerifyTotpEndpoint");
 
-            try
-            {
-                using var reader = new StreamReader(context.Request.Body);
-                var json = await reader.ReadToEndAsync();
-                logger.LogInformation("Received raw JSON: {Json}", json);
+            var result = await mediator.Send(command);
 
-                var command = JsonSerializer.Deserialize<VerifyTotpCommand>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                });
-
-                if (command is null || string.IsNullOrWhiteSpace(command.Code))
-                {
-                    logger.LogWarning("Missing email or TOTP code in request body.");
-                    return Results.BadRequest(new { error = "Email та TOTP код обов'язкові." });
-                }
-
-                logger.LogInformation("Deserialized command: Code={Code}", command.Code);
-
-                var result = await mediator.Send(command);
-
-                if (result.Success)
-                {
-                    logger.LogInformation("TOTP verified successfully");
-                    return Results.Ok(result);
-                }
-
-                logger.LogWarning("TOTP verification failed");
-                return Results.BadRequest(new { message = result.Message });
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error while verifying TOTP");
-                return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
+            logger.LogInformation("TOTP verified successfully");
+            return Results.Ok(result);
         })
         .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("VerifyTotp")
         .WithTags("Auth")
-        .Produces(StatusCodes.Status200OK)
+        .Produces<VerifyTotpResponseDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError)
         .Accepts<VerifyTotpCommand>("application/json");

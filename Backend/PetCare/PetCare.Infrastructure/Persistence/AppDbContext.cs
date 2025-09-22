@@ -196,7 +196,7 @@ public class AppDbContext : IdentityDbContext<User, AppRole, Guid>
         // Combine all domain events
         var allDomainEvents = aggregateRootEntities
             .SelectMany(e => e.Entity.DomainEvents)
-            .Concat(userEntities.SelectMany(e => e.Entity.DomainEvents))
+            .Concat(userEntities.SelectMany(e => e.Entity.DomainEvents).Distinct())
             .ToList();
 
         var result = await base.SaveChangesAsync(cancellationToken).ConfigureAwait(false);

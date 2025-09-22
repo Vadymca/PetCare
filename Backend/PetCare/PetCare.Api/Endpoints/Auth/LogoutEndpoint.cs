@@ -1,6 +1,7 @@
 ﻿namespace PetCare.Api.Endpoints.Auth;
 
 using MediatR;
+using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.Logout;
 
 /// <summary>
@@ -14,33 +15,22 @@ public static class LogoutEndpoint
     /// <param name="app">The <see cref="WebApplication"/> instance to configure endpoints on.</param>
     public static void MapLogoutEndpoint(this WebApplication app)
     {
-        app.MapPost("/api/auth/logout", async (HttpContext context, IMediator mediator, ILoggerFactory loggerFactory) =>
+        app.MapPost("/api/auth/logout", async (IMediator mediator, ILoggerFactory loggerFactory) =>
         {
-            try
-            {
-                var logger = loggerFactory.CreateLogger("LogoutEndpoint");
+            var logger = loggerFactory.CreateLogger("LogoutEndpoint");
+            logger.LogInformation("Logout requested.");
 
-                // Читаємо JSON з body (якщо потрібно, зараз можна без тіла)
-                using var reader = new StreamReader(context.Request.Body);
-                var json = await reader.ReadToEndAsync();
-                logger.LogInformation("Received raw JSON for logout: {Json}", string.IsNullOrWhiteSpace(json) ? "<empty>" : json);
+            var command = new LogoutUserCommand();
+            var result = await mediator.Send(command);
 
-                var command = new LogoutUserCommand();
+            logger.LogInformation("User successfully logged out.");
 
-                await mediator.Send(command);
-
-                return Results.Ok(new { message = "Користувач вийшов, cookies очищено." });
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
+            return Results.Ok(result);
         })
-        .RequireRateLimiting("GlobalPolicy")
-        .WithName("Logout")
-        .WithTags("Auth")
-        .Produces(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status500InternalServerError)
-        .Accepts<object>("application/json");
+         .WithName("Logout")
+         .RequireRateLimiting("GlobalPolicy")
+         .WithTags("Auth")
+         .Produces<LogoutResponseDto>(StatusCodes.Status200OK)
+         .Produces(StatusCodes.Status500InternalServerError);
     }
 }

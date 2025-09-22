@@ -1,5 +1,6 @@
 ﻿namespace PetCare.Application.Features.Auth.Login;
 
+using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -16,6 +17,7 @@ public sealed class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, 
     private readonly IJwtService jwtService;
     private readonly ILogger<LoginUserCommandHandler> logger;
     private readonly IHttpContextAccessor httpContextAccessor;
+    private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LoginUserCommandHandler"/> class.
@@ -24,18 +26,21 @@ public sealed class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, 
     /// <param name="jwtService">
     /// The JWT service used to generate access and refresh tokens, and set cookies.</param>
     /// <param name="logger">The logger instance used to record diagnostic and operational messages.</param>
-    /// /// <param name="httpContextAccessor">
+    /// <param name="httpContextAccessor">
     /// The HTTP context accessor used to access the current HTTP response for setting cookies.</param>
+    /// <param name="mapper">The AutoMapper instance used for entity-to-DTO mapping.</param>
     public LoginUserCommandHandler(
         IUserService userService,
         IJwtService jwtService,
         ILogger<LoginUserCommandHandler> logger,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        IMapper mapper)
     {
         this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
         this.jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <summary>
@@ -55,14 +60,16 @@ public sealed class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, 
     {
         // Знаходимо користувача за email
         var user = await this.userService.FindByEmailAsync(request.Email);
-        if (user == null)
+        if (user is null)
         {
             throw new InvalidOperationException("Невірний email.");
         }
 
         if (!user.EmailConfirmed)
         {
-            throw new InvalidOperationException("Будь ласка, підтвердьте вашу електронну пошту перед входом.");
+            return new LoginResponseDto(
+               Status: "email_not_verified",
+               Message: "Будь ласка, підтвердьте вашу електронну пошту перед входом.");
         }
 
         // Перевіряємо пароль
@@ -72,30 +79,42 @@ public sealed class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, 
             throw new InvalidOperationException("Невірний пароль.");
         }
 
+        // 2FA логіка
+        if (user.PhoneNumberConfirmed && !user.TwoFactorEnabled)
+        {
+            return new LoginResponseDto(
+                Status: "2fa_required",
+                Method: "sms",
+                HiddenPhoneNumber: this.HidePhoneNumber(user.Phone),
+                Message: "Необхідна двофакторна автентифікація. Будь ласка, пройдіть SMS перевірку перед входом.");
+        }
+
+        if ((!user.PhoneNumberConfirmed && user.TwoFactorEnabled) || (user.PhoneNumberConfirmed && user.TwoFactorEnabled))
+        {
+            return new LoginResponseDto(
+                Status: "2fa_required",
+                Method: "totp",
+                Message: "Необхідна двофакторна автентифікація. Будь ласка, пройдіть TOTP перевірку перед входом.");
+        }
+
+        // Оновлюємо LastLogin
+        await this.userService.SetLastLoginAsync(user, DateTime.UtcNow);
+
         // Отримуємо ролі користувача
         var roles = await this.userService.GetRolesAsync(user);
         var userRole = roles.FirstOrDefault() ?? "User";
 
         // Створюємо UserDto
-        var userDto = new UserDto(
-            user.Id,
-            user.Email!,
-            user.FirstName,
-            user.LastName,
-            user.Phone,
-            userRole,
-            user.PostalCode);
+        var userDto = this.mapper.Map<UserDto>(user) with
+        {
+            Role = userRole
+        };
 
         // Генеруємо Access Token
         var accessToken = this.jwtService.GenerateAccessToken(user);
 
         // Генеруємо Refresh Token
         var refreshToken = this.jwtService.GenerateRefreshToken(user.Id);
-
-        // Встановлюємо cookie для Access Token
-        this.jwtService.SetAccessTokenCookie(
-            this.httpContextAccessor.HttpContext!.Response,
-            accessToken);
 
         // Встановлюємо cookie для Refresh Token
         this.jwtService.SetRefreshTokenCookie(
@@ -104,6 +123,21 @@ public sealed class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, 
 
         this.logger.LogInformation("Користувач {Email} увійшов, JWT збережено в cookie.", request.Email);
 
-        return new LoginResponseDto(accessToken, refreshToken, userDto);
+        return new LoginResponseDto(
+            Status: "success",
+            AccessToken: accessToken,
+            User: userDto);
+    }
+
+    private string? HidePhoneNumber(string phone)
+    {
+        if (string.IsNullOrEmpty(phone) || phone.Length < 7)
+        {
+            return phone;
+        }
+
+        var last2 = phone[^2..];
+        var countryCode = phone.StartsWith("+380") ? "+380" : phone[..4];
+        return $"{countryCode}*******{last2}";
     }
 }

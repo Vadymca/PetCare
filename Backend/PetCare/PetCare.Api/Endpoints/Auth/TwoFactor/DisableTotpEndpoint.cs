@@ -1,6 +1,7 @@
 ﻿namespace PetCare.Api.Endpoints.Auth.TwoFactor;
 
 using MediatR;
+using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.TwoFactor.DisableTotp;
 
 /// <summary>
@@ -18,32 +19,21 @@ public static class DisableTotpEndpoint
         {
             var logger = loggerFactory.CreateLogger("DisableTotpEndpoint");
 
-            try
-            {
-                var command = new DisableTotpCommand();
+            logger.LogInformation("Request received to disable TOTP.");
 
-                var result = await mediator.Send(command);
+            var command = new DisableTotpCommand();
 
-                if (!result.Success)
-                {
-                    logger.LogWarning("Failed to disable TOTP: {Message}", result.Message);
-                    return Results.BadRequest(new { message = result.Message });
-                }
+            var result = await mediator.Send(command);
 
-                logger.LogInformation("TOTP successfully disabled.");
-                return Results.Ok(new { message = result.Message });
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error disabling TOTP");
-                return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
+            logger.LogInformation("TOTP successfully disabled for current user.");
+
+            return Results.Ok(result);
         })
         .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("DisableTotp")
         .WithTags("Auth")
-        .Produces(StatusCodes.Status200OK)
+        .Produces<VerifyTotpResponseDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);
     }

@@ -1,15 +1,15 @@
 ﻿namespace PetCare.Domain.Entities;
 
-using PetCare.Domain.Abstractions;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 using PetCare.Domain.Enums;
+using PetCare.Domain.Events;
 using PetCare.Domain.ValueObjects;
 
 /// <summary>
 /// Represents a request for aid related to animals in the system.
 /// </summary>
-public sealed class AnimalAidRequest : BaseEntity
+public sealed class AnimalAidRequest : AggregateRoot
 {
     private readonly List<string> photos = new();
     private readonly List<AnimalAidDonation> donations = new();
@@ -203,46 +203,27 @@ public sealed class AnimalAidRequest : BaseEntity
     }
 
     /// <summary>
-    /// Asynchronously adds a photo to the shelter with validation and uploads it via the file storage service.
+    /// Adds a photo URL to the shelter.
     /// </summary>
-    /// <param name="fileStorage">The file storage service.</param>
-    /// <param name="fileStream">The stream of the file to upload.</param>
-    /// <param name="fileName">The name of the file for validation and storage.</param>
-    /// <param name="fileSizeBytes">The size of the file in bytes for validation.</param>
-    /// <param name="config">The media validation configuration (size and extensions).</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    /// <exception cref="ArgumentException">Thrown when validation fails.</exception>
-    public async Task AddPhotoAsync(
-        IFileStorageService fileStorage,
-        Stream fileStream,
-        string fileName,
-        long fileSizeBytes,
-        MediaConfig config)
+    /// <param name="photoUrl">The photo URL to add.</param>
+    public void AddPhoto(string photoUrl)
     {
-        if (fileStream == null)
+        if (string.IsNullOrWhiteSpace(photoUrl))
         {
-            throw new ArgumentNullException(nameof(fileStream));
+            throw new ArgumentException("URL фото не може бути порожнім.", nameof(photoUrl));
         }
 
-        if (string.IsNullOrWhiteSpace(fileName))
-        {
-            throw new ArgumentException("Ім'я файлу не може бути порожнім.", nameof(fileName));
-        }
-
-        config.Validate(fileName, fileSizeBytes);
-
-        var photoUrl = await fileStorage.UploadAsync(fileStream, fileName, config.maxSizeBytes, config.allowedExtensions);
         this.photos.Add(photoUrl);
         this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new ShelterPhotoAddedEvent(this.Id, photoUrl));
     }
 
     /// <summary>
-    /// Asynchronously removes a photo from the shelter and deletes the file via the file storage service.
+    /// Removes a photo URL from the shelter.
     /// </summary>
-    /// <param name="fileStorage">The file storage service.</param>
-    /// <param name="photoUrl">The URL of the photo to remove.</param>
-    /// <returns>A task with a result indicating whether the photo was successfully removed.</returns>
-    public async Task<bool> RemovePhotoAsync(IFileStorageService fileStorage, string photoUrl)
+    /// <param name="photoUrl">The photo URL to remove.</param>
+    /// <returns>True if removed; otherwise, false.</returns>
+    public bool RemovePhoto(string photoUrl)
     {
         if (string.IsNullOrWhiteSpace(photoUrl))
         {
@@ -252,8 +233,8 @@ public sealed class AnimalAidRequest : BaseEntity
         var removed = this.photos.Remove(photoUrl);
         if (removed)
         {
-            await fileStorage.DeleteAsync(photoUrl);
             this.UpdatedAt = DateTime.UtcNow;
+            this.AddDomainEvent(new ShelterPhotoRemovedEvent(this.Id, photoUrl));
         }
 
         return removed;

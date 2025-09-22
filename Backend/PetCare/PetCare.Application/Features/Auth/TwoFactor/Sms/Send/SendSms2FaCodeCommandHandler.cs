@@ -40,26 +40,24 @@ public sealed class SendSms2FaCodeCommandHandler : IRequestHandler<SendSms2FaCod
     /// <returns>Response indicating success or failure.</returns>
     public async Task<SendSms2FaCodeResponseDto> Handle(SendSms2FaCodeCommand request, CancellationToken cancellationToken)
     {
-        var user = await this.userService.GetCurrentUserAsync();
-        if (user == null)
-        {
-            this.logger.LogWarning("Unauthorized attempt to send SMS 2FA code.");
-            return new SendSms2FaCodeResponseDto(false, "Користувач не авторизований.");
-        }
+        var user = await this.userService.GetCurrentUserAsync()
+                    ?? throw new UnauthorizedAccessException("Користувач не авторизований.");
 
         if (string.IsNullOrWhiteSpace(user.Phone))
         {
-            return new SendSms2FaCodeResponseDto(false, "Номер телефону не вказаний у профілі.");
+            throw new InvalidOperationException("Номер телефону не вказаний у профілі.");
         }
 
         var sent = await this.sms2FaService.SendSetupCodeAsync(user.Id.ToString(), user.Phone);
         if (!sent)
         {
-            return new SendSms2FaCodeResponseDto(false, "Не вдалося відправити SMS. Спробуйте пізніше.");
+            throw new InvalidOperationException("Не вдалося відправити SMS. Спробуйте пізніше.");
         }
 
         this.logger.LogInformation("SMS 2FA code sent to user {UserId} at {PhoneNumber}", user.Id, MaskPhoneNumber(user.Phone));
-        return new SendSms2FaCodeResponseDto(true, $"SMS 2FA код відправлено на номер {MaskPhoneNumber(user.Phone)}.");
+        return new SendSms2FaCodeResponseDto(
+            Success: true,
+            Message: $"SMS 2FA код відправлено на номер {MaskPhoneNumber(user.Phone)}.");
     }
 
     private static string MaskPhoneNumber(string phone)

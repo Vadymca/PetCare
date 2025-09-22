@@ -3,7 +3,6 @@
 using MediatR;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.ResetPassword;
-using System.Text.Json;
 
 /// <summary>
 /// Maps the POST /api/auth/reset-password endpoint.
@@ -16,33 +15,14 @@ public static class ResetPasswordEndpoint
     /// <param name="app">The <see cref="WebApplication"/> to add the endpoint to.</param>
     public static void MapResetPasswordEndpoint(this WebApplication app)
     {
-        app.MapPost("/api/auth/reset-password", async (HttpContext context, IMediator mediator, ILoggerFactory loggerFactory) =>
+        app.MapPost("/api/auth/reset-password", async (ResetPasswordCommand command, IMediator mediator, ILoggerFactory loggerFactory) =>
         {
             var logger = loggerFactory.CreateLogger("ResetPasswordEndpoint");
-            try
-            {
-                using var reader = new StreamReader(context.Request.Body);
-                var json = await reader.ReadToEndAsync();
-                logger.LogInformation("Received raw JSON: {Json}", json);
 
-                var command = JsonSerializer.Deserialize<ResetPasswordCommand>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                });
+            logger.LogInformation("Handling ResetPassword for email: {Email}", command.Email);
 
-                logger.LogInformation("Deserialized command: Email='{Email}'", command?.Email ?? "NULL");
-
-                var response = await mediator.Send(command!);
-                return Results.Ok(response);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
+            var response = await mediator.Send(command);
+            return Results.Ok(response);
         })
         .RequireRateLimiting("GlobalPolicy")
         .WithName("ResetPassword")

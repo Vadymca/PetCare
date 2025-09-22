@@ -2,6 +2,7 @@
 
 using MediatR;
 using Microsoft.Extensions.Logging;
+using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
 using System;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 /// <summary>
 /// Handles the <see cref="ConfirmEmailCommand"/> to confirm a user's email address.
 /// </summary>
-public sealed class ConfirmEmailCommandHandler : IRequestHandler<ConfirmEmailCommand, bool>
+public sealed class ConfirmEmailCommandHandler : IRequestHandler<ConfirmEmailCommand, ConfirmEmailResponseDto>
 {
     private readonly IUserService userService;
     private readonly ILogger<ConfirmEmailCommandHandler> logger;
@@ -36,31 +37,32 @@ public sealed class ConfirmEmailCommandHandler : IRequestHandler<ConfirmEmailCom
     /// A <see cref="Task{TResult}"/> representing the asynchronous operation,
     /// with <c>true</c> if the email was successfully confirmed, otherwise <c>false</c>.
     /// </returns>
-    public async Task<bool> Handle(ConfirmEmailCommand request, CancellationToken cancellationToken)
+    public async Task<ConfirmEmailResponseDto> Handle(ConfirmEmailCommand request, CancellationToken cancellationToken)
     {
         var user = await this.userService.FindByEmailAsync(request.Email);
         if (user == null)
         {
-            this.logger.LogWarning("Спроба підтвердження email для неіснуючого користувача: {Email}", request.Email);
-            return false;
+            this.logger.LogWarning("Attempt to confirm email for non-existent user: {Email}", request.Email);
+            throw new InvalidOperationException("Користувач із вказаною електронною поштою не знайдений.");
         }
 
         if (user.EmailConfirmed)
         {
-            this.logger.LogInformation("Email вже підтверджений для користувача: {Email}", request.Email);
-            return true;
+            this.logger.LogInformation("Email already confirmed for user: {Email}", request.Email);
+            throw new InvalidOperationException("Електронна пошта вже підтверджена.");
         }
 
         var confirmed = await this.userService.ConfirmEmailAsync(user, request.Token);
-        if (confirmed)
+        if (!confirmed)
         {
-            this.logger.LogInformation("Email успішно підтверджений для користувача: {Email}", request.Email);
-        }
-        else
-        {
-            this.logger.LogWarning("Не вдалося підтвердити email для користувача: {Email}", request.Email);
+            this.logger.LogWarning("Invalid or expired token for user: {Email}", request.Email);
+            throw new InvalidOperationException("Невірний або прострочений токен підтвердження.");
         }
 
-        return confirmed;
+        this.logger.LogInformation("Email successfully confirmed for user: {Email}", request.Email);
+
+        return new ConfirmEmailResponseDto(
+            Success: true,
+            Message: "Електронна пошта успішно підтверджена.");
     }
 }

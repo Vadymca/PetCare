@@ -1,14 +1,14 @@
 ﻿namespace PetCare.Domain.Entities;
 
-using PetCare.Domain.Abstractions;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
+using PetCare.Domain.Events;
 using PetCare.Domain.ValueObjects;
 
 /// <summary>
 /// Represents a success story related to an animal in the system.
 /// </summary>
-public sealed class SuccessStory : BaseEntity
+public sealed class SuccessStory : AggregateRoot
 {
     private readonly List<string> photos = new();
     private readonly List<string> videos = new();
@@ -186,46 +186,28 @@ public sealed class SuccessStory : BaseEntity
     }
 
     /// <summary>
-    /// Asynchronously adds a photo to the success story with validation and uploads the file using the file storage service.
+    /// Adds a photo URL to the animal and raises a domain event.
     /// </summary>
-    /// <param name="fileStorage">The file storage service for uploading the file.</param>
-    /// <param name="fileStream">The stream of the photo file.</param>
-    /// <param name="fileName">The file name for validation and upload.</param>
-    /// <param name="fileSizeBytes">The size of the file in bytes for validation.</param>
-    /// <param name="config">The media configuration for validation.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    /// <exception cref="ArgumentException">Thrown when validation fails.</exception>
-    public async Task AddPhotoAsync(
-        IFileStorageService fileStorage,
-        Stream fileStream,
-        string fileName,
-        long fileSizeBytes,
-        MediaConfig config)
+    /// <param name="photoUrl">The URL of the photo to add.</param>
+    /// <exception cref="ArgumentException">Thrown when the <paramref name="photoUrl"/> is null or whitespace.</exception>
+    public void AddPhoto(string photoUrl)
     {
-        if (fileStream == null)
+        if (string.IsNullOrWhiteSpace(photoUrl))
         {
-            throw new ArgumentNullException(nameof(fileStream));
+            throw new ArgumentException("URL фото не може бути порожнім.", nameof(photoUrl));
         }
 
-        if (string.IsNullOrWhiteSpace(fileName))
-        {
-            throw new ArgumentException("Ім'я файлу не може містити нуль або пробіли.", nameof(fileName));
-        }
-
-        config.Validate(fileName, fileSizeBytes);
-
-        var photoUrl = await fileStorage.UploadAsync(fileStream, fileName, config.maxSizeBytes, config.allowedExtensions);
         this.photos.Add(photoUrl);
         this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new AnimalPhotoAddedEvent(this.Id, photoUrl));
     }
 
     /// <summary>
-    /// Asynchronously removes a photo from the success story and deletes the file using the file storage service.
+    /// Removes a photo URL from the animal and raises a domain event if removal was successful.
     /// </summary>
-    /// <param name="fileStorage">The file storage service for deleting the file.</param>
-    /// <param name="photoUrl">The photo URL to remove and delete.</param>
-    /// <returns>A task representing the asynchronous operation. Returns <c>true</c> if photo was removed; otherwise, <c>false</c>.</returns>
-    public async Task<bool> RemovePhotoAsync(IFileStorageService fileStorage, string photoUrl)
+    /// <param name="photoUrl">The URL of the photo to remove.</param>
+    /// <returns><c>true</c> if the photo was removed; otherwise, <c>false</c>.</returns>
+    public bool RemovePhoto(string photoUrl)
     {
         if (string.IsNullOrWhiteSpace(photoUrl))
         {
@@ -235,54 +217,36 @@ public sealed class SuccessStory : BaseEntity
         var removed = this.photos.Remove(photoUrl);
         if (removed)
         {
-            await fileStorage.DeleteAsync(photoUrl);
             this.UpdatedAt = DateTime.UtcNow;
+            this.AddDomainEvent(new AnimalPhotoRemovedEvent(this.Id, photoUrl));
         }
 
         return removed;
     }
 
     /// <summary>
-    /// Asynchronously adds a video to the success story with validation and uploads the file using the file storage service.
+    /// Adds a video URL to the animal and raises a domain event.
     /// </summary>
-    /// <param name="fileStorage">The file storage service for uploading the file.</param>
-    /// <param name="fileStream">The stream of the video file.</param>
-    /// <param name="fileName">The file name for validation and upload.</param>
-    /// <param name="fileSizeBytes">The size of the file in bytes for validation.</param>
-    /// <param name="config">The media configuration for validation.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    /// <exception cref="ArgumentException">Thrown when validation fails.</exception>
-    public async Task AddVideoAsync(
-        IFileStorageService fileStorage,
-        Stream fileStream,
-        string fileName,
-        long fileSizeBytes,
-        MediaConfig config)
+    /// <param name="videoUrl">The URL of the video to add.</param>
+    /// <exception cref="ArgumentException">Thrown when the <paramref name="videoUrl"/> is null or whitespace.</exception>
+    public void AddVideo(string videoUrl)
     {
-        if (fileStream == null)
+        if (string.IsNullOrWhiteSpace(videoUrl))
         {
-            throw new ArgumentNullException(nameof(fileStream));
+            throw new ArgumentException("URL відео не може бути порожнім.", nameof(videoUrl));
         }
 
-        if (string.IsNullOrWhiteSpace(fileName))
-        {
-            throw new ArgumentException("File name cannot be null or whitespace.", nameof(fileName));
-        }
-
-        config.Validate(fileName, fileSizeBytes);
-
-        var videoUrl = await fileStorage.UploadAsync(fileStream, fileName, config.maxSizeBytes, config.allowedExtensions);
         this.videos.Add(videoUrl);
         this.UpdatedAt = DateTime.UtcNow;
+        this.AddDomainEvent(new AnimalVideoAddedEvent(this.Id, videoUrl));
     }
 
     /// <summary>
-    /// Asynchronously removes a video from the success story and deletes the file using the file storage service.
+    /// Removes a video URL from the animal and raises a domain event if removal was successful.
     /// </summary>
-    /// <param name="fileStorage">The file storage service for deleting the file.</param>
-    /// <param name="videoUrl">The video URL to remove and delete.</param>
-    /// <returns>A task representing the asynchronous operation. Returns <c>true</c> if video was removed; otherwise, <c>false</c>.</returns>
-    public async Task<bool> RemoveVideoAsync(IFileStorageService fileStorage, string videoUrl)
+    /// <param name="videoUrl">The URL of the video to remove.</param>
+    /// <returns><c>true</c> if the video was removed; otherwise, <c>false</c>.</returns>
+    public bool RemoveVideo(string videoUrl)
     {
         if (string.IsNullOrWhiteSpace(videoUrl))
         {
@@ -292,8 +256,8 @@ public sealed class SuccessStory : BaseEntity
         var removed = this.videos.Remove(videoUrl);
         if (removed)
         {
-            await fileStorage.DeleteAsync(videoUrl);
             this.UpdatedAt = DateTime.UtcNow;
+            this.AddDomainEvent(new AnimalVideoRemovedEvent(this.Id, videoUrl));
         }
 
         return removed;

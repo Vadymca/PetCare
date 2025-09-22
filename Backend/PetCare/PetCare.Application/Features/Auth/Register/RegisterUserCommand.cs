@@ -10,6 +10,6 @@ public sealed record RegisterUserCommand(
     string Password,
     string FirstName,
     string LastName,
-    string PhoneNumber,
+    string Phone,
     string? PostalCode)
     : IRequest<UserDto>;

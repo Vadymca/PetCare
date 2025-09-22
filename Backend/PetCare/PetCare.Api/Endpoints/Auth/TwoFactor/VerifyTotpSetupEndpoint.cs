@@ -22,18 +22,11 @@ public static class VerifyTotpSetupEndpoint
         {
             var logger = loggerFactory.CreateLogger("VerifyTotpSetupEndpoint");
 
-            try
-            {
-                var response = await mediator.Send(request);
-                return Results.Ok(response);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error while verifying TOTP setup.");
-                return Results.Problem(
-                    detail: ex.Message,
-                    statusCode: StatusCodes.Status500InternalServerError);
-            }
+            var response = await mediator.Send(request);
+
+            logger.LogInformation("TOTP setup successfully verified for user.");
+
+            return Results.Ok(response);
         })
         .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
@@ -41,6 +34,7 @@ public static class VerifyTotpSetupEndpoint
         .WithTags("Auth")
         .Produces<VerifyTotpSetupResponseDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError)
         .Accepts<object>("application/json");
     }

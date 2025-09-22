@@ -15,37 +15,23 @@ public static class DisableAllTwoFactorEndpoint
     /// <param name="app">The <see cref="WebApplication"/> instance to add the endpoint to.</param>
     public static void MapDisableAllTwoFactorEndpoint(this WebApplication app)
     {
-        app.MapPost("/api/auth/2fa/disable-all", async (
-            IMediator mediator,
-            ILoggerFactory loggerFactory) =>
+        app.MapPost("/api/auth/2fa/disable-all", async (IMediator mediator, ILoggerFactory loggerFactory) =>
         {
             var logger = loggerFactory.CreateLogger("DisableAllTwoFactorEndpoint");
 
-            try
-            {
-                var result = await mediator.Send(new DisableAllTwoFactorCommand());
+            logger.LogInformation("Disabling all 2FA methods for current user...");
 
-                if (!result.Success)
-                {
-                    logger.LogWarning("Failed to disable all 2FA methods: {Message}", result.Message);
-                    return Results.BadRequest(new { message = result.Message });
-                }
+            var result = await mediator.Send(new DisableAllTwoFactorCommand());
 
-                logger.LogInformation("All 2FA methods successfully disabled.");
-                return Results.Ok(new { message = result.Message });
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error disabling all 2FA methods");
-                return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
+            logger.LogInformation("All 2FA methods successfully disabled.");
+            return Results.Ok(result);
         })
-        .RequireAuthorization()
-        .RequireRateLimiting("GlobalPolicy")
-        .WithName("DisableAllTwoFactor")
-        .WithTags("Auth")
-        .Produces<DisableAllTwoFactorResponseDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status500InternalServerError);
+       .RequireAuthorization()
+       .RequireRateLimiting("GlobalPolicy")
+       .WithName("DisableAllTwoFactor")
+       .WithTags("Auth")
+       .Produces<DisableAllTwoFactorResponseDto>(StatusCodes.Status200OK)
+       .Produces(StatusCodes.Status400BadRequest)
+       .Produces(StatusCodes.Status500InternalServerError);
     }
 }

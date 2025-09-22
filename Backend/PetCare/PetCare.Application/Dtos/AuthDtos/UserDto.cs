@@ -9,6 +9,14 @@ public sealed record UserDto(
     string Email,
     string FirstName,
     string LastName,
-    string PhoneNumber,
+    string Phone,
     string Role,
-    string? PostalCode);
+    string? PostalCode,
+    string? Address,
+    string Language,
+    DateTime CreatedAt,
+    DateTime UpdatedAt,
+    int Points,
+    string? ProfilePhoto,
+    DateTime? LastLogin,
+    IReadOnlyDictionary<string, string>? Preferences);

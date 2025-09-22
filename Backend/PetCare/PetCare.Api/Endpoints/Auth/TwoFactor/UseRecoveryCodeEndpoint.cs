@@ -1,6 +1,7 @@
 ﻿namespace PetCare.Api.Endpoints.Auth.TwoFactor;
 
 using MediatR;
+using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.TwoFactor.RecoveryCodes.Use;
 
 
@@ -24,30 +25,16 @@ public static class UseRecoveryCodeEndpoint
         {
             var logger = loggerFactory.CreateLogger("UseRecoveryCodeEndpoint");
 
-            try
-            {
-                var result = await mediator.Send(command);
+            logger.LogInformation("Recovery code successfully used.");
 
-                if (!result.Success)
-                {
-                    logger.LogWarning("Failed to use recovery code: {Message}", result.Message);
-                    return Results.BadRequest(new { message = result.Message });
-                }
-
-                logger.LogInformation("Recovery code successfully used.");
-                return Results.Ok(new { message = result.Message });
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error using recovery code");
-                return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
+            var result = await mediator.Send(command);
+            return Results.Ok(result);
         })
         .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("UseRecoveryCode")
         .WithTags("Auth")
-        .Produces(StatusCodes.Status200OK)
+        .Produces<UseRecoveryCodeResponseDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError)
         .Accepts<UseRecoveryCodeCommand>("application/json");

@@ -38,7 +38,7 @@ public sealed class DisableAllTwoFactorCommandHandler : IRequestHandler<DisableA
         if (user == null)
         {
             this.logger.LogWarning("Unauthorized attempt to disable all 2FA methods.");
-            return new DisableAllTwoFactorResponseDto(false, "Користувач не авторизований.");
+            throw new InvalidOperationException("Користувач не авторизований.");
         }
 
         user.TwoFactorEnabled = false;
@@ -48,10 +48,12 @@ public sealed class DisableAllTwoFactorCommandHandler : IRequestHandler<DisableA
         if (!result)
         {
             this.logger.LogWarning("Failed to disable all 2FA methods for user {UserId}", user.Id);
-            return new DisableAllTwoFactorResponseDto(false, "Не вдалося відключити всі методи 2FA.");
+            throw new InvalidOperationException("Не вдалося відключити всі методи 2FA.");
         }
 
         this.logger.LogInformation("All 2FA methods disabled for user {UserId}", user.Id);
-        return new DisableAllTwoFactorResponseDto(true, "Усі методи 2FA успішно відключено.");
+        return new DisableAllTwoFactorResponseDto(
+            Success: true,
+            Message: "Усі методи 2FA успішно відключено.");
     }
 }

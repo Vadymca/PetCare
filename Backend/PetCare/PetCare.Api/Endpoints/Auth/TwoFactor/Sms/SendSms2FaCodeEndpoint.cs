@@ -1,6 +1,7 @@
 ﻿namespace PetCare.Api.Endpoints.Auth.TwoFactor.Sms;
 
 using MediatR;
+using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.TwoFactor.Sms.Send;
 
 /// <summary>
@@ -20,32 +21,20 @@ public static class SendSms2FaCodeEndpoint
         {
             var logger = loggerFactory.CreateLogger("SendSms2FaCodeEndpoint");
 
-            try
-            {
-                var command = new SendSms2FaCodeCommand();
-                var result = await mediator.Send(command);
+            var command = new SendSms2FaCodeCommand();
+            var result = await mediator.Send(command);
 
-                if (!result.Success)
-                {
-                    logger.LogWarning("Failed to send SMS 2FA code: {Message}", result.Message);
-                    return Results.BadRequest(new { message = result.Message });
-                }
+            logger.LogInformation("SMS 2FA code successfully sent.");
 
-                logger.LogInformation("SMS 2FA code successfully sent.");
-                return Results.Ok(new { message = result.Message });
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error sending SMS 2FA code");
-                return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
+            return Results.Ok(result);
         })
         .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("SendSms2FaCode")
         .WithTags("Auth")
-        .Produces(StatusCodes.Status200OK)
+        .Produces<SendSms2FaCodeResponseDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status500InternalServerError);
     }
 }

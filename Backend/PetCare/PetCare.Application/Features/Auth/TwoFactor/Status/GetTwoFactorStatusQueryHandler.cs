@@ -45,7 +45,7 @@ public sealed class GetTwoFactorStatusQueryHandler : IRequestHandler<GetTwoFacto
         if (user == null)
         {
             this.logger.LogWarning("Unauthorized attempt to get 2FA status.");
-            return new TwoFactorStatusResponseDto(false, false);
+            throw new InvalidOperationException("Користувач не авторизований.");
         }
 
         var status = this.userService.GetTwoFactorStatus(user);

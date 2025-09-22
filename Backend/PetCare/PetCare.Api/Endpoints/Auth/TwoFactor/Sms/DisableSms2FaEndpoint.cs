@@ -1,6 +1,7 @@
 ﻿namespace PetCare.Api.Endpoints.Auth.TwoFactor.Sms;
 
 using MediatR;
+using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.TwoFactor.Sms.Disable;
 
 /// <summary>
@@ -20,32 +21,19 @@ public static class DisableSms2FaEndpoint
         {
             var logger = loggerFactory.CreateLogger("DisableSms2FaEndpoint");
 
-            try
-            {
-                var command = new DisableSms2FaCommand();
-                var result = await mediator.Send(command);
+            var command = new DisableSms2FaCommand();
+            var result = await mediator.Send(command);
 
-                if (!result.Success)
-                {
-                    logger.LogWarning("Failed to disable SMS 2FA: {Message}", result.Message);
-                    return Results.BadRequest(new { message = result.Message });
-                }
-
-                logger.LogInformation("SMS 2FA successfully disabled.");
-                return Results.Ok(new { message = result.Message });
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error disabling SMS 2FA");
-                return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
+            logger.LogInformation("SMS 2FA successfully disabled.");
+            return Results.Ok(result);
         })
         .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("DisableSms2Fa")
         .WithTags("Auth")
-        .Produces(StatusCodes.Status200OK)
+        .Produces<DisableSms2FaResponseDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status500InternalServerError);
     }
 }

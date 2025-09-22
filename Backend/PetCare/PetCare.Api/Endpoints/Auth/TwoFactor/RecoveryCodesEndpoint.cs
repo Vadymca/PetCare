@@ -22,22 +22,17 @@ public static class RecoveryCodesEndpoint
         {
             var logger = loggerFactory.CreateLogger("RecoveryCodesEndpoint");
 
-            try
-            {
-                var result = await mediator.Send(new GetRecoveryCodesCommand());
-                return Results.Ok(result);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error retrieving recovery codes");
-                return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
+            logger.LogInformation("Recovery codes retrieved successfully for user.");
+
+            var result = await mediator.Send(new GetRecoveryCodesCommand());
+            return Results.Ok(result);
         })
         .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("GetRecoveryCodes")
         .WithTags("Auth")
         .Produces<RecoveryCodesResponseDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);
     }
 }

@@ -39,48 +39,23 @@ public sealed class SetupTotpCommandHandler : IRequestHandler<SetupTotpCommand, 
     public async Task<SetupTotpResponseDto> Handle(SetupTotpCommand request, CancellationToken cancellationToken)
     {
         // Отримуємо поточного користувача
-        var user = await this.userService.GetCurrentUserAsync();
-        if (user == null)
-        {
-            this.logger.LogWarning("Unable to identify user for TOTP setup.");
-            return new SetupTotpResponseDto(
-                Success: false,
-                Message: "Не вдалося визначити користувача.",
-                QrCodeImage: string.Empty,
-                ManualKey: string.Empty,
-                RecoveryCodes: Array.Empty<string>());
-        }
+        var user = await this.userService.GetCurrentUserAsync()
+                   ?? throw new InvalidOperationException("Не вдалося визначити користувача.");
 
         // Отримуємо або генеруємо ключ TOTP
         var unformattedKey = await this.userService.GetAuthenticatorKeyAsync(user);
         if (string.IsNullOrWhiteSpace(unformattedKey))
         {
             this.logger.LogInformation("No TOTP key found, generating new key for user {UserId}", user.Id);
-            unformattedKey = await this.userService.ResetAuthenticatorKeyAsync(user);
-        }
-
-        if (string.IsNullOrWhiteSpace(unformattedKey))
-        {
-            this.logger.LogError("TOTP key generation failed for user {UserId}", user.Id);
-            return new SetupTotpResponseDto(
-                Success: false,
-                Message: "Не вдалося згенерувати TOTP ключ.",
-                QrCodeImage: string.Empty,
-                ManualKey: string.Empty,
-                RecoveryCodes: Array.Empty<string>());
+            unformattedKey = await this.userService.ResetAuthenticatorKeyAsync(user)
+                            ?? throw new InvalidOperationException("Не вдалося згенерувати TOTP ключ.");
         }
 
         // Безпечне отримання email
         var email = await this.userService.GetEmailAsync(user);
         if (string.IsNullOrWhiteSpace(email))
         {
-            this.logger.LogError("User email is empty for user {UserId}", user.Id);
-            return new SetupTotpResponseDto(
-                Success: false,
-                Message: "Не вдалося отримати email користувача.",
-                QrCodeImage: string.Empty,
-                ManualKey: string.Empty,
-                RecoveryCodes: Array.Empty<string>());
+            throw new InvalidOperationException("Не вдалося отримати email користувача.");
         }
 
         // Форматування ключа та генерація QR-коду
@@ -97,8 +72,7 @@ public sealed class SetupTotpCommandHandler : IRequestHandler<SetupTotpCommand, 
             Success: true,
             Message: "TOTP секрет згенеровано успішно.",
             QrCodeImage: qrCodeImage,
-            ManualKey: sharedKey,
-            RecoveryCodes: recoveryCodes);
+            ManualKey: sharedKey);
     }
 
     private static string FormatKey(string unformattedKey)

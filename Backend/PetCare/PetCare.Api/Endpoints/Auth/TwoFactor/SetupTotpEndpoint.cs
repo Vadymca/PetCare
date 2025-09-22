@@ -19,24 +19,15 @@ public static class SetupTotpEndpoint
         {
             var logger = loggerFactory.CreateLogger("SetupTotpEndpoint");
 
-            try
-            {
-                var response = await mediator.Send(new SetupTotpCommand());
-                return Results.Ok(response);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error while setting up TOTP.");
-                return Results.Problem(
-                    detail: ex.Message,
-                    statusCode: StatusCodes.Status500InternalServerError);
-            }
+            var response = await mediator.Send(new SetupTotpCommand());
+            return Results.Ok(response);
         })
         .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("SetupTotp")
         .WithTags("Auth")
         .Produces<SetupTotpResponseDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status500InternalServerError);
     }

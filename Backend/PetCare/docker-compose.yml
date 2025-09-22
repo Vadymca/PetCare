@@ -40,18 +40,29 @@
       JWT_REFRESH_EXPIRATION_DAYS: "7"      # refresh token живе довше
 
        # SMS settings
-      SmsSettings__Provider: "Twilio"
+      SmsSettings__Provider: "SmsFly"
       SmsSettings__ApplicationName: "PetCare"
       SmsSettings__CodeExpirationMinutes: "5"
       SmsSettings__MaxAttemptsPerPeriod: "3"
       SmsSettings__RateLimitPeriodMinutes: "10"
 
+      # SMS-Fly settings
+      SmsFly__ApiKey: "2rZjKbu4tg0XZ6puvBJEQPlBNWDepEWf"
+      SmsFly__Sender: "InfoCenter"
+      SmsFly__BaseUrl: "https://sms-fly.ua/api/v2/api.php"
+
       # Twilio settings
       TwilioSettings__AccountSid: "AC3736a78f2439de378c907a3ac9face06"
-      TwilioSettings__AuthToken: "0e6c3b0ba254626b5aa9a0bff1e3ef97"
+      TwilioSettings__AuthToken: "b265d91abb3fa1973d2218e557c89c63"
       TwilioSettings__FromPhoneNumber: "+14195412828"
       TwilioSettings__EnableLogging: "true"
       TwilioSettings__TimeoutSeconds: "30"
+
+      # Zipcodebase settings
+      Zipcodebase__BaseUrl: "https://app.zipcodebase.com/api/v1"
+      Zipcodebase__ApiKey: "b351ca10-9587-11f0-b03c-b7d50a123afd"
+      Zipcodebase__Country: "UA"
+      Zipcodebase__Language: "uk"
 
     ports:
       - '5000:80'

@@ -1,6 +1,7 @@
 ﻿namespace PetCare.Api.Endpoints.Auth.TwoFactor;
 
 using MediatR;
+using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.TwoFactor.GetBackupCodes;
 
 /// <summary>
@@ -18,32 +19,19 @@ public static class GetTotpBackupCodesEndpoint
         {
             var logger = loggerFactory.CreateLogger("GetTotpBackupCodesEndpoint");
 
-            try
-            {
-                var command = new GetTotpBackupCodesCommand();
+            logger.LogInformation("Retrieving TOTP backup codes for current user.");
 
-                var result = await mediator.Send(command);
+            var command = new GetTotpBackupCodesCommand();
+            var result = await mediator.Send(command);
 
-                if (!result.Success)
-                {
-                    logger.LogWarning("Failed to retrieve TOTP backup codes: {Message}", result.Message);
-                    return Results.BadRequest(new { message = result.Message });
-                }
-
-                logger.LogInformation("TOTP backup codes successfully retrieved.");
-                return Results.Ok(result);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error retrieving TOTP backup codes.");
-                return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
+            logger.LogInformation("TOTP backup codes successfully retrieved.");
+            return Results.Ok(result);
         })
         .WithName("GetTotpBackupCodes")
         .RequireRateLimiting("GlobalPolicy")
         .WithTags("Auth")
         .RequireAuthorization()
-        .Produces(StatusCodes.Status200OK)
+        .Produces<GetTotpBackupCodesResponseDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError);
     }
