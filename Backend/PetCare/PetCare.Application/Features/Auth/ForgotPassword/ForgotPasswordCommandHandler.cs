@@ -59,9 +59,11 @@ public sealed class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswor
         var resetUrl = $"http://localhost:4200/reset-password?token={token}&email={user.Email}";
 
         // Відправка мок листа
-        var subject = "Скидання пароля для PetCare";
-        var body = $"Посилання для скидання пароля: {resetUrl}";
-        await this.emailService.SendEmailAsync(user.Email!, subject, body);
+        var subject = "Скидання пароля для Добродій";
+        var htmlBody = await this.templateRenderer.RenderAsync(
+             "PetCare.Application.EmailTemplates.ResetPasswordTemplate.cshtml",
+             model);
+        await this.emailService.SendEmailAsync(user.Email!, subject, htmlBody);
 
         this.logger.LogInformation("Reset password email sent to {Email}", user.Email);
 
