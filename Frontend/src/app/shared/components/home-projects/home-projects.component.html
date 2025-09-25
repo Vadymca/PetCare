@@ -13,7 +13,7 @@
   </div>
   @if (animalAidRequests.length > 3) {
     <div
-      class="w-full flex flex-col gap-2 mt-6 xl:grid xl:grid-cols-4 xl:grid-rows-2 xl:gap-2 xl:min-h-[calc(100vh-200px)] h-full overflow-hidden"
+      class="w-full flex flex-col gap-2 mt-6 xl:grid xl:grid-cols-4 xl:grid-rows-2 xl:gap-2 xl:min-h-[820px] overflow-hidden"
     >
       <div class="relative xl:col-span-1 xl:row-span-1 overflow-hidden">
         <app-home-project-card
@@ -48,7 +48,7 @@
   @if (animalAidRequests.length < 4) {
     <div class="relative w-full flex flex-row flex-wrap justify-center gap-2">
       @for (req of animalAidRequests; track req.id) {
-        <div class="relative min-h-[722px]">
+        <div class="relative sm:h-full overflow-hi">
           <app-home-project-card
             [animalAidRequest]="req"
             (projectDetailClick)="onProjectDetailClick(req)"

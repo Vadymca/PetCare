@@ -1,0 +1,135 @@
+<footer
+  class="relative w-[100%] flex flex-col text-center px-[50px] pt-[50px] pb-[120px] text-primary-beige bg-primary-blue"
+>
+  <div class="flex flex-col gap-4 justify-center items-start h-full">
+    <app-icon [name]="'logoUkr'"></app-icon>
+    <div
+      class="mt-[30px] flex flex-row w-full justify-between gap-5 xl:gap-[200px] text-start"
+    >
+      <div class="hidden sm:flex">
+        <div class="flex">
+          <p class="w-[180px]">
+            {{ 'SHELTER_FOR_ANIMALS' | translate }}
+          </p>
+        </div>
+      </div>
+      <div
+        class="w-full flex flex-1 flex-col xl:grid xl:grid-cols-3 xl:grid-rows-2 lg:grid-cols-2 lg:grid-rows-3 gap-2 xl:gap-6 items-start sm:items-end"
+      >
+        <div class="flex">
+          <a
+            [routerLink]="'/animals'"
+            routerLinkActive="underline  font-semibold"
+            class="transition hover:underline flex items-center justify-center cursor-pointer"
+          >
+            {{ 'HOW_CAN_HELP' | translate }}
+          </a>
+        </div>
+        <div class="flex">
+          <a
+            [routerLink]="'/animals'"
+            routerLinkActive="underline  font-semibold"
+            class="transition hover:underline flex items-center justify-center cursor-pointer"
+          >
+            {{ 'ABOUT_SHELTER' | translate }}
+          </a>
+        </div>
+        <div class="flex">
+          <a
+            [routerLink]="'/animals'"
+            routerLinkActive="underline  font-semibold"
+            class="transition hover:underline flex items-center justify-center cursor-pointer"
+          >
+            {{ 'REPORTS' | translate }}
+          </a>
+        </div>
+        <div class="flex">
+          <a
+            [routerLink]="'/animals'"
+            routerLinkActive="underline  font-semibold"
+            class="transition hover:underline flex items-center justify-center cursor-pointer"
+          >
+            {{ 'ADOPT_PET' | translate }}
+          </a>
+        </div>
+        <div class="flex">
+          <a
+            [routerLink]="'/animals'"
+            routerLinkActive="underline  font-semibold"
+            class="transition hover:underline flex items-center justify-center cursor-pointer"
+          >
+            {{ 'PROJECTS' | translate }}
+          </a>
+        </div>
+        <div class="flex">
+          <a
+            [routerLink]="'/animals'"
+            routerLinkActive="underline  font-semibold"
+            class="transition hover:underline flex items-center justify-center cursor-pointer"
+          >
+            {{ 'CONTACTS' | translate }}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="flex flex-col xl:flex-row gap-4 justify-between mt-[86px] items-start xl:items-end"
+  >
+    <div class="flex">Copyright 2025 Dobrodii.</div>
+    <!-- Social Media-->
+    <app-social-media></app-social-media>
+
+    <form
+      #formRef
+      [formGroup]="subscriptionForm"
+      (ngSubmit)="onSubmit()"
+      class="group flex flex-col justify-start items-end"
+    >
+      <!-- Email -->
+      <div class="flex flex-row items-end">
+        <div class="relative flex flex-col">
+          <label for="email" class="text-left">
+            {{ 'SUBSCRIBE_TO_NEWSLETTER' | translate }}
+          </label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            [placeholder]="'Email'"
+            class="relative text-secondary-neutral-mineShaft mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none group-invalid:ring-2 group-invalid:ring-secondary-semantic-error pr-10"
+            aria-label="Email"
+            autocomplete="email"
+          />
+          @if (
+            subscriptionForm.controls.email.touched &&
+            subscriptionForm.controls.email.invalid
+          ) {
+            @if (!subscriptionForm.controls.email.errors?.['required']) {
+              <div
+                class="text-red-600 text-sm mt-3 absolute bottom-[-30px] left-0 w-full"
+              >
+                {{ 'EMAIL_INVALID' | translate }}
+              </div>
+            }
+          }
+        </div>
+        <!-- Submit -->
+        <div class="ml-[61px] content-center mt-2 w-[260px]">
+          <div class="flex justify-center">
+            <app-secondary-large-button
+              class="w-[260px]"
+              [disabled]="isDisabled"
+              buttonTitle="SUBSCRIBE"
+              (pressButton)="onSubmit()"
+            ></app-secondary-large-button>
+          </div>
+        </div>
+      </div>
+    </form>
+    <app-icon
+      [name]="'pawPrintBorder1'"
+      class="absolute bottom-0 left-0 w-full px-[19px]"
+    ></app-icon>
+  </div>
+</footer>

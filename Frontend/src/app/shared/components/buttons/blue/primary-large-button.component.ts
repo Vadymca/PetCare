@@ -1,7 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import {
+  Component,
+  EventEmitter,
+  inject,
+  Input,
+  Output,
+  signal,
+} from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ICONS } from '../../../../../assets/icons/icons';
 import { IconComponent } from '../../icon.component';
 
@@ -33,16 +40,17 @@ import { IconComponent } from '../../icon.component';
   `,
 })
 export class PrimaryLargeButtonComponent {
-  @Input() buttonTitle?: string;
+  router = inject(Router);
+  translate = inject(TranslateService);
+  @Input() buttonTitle: string | undefined;
   @Input() iconName?: keyof typeof ICONS;
   @Output() pressButton = new EventEmitter<void>();
   @Input() loading? = signal(false);
+
   @Input() disabled = signal(false); // <- новий Input
 
   async confirm() {
-    if (this.disabled()) return;
+    if (this.disabled()) return; // додатково блокування
     this.pressButton.emit();
-
-    // Сабмітимо форму вручну, якщо вона передана
   }
 }

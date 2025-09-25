@@ -1,33 +1,41 @@
-import { inject } from '@angular/core';
-import {
-  ActivatedRouteSnapshot,
-  CanActivateFn,
-  Router,
-  RouterStateSnapshot,
-  UrlTree,
-} from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
+import { inject, PLATFORM_ID } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
+import { of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { AuthService } from '../services/auth.service';
 
-export const authGuard: CanActivateFn = (
-  route: ActivatedRouteSnapshot,
-  state: RouterStateSnapshot
-): boolean | UrlTree => {
+export const authGuard: CanActivateFn = (route, state) => {
+  const platformId = inject(PLATFORM_ID);
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  const user = authService._currentUser();
-
-  if (!user) {
-    return router.createUrlTree(['/login'], {
-      queryParams: { returnUrl: state.url },
-    });
+  if (!isPlatformBrowser(platformId)) {
+    return true;
   }
 
-  const requiredRole = route.data['role'] as string | undefined;
+  return authService.refreshToken().pipe(
+    // <-- async refresh
+    map(data => {
+      if (!data) {
+        return router.createUrlTree(['/'], {
+          queryParams: { returnUrl: state.url },
+        });
+      }
 
-  if (requiredRole && user.role !== requiredRole) {
-    return router.createUrlTree(['/access-denied']);
-  }
+      const requiredRole = route.data['role'] as string | undefined;
+      if (requiredRole && data.user?.role !== requiredRole) {
+        return router.createUrlTree(['/access-denied']);
+      }
 
-  return true;
+      return true;
+    }),
+    catchError(() =>
+      of(
+        router.createUrlTree(['/'], {
+          queryParams: { returnUrl: state.url },
+        })
+      )
+    )
+  );
 };

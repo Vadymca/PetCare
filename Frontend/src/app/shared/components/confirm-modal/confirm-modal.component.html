@@ -1,0 +1,35 @@
+<!-- Logout Modal -->
+<div
+  class="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50 text-secondary-neutral-mineShaft"
+>
+  <div
+    class="bg-primary-beige rounded-40 xl:w-[534px] max-w-[534px] min-h-[304px] p-10 flex flex-col justify-between"
+  >
+    <div class="flex justify-end">
+      <app-icon
+        [name]="'close'"
+        class="cursor-pointer hover:text-primary-orange text-secondary-neutral-mineShaft"
+        (click)="confirmLogout(false)"
+      ></app-icon>
+    </div>
+    <h3
+      class="font-bold font-fixel text-[24px] text-center mt-10 text-secondary-neutral-mineShaft"
+    >
+      {{ text | translate }}
+    </h3>
+    <div
+      class="flex justify-center items-center mt-10 gap-[80px] text-secondary-neutral-mineShaft"
+    >
+      <app-secondary-large-orange-button-with-border
+        class="min-w-[170px]"
+        buttonTitle="{{ titleCancel }}"
+        (click)="confirmLogout(false)"
+      ></app-secondary-large-orange-button-with-border>
+      <app-primary-large-orange-button-with-border
+        class="min-w-[170px]"
+        buttonTitle="{{ titleSubmit }}"
+        (click)="confirmLogout(true)"
+      ></app-primary-large-orange-button-with-border>
+    </div>
+  </div>
+</div>

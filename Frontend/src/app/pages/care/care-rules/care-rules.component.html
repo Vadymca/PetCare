@@ -1,0 +1,221 @@
+<div
+  class="w-full px-6 xl:px-[50px] pt-[150px] pb-[100px] bg-primary-lightBlue"
+>
+  <div class="inline-flex items-center">
+    <div
+      class="hover:text-primary-orange inline-flex items-center cursor-pointer -translate-y-1/2 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-50"
+      (click)="backButtonClick()"
+      (keyup.enter)="backButtonClick()"
+      (keyup.space)="backButtonClick()"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'BACK' | translate"
+    >
+      <app-icon [name]="'arrowLeft'" class=""></app-icon>
+      <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
+    </div>
+  </div>
+  @if (lang() === 'uk') {
+    <!-- українська версія -->
+    <div
+      class="w-full flex flex-col items-center text-secondary-neutral-mineShaft leading-[1.2]"
+    >
+      <h2
+        class="font-display text-[40px] font-bold leading-none text-center w-full"
+        style="font-size: clamp(16px, 6.5vw, 40px)"
+      >
+        Кілька хвилин - і ви опікун
+      </h2>
+      <p class="text-center w-full mt-6">Що потрібно, аби стати опікуном ?</p>
+      <div
+        class="mt-10 rounded-40 p-10 pr-7 bg-primary-beige flex flex-col max-w-[700px]"
+      >
+        <div class="flex gap-2 items-start justify-start">
+          <app-icon [name]="'smallBluePointer'"></app-icon>
+          <p>ЗАРЕЄСТРУВАТИСЯ НА НАШОМУ САЙТІ</p>
+        </div>
+        <div class="flex gap-2 items-start justify-start mt-6">
+          <app-icon [name]="'smallBluePointer'"></app-icon>
+          <p>В РОЗДІЛІ “ОПІКА ЗА ТВАРИНАМИ” ОЗНАЙОМИТИСЬ З АНКЕТАМИ ТВАРИН</p>
+        </div>
+        <div class="flex gap-2 items-start justify-start mt-6">
+          <app-icon [name]="'smallBluePointer'"></app-icon>
+          <p>У ПРОФІЛІ ТВАРИНИ НАТИСНУТИ “ОПІКУВАТИСЬ”</p>
+        </div>
+        <div class="flex gap-2 items-start justify-start mt-6">
+          <app-icon [name]="'smallBluePointer'"></app-icon>
+          <p>ОПЛАТИТИ УТРИМАННЯ ТВАРИНИ НА НАШОМУ САЙТІ</p>
+        </div>
+      </div>
+      <h2
+        class="font-display text-[40px] font-bold leading-none text-center w-full mt-[60px]"
+        style="font-size: clamp(16px, 6.5vw, 40px)"
+      >
+        Скільки коштує опіка над твариною на відстані ?
+      </h2>
+      <p class="text-center max-w-[700px] mt-6">
+        Опікун щомісячно сплачує внесок на утримання тваринки. Вартість опіки
+        варіюється в залежності від розміру тварини :
+      </p>
+      <div
+        class="mt-10 rounded-40 p-10 pr-7 bg-primary-beige flex flex-col max-w-[700px]"
+      >
+        <div class="flex gap-2 items-start justify-start">
+          <app-icon [name]="'moneyHand'"></app-icon>
+          <p><span class="font-bold">600 UAH/МІС</span> - УТРИМАННЯ КОТИКА</p>
+        </div>
+        <div class="flex gap-2 items-start justify-start mt-6">
+          <app-icon [name]="'moneyHand'"></app-icon>
+          <p>
+            <span class="font-bold">700 UAH/МІС</span> - УТРИМАННЯ МАЛЕНЬКОЇ
+            СОБАЧКИ
+          </p>
+        </div>
+        <div class="flex gap-2 items-start justify-start mt-6">
+          <app-icon [name]="'moneyHand'"></app-icon>
+          <p>
+            <span class="font-bold">1000 UAH/МІС</span> - УТРИМАННЯ
+            ЦУЦЕНЯТКА/КОШЕНЯ ”ВИГОДУЙ ЯК МАМА”
+          </p>
+        </div>
+        <div class="flex gap-2 items-start justify-start mt-6">
+          <app-icon [name]="'moneyHand'"></app-icon>
+          <p>
+            <span class="font-bold">1300 UAH/МІС</span> - УТРИМАННЯ СЕРЕДНЬОЇ
+            СОБАЧКИ
+          </p>
+        </div>
+        <div class="flex gap-2 items-start justify-start mt-6">
+          <app-icon [name]="'moneyHand'"></app-icon>
+          <p>
+            <span class="font-bold">2000 UAH/МІС</span> - УТРИМАННЯ ВЕЛИКОЇ
+            СОБАКИ
+          </p>
+        </div>
+      </div>
+      <h2
+        class="font-display text-[40px] font-bold leading-none text-center w-full mt-[60px]"
+        style="font-size: clamp(16px, 6.5vw, 40px)"
+      >
+        Що ще важливо знати ?
+      </h2>
+      <p class="mt-6 max-w-[700px]">
+        У будь-який момент можна поїхати до притулку та відвідати свого
+        підопічного. За суму коштів, зібраних в рамках проєкту за кожен місяць,
+        притулок закуповує корм та все необхідне для вашого підопічного на
+        початку наступного місяця.
+      </p>
+      <div class="relative">
+        <p class="mt-6 max-w-[700px]">
+          Якщо ви забули сплатити утримання тварини, не хвилюйтесь — ми
+          обов'язково нагадаємо про оплату. Також опікуни отримують «пухнасті»
+          листи від своїх підопічних з фото/відео звітами та успіхами в
+          розвитку, лікуванні або ж про інші досягнення хвостика (не рідше, ніж
+          раз на 2 місяці).
+        </p>
+        <div
+          class="relative xl:absolute xl:left-[-251px] xl:bottom-0 flex xl:block mt-6 xl:mt-0 w-full justify-center items-center"
+        >
+          <app-icon [name]="'logoInBox'"></app-icon>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <!-- англійська версія -->
+    <div
+      class="w-full flex flex-col items-center text-secondary-neutral-mineShaft leading-[1.2]"
+    >
+      <h2
+        class="font-display text-[40px] font-bold leading-none text-center w-full"
+        style="font-size: clamp(16px, 6.5vw, 40px)"
+      >
+        A few minutes – and you become a guardian
+      </h2>
+      <p class="text-center w-full mt-6">
+        What do you need to become a guardian?
+      </p>
+      <div
+        class="mt-10 rounded-40 p-10 pr-7 bg-primary-beige flex flex-col max-w-[700px]"
+      >
+        <div class="flex gap-2 items-start justify-start">
+          <app-icon [name]="'smallBluePointer'"></app-icon>
+          <p>REGISTER ON OUR WEBSITE</p>
+        </div>
+        <div class="flex gap-2 items-start justify-start mt-6">
+          <app-icon [name]="'smallBluePointer'"></app-icon>
+          <p>IN THE "ANIMAL GUARDIANSHIP" SECTION, CHECK OUT ANIMAL PROFILES</p>
+        </div>
+        <div class="flex gap-2 items-start justify-start mt-6">
+          <app-icon [name]="'smallBluePointer'"></app-icon>
+          <p>IN THE ANIMAL'S PROFILE, CLICK "BECOME A GUARDIAN"</p>
+        </div>
+        <div class="flex gap-2 items-start justify-start mt-6">
+          <app-icon [name]="'smallBluePointer'"></app-icon>
+          <p>PAY FOR THE ANIMAL'S CARE ON OUR WEBSITE</p>
+        </div>
+      </div>
+      <h2
+        class="font-display text-[40px] font-bold leading-none text-center w-full mt-[60px]"
+        style="font-size: clamp(16px, 6.5vw, 40px)"
+      >
+        How much does it cost to care for an animal remotely?
+      </h2>
+      <p class="text-center max-w-[700px] mt-6">
+        A guardian pays a monthly contribution for the animal's care. The cost
+        varies depending on the size of the animal:
+      </p>
+      <div
+        class="mt-10 rounded-40 p-10 pr-7 bg-primary-beige flex flex-col max-w-[700px]"
+      >
+        <div class="flex gap-2 items-start justify-start">
+          <app-icon [name]="'moneyHand'"></app-icon>
+          <p><span class="font-bold">600 UAH/MONTH</span> – CAT CARE</p>
+        </div>
+        <div class="flex gap-2 items-start justify-start mt-6">
+          <app-icon [name]="'moneyHand'"></app-icon>
+          <p><span class="font-bold">700 UAH/MONTH</span> – SMALL DOG CARE</p>
+        </div>
+        <div class="flex gap-2 items-start justify-start mt-6">
+          <app-icon [name]="'moneyHand'"></app-icon>
+          <p>
+            <span class="font-bold">1000 UAH/MONTH</span> – PUPPY/KITTEN CARE
+            “FEED LIKE A MOM”
+          </p>
+        </div>
+        <div class="flex gap-2 items-start justify-start mt-6">
+          <app-icon [name]="'moneyHand'"></app-icon>
+          <p><span class="font-bold">1300 UAH/MONTH</span> – MEDIUM DOG CARE</p>
+        </div>
+        <div class="flex gap-2 items-start justify-start mt-6">
+          <app-icon [name]="'moneyHand'"></app-icon>
+          <p><span class="font-bold">2000 UAH/MONTH</span> – LARGE DOG CARE</p>
+        </div>
+      </div>
+      <h2
+        class="font-display text-[40px] font-bold leading-none text-center w-full mt-[60px]"
+        style="font-size: clamp(16px, 6.5vw, 40px)"
+      >
+        What else is important to know?
+      </h2>
+      <p class="mt-6 max-w-[700px]">
+        At any time, you can visit the shelter and see your ward. Each month,
+        the funds collected within the project are used by the shelter to
+        purchase food and everything necessary for your ward at the beginning of
+        the next month.
+      </p>
+      <div class="relative">
+        <p class="mt-6 max-w-[700px]">
+          If you forget to pay for your animal’s care, don’t worry — we will
+          remind you. Guardians also receive "fluffy" letters from their wards
+          with photos/videos and updates on development, treatment, or other
+          achievements (at least once every 2 months).
+        </p>
+        <div
+          class="relative xl:absolute xl:left-[-251px] xl:bottom-0 flex xl:block mt-6 xl:mt-0 w-full justify-center items-center"
+        >
+          <app-icon [name]="'logoInBox'"></app-icon>
+        </div>
+      </div>
+    </div>
+  }
+</div>

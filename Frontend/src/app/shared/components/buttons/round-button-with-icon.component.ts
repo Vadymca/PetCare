@@ -17,7 +17,9 @@ import { IconComponent } from '../icon.component';
 			font-inter font-bold text-base 
     bg-primary-orange text-primary-beige
 		hover:bg-primary-beige hover:text-primary-orange 
+
     active:bg-secondary-treePoppy-1 active:text-primary-orange 
+	
      disabled:bg-secondary-neutral-alto disabled:text-secondary-neutral-doveGray"
       (click)="confirm()"
       [disabled]="disabled()"

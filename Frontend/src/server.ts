@@ -7,6 +7,7 @@ import {
 import express from 'express';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { REQUEST_ORIGIN } from './app/core/tokens/request-origin.token';
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
@@ -41,8 +42,13 @@ app.use(
  * Handle all other requests by rendering the Angular application.
  */
 app.use('/**', (req, res, next) => {
+  const origin = `${req.protocol}://${req.get('host')}`;
   angularApp
-    .handle(req)
+    .handle(req, {
+      providers: [
+        { provide: REQUEST_ORIGIN, useValue: origin }, // 👈 прокидуємо у DI
+      ],
+    })
     .then(response =>
       response ? writeResponseToNodeResponse(response, res) : next()
     )

@@ -5,13 +5,16 @@ import {
   effect,
   ElementRef,
   inject,
+  OnDestroy,
+  OnInit,
   PLATFORM_ID,
   QueryList,
   signal,
   ViewChildren,
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { filter, Subscription, take } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ModalService } from '../../core/services/modal.service';
 import { animateCounter } from '../../shared/animation/counter-animation';
@@ -19,11 +22,13 @@ import { AnimalsPreviewComponent } from '../../shared/components/animals-preview
 import { PrimaryLargeButtonComponent } from '../../shared/components/buttons/blue/primary-large-button.component';
 import { SecondaryLargeButtonComponent } from '../../shared/components/buttons/blue/secondary-large-button.component';
 import { SecondarySmallButtonComponent } from '../../shared/components/buttons/blue/secondary-small-button.component';
-import { DownloadOrangeButtonWithIconComponent } from '../../shared/components/buttons/download-orange-button-with-icon.component';
+import { DownloadOrangeButtonWithIconComponent } from '../../shared/components/buttons/orange/download-orange-button-with-icon.component';
 import { PrimaryLargeOrangeButtonComponent } from '../../shared/components/buttons/orange/primary-large-orange-button.component';
 import { FinancialSupportComponent } from '../../shared/components/financial-support/financial-support.component';
+import { HomeNewsComponent } from '../../shared/components/home-news/home-news.component';
+import { HomePartnersComponent } from '../../shared/components/home-partners/home-partners.component';
+import { HomeProjectsComponent } from '../../shared/components/home-projects/home-projects.component';
 import { IconComponent } from '../../shared/components/icon.component';
-import { HomeProjectsComponent } from "../../shared/components/home-projects/home-projects.component";
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -38,38 +43,27 @@ import { HomeProjectsComponent } from "../../shared/components/home-projects/hom
     DownloadOrangeButtonWithIconComponent,
     FinancialSupportComponent,
     AnimalsPreviewComponent,
-    HomeProjectsComponent
-],
+    HomeProjectsComponent,
+    HomeNewsComponent,
+    HomePartnersComponent,
+  ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })
-export class HomeComponent implements AfterViewInit {
-  onTempClick() {
-    this.router.navigate(['/not-found.component']);
-  }
+export class HomeComponent implements AfterViewInit, OnDestroy, OnInit {
   @ViewChildren('counter') counters!: QueryList<ElementRef>;
   platformId = inject(PLATFORM_ID);
-  values = [12000, 14067, 10068];
 
   isPlatformBrowser = isPlatformBrowser;
-
-  ngAfterViewInit() {
-    if (isPlatformBrowser(this.platformId)) {
-      this.counters.forEach((counter: ElementRef, index: number) => {
-        animateCounter(counter.nativeElement, this.values[index], 2000);
-      });
-    }
-  }
-  onDownloadMonthlyReportClick() {
-    throw new Error('Method not implemented.');
-  }
-  onAllReportsClick() {
-    throw new Error('Method not implemented.');
-  }
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private authService = inject(AuthService);
   private modalService = inject(ModalService);
+  private queryParamsSubscription?: Subscription;
+  private isProcessed = false; // Флаг для запобігання повторної обробки
+  isImageChanging = false;
+  currentWorkerIndex = 0;
+  values = [12000, 14067, 10068];
   workers = [
     {
       id: 0,
@@ -102,8 +96,194 @@ export class HomeComponent implements AfterViewInit {
       thirdDiv: 'THIRD_DIV_VET',
     },
   ];
-  isImageChanging = false;
-  currentWorkerIndex = 0;
+  reports = [
+    { month: 1, year: 2024, link: 'тут буде посилання на звіт за січень 2024' },
+    { month: 2, year: 2024, link: 'тут буде посилання на звіт за лютий 2024' },
+    {
+      month: 3,
+      year: 2024,
+      link: 'тут буде посилання на звіт за березень 2024',
+    },
+    {
+      month: 4,
+      year: 2024,
+      link: 'тут буде посилання на звіт за квітень 2024',
+    },
+    {
+      month: 5,
+      year: 2024,
+      link: 'тут буде посилання на звіт за травень 2024',
+    },
+    {
+      month: 6,
+      year: 2024,
+      link: 'тут буде посилання на звіт за червень 2024',
+    },
+    { month: 7, year: 2024, link: 'тут буде посилання на звіт за липень 2024' },
+    {
+      month: 8,
+      year: 2024,
+      link: 'тут буде посилання на звіт за серпень 2024',
+    },
+    {
+      month: 9,
+      year: 2024,
+      link: 'тут буде посилання на звіт за вересень 2024',
+    },
+    {
+      month: 10,
+      year: 2024,
+      link: 'тут буде посилання на звіт за жовтень 2024',
+    },
+    {
+      month: 11,
+      year: 2024,
+      link: 'тут буде посилання на звіт за листопад 2024',
+    },
+    {
+      month: 12,
+      year: 2024,
+      link: 'тут буде посилання на звіт за грудень 2024',
+    },
+    { month: 1, year: 2025, link: 'тут буде посилання на звіт за січень 2025' },
+    { month: 2, year: 2025, link: 'тут буде посилання на звіт за лютий 2025' },
+    {
+      month: 3,
+      year: 2025,
+      link: 'тут буде посилання на звіт за березень 2025',
+    },
+    {
+      month: 4,
+      year: 2025,
+      link: 'тут буде посилання на звіт за квітень 2025',
+    },
+    {
+      month: 5,
+      year: 2025,
+      link: 'тут буде посилання на звіт за травень 2025',
+    },
+    {
+      month: 6,
+      year: 2025,
+      link: 'тут буде посилання на звіт за червень 2025',
+    },
+    { month: 7, year: 2025, link: 'тут буде посилання на звіт за липень 2025' },
+    {
+      month: 8,
+      year: 2025,
+      link: 'тут буде посилання на звіт за серпень 2025',
+    },
+  ];
+
+  constructor() {
+    effect(() => {
+      if (this.modalService.modalStateReadonly().isOpen) {
+        this.isCharityButtonHidden.set(true);
+      } else {
+        this.isCharityButtonHidden.set(false);
+      }
+      if (isPlatformBrowser(this.platformId)) {
+        this.router.events
+          .pipe(filter(event => event instanceof NavigationEnd))
+          .subscribe(() => {
+            window.scrollTo({ top: 0, behavior: 'auto' });
+          });
+      }
+    });
+  }
+  ngOnInit() {
+    // Обробка query-параметрів у ngOnInit
+    if (!isPlatformBrowser(this.platformId)) {
+      console.log('Skipping query param processing on server');
+      return;
+    }
+
+    this.queryParamsSubscription = this.route.queryParams
+      .pipe(take(1))
+      .subscribe(params => {
+        if (this.isProcessed) {
+          console.log('Query params already processed, skipping.');
+          return;
+        }
+
+        const token = params['token']
+          ? decodeURIComponent(params['token'])
+          : '';
+        const email = params['email']
+          ? decodeURIComponent(params['email']).trim()
+          : '';
+        const currentPath = this.route.snapshot.routeConfig?.path;
+
+        // Логування для дебагу
+        console.log('Raw token from params:', params['token']);
+        console.log('Processed token:', token);
+        console.log('Received email:', email);
+        console.log('Current path:', currentPath);
+
+        // Перевірка валідності Base64
+        const isValidBase64 = token ? /^[A-Za-z0-9+/=]+$/.test(token) : false;
+        console.log('Is token valid Base64?', isValidBase64);
+
+        if (email && token && currentPath === 'verify-email') {
+          this.isProcessed = true; // Помічаємо, що запит оброблено
+          this.authService.verifyEmail(email, token).subscribe({
+            next: response => {
+              if (response.success) {
+                this.modalService.openModal('email-confirmed');
+              } else {
+                this.modalService.openModal('email-not-confirmed');
+              }
+              this.router.navigate([''], { queryParams: {}, replaceUrl: true });
+            },
+            error: err => {
+              console.error('Verify email error:', err);
+              this.modalService.openModal('email-not-confirmed');
+              this.router.navigate([''], { queryParams: {}, replaceUrl: true });
+            },
+          });
+        } else if (email && token && currentPath === 'reset-password') {
+          this.isProcessed = true; // Помічаємо, що запит оброблено
+          this.modalService.setTokenForResettingPassword(token);
+          console.log('setEmailForResettingPassword: ', email);
+          this.modalService.setEmailForResettingPassword(email);
+          this.modalService.openModal('reset-password');
+          this.router.navigate([''], { queryParams: {}, replaceUrl: true });
+        }
+      });
+  }
+  ngOnDestroy() {
+    // Відписуємося від queryParams
+    if (this.queryParamsSubscription) {
+      this.queryParamsSubscription.unsubscribe();
+    }
+  }
+  ngAfterViewInit() {
+    if (isPlatformBrowser(this.platformId)) {
+      this.counters.forEach((counter: ElementRef, index: number) => {
+        animateCounter(counter.nativeElement, this.values[index], 2000);
+      });
+    }
+  }
+  onSupportClick() {
+    this.router.navigate(['/support']);
+  }
+  onTempClick() {
+    this.router.navigate(['/public-offer']);
+  }
+  onDownloadMonthlyReportClick() {
+    const month = new Date().getMonth();
+    const year = new Date().getFullYear();
+    let link = '';
+    this.reports.forEach(report => {
+      if (report.month === month && report.year === year) {
+        link = report.link;
+      }
+    });
+    window.open(link, '_blank');
+  }
+  onAllReportsClick() {
+    this.router.navigate(['/reports']);
+  }
   selectedWorker() {
     return this.workers[this.currentWorkerIndex];
   }
@@ -113,42 +293,7 @@ export class HomeComponent implements AfterViewInit {
     this.currentWorkerIndex = index; // міняємо картинку після fade-out
     setTimeout(() => {
       this.isImageChanging = false; // запускаємо fade-in
-    }, 300); // 300мс = половина твоєї transition-duration
-  }
-  constructor() {
-    effect(() => {
-      if (this.modalService.modalStateReadonly().isOpen) {
-        this.isCharityButtonHidden.set(true);
-      } else {
-        this.isCharityButtonHidden.set(false);
-      }
-    });
-    this.route.queryParams.subscribe(params => {
-      const token = params['token'];
-      const currentPath = this.route.snapshot.routeConfig?.path;
-
-      if (token && currentPath === 'verify-email') {
-        this.authService.verifyEmail(token).subscribe({
-          next: response => {
-            if (response.success) {
-              this.modalService.openModal('email-confirmed');
-            } else {
-              this.modalService.openModal('email-not-confirmed');
-            }
-            this.router.navigate([''], { queryParams: {}, replaceUrl: true });
-          },
-          error: err => {
-            console.error('Verify email error:', err);
-            this.modalService.openModal('email-not-confirmed');
-            this.router.navigate([''], { queryParams: {}, replaceUrl: true });
-          },
-        });
-      } else if (token && currentPath === 'reset-password') {
-        this.modalService.setToken(token);
-        this.modalService.openModal('reset-password');
-        this.router.navigate([''], { queryParams: {}, replaceUrl: true });
-      }
-    });
+    }, 300);
   }
   onFindPetClick() {
     this.router.navigate(['/animals']);

@@ -1,150 +1,220 @@
-<div *ngIf="shelter() as data; else loading" class="max-w-5xl mx-auto p-6">
-  <div
-    class="bg-white rounded-2xl shadow-xl p-6 flex flex-col md:flex-row gap-6"
-  >
-    <!-- Фото -->
-    <img
-      *ngIf="data.photos.length > 0"
-      [src]="data.photos[0]"
-      [alt]="data.name"
-      class="w-full md:w-1/2 h-auto object-cover rounded-xl shadow-md"
-    />
-
-    <!-- Інформація про притулок -->
-    <div class="flex-1 space-y-4">
-      <h1 class="text-3xl font-bold text-gray-800">{{ data.name }}</h1>
-      <p class="text-gray-600 text-lg leading-relaxed">
-        {{ data.description || ('NO_DESCRIPTION' | translate) }}
-      </p>
-
-      <!-- Основна контактна інформація -->
+<div
+  class="relative w-full flex flex-col justify-between items-center text-secondary-neutral-mineShaft bg-primary-blue pb-[22px] px-[50px]"
+>
+  @if (shelter(); as shelter) {
+    <div class="flex w-full">
       <div
-        class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-gray-600 text-sm"
+        class="relative rounded-40 shadow-xl mt-[155px] p-8 flex flex-col bg-primary-beige w-full"
       >
-        <ng-container *ngIf="data.address">
-          <p>
-            <strong>{{ 'ADDRESS' | translate }}:</strong> {{ data.address }}
-          </p>
-        </ng-container>
-        <ng-container *ngIf="data.contactEmail">
-          <p>
-            <strong>{{ 'EMAIL' | translate }}:</strong> {{ data.contactEmail }}
-          </p>
-        </ng-container>
-        <ng-container *ngIf="data.contactPhone">
-          <p>
-            <strong>{{ 'PHONE' | translate }}:</strong> {{ data.contactPhone }}
-          </p>
-        </ng-container>
-        <ng-container *ngIf="data.workingHours">
-          <p>
-            <strong>{{ 'WORKING_HOURS' | translate }}:</strong>
-            {{ data.workingHours }}
-          </p>
-        </ng-container>
-        <ng-container *ngIf="data.capacity !== undefined">
-          <p>
-            <strong>{{ 'CAPACITY' | translate }}:</strong> {{ data.capacity }}
-          </p>
-        </ng-container>
-        <ng-container *ngIf="data.currentOccupancy !== undefined">
-          <p>
-            <strong>{{ 'CURRENT_OCCUPANCY' | translate }}:</strong>
-            {{ data.currentOccupancy }}
-          </p>
-        </ng-container>
-        <ng-container *ngIf="data.virtualTourUrl">
-          <p>
-            <strong>{{ 'VIRTUAL_TOUR' | translate }}:</strong>
-            <a
-              [href]="data.virtualTourUrl"
-              target="_blank"
-              rel="noopener"
-              class="text-blue-600 hover:underline"
-              >{{ 'VIEW' | translate }}</a
-            >
-          </p>
-        </ng-container>
-      </div>
-
-      <!-- Соцмережі -->
-      <div
-        *ngIf="data.socialMedia && (data.socialMedia | keyvalue).length > 0"
-        class="mt-4 text-gray-600 text-sm"
-      >
-        <p class="font-semibold">{{ 'SOCIAL_MEDIA' | translate }}:</p>
-        <ul class="list-disc list-inside">
-          <li *ngFor="let sm of data.socialMedia | keyvalue">
-            <strong>{{ sm.key }}:</strong>
-            <a
-              [href]="sm.value"
-              target="_blank"
-              rel="noopener"
-              class="text-blue-600 hover:underline"
-            >
-              {{ sm.value }}
-            </a>
-          </li>
-        </ul>
-      </div>
-      <!-- Карта -->
-      <div *ngIf="mapUrl() as safeUrl" class="map-container">
-        <iframe
-          [src]="safeUrl"
-          width="100%"
-          height="400"
-          style="border: 0"
-          allowfullscreen
-          loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade"
-        >
-        </iframe>
-      </div>
-      <!-- Час створення / оновлення -->
-      <div class="mt-4 text-gray-500 text-xs">
-        <p>
-          {{ 'CREATED_AT' | translate }}: {{ data.createdAt | date: 'medium' }}
-        </p>
-        <p>
-          {{ 'UPDATED_AT' | translate }}: {{ data.updatedAt | date: 'medium' }}
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Кнопка повернення -->
-  <div class="mt-6 text-center">
-    @if (isAuthenticated()) {
-      @if (isSubscriptionChecked) {
-        @if (isSubscribed) {
-          <button
-            class="px-4 py-2 bg-orange-300 text-white rounded hover:bg-orange-700 mr-4"
-            (click)="unsubscribe()"
+        <!-- Назад -->
+        <div class="inline-flex items-center mt-3">
+          <div
+            class="hover:text-primary-orange inline-flex items-center cursor-pointer -translate-y-1/2 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-50"
+            (click)="backBottomClick()"
+            (keyup.enter)="backBottomClick()"
+            (keyup.space)="backBottomClick()"
+            tabindex="0"
+            role="button"
+            [attr.aria-label]="'BACK' | translate"
           >
-            {{ 'UNSUBSCRIBE' | translate }}
-          </button>
-        } @else {
-          <button
-            class="px-4 py-2 bg-orange-300 text-white rounded hover:bg-orange-700 mr-4"
-            (click)="subscribe()"
-          >
-            {{ 'SUBSCRIBE' | translate }}
-          </button>
+            <app-icon [name]="'arrowLeft'" class=""></app-icon>
+            <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
+          </div>
+        </div>
+        @if (isSubscriptionChecked()) {
+          <div class="absolute top-4 right-4">
+            @if (isSubscribed) {
+              <app-round-filled-white-blue-button-with-icon
+                (click)="onFilledHeartClick()"
+                title="{{ 'UNSUBSCRIBE' | translate }}"
+              ></app-round-filled-white-blue-button-with-icon>
+            } @else {
+              <app-round-white-blue-button-with-icon
+                (click)="onHeartClick()"
+                title="{{ 'SUBSCRIBE' | translate }}"
+              ></app-round-white-blue-button-with-icon>
+            }
+          </div>
         }
-      }
-    }
+        <div class="flex flex-col gap-6">
+          <!-- Інформація про притулок -->
+          <div
+            class="grid grid-cols-1 gap-6"
+            [ngClass]="{
+              'lg:grid-cols-2': shelter.photos && shelter.photos.length > 0,
+            }"
+          >
+            <!-- Фото -->
+            @if (shelter.photos && shelter.photos.length > 0) {
+              <ng-container>
+                <app-photo-collections
+                  [photos]="shelter.photos"
+                ></app-photo-collections>
+              </ng-container>
+            }
+            <div class="flex flex-col">
+              <h1 class="text-3xl font-bold text-center">
+                {{ 'SHELTER_CONTACTS' | translate }} "{{ shelter.name }}"
+              </h1>
 
-    <button
-      class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-      (click)="router.navigate(['/shelters'])"
-    >
-      {{ 'RETURN_TO_SHELTER_LIST' | translate }}
-    </button>
-  </div>
+              <!-- Основна контактна інформація -->
+              <div
+                class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm"
+              >
+                @if (shelter.address) {
+                  <div>
+                    <h3 class="font-semibold mb-3">
+                      {{ 'ADDRESS' | translate }}:
+                    </h3>
+                    <p class="mb-1">
+                      {{ shelter.address }}
+                    </p>
+                  </div>
+                }
+                @if (shelter.contactEmail) {
+                  <div>
+                    <h3 class="font-semibold mb-3">Email:</h3>
+                    <p class="mb-1">{{ shelter.contactEmail }}</p>
+                  </div>
+                }
+                @if (shelter.contactPhone) {
+                  <div>
+                    <h3 class="font-semibold mb-3">
+                      {{ 'PHONE' | translate }}:
+                    </h3>
+                    <p class="mb-1">{{ shelter.contactPhone }}</p>
+                    @if (shelter.workingHours) {
+                      <p class="text-sm">
+                        {{ 'PHONE_SCHEDULE' | translate
+                        }}{{ shelter.workingHours }}
+                      </p>
+                    }
+                  </div>
+                }
+                @if (shelter.workingHours) {
+                  <div>
+                    <h3 class="font-semibold mb-3">
+                      {{ 'SСHEDULE' | translate }}:
+                    </h3>
+                    <p class="mb-1">
+                      {{ 'WORK_SCHEDULE' | translate }}
+                      {{ shelter.workingHours }}
+                    </p>
+                    <p class="text-sm">
+                      {{ 'VISITING_SCHEDULE' | translate }}
+                    </p>
+                  </div>
+                }
+                @if (shelter.capacity !== undefined) {
+                  <p>
+                    <strong>{{ 'CAPACITY' | translate }}:</strong>
+                    {{ shelter.capacity }}
+                  </p>
+                }
+                @if (shelter.currentOccupancy !== undefined) {
+                  <p>
+                    <strong>{{ 'CURRENT_OCCUPANCY' | translate }}:</strong>
+                    {{ shelter.currentOccupancy }}
+                  </p>
+                }
+
+                @if (shelter.virtualTourUrl) {
+                  <p>
+                    <strong>{{ 'VIRTUAL_TOUR' | translate }}:</strong>
+                    <a
+                      [href]="shelter.virtualTourUrl"
+                      target="_blank"
+                      rel="noopener"
+                      class="text-blue-600 hover:underline"
+                      >{{ 'VIEW' | translate }}</a
+                    >
+                  </p>
+                }
+              </div>
+              <div
+                class="flex flex-1 items-center justify-center text-lg leading-relaxed text-center mt-6 rounded-40 p-3 border-2 border-secondary-dodgerBlue-2"
+              >
+                {{ shelter.description || ('NO_DESCRIPTION' | translate) }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Соцмережі -->
+          @if (
+            shelter.socialMedia && (shelter.socialMedia | keyvalue).length > 0
+          ) {
+            <div class="mt-4 text-sm">
+              <p class="font-semibold">{{ 'SOCIAL_MEDIA' | translate }}:</p>
+              <ul class="list-disc list-inside">
+                @for (sm of shelter.socialMedia | keyvalue; track sm.key) {
+                  <li>
+                    <strong>{{ sm.key }}:</strong>
+                    <a
+                      [href]="sm.value"
+                      target="_blank"
+                      rel="noopener"
+                      class="text-blue-600 hover:underline"
+                    >
+                      {{ sm.value }}
+                    </a>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+
+          <!-- Карта -->
+          @if (mapUrl()) {
+            <div class="map-container">
+              <iframe
+                [src]="mapUrl()"
+                width="100%"
+                height="400"
+                style="border: 0"
+                allowfullscreen
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+              >
+              </iframe>
+            </div>
+          }
+
+          <!-- Час створення / оновлення -->
+          <div class="mt-4 text-gray-500 text-xs">
+            <p>
+              {{ 'CREATED_AT' | translate }}:
+              {{ shelter.createdAt | date: 'medium' }}
+            </p>
+            <p>
+              {{ 'UPDATED_AT' | translate }}:
+              {{ shelter.updatedAt | date: 'medium' }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Кнопка повернення -->
+      <!-- <div class="mt-6 text-center">
+        @if (isAuthenticated()) {
+          @if (isSubscriptionChecked()) {
+            @if (isSubscribed) {
+              <button
+                class="px-4 py-2 bg-orange-300 text-white rounded hover:bg-orange-700 mr-4"
+                (click)="unsubscribe()"
+              >
+                {{ 'UNSUBSCRIBE' | translate }}
+              </button>
+            } @else {
+              <button
+                class="px-4 py-2 bg-orange-300 text-white rounded hover:bg-orange-700 mr-4"
+                (click)="subscribe()"
+              >
+                {{ 'SUBSCRIBE' | translate }}
+              </button>
+            }
+          }
+        }
+      </div> -->
+    </div>
+  }
 </div>
-
-<ng-template #loading>
-  <div class="text-center text-gray-500 text-lg mt-10">
-    {{ 'LOADING_SHELTER' | translate }}
-  </div>
-</ng-template>

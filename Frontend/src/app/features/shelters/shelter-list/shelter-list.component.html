@@ -1,21 +1,52 @@
-<div class="gap-4 p-4">
-  <h1 class="text-3xl font-bold mb-4">{{ 'SHELTERS' | translate }}</h1>
-</div>
-@if (error()) {
-  <div class="p-4 text-red-600 font-medium">
-    {{ error() ?? '' | translate }}
-  </div>
-} @else {
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+<div
+  class="grid grid-cols-1 lg:grid-cols-2 gap-5 w-full text-secondary-neutral-mineShaft"
+>
+  @if (error()) {
+    <div class="p-4 text-secondary-semantic-error font-medium">
+      {{ error() ?? '' | translate }}
+    </div>
+  } @else {
     @for (shelter of shelters(); track shelter.id) {
-      <a
-        [routerLink]="['/shelters', shelter.slug]"
-        class="block p-4 bg-white rounded-2xl shadow hover:shadow-lg transition"
+      <div
+        class="flex flex-col items-center p-7 bg-white rounded-40 shadow hover:shadow-lg transition"
       >
-        <h2 class="text-xl font-semibold mb-1">{{ shelter.name }}</h2>
-        <p class="text-gray-600 mb-1">{{ shelter.address }}</p>
-        <p class="text-sm text-gray-500">{{ shelter.contactPhone }}</p>
-      </a>
+        <h2 class="text-xl font-bold mb-3 text-inter">
+          {{ shelter.name }}
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 w-full mb-3">
+          <div>
+            <p class="font-semibold mb-3">{{ 'ADDRESS' | translate }}:</p>
+            <p class="mb-1">
+              {{ shelter.address }}
+            </p>
+          </div>
+          <div>
+            <p class="font-semibold mb-3">Email:</p>
+            <p class="mb-1">{{ shelter.contactEmail }}</p>
+          </div>
+          <div>
+            <p class="font-semibold mb-3">{{ 'PHONE' | translate }}:</p>
+            <p class="mb-1">{{ shelter.contactPhone }}</p>
+            <p class="text-sm">
+              {{ 'PHONE_SCHEDULE' | translate }}{{ shelter.workingHours }}
+            </p>
+          </div>
+          <div>
+            <p class="font-semibold mb-3">{{ 'SСHEDULE' | translate }}:</p>
+            <p class="mb-1">
+              {{ 'WORK_SCHEDULE' | translate }} {{ shelter.workingHours }}
+            </p>
+            <p class="text-sm">
+              {{ 'VISITING_SCHEDULE' | translate }}
+            </p>
+          </div>
+        </div>
+        <app-secondary-large-button
+          class="mt-5"
+          [buttonTitle]="'SHELTER_DETAILS' | translate"
+          (pressButton)="visitShelter(shelter)"
+        ></app-secondary-large-button>
+      </div>
     }
-  </div>
-}
+  }
+</div>

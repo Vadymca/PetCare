@@ -22,7 +22,7 @@
     #formRef
     [formGroup]="registerForm"
     (ngSubmit)="onSubmit()"
-    class="group bg-secondary-neutral-white w-full flex flex-col justify-center items-center mt-14"
+    class="group bg-secondary-neutral-white w-full flex flex-col justify-center items-center mt-10"
   >
     <!-- Email -->
     <div class="flex flex-col w-[360px]">
@@ -32,8 +32,9 @@
         type="email"
         formControlName="email"
         [placeholder]="'ENTER_YOUR_EMAIL' | translate"
-        class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none group-invalid:ring-2 group-invalid:ring-secondary-semantic-error pr-10"
-        aria-label="Email"
+        class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none pr-10"
+        [class.ring-2]="emailInvalid"
+        [class.ring-secondary-semantic-error]="emailInvalid"
         autocomplete="email"
       />
       @if (
@@ -49,12 +50,41 @@
         </div>
       }
     </div>
-
+    <!-- Phone number -->
+    <div class="flex flex-col w-[360px] mt-4">
+      <label for="phoneNumber" class="text-left">
+        {{ 'PHONE_NUMBER' | translate }}
+      </label>
+      <input
+        id="phoneNumber"
+        type="tel"
+        formControlName="phoneNumber"
+        [placeholder]="'ENTER_YOUR_PHONE_NUMBER' | translate"
+        pattern="^\+\d{7,15}$"
+        class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none pr-10"
+        [class.ring-2]="phoneNumberInvalid"
+        [class.ring-secondary-semantic-error]="phoneNumberInvalid"
+        aria-label="phoneNumber"
+        autocomplete="tel"
+      />
+      @if (
+        registerForm.controls.phoneNumber.touched &&
+        registerForm.controls.phoneNumber.invalid
+      ) {
+        <div class="text-red-600 text-sm mt-3">
+          @if (registerForm.controls.phoneNumber.errors?.['required']) {
+            {{ 'PHONE_NUMBER_REQUIRED' | translate }}
+          } @else {
+            {{ 'PHONE_NUMBER_INVALID' | translate }}
+          }
+        </div>
+      }
+    </div>
     <!-- Submit -->
-    <div class="space-y-2 mt-12 content-center">
+    <div class="space-y-2 mt-6 content-center">
       <div class="flex justify-center">
         <app-primary-large-button
-				class="w-[260px]"
+          class="w-[260px]"
           [disabled]="isDisabled"
           buttonTitle="CONTINUE"
           (pressButton)="onSubmit()"

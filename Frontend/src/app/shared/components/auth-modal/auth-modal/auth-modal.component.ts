@@ -1,9 +1,6 @@
 import { Component, effect, inject, signal } from '@angular/core';
 
-import {
-  AuthService,
-  SomeResponse,
-} from '../../../../core/services/auth.service';
+import { AuthService, AuthStep } from '../../../../core/services/auth.service';
 import {
   ModalService,
   ModalState,
@@ -88,6 +85,7 @@ import { WelcomeComponent } from '../welcome/welcome.component';
                 <app-register-email
                   (selectOption)="handleOption($event)"
                   (email)="handleEmail($event)"
+                  (phoneNumber)="handlePhoneNumber($event)"
                 ></app-register-email>
               }
               @case ('register-name') {
@@ -95,7 +93,7 @@ import { WelcomeComponent } from '../welcome/welcome.component';
                   (selectOption)="handleOption($event)"
                   (firstName)="handleFirstName($event)"
                   (lastName)="handleLastName($event)"
-                  (zipCode)="handleZipCode($event)"
+                  (postalCode)="handleZipCode($event)"
                 ></app-register-name>
               }
               @case ('register') {
@@ -141,8 +139,8 @@ import { WelcomeComponent } from '../welcome/welcome.component';
                 <app-two-factor
                   [errorMessage]="errorMessage"
                   [loading]="isLoading"
-                  [totpEnabled]="totpEnabled"
-                  [smsEnabled]="smsEnabled"
+                  [isTwoFactorEnabled]="isTwoFactorEnabled"
+                  [isSms2FaEnabled]="isSms2FaEnabled"
                   [maskedPhoneNumber]="maskedPhoneNumber"
                   (submitButton)="handleSubmitTwoFaForm($event)"
                   (backupCode)="handleSubmitBackupCode($event)"
@@ -188,24 +186,32 @@ import { WelcomeComponent } from '../welcome/welcome.component';
 export class AuthModalComponent {
   private modalService = inject(ModalService);
   private email = '';
+  private phoneNumber = '';
   private firstName = '';
   private lastName = '';
-  private zipCode = '';
+  private postalCode = '';
   private password = '';
 
   modalState = this.modalService.modalStateReadonly;
   resetPasswordToken = signal<string | null>(null);
+  resetPasswordEmail = signal<string | null>(null);
+  authStep = signal<AuthStep>('login');
+
   authService = inject(AuthService);
 
   errorMessage = signal<string>('');
   isLoading = signal(false);
-  totpEnabled = signal(false);
-  smsEnabled = signal(false);
+  isTwoFactorEnabled = signal(false);
+  isSms2FaEnabled = signal(false);
   maskedPhoneNumber = signal('');
 
   constructor() {
     effect(() => {
       this.resetPasswordToken.set(this.modalService.getToken());
+      this.resetPasswordEmail.set(
+        this.modalService.getResettingPasswordEmail()
+      );
+      this.authStep.set(this.authService.getAuthStep());
     });
   }
   handleOption(option: ModalState['component']) {
@@ -222,6 +228,9 @@ export class AuthModalComponent {
   handleEmail($event: string) {
     this.email = $event;
   }
+  handlePhoneNumber($event: string) {
+    this.phoneNumber = $event;
+  }
 
   handleFirstName($event: string) {
     this.firstName = $event;
@@ -232,7 +241,7 @@ export class AuthModalComponent {
   }
 
   handleZipCode($event: string) {
-    this.zipCode = $event;
+    this.postalCode = $event;
   }
 
   handlePassword($event: string) {
@@ -251,14 +260,19 @@ export class AuthModalComponent {
         password: this.password,
         firstName: this.firstName,
         lastName: this.lastName,
-        zipCode: this.zipCode,
+        postalCode: this.postalCode,
+        phone: this.phoneNumber,
       })
       .subscribe({
         next: () => {
           this.modalService.openModal('registration-confirmation');
         },
         error: err => {
-          if (err.message === 'Email already exists') {
+          if (err.error?.error?.includes('email')) {
+            this.modalService.openModal('existing-email-error');
+            return;
+          }
+          if (err.error?.detail?.includes('телефон')) {
             this.modalService.openModal('existing-email-error');
             return;
           }
@@ -271,75 +285,49 @@ export class AuthModalComponent {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    this.authService.login(this.email, this.password).subscribe({
-      next: response => {
-        if (response.twoFactorRequired) {
-          //велике питання чи це вже буде працювати на етапі недоавторизації, поміняти, коли буде свагер
-          // this.authService.get2faStatus().subscribe({
-          //   next: response => {
-          //     this.totpEnabled.set(response.totpEnabled);
-          //     this.smsEnabled.set(response.smsEnabled);
-          //     this.maskedPhoneNumber.set(`+380*******25`); //поправити потім
-          //   },
-          //   error: err => {
-          //     this.errorMessage.set('GET_2FA_STATUS_ERROR');
-          //     console.error('Get 2FA status error:', err);
-          //   },
-          // });
-
-          this.totpEnabled.set(response.totpEnabled ? true : false); //для прикладу
-          this.maskedPhoneNumber.set(response.maskedPhoneNumber || ''); //для прикладу
-          this.smsEnabled.set(response.smsEnabled ? true : false); //для прикладу
-
-          this.modalService.openModal('two-factor');
-        } else {
-          if (response.user?.emailConfirmed) {
+    this.authService
+      .login({
+        email: this.email,
+        password: this.password,
+      })
+      .subscribe({
+        next: response => {
+          if (response.user) {
             this.isLoading.set(false);
             this.modalService.closeModal();
-          } else {
-            this.modalService.openModal('email-not-confirmed');
+          } else if (response.status === 'email_not_verified') {
+            this.isLoading.set(false);
+            this.handleResendVerificationEmail();
+          } else if (response.status === '2fa_required') {
+            this.isTwoFactorEnabled.set(true);
+            if (response.method === 'totp') {
+              this.isTwoFactorEnabled.set(true);
+            }
+            if (response.method === 'sms') {
+              this.isSms2FaEnabled.set(true);
+              this.maskedPhoneNumber.set(`+380*******25`); //поправити потім
+              this.maskedPhoneNumber.set(response.maskedPhoneNumber || ''); //для прикладу
+            }
+
+            this.modalService.openModal('two-factor');
+          } else if (response.status === 'error') {
+            this.isLoading.set(false);
+            this.errorMessage.set('AUTH_ERROR');
+            console.error('Login error:', response.message);
           }
           this.isLoading.set(false);
-          this.modalService.closeModal();
-        }
-        this.isLoading.set(false);
-      },
-      error: err => {
-        this.errorMessage.set('AUTH_ERROR');
-        this.isLoading.set(false);
-        console.error('Login error:', err);
-      },
-    });
+        },
+        error: err => {
+          this.errorMessage.set('AUTH_ERROR');
+          this.isLoading.set(false);
+          console.error('Login error:', err);
+        },
+      });
   }
   handleSubmitTwoFaForm($event: string) {
     this.isLoading.set(true);
     this.errorMessage.set('');
-    // if (this.totpEnabled()) {
-    // 	this.authService.verifyTotp(twoFaCode).subscribe({
-    //     next: () => {
-    //       this.isLoading.set(false);
-    //       this.modalService.closeModal();
-    //     },
-    //     error: err => {
-    //       this.errorMessage.set('INVALID_2FA_CODE');
-    //       this.isLoading.set(false);
-    //       console.error('2FA error:', err);
-    //     },
-    //   });
-    // }
-    // if (this.smsEnabled()) {
-    // 	this.authService.verifySms2fa(twoFaCode).subscribe({
-    //     next: () => {
-    //       this.isLoading.set(false);
-    //       this.modalService.closeModal();
-    //     },
-    //     error: err => {
-    //       this.errorMessage.set('INVALID_2FA_CODE');
-    //       this.isLoading.set(false);
-    //       console.error('2FA error:', err);
-    //     },
-    //   });
-    // }
+
     this.authService.verify2fa($event).subscribe({
       next: () => {
         this.isLoading.set(false);
@@ -406,22 +394,21 @@ export class AuthModalComponent {
   }
 
   handleSubmitResetPasswordForm(newPassword: string) {
-    if (!this.resetPasswordToken()) {
+    if (!this.resetPasswordToken() || !this.resetPasswordEmail()) {
       this.modalService.openModal('reset-password-error');
       return;
     }
 
     this.authService
-      .resetPassword(this.resetPasswordToken()!, newPassword)
+      .resetPassword(
+        this.resetPasswordEmail()!,
+        this.resetPasswordToken()!,
+        newPassword
+      )
       .subscribe({
-        next: (response: SomeResponse) => {
-          if (response.success) {
-            this.modalService.openModal('reset-password-confirmation');
-            this.isLoading.set(false);
-          } else {
-            this.modalService.openModal('reset-password-error');
-            this.isLoading.set(false);
-          }
+        next: () => {
+          this.modalService.openModal('reset-password-confirmation');
+          this.isLoading.set(false);
         },
         error: err => {
           console.error('Reset password error:', err);
@@ -434,13 +421,13 @@ export class AuthModalComponent {
   private resetFormData() {
     this.isLoading.set(false);
     this.errorMessage.set('');
-    this.totpEnabled.set(false);
-    this.smsEnabled.set(false);
+    this.isTwoFactorEnabled.set(false);
+    this.isSms2FaEnabled.set(false);
     this.maskedPhoneNumber.set('');
     this.email = '';
     this.firstName = '';
     this.lastName = '';
-    this.zipCode = '';
+    this.postalCode = '';
     this.password = '';
   }
 }

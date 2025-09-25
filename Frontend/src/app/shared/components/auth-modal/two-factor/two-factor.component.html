@@ -22,18 +22,18 @@
 
   <!-- Descriptions -->
   @if (!showBackupCodeInput) {
-    @if (totpEnabled()) {
+    @if (isTwoFactorEnabled()) {
       <p class="mt-5 text-base">
         {{ 'TWO_FACTOR_DESCRIPTION_TOTP' | translate }}
       </p>
-    } @else if (smsEnabled()) {
+    } @else if (isSms2FaEnabled()) {
       <p class="mt-5 text-2xl">
         {{ 'TWO_FACTOR_DESCRIPTION_SMS' | translate }}
         <span>{{ maskedPhoneNumber() }}</span>
       </p>
     }
     <!-- Resend SMS -->
-    @if (smsEnabled()) {
+    @if (isSms2FaEnabled()) {
       <div class="mt-6">
         <a
           (click)="emitResendCode()"

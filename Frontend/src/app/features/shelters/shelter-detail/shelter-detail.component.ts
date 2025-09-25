@@ -27,18 +27,34 @@ import { Shelter } from '../../../core/models/shelter';
 import { ShelterSubscription } from '../../../core/models/shelterSubscriptions';
 import { User } from '../../../core/models/user';
 import { AuthService } from '../../../core/services/auth.service';
+import { ModalService } from '../../../core/services/modal.service';
 import { ShelterSubscriptionService } from '../../../core/services/shelter-subscription.service';
 import { ShelterService } from '../../../core/services/shelter.service';
+import { RoundFilledWhiteBlueButtonWithIconComponent } from '../../../shared/components/buttons/round-filled-white-blue-button-with-icon.component';
+import { RoundWhiteBlueButtonWithIconComponent } from '../../../shared/components/buttons/round-white-blue-button-with-icon.component';
+import { IconComponent } from '../../../shared/components/icon.component';
+import { PhotoCollectionsComponent } from '../../../shared/components/photo-collections/photo-collections.component';
 
 @Component({
   selector: 'app-shelter-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    TranslateModule,
+    IconComponent,
+    PhotoCollectionsComponent,
+    RoundFilledWhiteBlueButtonWithIconComponent,
+    RoundWhiteBlueButtonWithIconComponent,
+  ],
   templateUrl: './shelter-detail.component.html',
   styleUrl: './shelter-detail.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShelterDetailComponent {
+  backBottomClick() {
+    this.router.navigate(['contacts']);
+  }
   private route = inject(ActivatedRoute);
   public router = inject(Router);
   private title = inject(Title);
@@ -54,6 +70,7 @@ export class ShelterDetailComponent {
     null,
     null
   );
+  private modalService = inject(ModalService);
   private destroyRef = inject(DestroyRef);
   private shelterSubscriptionId = '';
 
@@ -67,10 +84,11 @@ export class ShelterDetailComponent {
   );
 
   shelter = signal<Shelter | undefined>(undefined);
+
   public isAuthenticated: Signal<boolean> = this.authService.isLoggedIn;
   user: Signal<User | null> = signal(this.authService._currentUser());
   isSubscribed = false;
-  isSubscriptionChecked = false;
+  isSubscriptionChecked = signal<boolean>(false);
 
   constructor() {
     effect(() => {
@@ -86,6 +104,7 @@ export class ShelterDetailComponent {
           }
 
           this.shelter.set(shelter);
+
           const translatedName = this.translate.instant('shelter.name', {
             value: shelter.name || '',
           });
@@ -106,10 +125,10 @@ export class ShelterDetailComponent {
               url: this.router.url,
             });
           }
-          this.isSubscriptionChecked = false;
+          this.isSubscriptionChecked.set(false);
           this.isSubscribedToShelter().subscribe(isSubscribed => {
             this.isSubscribed = isSubscribed;
-            this.isSubscriptionChecked = true;
+            this.isSubscriptionChecked.set(true);
             this.cdr.detectChanges();
           });
           if (shelter.coordinates?.lat && shelter.coordinates?.lng) {
@@ -126,7 +145,16 @@ export class ShelterDetailComponent {
       });
     });
   }
+  onHeartClick() {
+    if (!this.user()) {
+      this.modalService.openModal('welcome');
+    }
+    this.subscribe();
+  }
 
+  onFilledHeartClick() {
+    this.unsubscribe();
+  }
   private setMetaTags(name: string, description: string) {
     this.title.setTitle(`${name} | PetCare`);
     this.meta.updateTag({ name: 'description', content: description || '' });

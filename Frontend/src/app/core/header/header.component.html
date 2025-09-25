@@ -1,13 +1,13 @@
 <header
-  class="fixed top-0 m-4 left-0 w-[calc(100%-40px)] z-50 text-secondary-neutral-white rounded-[40px] font-inter p-[20px] transition-all duration-300"
+  class="fixed top-0 m-4 left-0 w-[calc(100vw-20px)] sm:w-[calc(100vw-40px)] z-50 text-secondary-neutral-white rounded-[40px] font-inter p-[20px] transition-all duration-300"
   id="mainHeader"
   [ngClass]="{
     'bg-transparent': !isFloating() && !isHidden(),
-    'bg-primary-blue    shadow-lg': isFloating(),
+    'bg-primary-blue shadow-lg': isFloating(),
     '-translate-y-full opacity-0 pointer-events-none': isHidden(),
   }"
 >
-  <div class="flex items-center justify-between w-full">
+  <div class="flex items-center justify-between w-full gap-7">
     <!-- Logo & Title -->
     <div
       class="ml-4 cursor-pointer hover:text-primary-orange"
@@ -15,16 +15,10 @@
     >
       <app-icon [name]="'logoUkr'"></app-icon>
     </div>
-    <div class="flex flex-row justify-items-start gap-6">
-      <!-- Search -->
-      <app-round-button-with-icon
-        class="text-secondary-neutral-white"
-        [iconName]="'search'"
-        (click)="openSearch()"
-      ></app-round-button-with-icon>
+    <div class="flex flex-row justify-items-start gap-4">
       <!-- Desktop Nav -->
       <nav
-        class="hidden lg:flex gap-6 text-secondary-neutral-white self-center"
+        class="hidden xl:flex gap-6 text-secondary-neutral-white self-center"
       >
         @for (menuItemKey of menuItemKeys; track menuItemKey) {
           <a
@@ -36,6 +30,14 @@
           </a>
         }
       </nav>
+      <div class="hidden sm:flex sm:flex-row gap-3">
+        <!-- Search -->
+        <app-round-button-with-icon
+          class="text-secondary-neutral-white"
+          [iconName]="'search'"
+          (click)="openSearch()"
+        ></app-round-button-with-icon>
+      </div>
       <!-- Language Switcher & Burger -->
       @if (currentLang === 'uk') {
         <app-round-button-with-icon
@@ -51,26 +53,28 @@
           (click)="changeLanguage('uk')"
         ></app-round-button-with-icon>
       }
-      <!-- Bell -->
-      <app-round-button-with-icon
-        class="text-secondary-neutral-white"
-        [iconName]="'bell'"
-        (click)="openNotification()"
-      ></app-round-button-with-icon>
-      <!-- Heart -->
-      <app-round-button-with-icon
-        class="text-secondary-neutral-white"
-        [iconName]="'heart'"
-        (click)="openFavourite()"
-      ></app-round-button-with-icon>
-      <!-- Login/Logout -->
+      <div class="hidden sm:flex sm:flex-row gap-3">
+        <!-- Bell -->
+        <app-round-button-with-icon
+          class="text-secondary-neutral-white"
+          [iconName]="'bell'"
+          (click)="openNotification()"
+        ></app-round-button-with-icon>
+        <!-- Heart -->
+        <app-round-button-with-icon
+          class="text-secondary-neutral-white"
+          [iconName]="'heart'"
+          (click)="openFavourite()"
+        ></app-round-button-with-icon>
+        <!-- Login/Logout -->
+        @if (isAuthenticated()) {
+          <app-user-menu (logout)="logout()"></app-user-menu>
+        } @else {
+          <app-auth-buttons></app-auth-buttons>
+        }
+      </div>
 
-      @if (isAuthenticated()) {
-        <app-user-menu (logout)="logout()"></app-user-menu>
-      } @else {
-        <app-auth-buttons></app-auth-buttons>
-      }
-      <div #menuWrapper class="relative lg:hidden">
+      <div #menuWrapper class="relative xl:hidden">
         <!-- Mobile Menu  -->
         <app-round-button-with-icon
           class="text-secondary-neutral-white"
@@ -93,6 +97,78 @@
                 </a>
               </li>
             }
+            <div class="block sm:hidden">
+              <li class="border-t border-secondary-neutral-white/30 my-2"></li>
+              <!-- Search -->
+              <li
+                class="flex gap-2 items-center justify-start px-4 py-2 text-secondary-neutral-whit"
+                tabindex="0"
+                (click)="openSearch(); isMenuOpen = false"
+                (keydown)="openSearch(); isMenuOpen = false"
+              >
+                <app-round-button-with-icon
+                  class="te"
+                  [iconName]="'search'"
+                  (click)="isMenuOpen = false"
+                ></app-round-button-with-icon
+                ><span
+                  class="text-secondary-neutral-white cursor-pointer hover:text-primary-orange hover:underline transition"
+                  (click)="isMenuOpen = false"
+                  (keydown)="isMenuOpen = false"
+                  tabindex="0"
+                  >{{ 'SEARCH' | translate }}</span
+                >
+              </li>
+              <!-- Bell -->
+              <li
+                class="flex gap-2 items-center justify-start px-4 py-2"
+                tabindex="0"
+                (click)="openNotification(); isMenuOpen = false"
+                (keydown)="openNotification(); isMenuOpen = false"
+              >
+                <app-round-button-with-icon
+                  class="text-secondary-neutral-white"
+                  [iconName]="'bell'"
+                  (click)="isMenuOpen = false"
+                ></app-round-button-with-icon
+                ><span
+                  class="text-secondary-neutral-white cursor-pointer hover:text-primary-orange hover:underline transition"
+                  (click)="isMenuOpen = false"
+                  (keydown)="isMenuOpen = false"
+                  tabindex="0"
+                  >{{ 'NOTIFICATIONS' | translate }}</span
+                >
+              </li>
+              <!-- Heart -->
+              <li
+                class="flex gap-2 items-center justify-start px-4 py-2"
+                tabindex="0"
+                (click)="openFavourite(); isMenuOpen = false"
+                (keydown)="openFavourite(); isMenuOpen = false"
+              >
+                <app-round-button-with-icon
+                  class="text-secondary-neutral-white"
+                  [iconName]="'heart'"
+                  (click)="isMenuOpen = false"
+                ></app-round-button-with-icon
+                ><span
+                  class="text-secondary-neutral-white cursor-pointer hover:text-primary-orange hover:underline transition"
+                  (click)="isMenuOpen = false"
+                  (keydown)="isMenuOpen = false"
+                  tabindex="0"
+                  >{{ 'FAVOURITES' | translate }}</span
+                >
+              </li>
+              <li class="border-t border-secondary-neutral-white/30 my-2"></li>
+              <li class="block px-4 pt-2 pb-4">
+                <!-- Login/Logout -->
+                @if (isAuthenticated()) {
+                  <app-user-menu (logout)="logout()"></app-user-menu>
+                } @else {
+                  <app-auth-buttons></app-auth-buttons>
+                }
+              </li>
+            </div>
           </ul>
         }
       </div>

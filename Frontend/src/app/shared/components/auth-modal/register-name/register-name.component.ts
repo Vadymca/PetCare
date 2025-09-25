@@ -24,14 +24,14 @@ export class RegisterNameComponent {
   @Output() selectOption = new EventEmitter<ModalState['component']>();
   @Output() firstName = new EventEmitter<string>();
   @Output() lastName = new EventEmitter<string>();
-  @Output() zipCode = new EventEmitter<string>();
+  @Output() postalCode = new EventEmitter<string>();
   errorMessage = signal<string | null>(null);
   submitted = signal(false);
   fb = new FormBuilder();
   registerForm = this.fb.group({
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],
-    zipCode: ['', Validators.required],
+    postalCode: ['', Validators.required],
   });
   isDisabled = signal(true);
   constructor() {
@@ -53,7 +53,7 @@ export class RegisterNameComponent {
     if (controls.lastName.touched && controls.lastName.invalid) {
       errors.push('LAST_NAME_REQUIRED');
     }
-    if (controls.zipCode.touched && controls.zipCode.invalid) {
+    if (controls.postalCode.touched && controls.postalCode.invalid) {
       errors.push('ZIP_CODE_REQUIRED');
     }
 
@@ -72,8 +72,8 @@ export class RegisterNameComponent {
       this.firstName.emit(this.registerForm.value.firstName);
     if (this.registerForm.value.lastName)
       this.lastName.emit(this.registerForm.value.lastName);
-    if (this.registerForm.value.zipCode)
-      this.zipCode.emit(this.registerForm.value.zipCode);
+    if (this.registerForm.value.postalCode)
+      this.postalCode.emit(this.registerForm.value.postalCode);
 
     this.emitOption('register');
   }

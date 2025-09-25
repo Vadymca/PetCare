@@ -1,0 +1,81 @@
+<div class="w-[260px]">
+  <!-- Прямокутник кнопки -->
+  <button
+    type="button"
+    (click)="toggleDropdown()"
+    class="relative z-10 w-full flex justify-between items-center px-4 py-2 rounded-40 font-medium transition-colors border-2 border-primary-light-orange"
+    [ngClass]="{
+      'bg-primary-beige text-primary-light-orange ': !isActive(),
+      'bg-primary-light-orange text-primary-beige ': isActive(),
+    }"
+  >
+    <span>{{ label | translate | uppercase }}</span>
+    <svg
+      class="w-6 h-6 transition-transform"
+      [class.rotate-180]="isOpen()"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M19 9l-7 7-7-7"
+      ></path>
+    </svg>
+  </button>
+
+  <!-- Меню чекбоксів -->
+  @if (isOpen()) {
+    <div
+      class="z-0 p-5 relative top-[-24px] flex flex-col items-center pt-[34px] w-full bg-primary-beige border border-primary-light-orange rounded-b-40 shadow-lg max-h-[calc(100vh-100px)] overflow-auto"
+    >
+      @for (option of options; track option) {
+        <div
+          class="p-2 border-b border-primary-blue w-full flex justify-start items-start text-primary-blue"
+        >
+          <label class="flex items-start text-left gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              [checked]="selected().includes(option)"
+              (change)="toggleOption(option)"
+              class="mr-2 hidden peer"
+            />
+            <!-- unchecked -->
+            <app-icon
+              [name]="'unchecked'"
+              class="peer-checked:hidden"
+            ></app-icon>
+            <!-- checked -->
+            <app-icon
+              [name]="'checked'"
+              class="hidden peer-checked:block"
+            ></app-icon>
+            <span class="ml-3">
+              {{ option | translate | uppercase }}
+            </span>
+          </label>
+        </div>
+      }
+      <hr class="border-b border-gray-300 my-2" />
+      <div class="p-2 w-full text-start">
+        <button
+          type="button"
+          (click)="selectAll()"
+          class="text-primary-light-orange font-medium hover:underline"
+        >
+          {{ 'ALL' | translate | uppercase }}
+        </button>
+      </div>
+      <div class="flex flex-col justify-end w-[128px]">
+        <app-primary-small-orange-button
+          buttonTitle="CHOOSE"
+          [disabled]="isDisabled"
+          (pressButton)="confirmSelection()"
+        ></app-primary-small-orange-button>
+      </div>
+    </div>
+  }
+</div>

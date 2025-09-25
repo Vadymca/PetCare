@@ -13,7 +13,7 @@ import { IconComponent } from '../../icon.component';
     <button
       type="button"
       class="flex items-center justify-center gap-2 
-			h-10 rounded-40 p-4 uppercase pr-5 pl-5 
+			h-10 w-full rounded-40 p-4 uppercase pr-5 pl-5 
 			font-inter font-bold text-base 
   bg-primary-orange text-primary-beige
 		hover:bg-primary-beige hover:text-primary-orange 
@@ -28,7 +28,7 @@ import { IconComponent } from '../../icon.component';
 
       <ng-content select="[icon]"></ng-content>
       @if (disabled()) {
-        @if (loading?.() || false) {
+        @if (loading() || false) {
           <span
             class="animate-spin w-4 h-4 border-2 border-primary-beige border-t-transparent rounded-full"
           ></span>
@@ -43,7 +43,7 @@ export class PrimarySmallOrangeButtonComponent {
   @Input() buttonTitle?: string;
   @Input() iconName?: keyof typeof ICONS;
   @Output() pressButton = new EventEmitter<void>();
-  @Input() loading? = signal(false);
+  @Input() loading = signal(false);
 
   @Input() disabled = signal(false); // <- новий Input
 

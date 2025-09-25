@@ -1,5 +1,5 @@
 <div
-  class="relative box overflow-hidden h-[600px] xl:h-full cursor-pointer"
+  class="relative box overflow-hidden h-[400px] sm:h-[600px] xl:h-full cursor-pointer"
   tabindex="0"
   role="button"
   (click)="onProjectDetailClick()"
@@ -28,23 +28,23 @@
 
   <!-- back: текст і кнопка -->
   <div
-    class="absolute inset-0 w-full h-full text-secondary-neutral-mineShaft font-inter bg-white py-5 px-4 flex flex-col justify-center items-start text-left transition-opacity duration-1000"
+    class="absolute inset-0 w-full h-full text-secondary-neutral-mineShaft font-inter bg-white py-5 px-4 flex flex-col justify-end items-start text-left transition-opacity duration-1000"
     [class.opacity-0]="!isHovered"
     [class.opacity-100]="isHovered"
   >
-    <h3 class="font-bold mb-2">
+    <h3 class="font-bold mb-2 xl:max-w-[360px]">
       {{ 'PROJECT' | translate }}: {{ animalAidRequest.title }}
     </h3>
-    <p class="mb-4">
+    <p class="mb-4 leading-[1.2] xl:max-w-[360px]">
       <span class="font-bold"> {{ 'LOCATION' | translate }}:</span>
       {{ animalAidRequest.shelter?.name }},
       {{ animalAidRequest.shelter?.address }}
     </p>
-    <p class="mb-4">
+    <p class="mb-4 leading-[1.2] xl:max-w-[360px]">
       <span class="font-bold"> {{ 'DESCRIPTION' | translate }}:</span>
       {{ animalAidRequest.description }}
     </p>
-    <p class="mb-4 bg-primary-light-orange p-1 font-bold">
+    <p class="mb-4 bg-primary-light-orange p-1 font-bold xl:max-w-[360px]">
       {{ 'DONATED' | translate }}:
       {{
         calcDonatedPercent(

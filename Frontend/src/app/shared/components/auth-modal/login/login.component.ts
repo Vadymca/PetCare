@@ -33,12 +33,13 @@ export class LoginComponent {
   @Output() email = new EventEmitter<string>();
   @Output() password = new EventEmitter<string>();
   @Output() submitForm = new EventEmitter<void>();
-  @Input() errorMessage? = signal<string>('');
+  @Input() errorMessage = signal<string>('');
   @Input() loading = signal(false);
 
   submitted = signal(false);
   showPassword = signal(false);
   isDisabled = signal(true);
+  isLoading = signal(false);
   constructor() {
     effect(() => {
       this.loginForm.valueChanges.subscribe(() => {
@@ -62,6 +63,7 @@ export class LoginComponent {
   }
 
   onSubmit() {
+    this.isLoading.set(true);
     this.submitted.set(true);
     this.loginForm.markAllAsTouched();
     if (this.loginForm.invalid) {
@@ -74,8 +76,6 @@ export class LoginComponent {
     if (this.loginForm.value.password) {
       this.password.emit(this.loginForm.value.password);
     }
-
-    this.loading.set(true);
     this.submitForm.emit();
   }
 }

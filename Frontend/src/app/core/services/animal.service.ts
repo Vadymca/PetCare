@@ -19,19 +19,7 @@ export class AnimalService {
 
   private readonly endpoint = 'animals';
 
-  // getAnimalsSimple(): Observable<Animal[]> {
-  //   return this.api.get<Animal[]>(this.endpoint);
-  // }
 
-  // getAnimalSimpleBySlug(slug: string): Observable<Animal | undefined> {
-  //   return this.api
-  //     .getBySlug<Animal>(this.endpoint, slug)
-  //     .pipe(map(animals => animals[0]));
-  // }
-
-  // getAnimalSimpleById(id: string): Observable<Animal | undefined> {
-  //   return this.api.getById<Animal>(this.endpoint, id);
-  // }
   getAnimalById(id: string): Observable<Animal | undefined> {
     return this.api.getById<Animal>(this.endpoint, id).pipe(
       switchMap(animal => {

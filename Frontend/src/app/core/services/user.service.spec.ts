@@ -37,7 +37,6 @@ describe('UserService', () => {
           lastName: 'Doe',
           phone: '1234567890',
           role: 'User',
-          
         },
         {
           id: '2',
@@ -47,7 +46,6 @@ describe('UserService', () => {
           lastName: 'Smith',
           phone: '0987654321',
           role: 'Admin',
-          
         },
       ];
 

@@ -1,0 +1,17 @@
+<div class="w-full px-[50px] py-[150px] bg-secondary-jordyBlue-2">
+  <div class="inline-flex items-center">
+    <div
+      class="hover:text-primary-orange inline-flex items-center cursor-pointer -translate-y-1/2 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-50"
+      (click)="backButtonClick()"
+      (keyup.enter)="backButtonClick()"
+      (keyup.space)="backButtonClick()"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'BACK' | translate"
+    >
+      <app-icon [name]="'arrowLeft'" class=""></app-icon>
+      <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
+    </div>
+  </div>
+  <div [innerHTML]="publicOfferHtml"></div>
+</div>
