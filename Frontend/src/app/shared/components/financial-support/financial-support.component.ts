@@ -50,6 +50,7 @@ export class FinancialSupportComponent {
       });
     });
   }
+  
   selectSum(sum: number) {
     this.chosenSum.set(sum);
 

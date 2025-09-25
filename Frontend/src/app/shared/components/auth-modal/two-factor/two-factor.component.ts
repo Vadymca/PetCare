@@ -31,8 +31,8 @@ export class TwoFactorComponent {
   @Output() submitButton = new EventEmitter<string>(); //+
   @Output() backupCode = new EventEmitter<string>(); //+
   @Output() resendCode = new EventEmitter<void>(); //+
-  @Input() totpEnabled = signal(false); //+
-  @Input() smsEnabled = signal(false); //+
+  @Input() isTwoFactorEnabled = signal(false); //+
+  @Input() isSms2FaEnabled = signal(false); //+
   @Input() errorMessage = signal<string>(''); //+
   @Input() loading = signal(false); //+
   @Input() maskedPhoneNumber = signal<string>(''); //+

@@ -25,7 +25,7 @@ export class RoleOrOwnerGuard implements CanActivate {
     const user = this.authService._currentUser();
 
     if (!user) {
-      return this.router.createUrlTree(['/login'], {
+      return this.router.createUrlTree(['/'], {
         queryParams: { returnUrl: state.url },
       });
     }

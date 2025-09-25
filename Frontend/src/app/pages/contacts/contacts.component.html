@@ -1,0 +1,29 @@
+<div
+  class="relative w-full flex flex-col justify-between items-center text-primary-beige bg-primary-blue pb-[22px] px-[50px]"
+>
+  <h1
+    class="w-full font-fixel text-center text-[64px] font-bold mt-[155px] mb-14 relative z-10"
+  >
+    {{ 'CONTACTS' | translate | uppercase }}
+  </h1>
+  <app-shelter-list></app-shelter-list>
+  <div
+    class="flex flex-col items-start p-7 mt-5 max-w-[660px] text-secondary-neutral-mineShaft text-start bg-white rounded-40 shadow hover:shadow-lg transition"
+  >
+    <p class="mb-3 text-xl text-inter font-bold">
+      {{ 'SOCIAL_NETWORKS' | translate | uppercase }}:
+    </p>
+    <p class="mb-3">{{ 'SOCIAL_NETWORKS_DESCRIPTION' | translate }}</p>
+    <!-- Social Media-->
+    <app-social-media class="mb-3"></app-social-media>
+    <p class="mb-3 text-base text-inter font-bold">
+      {{ 'VISITING_DESCRIPTION' | translate }}
+    </p>
+  </div>
+  <app-primary-large-orange-button
+    class="w-[260px] mb-14 mt-5"
+    buttonTitle="WRITE_US"
+    (pressButton)="goToFeedbackForm()"
+  >
+  </app-primary-large-orange-button>
+</div>

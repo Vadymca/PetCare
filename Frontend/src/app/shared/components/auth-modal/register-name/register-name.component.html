@@ -49,19 +49,19 @@
       />
 
       <!-- Zip Code -->
-      <label for="zipCode" class="mt-5 text-left">
+      <label for="postalCode" class="mt-5 text-left">
         {{ 'ZIP_CODE' | translate }}
       </label>
       <input
-        id="zipCode"
+        id="postalCode"
         [placeholder]="'ENTER_YOUR_ZIP_CODE' | translate"
-        formControlName="zipCode"
+        formControlName="postalCode"
         class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none invalid:ring-2 invalid:ring-secondary-semantic-error pr-10"
-        aria-label="Last name"
+        aria-label="Zip code"
       />
       <label
-        for="zipCode"
-        class=" text-sm mt-3 l text-left text-secondary-neutral-doveGray leading-none"
+        for="postalCode"
+        class="text-sm mt-3 l text-left text-secondary-neutral-doveGray leading-none"
       >
         {{ 'ZIP_CODE_DESCRIPTION' | translate }}
       </label>
@@ -71,7 +71,7 @@
     <div class="content-center">
       <div class="flex justify-center">
         <app-primary-large-button
-				class="w-[260px]"
+          class="w-[260px]"
           [disabled]="isDisabled"
           buttonTitle="CONTINUE"
           (pressButton)="onSubmit()"

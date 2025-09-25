@@ -13,16 +13,18 @@
   >
     <!-- Верхній рядок: лівий і правий текст -->
     <div class="flex flex-col lg:flex-row justify-between w-full mb-4">
-      <div class="text-secondary-neutral-white font-inter text-2xl">
+      <div class="text-secondary-neutral-white font-inter sm:text-2xl text-xl">
         {{ 'FIRST_LINE_LEFT' | translate | uppercase }}
       </div>
-      <div class="text-secondary-neutral-white font-inter text-2xl">
+      <div class="text-secondary-neutral-white font-inter sm:text-2xl text-xl">
         {{ 'FIRST_LINE_RIGHT' | translate | uppercase }}
       </div>
     </div>
 
     <!-- Центрований заголовок -->
-    <div class="flex flex-col lg:flex-row justify-between gap-7 w-full">
+    <div
+      class="flex flex-col lg:flex-row justify-between gap-3 sm:gap-7 w-full"
+    >
       <div
         class="text-center text-secondary-neutral-white font-bold"
         style="font-size: clamp(16px, 6.5vw, 207px)"
@@ -42,7 +44,7 @@
         {{ 'FIRST_TITLE3' | translate | uppercase }}
       </div>
     </div>
-    <div class="flex justify-center mt-5">
+    <div class="flex justify-center sm:mt-5 mt-6">
       <app-primary-large-button
         class="w-[260px]"
         buttonTitle="FIND_PET"
@@ -59,28 +61,40 @@
   <div
     class="flex flex-col justify-center items-center text-center font-fixel font-bold my-18"
   >
-    <div class="flex flex-col w-full mb-10 text-[64px]">
+    <h2
+      class="font-fixel font-bold mt-[40px] text-secondary-neutral-mineShaft"
+      style="font-size: clamp(16px, 12.5vw, 64px)"
+    >
       {{ 'HOW_CAN_HELP' | translate }}
-    </div>
-    <div class="text-[40px] lg:w-[800px]">
-      <div class="text-[40px] text-center lg:text-right">
+    </h2>
+    <div class="lg:w-[800px]" style="font-size: clamp(16px, 6.5vw, 40px)">
+      <div
+        class="text-center lg:text-right"
+        style="font-size: clamp(16px, 6.5vw, 40px)"
+      >
         {{ 'CHOOSE_WAY1' | translate }}
       </div>
-      <div class="text-[40px] text-center">
+      <div class="text-center" style="font-size: clamp(16px, 6.5vw, 40px)">
         {{ 'CHOOSE_WAY2' | translate }}
       </div>
 
-      <div class="text-[40px] text-center lg:text-left">
+      <div
+        class="text-center lg:text-left"
+        style="font-size: clamp(16px, 6.5vw, 40px)"
+      >
         {{ 'CHOOSE_WAY3' | translate }}
       </div>
     </div>
 
     <!-- Центрований блок з картинкою і текстом -->
     <div
-      class="flex items-center flex-col lg:flex-row justify-center gap-7 w-full m-6"
+      class="flex items-center flex-col lg:flex-row justify-center gap-7 sm:w-full m-6"
     >
       <div>
-        <app-icon [name]="'handAndPaw'"></app-icon>
+        <app-icon
+          [name]="'handAndPaw'"
+          class="overflow-x-auto overflow-y-auto"
+        ></app-icon>
       </div>
       <div class="flex flex-col gap-4 font-inter text-base">
         <div
@@ -124,7 +138,7 @@
     <div class="flex justify-center mt-5">
       <app-secondary-small-button
         buttonTitle="FIND_OUT_MORE"
-        (pressButton)="onFindPetClick()"
+        (pressButton)="onSupportClick()"
       ></app-secondary-small-button>
     </div>
   </div>
@@ -135,11 +149,11 @@
   class="bg-primary-blue w-full flex flex-col xl:flex-row-reverse xl:items-stretch gap-10 text-center font-inter text-base min-h-screen text-secondary-neutral-white bg-cover bg-center p-10"
 >
   <div
-    class="flex flex-row gap-2 w-full xl:flex-[2_1_0%] h-auto cursor-pointer"
+    class="flex flex-row gap-2 w-full xl:flex-[2_1_0%] sm:h-auto h-[200px] cursor-pointer"
   >
     <section
       id="0"
-      class="flex flex-[2_1_0%] h-[600px] xl:h-full overflow-hidden"
+      class="flex flex-[2_1_0%] h-[200px] sm:h-[600px] xl:h-full overflow-hidden"
       [class.animate-slide-right-with-opacity]="isImageChanging"
       [class.animation-none]="!isImageChanging"
     >
@@ -151,7 +165,7 @@
     </section>
     <section
       id="1"
-      class="flex flex-[1_1_0%] h-[600px] xl:h-full overflow-hidden"
+      class="flex flex-[1_1_0%] h-[200px] sm:h-[600px] xl:h-full overflow-hidden"
       [class.animate-slide-left-with-opacity]="isImageChanging"
       [class.animation-none]="!isImageChanging"
       tabindex="0"
@@ -165,14 +179,14 @@
       (keyup.space)="selectWorker((selectedWorker().id + 1) % workers.length)"
     >
       <img
-        class="w-full h-[600px] xl:h-full object-cover"
+        class="w-full h-full object-cover"
         src="{{ workers[(selectedWorker().id + 1) % workers.length].image }}"
         alt="{{ workers[(selectedWorker().id + 1) % workers.length].name }}"
       />
     </section>
     <section
       id="2"
-      class="flex flex-[1_1_0%] h-[600px] xl:h-full overflow-hidden"
+      class="flex flex-[1_1_0%] h-[200px] sm:h-[600px] xl:h-full overflow-hidden"
       [class.animate-slide-left-with-opacity]="isImageChanging"
       [class.animation-none]="!isImageChanging"
       tabindex="1"
@@ -197,11 +211,14 @@
     [class.animate-slide-left-with-opacity]="isImageChanging"
     [class.animation-none]="!isImageChanging"
   >
-    <div class="flex font-fixel text-[40px] mb-[68px] leading-[1.1] font-bold">
+    <div
+      class="flex font-fixel mb-[68px] leading-[1.1] font-bold"
+      style="font-size: clamp(16px, 6.5vw, 40px)"
+    >
       {{ selectedWorker().title | translate }}
     </div>
     <div
-      class="flex flex-col gap-5 flex-1 font-inter text-base leading-snug mr-[60px]"
+      class="flex flex-col gap-5 flex-1 font-inter text-base leading-snug sm:mr-[60px]"
     >
       <div class="flex">
         {{ selectedWorker().firstDiv | translate }}
@@ -216,7 +233,7 @@
         {{ selectedWorker().thirdDiv | translate }}
       </div>
     </div>
-    <div class="flex">
+    <div class="flex min-w-[260px]">
       <app-primary-large-orange-button
         buttonTitle="ABOUT_US"
         (click)="onAboutUsClick()"
@@ -226,73 +243,81 @@
 </div>
 <!-- Сторінка №4 результати -->
 <div
-  class="bg-primary-beige w-full flex flex-col gap-10 text-center font-inter text-secondary-neutral-mineShaft text-base min-h-screen bg-cover bg-center p-10 pb-[112px]"
+  class="bg-primary-beige w-full flex flex-col gap-10 text-center font-inter leading-[1.1] text-secondary-neutral-mineShaft text-base min-h-screen bg-cover bg-center p-10 pb-[112px]"
 >
   <h2
-    class="font-fixel text-[40px] font-bold mt-[60px] text-secondary-neutral-mineShaft"
+    class="font-fixel font-bold mt-[60px] text-secondary-neutral-mineShaft"
+    style="font-size: clamp(16px, 12.5vw, 40px)"
   >
     {{ 'RESULTS' | translate }}
   </h2>
   <div
-    class="flex justify-center gap-5 font-inter text-base leading-none mt-[100px]"
+    class="flex justify-center gap-5 font-inter text-base leading-none lg:mt-[100px]"
   >
     <div class="flex">
       <app-icon [name]="'orangeEllipseLeft'"></app-icon>
     </div>
-    <div class="z-0 flex flex-col justify-between w-[550px]">
+    <div class="z-0 flex flex-col justify-between lg:w-[550px]">
       <p
         #counter
         class="font-inter font-bold text-left"
-        style="font-size: clamp(32px, 15.5vw, 150px)"
+        style="font-size: clamp(16px, 12.5vw, 150px)"
       >
         {{ values[0] }}
       </p>
-      <p class="text-[22px] leading-[1.2] max-w-[321px] text-left">
+      <p
+        class="leading-[1.2] max-w-[150px] lg:max-w-[321px] text-left"
+        style="font-size: clamp(12px, 5vw, 22px)"
+      >
         {{ 'RESULTS_DESCRIPTION1' | translate | uppercase }}
       </p>
     </div>
   </div>
   <div
-    class="flex flex-col xl:flex-row items-center justify-center xl:justify-between gap-5 text-base leading-none mt-[30px]"
+    class="flex flex-col lg:flex-row w-full justify-center gap-5 text-base leading-none items-center lg:justify-between mt-[30px]"
   >
-    <div class="flex flex-col justify-start relative leading-none w-[550px]">
-      <div class="flex items-start relative leading-none">
+    <div
+      class="flex flex-col items-center lg:justify-start relative leading-none lg:w-[550px]"
+    >
+      <div class="flex items-start relative leading-none lg:w-[500px] w-full">
         <app-icon
           class="z-9999 absolute left-0 top-0"
           [name]="'orangeEllipseBottom'"
         ></app-icon>
         <p
           #counter
-          class="z-0 font-inter font-bold ml-[81px] mt-4 leading-none"
-          style="font-size: clamp(32px, 15.5vw, 150px)"
+          class="z-0 font-inter font-bold lg:ml-[81px] mt-4 leading-none"
+          style="font-size: clamp(16px, 12.5vw, 150px)"
         >
           {{ values[1] }}
         </p>
       </div>
       <p
-        class="z-0 text-[22px] leading-[1.2] text-center leading-snug mt-9 xl:mt-3"
+        class="z-0 leading-[1.2] text-center leading-snug mt-9 lg:mt-3"
+        style="font-size: clamp(12px, 5vw, 22px)"
       >
         {{ 'RESULTS_DESCRIPTION2' | translate | uppercase }}
       </p>
     </div>
     <div
-      class="flex flex-col justify-start relative leading-none mt-[30px] xl:mt-0 w-[460px]"
+      class="flex flex-col items-start lg:justify-start relative leading-none mt-[30px] lg:mt-0"
     >
-      <div class="flex items-start relative leading-none">
+      <div class="flex items-start relative leading-none lg:w-[500px] w-full">
         <app-icon
-          class="z-9999 absolute right-0 top-0 xl:absolute xl:left-0 xl:top-[-147px]"
+          class="z-9999 absolute right-0 top-0 lg:left-0 lg:top-[-147px]"
           [name]="'orangeEllipseTop'"
         ></app-icon>
         <p
           #counter
-          class="z-0 font-inter font-bold text-left mt-4 leading-none"
-          style="font-size: clamp(32px, 15.5vw, 150px)"
+          class="z-0 font-inter text-start font-bold mt-4 leading-none"
+          style="font-size: clamp(16px, 12.5vw, 150px)"
         >
           {{ values[2] }}
         </p>
       </div>
       <p
-        class="z-0 text-[22px] leading-[1.2] text-center leading-snug mt-9 lg:mt-3"
+        class="z-0 leading-[1.2] text-center leading-snug mt-9 lg:mt-3"
+        style="font-size: clamp(12px, 5vw, 22px)"
       >
         {{ 'RESULTS_DESCRIPTION3' | translate | uppercase }}
       </p>
@@ -307,12 +332,13 @@
   "
 >
   <h2
-    class="font-fixel text-[40px] font-bold mt-12 text-secondary-neutral-mineShaft"
+    class="font-fixel font-bold mt-12 text-secondary-neutral-mineShaft"
+    style="font-size: clamp(16px, 12.5vw, 40px)"
   >
     {{ 'TITLE_ACCOUNTANT' | translate }}
   </h2>
   <div
-    class="max-w-[660px] xl:grid xl:grid-cols-2 gap-5 justify-center font-inter text-base leading-snug mt-10 text-left"
+    class="max-w-[660px] xl:grid xl:grid-cols-2 gap-5 justify-center font-inter text-base leading-snug mt-10 text-left m-5"
   >
     <div class="flex gap-5">
       {{ 'ACCOUNTANT_DESCRIPTION1' | translate }}
@@ -353,14 +379,10 @@
 <app-animals-preview></app-animals-preview>
 <!-- Сторінка №8 проекти -->
 <app-home-projects></app-home-projects>
-
-<div class="mt-20">
-  <app-primary-large-button
-    class="w-[260px]"
-    buttonTitle="TEMP"
-    (pressButton)="onTempClick()"
-  ></app-primary-large-button>
-</div>
+<!-- Сторінка №9 новини -->
+<app-home-news> </app-home-news>
+<!-- Сторінка №10 партнери -->
+<app-home-partners></app-home-partners>
 
 <!-- Кнопка "Збір пожертв" -->
 <div
@@ -369,11 +391,29 @@
 >
   <button
     type="button"
-    class="hover:scale-125 animate-pulse-slow flex items-center justify-center gap-2 w-[100px] h-[100px] rounded-[100px] bg-primary-orange text-primary-beige disabled:bg-secondary-neutral-alto transition-transform duration-300"
+    class="hover:scale-110 flex items-center justify-center gap-2 w-[100px] h-[100px] rounded-[100px] bg-primary-orange text-primary-beige disabled:bg-secondary-neutral-alto transform transition-transform duration-300"
     (click)="onCharityButtonClick()"
   >
     <app-icon [name]="'liveCharityButton'"></app-icon>
 
     <ng-content select="[icon]"></ng-content>
   </button>
+  <!-- <button
+    type="button"
+    class="hover:scale-125 animate-pulse-slow flex items-center justify-center gap-2 w-[100px] h-[100px] rounded-[100px] bg-primary-orange text-primary-beige disabled:bg-secondary-neutral-alto transition-transform duration-300"
+    (click)="onCharityButtonClick()"
+  >
+    <app-icon [name]="'liveCharityButton'"></app-icon>
+
+    <ng-content select="[icon]"></ng-content>
+  </button> -->
 </div>
+
+<!-- Тимчасова кнопочка -->
+<!-- <div class="mt-20">
+  <app-primary-large-button
+    class="w-[260px]"
+    buttonTitle="TEMP"
+    (pressButton)="onTempClick()"
+  ></app-primary-large-button>
+</div> -->

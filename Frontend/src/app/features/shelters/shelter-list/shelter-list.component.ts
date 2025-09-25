@@ -7,19 +7,31 @@ import {
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { catchError, of } from 'rxjs'; // 🛠️ Додано import
+import { Shelter } from '../../../core/models/shelter';
 import { ShelterService } from '../../../core/services/shelter.service';
+import { SecondaryLargeButtonComponent } from '../../../shared/components/buttons/blue/secondary-large-button.component';
 
 @Component({
   selector: 'app-shelter-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    TranslateModule,
+
+    SecondaryLargeButtonComponent,
+  ],
   templateUrl: './shelter-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShelterListComponent {
+  private router = inject(Router);
+  visitShelter(shelter: Shelter) {
+    this.router.navigate(['/shelters', shelter.slug]);
+  }
   private shelterService = inject(ShelterService);
   error = signal<string | null>(null);
   shelters = toSignal(

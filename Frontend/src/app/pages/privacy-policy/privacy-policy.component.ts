@@ -1,8 +1,9 @@
-import { UpperCasePipe } from '@angular/common';
+import { isPlatformBrowser, UpperCasePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, effect, inject } from '@angular/core';
+import { Component, effect, inject, PLATFORM_ID } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Router } from 'express';
+import { filter } from 'rxjs';
 import { IconComponent } from '../../shared/components/icon.component';
 
 @Component({
@@ -17,6 +18,7 @@ export class PrivacyPolicyComponent {
   http = inject(HttpClient);
   private router = inject(Router);
   rulesHtml = '';
+  platformId = inject(PLATFORM_ID);
   constructor() {
     effect(() => {
       this.loadRules();
@@ -25,7 +27,15 @@ export class PrivacyPolicyComponent {
         this.loadRules();
       });
     });
+    if (isPlatformBrowser(this.platformId)) {
+      this.router.events
+        .pipe(filter(event => event instanceof NavigationEnd))
+        .subscribe(() => {
+          window.scrollTo({ top: 0, behavior: 'auto' });
+        });
+    }
   }
+
   loadRules() {
     const lang = this.translate.currentLang || this.translate.getDefaultLang();
     this.http

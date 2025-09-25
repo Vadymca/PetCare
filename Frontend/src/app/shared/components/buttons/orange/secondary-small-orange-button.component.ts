@@ -16,8 +16,8 @@ import { IconComponent } from '../../icon.component';
 			h-10 rounded-40 p-4 uppercase pr-10 pl-10 
 			font-inter font-bold text-base 
 			bg-primary-light-orange text-primary-beige
-		hover:bg-primary-beige hover:text-primary-light-orange 
-    active:bg-secondary-treePoppy-2 active:text-primary-light-orange  
+		hover:bg-primary-beige hover:text-primary-light-orange hover:border-2 hover:border-primary-light-orange
+    active:bg-secondary-treePoppy-2 active:text-primary-light-orange active:border-2 active:border-primary-light-orange
      disabled:bg-secondary-neutral-alto disabled:text-secondary-neutral-doveGray"
       (click)="confirm()"
       [disabled]="disabled()"

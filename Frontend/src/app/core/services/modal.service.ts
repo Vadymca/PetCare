@@ -28,14 +28,24 @@ export interface ModalState {
   providedIn: 'root',
 })
 export class ModalService {
+
   private modalState = signal<ModalState>({ isOpen: false, component: null });
-  private token = signal<string | null>(null);
-  setToken(token: string | null) {
-    this.token.set(token);
+  private tokenForResettingPassword = signal<string | null>(null);
+  private resettingPasswordEmail = signal<string | null>(null);
+  setEmailForResettingPassword(email: string | null) {
+    this.resettingPasswordEmail.set(email);
   }
+  getResettingPasswordEmail() {
+    return this.resettingPasswordEmail();
+  }
+  setTokenForResettingPassword(token: string | null) {
+    this.tokenForResettingPassword.set(token);
+  }
+
   getToken() {
-    return this.token();
+    return this.tokenForResettingPassword();
   }
+
   // Публічний доступ до сигналу
   readonly modalStateReadonly = this.modalState.asReadonly();
 

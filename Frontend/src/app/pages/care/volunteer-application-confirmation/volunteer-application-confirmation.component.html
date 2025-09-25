@@ -1,0 +1,17 @@
+<div
+  class="flex flex-col bg-primary-lightBlue justify-center min-h-screen items-center p-5"
+>
+  <app-icon [name]="'logoPointer'" class="flex"></app-icon>
+  <div class="mt-[60px] font-inter text-[24px] font-bold">
+    {{ 'BECOME_VOLUNTEER' | translate }}
+  </div>
+  <div class="mt-[30px] mb-[40px]">
+    {{ 'WE_HALP_TOGETHER' | translate }}
+  </div>
+  <app-primary-large-button
+    class="w-[260px]"
+    buttonTitle="HELP_MORE"
+    (pressButton)="goSupport()"
+  >
+  </app-primary-large-button>
+</div>

@@ -63,30 +63,27 @@ export class ApiService {
   uploadFile<T>(endpoint: string, file: File): Observable<T> {
     const formData = new FormData();
     formData.append('file', file);
+    // return this.http
+    //   .post<T>(`${this.BASE_URL}/${endpoint}`, formData)
+    //   .pipe(catchError(this.handleError));
     return this.http
-      .post<T>(`${this.BASE_URL}/${endpoint}`, formData)
+      .post<T>('http://localhost:5000/api/media/upload', formData)
       .pipe(catchError(this.handleError));
   }
-  uploadFiles<T>(endpoint: string, files: File[]): Observable<T> {
-    const formData = new FormData();
-    files.forEach(f => formData.append('files[]', f));
-    return this.http
-      .post<T>(`${this.BASE_URL}/${endpoint}`, formData)
-      .pipe(catchError(this.handleError));
-  }
+
   private handleError(error: HttpErrorResponse): Observable<never> {
-    const isClientError = error.error instanceof ErrorEvent;
-
-    if (isClientError) {
-      console.error('Client-side error:', error.error.message);
+    if (
+      typeof ErrorEvent !== 'undefined' &&
+      error.error instanceof ErrorEvent
+    ) {
+      // Client-side error
+      console.log('Client-side error:', error.error.message);
     } else {
-      console.error(
-        `Backend returned code ${error.status}, body was:`,
-        error.error
-      );
+      // Server-side or HTTP error
+      console.log(`Backend returned code, body was:`, error.error);
     }
-
-    // Можеш тут реалізувати i18n переклад повідомлень або обробку за типами помилок
-    return throwError(() => new Error('Щось пішло не так. Спробуйте пізніше.'));
+    return throwError(
+      () => new Error('Something bad happened; please try again later.')
+    );
   }
 }

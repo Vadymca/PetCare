@@ -1,0 +1,349 @@
+<div
+  class="flex flex-col items-center text-center bg-primary-lightBlue sm:px-[50px] px-3"
+>
+  <div class="w-full inline-flex items-start mt-[155px]">
+    <div
+      class="hover:text-primary-orange inline-flex items-center cursor-pointer -translate-y-1/2 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-50 leading-none"
+      (click)="backButtonClick()"
+      (keyup.enter)="backButtonClick()"
+      (keyup.space)="backButtonClick()"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'BACK' | translate"
+    >
+      <app-icon [name]="'arrowLeft'" class=""></app-icon>
+      <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
+    </div>
+  </div>
+
+  <h1
+    class="w-full font-fixel text-center text-40 font-bold"
+    style="font-size: clamp(16px, 6.5vw, 40px)"
+  >
+    {{ 'BECOME_VOLUNTEER_TITLE' | translate }}
+  </h1>
+  <div
+    class="flex flex-col items-center justify-start mt-[40px] mb-[100px] pb-[40px] bg-primary-light-orange w-full lg:w-[660px] mx-[20px] rounded-40 px-5"
+  >
+    <form
+      #formRef
+      [formGroup]="registerForm"
+      (ngSubmit)="onSubmit()"
+      class="group w-full flex flex-col justify-center items-center mt-10"
+    >
+      <!-- Name -->
+      <div class="flex flex-col w-full mt-8">
+        <label for="message" class="text-left">
+          {{ 'FIRST_NAME_AND_SURNAME' | translate | uppercase }}
+        </label>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          [placeholder]="'ENTER_YOUR_NAME' | translate"
+          class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none pr-10"
+          [class.ring-2]="nameInvalid"
+          [class.ring-secondary-semantic-error]="nameInvalid"
+        />
+      </div>
+      <!-- Phone number -->
+      <div class="flex flex-col w-full mt-8">
+        <label for="phoneNumber" class="text-left">
+          {{ 'PHONE_NUMBER' | translate | uppercase }}
+        </label>
+        <input
+          id="phoneNumber"
+          type="tel"
+          formControlName="phoneNumber"
+          [placeholder]="'ENTER_YOUR_PHONE_NUMBER' | translate"
+          pattern="^\+\d{7,15}$"
+          class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none pr-10"
+          [class.ring-2]="phoneNumberInvalid"
+          [class.ring-secondary-semantic-error]="phoneNumberInvalid"
+          aria-label="phoneNumber"
+          autocomplete="tel"
+        />
+        @if (
+          registerForm.controls.phoneNumber.touched &&
+          registerForm.controls.phoneNumber.invalid
+        ) {
+          <div class="text-red-600 text-sm mt-3">
+            @if (registerForm.controls.phoneNumber.errors?.['required']) {
+              {{ 'PHONE_NUMBER_REQUIRED' | translate }}
+            } @else {
+              {{ 'PHONE_NUMBER_INVALID' | translate }}
+            }
+          </div>
+        }
+      </div>
+      <!-- Email -->
+      <div class="flex flex-col w-full mt-8">
+        <label for="email" class="text-left">
+          {{ 'EMAIL' | translate | uppercase }}
+        </label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          [placeholder]="'ENTER_YOUR_EMAIL' | translate"
+          class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none pr-10"
+          [class.ring-2]="emailInvalid"
+          [class.ring-secondary-semantic-error]="emailInvalid"
+          autocomplete="email"
+        />
+        @if (
+          registerForm.controls.email.touched &&
+          registerForm.controls.email.invalid
+        ) {
+          <div class="text-red-600 text-sm mt-3">
+            @if (registerForm.controls.email.errors?.['required']) {
+              {{ 'EMAIL_REQUIRED' | translate }}
+            } @else {
+              {{ 'EMAIL_INVALID' | translate }}
+            }
+          </div>
+        }
+      </div>
+      <!-- Social Media -->
+      <div class="flex flex-col w-full mt-8">
+        <label for="sm1" class="text-left">
+          {{ 'SOCIAL_MEDIA' | translate | uppercase }}
+        </label>
+        <input
+          id="sm1"
+          type="text"
+          formControlName="sm1"
+          [placeholder]="'https://www.facebook.com/XXXXXXX' | translate"
+          class="mt-2 px-3 border rounded-[12px] h-12 focus:outline-none pr-10"
+        />
+      </div>
+
+      <div class="flex flex-col w-full mt-5">
+        <input
+          id="sm2"
+          type="text"
+          formControlName="sm2"
+          [placeholder]="'https://www.instagram.com/XXXXXXX' | translate"
+          class="mt-2 px-3 border rounded-[12px] h-12 focus:outline-none pr-10"
+        />
+      </div>
+      <div class="flex flex-col w-full mt-5">
+        <input
+          id="sm3"
+          type="text"
+          formControlName="sm3"
+          [placeholder]="'https://www.t.me/XXXXXXX' | translate"
+          class="mt-2 px-3 border rounded-[12px] h-12 focus:outline-none pr-10"
+        />
+      </div>
+      <label for="type1" class="text-left w-full mt-10">
+        {{ 'TYPE_OF_VOLUNTEERING' | translate | uppercase }}
+      </label>
+      <!-- Information Curator -->
+      <div
+        class="flex flex-column gap-2 mt-5 text-left leading-none w-full ml-5"
+      >
+        <div class="flex justify-center items-start">
+          <label class="flex items-center">
+            <input
+              type="checkbox"
+              formControlName="type1"
+              class="mr-2 hidden peer"
+            />
+            <!-- unchecked -->
+            <app-icon
+              [name]="'unchecked'"
+              class="peer-checked:hidden"
+            ></app-icon>
+            <!-- checked -->
+            <app-icon
+              [name]="'checked'"
+              class="hidden peer-checked:block"
+            ></app-icon>
+            <span class="ml-3">
+              {{ 'INFORMATION_CURATOR' | translate }}
+            </span>
+          </label>
+        </div>
+      </div>
+      <!-- Correction specialist -->
+      <div
+        class="flex flex-column gap-2 mt-5 text-left leading-none w-full ml-5"
+      >
+        <div class="flex justify-center items-start">
+          <label class="flex items-center">
+            <input
+              type="checkbox"
+              formControlName="type2"
+              class="mr-2 hidden peer"
+            />
+            <!-- unchecked -->
+            <app-icon
+              [name]="'unchecked'"
+              class="peer-checked:hidden"
+            ></app-icon>
+            <!-- checked -->
+            <app-icon
+              [name]="'checked'"
+              class="hidden peer-checked:block"
+            ></app-icon>
+            <span class="ml-3">
+              {{ 'CORRECTION_SPECIALIST' | translate }}
+            </span>
+          </label>
+        </div>
+      </div>
+      <!-- Become partner -->
+      <div
+        class="flex flex-column gap-2 mt-5 text-left leading-none w-full ml-5"
+      >
+        <div class="flex justify-center items-start">
+          <label class="flex items-center">
+            <input
+              type="checkbox"
+              formControlName="type3"
+              class="mr-2 hidden peer"
+            />
+            <!-- unchecked -->
+            <app-icon
+              [name]="'unchecked'"
+              class="peer-checked:hidden"
+            ></app-icon>
+            <!-- checked -->
+            <app-icon
+              [name]="'checked'"
+              class="hidden peer-checked:block"
+            ></app-icon>
+            <span class="ml-3">
+              {{ 'BECOME_PARTNER' | translate }}
+            </span>
+          </label>
+        </div>
+      </div>
+      <!-- Walk -->
+      <div
+        class="flex flex-column gap-2 mt-5 text-left leading-none w-full ml-5"
+      >
+        <div class="flex justify-center items-start">
+          <label class="flex items-center">
+            <input
+              type="checkbox"
+              formControlName="type4"
+              class="mr-2 hidden peer"
+            />
+            <!-- unchecked -->
+            <app-icon
+              [name]="'unchecked'"
+              class="peer-checked:hidden"
+            ></app-icon>
+            <!-- checked -->
+            <app-icon
+              [name]="'checked'"
+              class="hidden peer-checked:block"
+            ></app-icon>
+            <span class="ml-3">
+              {{ 'WALK_WITH_PET' | translate }}
+            </span>
+          </label>
+        </div>
+      </div>
+      <!-- Comment -->
+
+      <div class="flex flex-col w-full mt-5">
+        <textarea
+          id="comment"
+          type="text"
+          formControlName="comment"
+          [placeholder]="'ENTER_YOUR_COMMENT' | translate"
+          class="mt-2 px-3 border rounded-[12px] h-32 focus:outline-none pr-10"
+        ></textarea>
+      </div>
+
+      <!-- Submit -->
+      <div class="space-y-2 mt-6 content-center w-full">
+        <div class="flex justify-center w-full">
+          <app-primary-large-button
+            class="w-full"
+            [disabled]="isDisabled"
+            buttonTitle="APPLY"
+            (pressButton)="onSubmit()"
+          ></app-primary-large-button>
+        </div>
+      </div>
+      <div
+        class="flex flex-column gap-2 mt-5 text-left leading-none w-full ml-5"
+      >
+        <div class="flex justify-center items-start">
+          <label class="flex items-start">
+            <input
+              type="checkbox"
+              formControlName="termsAndConditions"
+              class="mr-2 hidden peer"
+            />
+            <!-- unchecked -->
+            <app-icon
+              [name]="'unchecked'"
+              class="peer-checked:hidden"
+            ></app-icon>
+            <!-- checked -->
+            <app-icon
+              [name]="'checked'"
+              class="hidden peer-checked:block"
+            ></app-icon>
+            <span class="text-sm text-secondary-neutral-doveGray ml-3">
+              {{ 'AGREE_TERMS' | translate }}
+              <a
+                [routerLink]="['//terms-and-conditions']"
+                target="_blank"
+                class="hover:text-primary-orange hover:underline underline cursor-pointer"
+              >
+                {{ 'TERMS_AND_CONDITIONS' | translate }}
+              </a>
+              {{ 'AND_PRIVATE_POLICY' | translate }}
+              <a
+                [routerLink]="['//privacy-policy']"
+                target="_blank"
+                class="hover:text-primary-orange hover:underline underline cursor-pointer"
+              >
+                {{ 'PRIVACY_POLICY' | translate }}
+              </a>
+            </span>
+          </label>
+        </div>
+      </div>
+      <div
+        class="flex flex-column gap-2 mt-5 text-left leading-none w-full ml-5"
+      >
+        <div class="flex justify-center items-start">
+          <label class="flex items-start">
+            <input
+              type="checkbox"
+              formControlName="careRules"
+              class="mr-2 hidden peer"
+            />
+            <!-- unchecked -->
+            <app-icon
+              [name]="'unchecked'"
+              class="peer-checked:hidden"
+            ></app-icon>
+            <!-- checked -->
+            <app-icon
+              [name]="'checked'"
+              class="hidden peer-checked:block"
+            ></app-icon>
+            <span class="text-sm text-secondary-neutral-doveGray ml-3">
+              {{ 'READ_AND_AGREE' | translate }}
+              <a
+                [routerLink]="['//care-rules']"
+                target="_blank"
+                class="hover:text-primary-orange hover:underline underline cursor-pointer"
+              >
+                {{ 'CARE_RULES' | translate }}
+              </a>
+            </span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

@@ -27,6 +27,34 @@ export const routes: Routes = [
       import('./pages/home/home.component').then(c => c.HomeComponent),
   },
   {
+    path: 'support',
+    loadComponent: () =>
+      import('./pages/care/support/support.component').then(
+        c => c.SupportComponent
+      ),
+  },
+  {
+    path: 'support-volunteering-form',
+    loadComponent: () =>
+      import(
+        './pages/care/support-volunteering-form/support-volunteering-form.component'
+      ).then(c => c.SupportVolunteeringFormComponent),
+  },
+  {
+    path: 'care-rules',
+    loadComponent: () =>
+      import('./pages/care/care-rules/care-rules.component').then(
+        c => c.CareRulesComponent
+      ),
+  },
+  {
+    path: 'volunteer-application-confirmation',
+    loadComponent: () =>
+      import(
+        './pages/care/volunteer-application-confirmation/volunteer-application-confirmation.component'
+      ).then(c => c.VolunteerApplicationConfirmationComponent),
+  },
+  {
     path: 'animals',
 
     loadComponent: () =>
@@ -42,13 +70,7 @@ export const routes: Routes = [
         c => c.AnimalDetailComponent
       ),
   },
-  {
-    path: 'shelters',
-    loadComponent: () =>
-      import('./features/shelters/shelter-list/shelter-list.component').then(
-        c => c.ShelterListComponent
-      ),
-  },
+
   {
     path: 'shelters/:slug',
     loadComponent: () =>
@@ -101,51 +123,32 @@ export const routes: Routes = [
   },
 
   {
-    path: 'profile',
+    path: 'user-profile',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./pages/user-profile/user-profile.component').then(
+      import('./pages/user-account/user-profile/user-profile.component').then(
         c => c.UserProfileComponent
       ),
 
     data: { roles: ['Admin'] }, // хто може, крім власника
   },
-  // {
-  //   path: 'login',
-  //   loadComponent: () =>
-  //     import('./pages/auth/login/login.component').then(c => c.LoginComponent),
-  // },
-  // {
-  //   path: 'login-2fa',
-  //   canActivate: [login2faGuard],
-  //   loadComponent: () =>
-  //     import('./pages/auth/login2fa/login2fa.component').then(
-  //       c => c.Login2faComponent
-  //     ),
-  // },
-  // {
-  //   path: 'register',
-  //   loadComponent: () =>
-  //     import('./pages/auth/register/register.component').then(
-  //       m => m.RegisterComponent
-  //     ),
-  // },
+  {
+    path: 'profile',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/user-account/profile/profile.component').then(
+        c => c.ProfileComponent
+      ),
+  },
+  {
+    path: 'profile/edit',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/user-account/edit-user/edit-user.component').then(
+        c => c.EditUserComponent
+      ),
+  },
 
-  // {
-  //   path: 'forgot-password',
-  //   loadComponent: () =>
-  //     import('./pages/auth/forgot-password/forgot-password.component').then(
-  //       m => m.ForgotPasswordComponent
-  //     ),
-  // },
-  //перевірити потім, чи з бека так повертатиметься чи ?token=...
-  // {
-  //   path: 'reset-password/:token',
-  //   loadComponent: () =>
-  //     import('./pages/auth/reset-password/reset-password.component').then(
-  //       m => m.ResetPasswordComponent
-  //     ),
-  // },
   {
     path: 'terms-and-conditions',
     loadComponent: () =>
@@ -158,6 +161,33 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/privacy-policy/privacy-policy.component').then(
         m => m.PrivacyPolicyComponent
+      ),
+  },
+
+  {
+    path: 'public-offer',
+    loadComponent: () =>
+      import('./pages/public-offer/public-offer.component').then(
+        m => m.PublicOfferComponent
+      ),
+  },
+  {
+    path: 'reports',
+    loadComponent: () =>
+      import('./pages/reports/reports.component').then(m => m.ReportsComponent),
+  },
+  {
+    path: 'contacts',
+    loadComponent: () =>
+      import('./pages/contacts/contacts.component').then(
+        m => m.ContactsComponent
+      ),
+  },
+  {
+    path: 'feedback-form',
+    loadComponent: () =>
+      import('./pages/feedback-form/feedback-form.component').then(
+        m => m.FeedbackFormComponent
       ),
   },
 

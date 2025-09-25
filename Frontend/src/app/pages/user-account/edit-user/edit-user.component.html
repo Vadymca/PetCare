@@ -1,0 +1,202 @@
+<div
+  class="flex items-center flex-col w-full px-6 sm:px-[50px] py-[150px] bg-primary-lightBlue text-secondary-neutral-mineShaft"
+>
+  <div class="inline-flex items-center w-full">
+    <div
+      class="hover:text-primary-orange inline-flex items-center cursor-pointer -translate-y-1/2 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-50"
+      (click)="toProfile()"
+      (keyup.enter)="toProfile()"
+      (keyup.space)="toProfile()"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'BACK' | translate"
+    >
+      <app-icon [name]="'arrowLeft'" class=""></app-icon>
+      <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
+    </div>
+  </div>
+
+  <h1
+    class="w-full font-fixel text-center text-40 font-bold leading-none"
+    style="font-size: clamp(16px, 6.5vw, 40px)"
+  >
+    {{ 'EDIT_PROFILE' | translate }}
+  </h1>
+  <div class="flex flex-col max-w-[660px] items-start w-full mt-[50px]">
+    <div class="flex justify-start items-center gap-[100px]">
+      <div
+        class="rounded-[50px] w-[100px] h-[100px] overflow-hidden bg-secondary-neutral-silverChalice"
+      >
+        @if (profilePhoto() && profilePhoto() !== '') {
+          <img
+            class="w-full h-full object-cover"
+            src="{{ profilePhoto() }}"
+            alt=""
+          />
+        } @else {
+          <app-icon name="noAvatar"></app-icon>
+        }
+      </div>
+      <app-primary-large-orange-button
+        class="w-[260px]"
+        buttonTitle="UPLOAD_PHOTO"
+        (pressButton)="fileInput.click()"
+      >
+      </app-primary-large-orange-button>
+      <input
+        type="file"
+        #fileInput
+        (change)="onPhotoSelected($event)"
+        accept="image/*"
+        class="hidden"
+      />
+    </div>
+    <form
+      [formGroup]="editForm"
+      (ngSubmit)="onSubmit()"
+      class="group w-full flex flex-col justify-center items-center mt-2"
+    >
+      <div class="flex-1 flex flex-col w-full">
+        <!-- First Name -->
+        <label for="firstName" class="text-left">
+          {{ 'FIRST_NAME' | translate }}
+        </label>
+
+        <div class="relative">
+          <input
+            id="firstName"
+            type="text"
+            formControlName="firstName"
+            class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none pr-10 w-full"
+            [class.ring-2]="firstNameInvalid"
+            [class.ring-secondary-semantic-error]="firstNameInvalid"
+            aria-label="First name"
+          />
+        </div>
+        <!-- Last Name -->
+        <label for="lastName" class="mt-5 text-left">
+          {{ 'LAST_NAME' | translate }}
+        </label>
+
+        <div class="relative">
+          <input
+            id="lastName"
+            type="text"
+            formControlName="lastName"
+            class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none pr-10 w-full"
+            [class.ring-2]="lastNameInvalid"
+            [class.ring-secondary-semantic-error]="lastNameInvalid"
+            aria-label="Last name"
+          />
+        </div>
+
+        <!-- Email -->
+        <label for="email" class="mt-5 text-left">
+          {{ 'EMAIL' | translate }}
+        </label>
+
+        <div class="relative">
+          <input
+            id="email"
+            type="email"
+            [disabled]="true"
+            formControlName="email"
+            class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none pr-10 w-full"
+            aria-label="Email"
+          />
+        </div>
+        <!-- Phone -->
+        <label for="firstName" class="mt-5 text-left">
+          {{ 'PHONE' | translate }}
+        </label>
+
+        <div class="relative">
+          <input
+            type="tel"
+            pattern="^\+\d{7,15}$"
+            id="phone"
+            formControlName="phone"
+            class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none pr-10 w-full"
+            [class.ring-2]="phoneInvalid"
+            [class.ring-secondary-semantic-error]="phoneInvalid"
+            aria-label="Phone"
+          />
+        </div>
+        <!-- Postal Code -->
+        <label for="postalCode" class="mt-5 text-left">
+          {{ 'ZIP_CODE' | translate }}
+        </label>
+
+        <div class="relative">
+          <input
+            id="postalCode"
+            [placeholder]="'ENTER_YOUR_ZIP_CODE' | translate"
+            formControlName="postalCode"
+            class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none pr-10 w-full"
+            [class.ring-2]="postalCodeInvalid"
+            [class.ring-secondary-semantic-error]="postalCodeInvalid"
+            aria-label="Zip code"
+          />
+        </div>
+      </div>
+      @if (errorMessages().length > 0) {
+        <div
+          class="flex items-center justify-center flex-wrap text-secondary-semantic-error text-sm mt-3 leading-none text-left"
+        >
+          @for (err of errorMessages(); track err) {
+            <span>{{ err | translate }}.</span>&nbsp;
+          }
+        </div>
+      }
+
+      <div
+        class="flex justify-center items-center mt-10 gap-[80px] text-secondary-neutral-mineShaft"
+      >
+        <div class="flex justify-center">
+          <app-primary-large-button
+            class="w-[260px]"
+            [loading]="isLoading"
+            buttonTitle="CANCEL"
+            (pressButton)="toProfile()"
+          ></app-primary-large-button>
+        </div>
+        <!-- Submit -->
+        <div class="flex justify-center">
+          <app-primary-large-orange-button
+            [disabled]="isDisabled"
+            class="w-[260px]"
+            [loading]="isLoading"
+            buttonTitle="SAVE_CHANGES"
+            (pressButton)="onSubmit()"
+          ></app-primary-large-orange-button>
+        </div>
+      </div>
+    </form>
+    <div
+      class="flex flex-col items-start justify-start w-full text-secondary-neutral-mineShaft mt-10"
+    >
+      <button
+        type="button"
+        class="flex space-x-4 justify-center cursor-pointer hover:text-primary-orange focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-offset-2 bg-transparent border-none"
+        (click)="toChangePassword()"
+        (keyup.enter)="toChangePassword()"
+        (keyup.space)="toChangePassword()"
+        tabindex="0"
+      >
+        <app-icon [name]="'keyLarge'"></app-icon>
+        <p class="self-end">{{ 'CHANGE_PASSWORD' | translate | uppercase }}</p>
+      </button>
+      <button
+        type="button"
+        class="flex mt-3 space-x-4 justify-center cursor-pointer hover:text-primary-orange focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-offset-2 bg-transparent border-none"
+        (click)="toSetTwoFA()"
+        (keyup.enter)="toSetTwoFA()"
+        (keyup.space)="toSetTwoFA()"
+        tabindex="0"
+      >
+        <app-icon [name]="'lockLarge'"></app-icon>
+        <p class="self-end">{{ 'CHANGE_TWOFACTOR' | translate | uppercase }}</p>
+      </button>
+    </div>
+  </div>
+</div>

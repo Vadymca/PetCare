@@ -1,0 +1,236 @@
+<div class="flex flex-col text-center">
+  <!-- Перший екран з кнопками -->
+  <div
+    class="flex flex-col items-center bg-primary-blue text-primary-beige w-full p-5 min-h-[100vh]"
+  >
+    <div class="relative flex flex-col w-full z-0 px-[50px] pt-[155px]">
+      <h1
+        class="font-fixel font-bold leading-none"
+        style="font-size: clamp(16px, 7.5vw, 64px)"
+      >
+        {{ 'SUPPORT_TITLE' | translate }}
+      </h1>
+      <div class="absolute hidden top-[227px] left-[50px] xl:flex mt-2 z-0">
+        <img src="../../../assets/images/support/support1_cat.png" alt="cat" />
+      </div>
+      <div class="absolute hidden top-[325px] right-[50px] xl:flex mt-2 z-0">
+        <img src="../../../assets/images/support/support1_dog.png" alt="cat" />
+      </div>
+    </div>
+    <div
+      class="flex flex-col w-full h-full md:w-[700px] mt-[52px] z-10 rounded-[12px] items-center justify-center mb-[62px]"
+    >
+      @for (item of menuItems; track item.id) {
+        <a
+          class="group flex justify-between w-full h-[80px] items-center p-5 cursor-pointer rounded-br-[12px] rounded-tr-[12px]"
+          ngClass="{{ item.class }}"
+          id="{{ item.id }}"
+          (mouseenter)="onMouseEnter(item.id)"
+          (mouseleave)="onMouseLeave()"
+          (click)="scrollToSection(item.id)"
+          tabindex="0"
+          role="button"
+          [attr.aria-label]="'To section ' + item.title | translate"
+          role="button"
+          (keyup.enter)="scrollToSection(item.id)"
+          (keyup.space)="scrollToSection(item.id)"
+        >
+          <div class="flex gap-2 lg:gap-20 justify-start h-full">
+            @if (item.id % 2 !== 0) {
+              <app-icon
+                [name]="hovered() === item.id ? 'grabHandBold' : 'grabHand'"
+                class="w-[50px] h-[50px]"
+              ></app-icon>
+            } @else {
+              <app-icon
+                [name]="hovered() === item.id ? 'grabPawBold' : 'grabPaw'"
+                class="w-[50px] h-[50px]"
+              ></app-icon>
+            }
+            <div
+              class="flex h-full text-left items-center group-hover:font-bold"
+            >
+              {{ item.title | translate | uppercase }}
+            </div>
+          </div>
+          <app-icon
+            [name]="hovered() === item.id ? 'arrowRightBold' : 'arrowRight'"
+            class="w-[50px] h-[50px] flex justify-end"
+          ></app-icon>
+        </a>
+      }
+    </div>
+
+    <app-icon
+      [name]="'pawPrintBorder1'"
+      class="block bottom-0 left-0 w-full px-[19px]"
+    ></app-icon>
+  </div>
+  <!-- Фінанси -->
+  <section class="flex flex-col w-full scroll-mt-[0px]" id="section-3">
+    <app-financial-support></app-financial-support>
+  </section>
+  <!-- Волонтери -->
+  <section class="flex flex-col w-full scroll-mt-[0px]" id="section-1">
+    <app-support-volunteering></app-support-volunteering>
+  </section>
+  <!-- Усиновленя -->
+  <div
+    class="flex flex-col items-center bg-secondary-chileanFire-3 text-secondary-neutral-mineShaft w-full px-5 min-h-[100vh] py-[100px]"
+    id="section-2"
+  >
+    <h2
+      class="flex font-fixel font-bold"
+      style="font-size: clamp(16px, 7.5vw, 40px)"
+    >
+      {{ 'TAKE_PET_HOME' | translate }}
+    </h2>
+    <p class="flex leading-none mt-6">{{ 'DONT_BROWSE_BREED' | translate }}</p>
+    <p class="flex leading-none">{{ 'DO_YOUR_FIRST_STEP' | translate }}</p>
+    <app-primary-large-button
+      class="w-[260px] mt-10"
+      buttonTitle="ADOPT"
+      (pressButton)="goToAnimals()"
+    >
+    </app-primary-large-button>
+    <div class="flex mt-10">
+      <img
+        src="../../../assets/images/support/support-adopt.png"
+        alt="girl with cat"
+      />
+    </div>
+    <p class="flex leading-none mt-10">
+      {{ 'CONTACT_COORDINATOR' | translate }}
+    </p>
+    <app-primary-small-button
+      class="w-[260px] mt-[12px]"
+      buttonTitle="+ 38 050 333 44 55"
+      (pressButton)="callCoordinator()"
+    >
+    </app-primary-small-button>
+  </div>
+  <!-- Корекція поведінки -->
+  <div
+    class="relative py-[100px] min-w-full flex flex-col text-center items-center justify-start text-secondary-neutral-mineShaft bg-cover bg-center min-h-screen"
+    id="section-6"
+    style="
+      background-image: url('../../../assets/images/support/support-correction.jpg');
+    "
+  >
+    <h2
+      class="flex font-fixel font-bold text-primary-beige"
+      style="font-size: clamp(16px, 7.5vw, 40px)"
+    >
+      {{ 'ANIMAL_CORRECTION_SPECIALIST' | translate }}
+    </h2>
+    <div
+      class="relative flex flex-col sm:absolute sm:bottom-[100px] sm:right-[100px] items-start sm:w-[510px] p-5"
+    >
+      <div
+        class="flex flex-col items-center justify-center gap-3 content-center text-base bg-primary-light-orange w-full sm:w-[294px] rounded-t-[167px] sm:rounded-t-[147px] pt-[23px] pb-2 min-h-[123px]"
+      >
+        <p class="px-[50px]">{{ 'DETAILS' | translate | uppercase }}</p>
+        <div class="flex justify-center w-[260px]">
+          <app-primary-small-button
+            clss="w-full"
+            buttonTitle="+ 38 050 222 88 22"
+            (pressButton)="callCorrectionSpecialist()"
+          >
+          </app-primary-small-button>
+        </div>
+      </div>
+
+      <div
+        class="flex flex-col bg-primary-beige w-full rounded-40 p-[25px] mt-2 text-start"
+      >
+        <p>{{ 'CORRECTION_DESCRIPTION1' | translate }}</p>
+        <p>{{ 'CORRECTION_DESCRIPTION2' | translate }}</p>
+      </div>
+    </div>
+  </div>
+  <!-- Опіка на відстані -->
+  <div
+    class="leading-[1.2] flex flex-col items-center justify-start text-secondary-neutral-mineShaft bg-cover bg-center py-5 sm:pt-[100px] sm:pb-10 px-5"
+    style="background-image: url('../../../assets/images/background2.png')"
+    id="section-4"
+  >
+    <h2
+      class="font-fixel font-bold"
+      style="font-size: clamp(16px, 6.5vw, 40px)"
+    >
+      {{ 'REMOTE_CARE' | translate }}
+    </h2>
+    <p class="flex mt-5 max-w-[699px] text-start">
+      {{ 'BECOME_FRIEND' | translate }}
+    </p>
+    <div class="flex justify-between gap-3 w-full mt-5 max-w-[699px]">
+      <div class="flex flex-col justify-between gap-3 w-full">
+        <div class="flex flex-col justify-start items-center">
+          <app-icon [name]="'careDog'"></app-icon>
+          <p class="text-start mt-1">{{ 'YOU_DREAM_OF_PET' | translate }}</p>
+        </div>
+        <div class="flex flex-col justify-start items-center">
+          <app-icon [name]="'careTime'"></app-icon>
+          <p class="text-start mt-1">{{ 'NO_FREE_TIME' | translate }}</p>
+        </div>
+      </div>
+      <div class="flex flex-col justify-center">
+        <img
+          src="../../../assets/images/support/cat-hand.png"
+          alt="cat and human hand"
+        />
+      </div>
+      <div class="flex flex-col justify-between gap-3 w-full">
+        <div class="flex flex-col justify-start items-center">
+          <app-icon [name]="'careHouse'"></app-icon>
+          <p class="text-start mt-1">{{ 'BOOKING_FLAT' | translate }}</p>
+        </div>
+        <div class="flex flex-col justify-start items-center">
+          <app-icon [name]="'careMicrobs'"></app-icon>
+          <p class="text-start mt-1">{{ 'ALERGY' | translate }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="flex gap-2 mt-10">
+      <p class="text-secondary-neutral-doveGray ml-3">
+        {{ 'READ' | translate | uppercase }}
+      </p>
+      <a
+        [routerLink]="['/care-rules']"
+        target="_blank"
+        class="hover:text-primary-orange hover:underline underline cursor-pointer"
+      >
+        {{ 'CARE_RULES1' | translate | uppercase }}
+      </a>
+      <p>
+        <app-icon [name]="'smallOrantePaw'"></app-icon>
+      </p>
+    </div>
+  </div>
+  <!-- Фільтри по тваринках -->
+  <app-animals-for-care></app-animals-for-care>
+
+  <!-- Організація подій і заходів -->
+  <div class="flex flex-col xl:flex-row justify-between w-full" id="section-5">
+    <div
+      class="flex flex-col w-full xl:pt-[100px] items-center text-start p-5 xl:pl-[50px]"
+      style="background-image: url('../../../assets/images/background2.png')"
+    >
+      <app-event-organization></app-event-organization>
+      <app-primary-small-button
+        buttonTitle="+ 38 050 999 77 66"
+        (pressButton)="callEventSpecialist()"
+      >
+      </app-primary-small-button>
+    </div>
+    <div
+      class="aspect-square max-w-1/2 max-h-[100vh] w-full h-full overflow-hidden"
+    >
+      <img
+        class="w-full h-full object-cover"
+        src="../../../assets/images/support/support-women.jpg"
+        alt="cat and human hand"
+      />
+    </div>
+  </div>
+</div>

@@ -1,19 +1,17 @@
 <div
-  class="flex flex-col items-center justify-center min-h-screen text-center p-4"
+  class="flex flex-col items-center justify-center text-center text-primary-beige p-4 bg-primary-lightBlue"
 >
-  <img
-    src="assets/images/black-cat.png"
-    alt="Access Denied"
-    class="w-64 mb-6"
-  />
-  <h1 class="text-3xl font-bold text-400 mb-4">
+  <app-icon [name]="'logoCool'" class="flex mt-[160px]"></app-icon>
+
+  <h1 class="text-2xl font-fixel font-bold leading-none mt-10">
     {{ 'ACCESS_DENIED_TITLE' | translate }}
   </h1>
-  <p class="text-lg mb-6">{{ 'ACCESS_DENIED_MESSAGE' | translate }}</p>
-  <button
-    (click)="goHome()"
-    class="px-6 py-2 bg-orange-300 text-white rounded hover:bg-orange-600 transition"
+  <p class="mt-5 text-lg 6">{{ 'ACCESS_DENIED_MESSAGE' | translate }}</p>
+  <app-primary-large-button
+    class="mt-[60px] mb-[160px]"
+    buttonTitle="GO_HOME"
+    (pressButton)="goHome()"
   >
-    {{ 'GO_HOME' | translate }}
-  </button>
+    {{ 'BACK_TO_HOME' | translate }}
+  </app-primary-large-button>
 </div>

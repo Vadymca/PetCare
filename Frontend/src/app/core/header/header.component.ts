@@ -52,10 +52,12 @@ export class HeaderComponent {
 
   menuItems: Record<string, string> = {
     '/animals': 'ANIMALS',
-    '/shelters': 'SHELTERS',
     '/articles': 'ARTICLES',
     '/lost-pets': 'LOST_PETS',
     '/animal-aid-requests': 'ANIMAL_AID_REQUEST',
+    '/support': 'SUPPORT',
+    '/reports': 'REPORTS',
+    '/contacts': 'CONTACTS',
   };
   isHidden = signal(false);
   isFloating = signal(false);
@@ -71,26 +73,49 @@ export class HeaderComponent {
     const user = this.authService._currentUser();
     return user ? user.firstName : null;
   });
-
+  accumulatedDelta = 0;
   @HostListener('window:scroll', ['$event'])
+  // onWindowScroll() {
+  //   if (isPlatformBrowser(this.platformId)) {
+  //     const currentScrollTop =
+  //       window.pageYOffset || document.documentElement.scrollTop;
+
+  //     if (currentScrollTop <= 0) {
+  //       this.isHidden.set(false);
+  //       this.isFloating.set(false);
+  //     } else if (currentScrollTop > this.lastScrollTop) {
+  //       this.isHidden.set(true);
+  //       this.isFloating.set(false);
+  //     } else {
+  //       this.isFloating.set(true);
+  //       this.isHidden.set(false);
+  //     }
+
+  //     this.lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
+  //   }
+  // }
   onWindowScroll() {
-    if (isPlatformBrowser(this.platformId)) {
-      const currentScrollTop =
-        window.pageYOffset || document.documentElement.scrollTop;
+    const currentScrollTop =
+      window.pageYOffset || document.documentElement.scrollTop;
+    const delta = currentScrollTop - this.lastScrollTop;
 
-      if (currentScrollTop <= 0) {
-        this.isHidden.set(false);
-        this.isFloating.set(false);
-      } else if (currentScrollTop > this.lastScrollTop) {
-        this.isHidden.set(true);
-        this.isFloating.set(false);
-      } else {
-        this.isFloating.set(true);
-        this.isHidden.set(false);
-      }
+    this.accumulatedDelta += delta;
 
-      this.lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
+    const threshold = 10; // наприклад 10px
+
+    if (this.accumulatedDelta > threshold) {
+      // скрол вниз
+      this.isHidden.set(true);
+      this.isFloating.set(false);
+      this.accumulatedDelta = 0;
+    } else if (this.accumulatedDelta < -threshold) {
+      // скрол вгору
+      this.isFloating.set(true);
+      this.isHidden.set(false);
+      this.accumulatedDelta = 0;
     }
+
+    this.lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
   }
   changeLanguage(lang: string) {
     this.translate.use(lang);

@@ -5,12 +5,14 @@ import {
   EventEmitter,
   inject,
   Output,
+  signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { filter, fromEvent } from 'rxjs';
 import { RoundButtonWithIconComponent } from './buttons/round-button-with-icon.component';
+import { ConfirmModalComponent } from './confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-user-menu',
@@ -20,6 +22,7 @@ import { RoundButtonWithIconComponent } from './buttons/round-button-with-icon.c
     RouterModule,
     TranslateModule,
     RoundButtonWithIconComponent,
+    ConfirmModalComponent,
   ],
   template: `
     <div #menuWrapper class="relative">
@@ -49,7 +52,7 @@ import { RoundButtonWithIconComponent } from './buttons/round-button-with-icon.c
           </li>
           <li>
             <button
-              (click)="logout.emit()"
+              (click)="showLogoutModalWindow()"
               class="w-full text-left px-4 py-2 hover:text-primary-orange hover:underline transition"
             >
               {{ 'LOGOUT' | translate }}
@@ -58,12 +61,20 @@ import { RoundButtonWithIconComponent } from './buttons/round-button-with-icon.c
         </ul>
       }
     </div>
+    @if (showLogoutModal()) {
+      <app-confirm-modal
+        [text]="'ARE_YOU_SURE_YOU_WANT_TO_EXIT'"
+        [titleCancel]="'STAY'"
+        [titleSubmit]="'LOGOUT'"
+        (confirmAction)="logoutEmit($event)"
+      ></app-confirm-modal>
+    }
   `,
 })
 export class UserMenuComponent {
   // @Input() userName = '';
   @Output() logout = new EventEmitter<void>();
-
+  showLogoutModal = signal(false);
   menuOpen = false;
   private elementRef = inject(ElementRef);
 
@@ -84,5 +95,14 @@ export class UserMenuComponent {
         })
       )
       .subscribe(() => (this.menuOpen = false));
+  }
+  showLogoutModalWindow() {
+    this.showLogoutModal.set(true);
+  }
+  logoutEmit($event: boolean) {
+    if ($event) {
+      this.logout.emit();
+    }
+    this.showLogoutModal.set(false);
   }
 }

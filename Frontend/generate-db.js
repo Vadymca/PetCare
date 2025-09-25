@@ -136,7 +136,7 @@ for (let i = 0; i < 50; i++) {
 // Притулки
 const shelters = [];
 const cities = ['Kyiv', 'Lviv', 'Odesa', 'Kharkiv', 'Dnipro'];
-for (let i = 0; i < 20; i++) {
+for (let i = 0; i < 10; i++) {
   const city = cities[Math.floor(Math.random() * cities.length)];
   const slug = `${city.toLowerCase()}-shelter-${i + 1}`;
   shelters.push({

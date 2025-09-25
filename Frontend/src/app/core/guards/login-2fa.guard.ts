@@ -11,7 +11,7 @@ export const login2faGuard: CanActivateFn = () => {
   if (step === '2fa') {
     return true;
   } else {
-    router.navigate(['/login']);
+    router.navigate(['/']);
     return false;
   }
 };

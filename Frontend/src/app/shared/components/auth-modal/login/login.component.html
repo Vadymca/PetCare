@@ -70,6 +70,11 @@
           {{ 'INCORRECT_DATA' | translate }}
         </div>
       }
+      @if (errorMessage().length > 0) {
+        <div class="text-secondary-semantic-error text-center text-sm mt-4">
+          {{ 'AUTH_ERROR' | translate }}
+        </div>
+      }
       <p class="flex self-start mt-4">
         <a
           (click)="emitOption('forgot-password')"
@@ -90,9 +95,9 @@
     <div class="content-center">
       <div class="flex justify-center">
         <app-primary-large-button
-				class="w-[260px]"
+          class="w-[260px]"
           [disabled]="isDisabled"
-          [loading]="loading"
+          [loading]="isLoading"
           buttonTitle="CONTINUE"
           (pressButton)="onSubmit()"
         ></app-primary-large-button>

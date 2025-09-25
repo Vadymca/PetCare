@@ -1,0 +1,159 @@
+<div
+  class="w-full px-6 xl:px-[50px] py-[150px] bg-primary-lightBlue flex flex-col items-center justify-start"
+>
+  <div class="max-w-[660px] flex flex-col items-center w-full">
+    <div
+      class="rounded-[50px] w-[100px] h-[100px] overflow-hidden bg-secondary-neutral-silverChalice"
+    >
+      @if (profilePhoto() && profilePhoto() !== '') {
+        <img
+          class="w-full h-full object-cover"
+          src="{{ profilePhoto() }}"
+          alt=""
+        />
+      } @else {
+        <app-icon name="noAvatar"></app-icon>
+      }
+    </div>
+    <div class="mt-6 flex flex-col text-center items-center w-full">
+      <p>{{ user()?.firstName }} {{ user()?.lastName }}</p>
+      <p class="mt-4 space-y-1 text-gray-600 text-sm">
+        {{ user()?.address }}, {{ user()?.email }}, {{ user()?.phone }}
+      </p>
+      <div class="mt-6 w-[260px]">
+        <app-primary-large-orange-button
+          buttonTitle="EDIT_PROFILE"
+          (pressButton)="editProfile()"
+        ></app-primary-large-orange-button>
+      </div>
+      <div class="mt-10 flex flex-col gap-[20px] w-full">
+        <!-- MY_APPLICATION -->
+        <button
+          (mouseenter)="onMouseEnter(1)"
+          (mouseleave)="onMouseLeave()"
+          type="button"
+          class="p-[20px] min-h-[80px] flex flex-row justify-between items-center gap-2 w-full h-[50px] rounded-[12px] bg-primary-beige text-primary-blue transform transition-transform duration-300"
+          (click)="toApplications()"
+        >
+          <div class="flex flex-row justify-center items-center gap-2">
+            <app-icon
+              [name]="hovered() === 1 ? 'largeBluPawBold' : 'largeBluPaw'"
+              class="w-[50px] h-[50px] flex justify-end"
+            ></app-icon>
+            <p [ngClass]="{ 'font-bold': hovered() === 1 }">
+              {{ 'MY_APPLICATION' | translate | uppercase }}
+            </p>
+          </div>
+          <app-icon
+            [name]="hovered() === 1 ? 'arrowRightBold' : 'arrowRight'"
+            class="w-[50px] h-[50px] flex justify-end"
+          ></app-icon>
+        </button>
+        <!-- NOTIFICATION -->
+        <button
+          (mouseenter)="onMouseEnter(2)"
+          (mouseleave)="onMouseLeave()"
+          type="button"
+          class="p-[20px] min-h-[80px] flex flex-row justify-between items-center gap-2 w-full h-[50px] rounded-[12px] bg-primary-beige text-primary-blue transform transition-transform duration-300"
+          (click)="toNotifications()"
+        >
+          <div class="flex flex-row justify-center items-center gap-2">
+            <app-icon
+              [name]="hovered() === 2 ? 'largeBluPawBold' : 'largeBluPaw'"
+              class="w-[50px] h-[50px] flex justify-end"
+            ></app-icon>
+            <p [ngClass]="{ 'font-bold': hovered() === 2 }">
+              {{ 'NOTIFICATION' | translate | uppercase }}
+            </p>
+          </div>
+          <app-icon
+            [name]="hovered() === 2 ? 'arrowRightBold' : 'arrowRight'"
+            class="w-[50px] h-[50px] flex justify-end"
+          ></app-icon>
+        </button>
+        <!-- MY_DONATION -->
+        <button
+          (mouseenter)="onMouseEnter(3)"
+          (mouseleave)="onMouseLeave()"
+          type="button"
+          class="p-[20px] min-h-[80px] flex flex-row justify-between items-center gap-2 w-full h-[50px] rounded-[12px] bg-primary-beige text-primary-blue transform transition-transform duration-300"
+          (click)="toDonations()"
+        >
+          <div class="flex flex-row justify-center items-center gap-2">
+            <app-icon
+              [name]="hovered() === 3 ? 'largeBluPawBold' : 'largeBluPaw'"
+              class="w-[50px] h-[50px] flex justify-end"
+            ></app-icon>
+            <p [ngClass]="{ 'font-bold': hovered() === 3 }">
+              {{ 'MY_DONATION' | translate | uppercase }}
+            </p>
+          </div>
+          <app-icon
+            [name]="hovered() === 3 ? 'arrowRightBold' : 'arrowRight'"
+            class="w-[50px] h-[50px] flex justify-end"
+          ></app-icon>
+        </button>
+        <!-- FAVOURIT_ANIMALS_AND_SHELTERS -->
+        <button
+          (mouseenter)="onMouseEnter(4)"
+          (mouseleave)="onMouseLeave()"
+          type="button"
+          class="p-[20px] min-h-[80px] flex flex-row justify-between items-center gap-2 w-full h-[50px] rounded-[12px] bg-primary-beige text-primary-blue transform transition-transform duration-300"
+          (click)="toDonations()"
+        >
+          <div class="flex flex-row justify-center items-center gap-2">
+            <app-icon
+              [name]="hovered() === 4 ? 'largeBluPawBold' : 'largeBluPaw'"
+              class="w-[50px] h-[50px] flex justify-end"
+            ></app-icon>
+            <p [ngClass]="{ 'font-bold': hovered() === 4 }">
+              {{ 'FAVOURIT_ANIMALS_AND_SHELTERS' | translate | uppercase }}
+            </p>
+          </div>
+          <app-icon
+            [name]="hovered() === 4 ? 'arrowRightBold' : 'arrowRight'"
+            class="w-[50px] h-[50px] flex justify-end"
+          ></app-icon>
+        </button>
+        <!-- MY_PETS_UNDER_CARE -->
+        <button
+          (mouseenter)="onMouseEnter(5)"
+          (mouseleave)="onMouseLeave()"
+          type="button"
+          class="p-[20px] min-h-[80px] flex flex-row justify-between items-center gap-2 w-full h-[50px] rounded-[12px] bg-primary-beige text-primary-blue transform transition-transform duration-300"
+          (click)="toDonations()"
+        >
+          <div class="flex flex-row justify-center items-center gap-2">
+            <app-icon
+              [name]="hovered() === 5 ? 'largeBluPawBold' : 'largeBluPaw'"
+              class="w-[50px] h-[50px] flex justify-end"
+            ></app-icon>
+            <p [ngClass]="{ 'font-bold': hovered() === 5 }">
+              {{ 'MY_PETS_UNDER_CARE' | translate | uppercase }}
+            </p>
+          </div>
+          <app-icon
+            [name]="hovered() === 5 ? 'arrowRightBold' : 'arrowRight'"
+            class="w-[50px] h-[50px] flex justify-end"
+          ></app-icon>
+        </button>
+        <!-- EXIT -->
+        <button
+          class="mt-4 flex justify-start items-center gap-2 hover:text-primary-orange text-secondary-neutral-mineShaft"
+          (click)="showLogoutModalWindow()"
+        >
+          <app-icon [name]="'exit'"></app-icon>
+          <p class="font-bold">{{ 'EXIT' | translate }}</p>
+        </button>
+      </div>
+    </div>
+  </div>
+  @if (showLogoutModal()) {
+    <app-confirm-modal
+      [text]="'ARE_YOU_SURE_YOU_WANT_TO_EXIT'"
+      [titleCancel]="'STAY'"
+      [titleSubmit]="'LOGOUT'"
+      (confirmAction)="logout($event)"
+    ></app-confirm-modal>
+  }
+</div>
