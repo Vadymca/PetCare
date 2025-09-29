@@ -3,5 +3,7 @@
 using MediatR;
 using PetCare.Application.Dtos.AuthDtos;
 
-public sealed record VerifyTotpBackupCodeCommand(string Code)
+public sealed record VerifyTotpBackupCodeCommand(
+    string TwoFaToken,
+    string Code)
     : IRequest<VerifyTotpResponseDto>;

@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Application.Features.Auth.Login;
+
 using FluentValidation;
 
 /// <summary>

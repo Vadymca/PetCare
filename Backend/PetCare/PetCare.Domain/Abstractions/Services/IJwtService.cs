@@ -10,11 +10,12 @@ using System.Security.Claims;
 public interface IJwtService
 {
     /// <summary>
-    /// Generates a signed access JWT token for the specified user.
+    /// Generates a signed access JWT token for the specified user with roles.
     /// </summary>
     /// <param name="user">Application user.</param>
+    /// <param name="roles">Collection of roles assigned to the user.</param>
     /// <returns>Serialized JWT access token.</returns>
-    string GenerateAccessToken(User user);
+    string GenerateAccessToken(User user, IEnumerable<string> roles);
 
     /// <summary>
     /// Generates a signed refresh JWT token for the specified user ID.

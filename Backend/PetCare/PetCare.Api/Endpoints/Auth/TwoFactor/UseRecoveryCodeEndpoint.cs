@@ -4,7 +4,6 @@ using MediatR;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.TwoFactor.RecoveryCodes.Use;
 
-
 /// <summary>
 /// Maps the POST /api/auth/2fa/use-recovery-code endpoint.
 /// </summary>
@@ -30,7 +29,6 @@ public static class UseRecoveryCodeEndpoint
             var result = await mediator.Send(command);
             return Results.Ok(result);
         })
-        .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("UseRecoveryCode")
         .WithTags("Auth")

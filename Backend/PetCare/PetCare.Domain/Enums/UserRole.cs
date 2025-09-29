@@ -19,4 +19,19 @@ public enum UserRole
     /// A moderator responsible for managing content and users.
     /// </summary>
     Moderator,
+
+    /// <summary>
+    /// A manager responsible for overseeing shelters.
+    /// </summary>
+    ShelterManager,
+
+    /// <summary>
+    /// A veterinarian who can manage animal health records.
+    /// </summary>
+    Veterinarian,
+
+    /// <summary>
+    /// A volunteer who can perform tasks and aid requests.
+    /// </summary>
+    Volunteer,
 }

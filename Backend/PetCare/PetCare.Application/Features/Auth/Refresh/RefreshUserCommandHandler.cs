@@ -112,8 +112,11 @@ public sealed class RefreshUserCommandHandler : IRequestHandler<RefreshUserComma
             throw new InvalidOperationException("Користувач не знайдений.");
         }
 
+        // Get user roles
+        var roles = await this.userService.GetRolesAsync(user);
+
         // Генеруємо нові токени
-        var newAccessToken = this.jwtService.GenerateAccessToken(user);
+        var newAccessToken = this.jwtService.GenerateAccessToken(user, roles);
         var newRefreshToken = this.jwtService.GenerateRefreshToken(user.Id);
 
         this.logger.LogInformation("Refresh token successfully validated for user {UserId}", user.Id);

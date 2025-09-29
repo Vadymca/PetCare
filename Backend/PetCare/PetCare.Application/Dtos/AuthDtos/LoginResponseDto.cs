@@ -6,4 +6,5 @@ public record LoginResponseDto(
     UserDto? User = null,
     string? Method = null,
     string? HiddenPhoneNumber = null,
-    string? Message = null);
+    string? Message = null,
+    string? TwoFaToken = null);

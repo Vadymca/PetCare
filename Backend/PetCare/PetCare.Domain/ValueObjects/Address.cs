@@ -36,6 +36,12 @@ public sealed class Address : ValueObject
         return new Address(trimmed);
     }
 
+    /// <summary>
+    /// Creates an <see cref="Address"/> instance representing an unknown address.
+    /// </summary>
+    /// <returns>An <see cref="Address"/> object initialized with the value "Невідома адреса".</returns>
+    public static Address Unknown() => new("UNKNOWN_ADRESS");
+
     /// <inheritdoc/>
     public override string ToString() => this.Value;
 

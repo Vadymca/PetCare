@@ -70,7 +70,7 @@ public class FileStorageService : IFileStorageService
 
         await fileStream.CopyToAsync(outputStream);
 
-        return $"/uploads/{uniqueFileName}";
+        return $"http://localhost:5000/uploads/{uniqueFileName}";
     }
 
     /// <summary>

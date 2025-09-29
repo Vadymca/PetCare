@@ -3,12 +3,14 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using OtpNet;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Enums;
+using PetCare.Domain.ValueObjects;
 using PetCare.Infrastructure.Persistence;
 using System;
 using System.Collections.Generic;
@@ -25,26 +27,40 @@ public sealed class UserService : IUserService
     private readonly ILogger<UserService> logger;
     private readonly IZipcodebaseService zipcodebaseService;
     private readonly IHttpContextAccessor httpContextAccessor;
+    private readonly IMemoryCache memoryCache;
+    private static readonly string[] ValidRoles = new[]
+   {
+        "User",
+        "Admin",
+        "ShelterManager",
+        "Veterinarian",
+        "Volunteer",
+   };
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserService"/> class.
     /// </summary>
     /// <param name="userManager">The user manager used to perform user-related operations.</param>
     /// <param name="dbContext">The database context used to save domain events and persist changes.</param>
+    /// <param name="zipcodebaseService">Service to resolve postal codes into full addresses.</param>
     /// <param name="logger">The logger instance used to record diagnostic and operational messages.</param>
-    /// <param name="httpContextAccessor">Provides access to the current HTTP context.</param>
+    /// <param name="httpContextAccessor">Provides access to the current HTTP context for retrieving the current user.</param>
+    /// <param name="memoryCache">In-memory cache used to store temporary 2FA tokens.</param>
+    /// <exception cref="ArgumentNullException">Thrown if any of the required dependencies are <c>null</c>.</exception>
     public UserService(
         UserManager<User> userManager,
         AppDbContext dbContext,
         IZipcodebaseService zipcodebaseService,
         ILogger<UserService> logger,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        IMemoryCache memoryCache)
     {
         this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         this.dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         this.zipcodebaseService = zipcodebaseService ?? throw new ArgumentNullException(nameof(zipcodebaseService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+        this.memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
     }
 
     /// <summary>
@@ -54,7 +70,7 @@ public sealed class UserService : IUserService
     /// <param name="password">The user's password.</param>
     /// <param name="firstName">The user's first name.</param>
     /// <param name="lastName">The user's last name.</param>
-    /// <param name="phoneNumber">The user's phone number.</param>
+    /// <param name="phone">The user's phone number.</param>
     /// <param name="postalCode">
     /// Optional postal code (ZIP) of the user's address. Can be <c>null</c> if not provided.
     /// </param>
@@ -98,12 +114,21 @@ public sealed class UserService : IUserService
                 }
                 else
                 {
-                    this.logger.LogWarning("Could not resolve address for postal code: {PostalCode}", postalCode);
+                    user.UpdateAddress(Address.Unknown());
+                    this.logger.LogWarning(
+                        "Could not resolve address for postal code {PostalCode}. Default address set: {DefaultAddress}",
+                        postalCode,
+                        Address.Unknown().Value);
                 }
             }
             catch (Exception ex)
             {
-                this.logger.LogWarning(ex, "Не вдалося згенерувати адресу для postal code {PostalCode}", postalCode);
+                user.UpdateAddress(Address.Unknown());
+                this.logger.LogWarning(
+                    ex,
+                    "Не вдалося згенерувати адресу для postal code {PostalCode}. Default address set: {DefaultAddress}",
+                    postalCode,
+                    Address.Unknown().Value);
             }
         }
 
@@ -610,5 +635,168 @@ public sealed class UserService : IUserService
 
         this.logger.LogWarning("Failed recovery code attempt for user {UserId}", user.Id);
         return false;
+    }
+
+    /// <summary>
+    /// Replaces the current role of a user with a new role, removing old roles and updating the <see cref="User.Role"/> field.
+    /// </summary>
+    /// <param name="user">The user entity whose role is being changed.</param>
+    /// <param name="newRole">The name of the new role to assign.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="user"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="newRole"/> is null, empty, or whitespace.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the role is invalid or updating roles via Identity fails.</exception>
+    public async Task ReplaceRoleAsync(User user, string newRole)
+    {
+        if (user == null)
+        {
+            throw new ArgumentNullException(nameof(user));
+        }
+
+        if (string.IsNullOrWhiteSpace(newRole))
+        {
+            throw new ArgumentException("Роль не може бути порожньою.", nameof(newRole));
+        }
+
+        // Перевірка, чи роль валідна
+        if (!ValidRoles.Contains(newRole))
+        {
+            throw new InvalidOperationException($"Невідома роль: {newRole}");
+        }
+
+        // Отримуємо поточні ролі користувача
+        var currentRoles = await this.userManager.GetRolesAsync(user);
+
+        // Видаляємо всі поточні ролі
+        if (currentRoles.Any())
+        {
+            var removeResult = await this.userManager.RemoveFromRolesAsync(user, currentRoles);
+            if (!removeResult.Succeeded)
+            {
+                var errors = string.Join(", ", removeResult.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Не вдалося видалити старі ролі користувачу: {errors}");
+            }
+        }
+
+        // Додаємо нову роль через Identity
+        var addResult = await this.userManager.AddToRoleAsync(user, newRole);
+        if (!addResult.Succeeded)
+        {
+            var errors = string.Join(", ", addResult.Errors.Select(e => e.Description));
+            throw new InvalidOperationException($"Не вдалося додати роль користувачу: {errors}");
+        }
+
+        // Оновлюємо поле Role в агрегаті User
+        if (!Enum.TryParse<UserRole>(newRole, out var enumRole))
+        {
+            throw new InvalidOperationException($"Не вдалося конвертувати роль '{newRole}' в enum UserRole.");
+        }
+
+        user.SetRole(enumRole);
+
+        // Зберігаємо зміни в БД
+        await this.userManager.UpdateAsync(user);
+    }
+
+    /// <summary>
+    /// Changes the password of the specified <see cref="User"/> by generating a reset token 
+    /// and applying the new password using <see cref="UserManager{User}"/>.
+    /// Throws an exception if the password change fails.
+    /// </summary>
+    ///  <param name="userId">The Id of the user whose password will be changed.</param>
+    /// <param name="newPassword">The new plain text password to set.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to cancel the operation.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the password reset operation fails.</exception>
+    public async Task ChangePasswordAsync(Guid userId, string newPassword, CancellationToken cancellationToken)
+    {
+        // Завантажуємо користувача через UserManager (новий контекст)
+        var user = await this.userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+        {
+            throw new KeyNotFoundException("Користувача не знайдено.");
+        }
+
+        var token = await this.userManager.GeneratePasswordResetTokenAsync(user);
+        var result = await this.userManager.ResetPasswordAsync(user, token, newPassword);
+
+        if (!result.Succeeded)
+        {
+            var errors = result.Errors?.Any() == true
+                ? string.Join(", ", result.Errors.Select(e => e.Description))
+                : "Невідома помилка при зміні пароля.";
+
+            throw new InvalidOperationException($"Не вдалося змінити пароль: {errors}");
+        }
+    }
+
+    /// <summary>
+    /// Stores a temporary 2FA token for the user in memory with a specified TTL.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user.</param>
+    /// <param name="token">The generated 2FA token.</param>
+    /// <param name="ttl">The time-to-live for the token in memory.</param>
+    /// <returns>A completed task.</returns>
+    public Task Save2FaTokenAsync(Guid userId, string token, TimeSpan ttl)
+    {
+        // Ключ можна робити за UserId
+        var cacheKey = $"2fa_token:{userId}";
+        this.memoryCache.Set(cacheKey, token, ttl);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Verifies the provided 2FA token for the user.
+    /// If the token matches the stored one, it is removed after successful validation.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user.</param>
+    /// <param name="token">The token to verify.</param>
+    /// <returns>
+    /// <c>true</c> if the token is valid and removed after verification; 
+    /// <c>false</c> if the token is missing or does not match.
+    /// </returns>
+    public Task<bool> Verify2FaTokenAsync(Guid userId, string token)
+    {
+        var cacheKey = $"2fa_token:{userId}";
+        if (this.memoryCache.TryGetValue<string>(cacheKey, out var savedToken))
+        {
+            if (savedToken == token)
+            {
+                // Токен пройшов валідацію → видаляємо його
+                this.memoryCache.Remove(cacheKey);
+                return Task.FromResult(true);
+            }
+        }
+
+        return Task.FromResult(false);
+    }
+
+    /// <summary>
+    /// Finds a user by their temporary 2FA token stored in memory.
+    /// </summary>
+    /// <param name="twoFaToken">The temporary 2FA token.</param>
+    /// <returns>The <see cref="User"/> if found; otherwise, null.</returns>
+    public async Task<User?> GetUserByTwoFaTokenAsync(string twoFaToken)
+    {
+        if (string.IsNullOrWhiteSpace(twoFaToken))
+        {
+            return null;
+        }
+
+        var allUsers = await this.userManager.Users.ToListAsync();
+
+        foreach (var user in allUsers)
+        {
+            var cacheKey = $"2fa_token:{user.Id}";
+            if (this.memoryCache.TryGetValue<string>(cacheKey, out var token))
+            {
+                if (token == twoFaToken)
+                {
+                    return user;
+                }
+            }
+        }
+
+        return null;
     }
 }

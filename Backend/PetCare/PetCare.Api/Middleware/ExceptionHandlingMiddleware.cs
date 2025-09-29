@@ -56,6 +56,11 @@ public sealed class ExceptionHandlingMiddleware : IMiddleware
             this.logger.LogWarning(ex, "Validation error");
             await this.WriteErrorAsync(context, HttpStatusCode.BadRequest, ex.Message);
         }
+        catch (KeyNotFoundException ex) // resource not found
+        {
+            this.logger.LogWarning(ex, "Resource not found");
+            await this.WriteErrorAsync(context, HttpStatusCode.NotFound, ex.Message);
+        }
         catch (UnauthorizedAccessException ex) // auth issue
         {
             this.logger.LogWarning(ex, "Unauthorized access");

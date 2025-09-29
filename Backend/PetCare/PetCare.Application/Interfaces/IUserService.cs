@@ -223,4 +223,49 @@ public interface IUserService
     /// <param name="code">The recovery code.</param>
     /// <returns><c>true</c> if the code was valid and successfully redeemed; otherwise <c>false</c>.</returns>
     Task<bool> RedeemRecoveryCodeAsync(User user, string code);
+
+    /// <summary>
+    /// Replaces all current roles of the specified user with a new role.
+    /// </summary>
+    /// <param name="user">The user entity whose roles will be replaced.</param>
+    /// <param name="newRole">The new role to assign to the user.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task ReplaceRoleAsync(User user, string newRole);
+
+    /// <summary>
+    /// Changes the password of the user with the specified Id by generating a reset token 
+    /// and applying the new password using <see cref="UserManager{User}"/>.
+    /// Throws an exception if the password change fails.
+    /// </summary>
+    /// <param name="userId">The Id of the user whose password will be changed.</param>
+    /// <param name="newPassword">The new plain text password to set.</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to cancel the operation.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the password reset operation fails.</exception>
+    Task ChangePasswordAsync(Guid userId, string newPassword, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Saves a 2FA token for the specified user with a time-to-live.
+    /// </summary>
+    /// <param name="userId">The ID of the user.</param>
+    /// <param name="token">The 2FA token to save.</param>
+    /// <param name="ttl">The time-to-live for the token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task Save2FaTokenAsync(Guid userId, string token, TimeSpan ttl);
+
+    /// <summary>
+    /// Verifies a 2FA token for the specified user.
+    /// </summary>
+    /// <param name="userId">The ID of the user.</param>
+    /// <param name="token">The token to verify.</param>
+    /// <returns>True if valid, otherwise false.</returns>
+    Task<bool> Verify2FaTokenAsync(Guid userId, string token);
+
+    /// <summary>
+    /// Gets a user by the temporary 2FA token.
+    /// Returns null if token is invalid or expired.
+    /// </summary>
+    /// <param name="twoFaToken">The temporary 2FA token.</param>
+    /// <returns>The <see cref="User"/> or null.</returns>
+    Task<User?> GetUserByTwoFaTokenAsync(string twoFaToken);
 }

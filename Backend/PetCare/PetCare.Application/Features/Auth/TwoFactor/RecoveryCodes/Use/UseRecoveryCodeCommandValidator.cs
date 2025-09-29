@@ -17,5 +17,7 @@ public sealed class UseRecoveryCodeCommandValidator : AbstractValidator<UseRecov
         this.RuleFor(x => x.Code)
             .NotEmpty().WithMessage("Код відновлення обов'язковий.")
             .Matches(@"^[A-Z0-9]{5}-[A-Z0-9]{5}$").WithMessage("Невірний формат резервного коду. Повинно бути у вигляді XXXXX-XXXXX.");
+        this.RuleFor(x => x.TwoFaToken)
+            .NotEmpty().WithMessage("Токен 2FA обов'язковий.");
     }
 }

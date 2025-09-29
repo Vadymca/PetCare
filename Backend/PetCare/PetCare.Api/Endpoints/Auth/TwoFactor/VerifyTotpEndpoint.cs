@@ -24,7 +24,6 @@ public static class VerifyTotpEndpoint
             logger.LogInformation("TOTP verified successfully");
             return Results.Ok(result);
         })
-        .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("VerifyTotp")
         .WithTags("Auth")

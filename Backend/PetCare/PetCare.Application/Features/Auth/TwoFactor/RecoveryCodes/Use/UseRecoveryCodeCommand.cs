@@ -3,5 +3,7 @@
 using MediatR;
 using PetCare.Application.Dtos.AuthDtos;
 
-public sealed record UseRecoveryCodeCommand(string Code)
+public sealed record UseRecoveryCodeCommand(
+    string TwoFaToken,
+    string Code)
     : IRequest<UseRecoveryCodeResponseDto>;

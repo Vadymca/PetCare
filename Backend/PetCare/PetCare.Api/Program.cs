@@ -3,15 +3,18 @@ namespace PetCare.Api;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
+using PetCare.Api.Authorization;
 using PetCare.Api.Endpoints.Auth;
 using PetCare.Api.Endpoints.Auth.TwoFactor;
 using PetCare.Api.Endpoints.Auth.TwoFactor.Sms;
 using PetCare.Api.Endpoints.Media;
+using PetCare.Api.Endpoints.Users;
 using PetCare.Api.Middleware;
 using PetCare.Application;
 using PetCare.Domain.Aggregates;
@@ -79,12 +82,22 @@ public class Program
             // Застосовуємо схему авторизації за замовчуванням
             builder.Services.AddAuthorization(options =>
             {
-                // Якщо потрібно, можна додати політики
+                // Політика для Admin
+                options.AddPolicy("AdminOnly", policy =>
+                    policy.RequireRole("Admin"));
+
+                // Політика для власника ресурсу або Admin
+                options.AddPolicy("ResourceOwnerOrAdmin", policy =>
+                    policy.Requirements.Add(new ResourceOwnerOrAdminRequirement()));
+
                 options.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
                     .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
                     .Build();
             });
+
+            // Реєструємо handler для перевірки власника ресурсу
+            builder.Services.AddSingleton<IAuthorizationHandler, ResourceOwnerOrAdminHandler>();
 
             // -------------------- DbContext --------------------
             builder.Services.AddDbContext<AppDbContext>(options =>
@@ -118,7 +131,7 @@ public class Program
             }, AppDomain.CurrentDomain.GetAssemblies());
 
             // -------------------- Identity --------------------
-            builder.Services.AddIdentity<User, AppRole>(options =>
+            builder.Services.AddIdentityCore<User>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 8;
@@ -133,8 +146,9 @@ public class Program
                 options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Lockout.AllowedForNewUsers = true;
             })
-            .AddEntityFrameworkStores<AppDbContext>()
-            .AddDefaultTokenProviders();
+             .AddRoles<AppRole>()
+             .AddEntityFrameworkStores<AppDbContext>()
+             .AddDefaultTokenProviders();
 
             // -------------------- HttpContextAccessor --------------------
             builder.Services.AddHttpContextAccessor();
@@ -292,7 +306,19 @@ public class Program
             app.MapRecoveryCodesEndpoint(); // /api/auth/2fa/recovery-codes
             app.MapUseRecoveryCodeEndpoint(); // /api/auth/2fa/use-recovery-code
 
+            // ----------------------Media-----------------------
             app.MapUploadMediaEndpoint(); // /api/media/upload
+
+            // ----------------------Users-----------------------
+            app.MapAddUserRoleEndpoint(); // /api/users/{id}/roles
+            app.MapGetUsersEndpoint(); // /api/users
+            app.MapGetUserByIdEndpoint(); // /api/users/{id}
+            app.MapUpdateUserEndpoint(); // /api/users/{id}
+            app.MapUpdateMyProfileEndpoint(); // /api/users/me
+            app.MapDeleteUserEndpoint(); // /api/users/{id}
+            app.MapGetCurrentUserEndpoint(); // /api/users/me
+            app.MapGetUserSubscriptionsEndpoint(); // /api/users/{id}/subscriptions
+            app.MapGetUserActivityEndpoint(); // /api/users/{id}/activity
 
             // -------------------- Migrations & Seeding --------------------
             using (var scope = app.Services.CreateScope())

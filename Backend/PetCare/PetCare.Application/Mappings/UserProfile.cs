@@ -9,9 +9,12 @@ using PetCare.Domain.Aggregates;
 /// </summary>
 public sealed class UserProfile : Profile
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UserProfile"/> class.
+    /// Configures mappings between <see cref="User"/> and <see cref="UserDto"/>.
     public UserProfile()
     {
-        CreateMap<User, UserDto>()
+        this.CreateMap<User, UserDto>()
             .ForMember(
                 dest => dest.Email,
                 opt => opt.MapFrom(src => src.Email ?? string.Empty))
