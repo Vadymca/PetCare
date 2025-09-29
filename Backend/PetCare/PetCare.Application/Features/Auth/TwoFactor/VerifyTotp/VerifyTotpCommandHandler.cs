@@ -51,7 +51,7 @@ public sealed class VerifyTotpCommandHandler : IRequestHandler<VerifyTotpCommand
     /// <inheritdoc/>
     public async Task<VerifyTotpResponseDto> Handle(VerifyTotpCommand request, CancellationToken cancellationToken)
     {
-        var user = await this.userService.GetCurrentUserAsync();
+        var user = await this.userService.GetUserByTwoFaTokenAsync(request.TwoFaToken);
         if (user is null)
         {
             this.logger.LogWarning("Unauthorized attempt to verify TOTP.");
@@ -64,20 +64,20 @@ public sealed class VerifyTotpCommandHandler : IRequestHandler<VerifyTotpCommand
             throw new InvalidOperationException("Невірний TOTP код.");
         }
 
-        var accessToken = this.jwtService.GenerateAccessToken(user);
-        var refreshToken = this.jwtService.GenerateRefreshToken(user.Id);
-
-        // Встановлюємо cookie для Refresh Token
-        this.jwtService.SetRefreshTokenCookie(
-            this.httpContextAccessor.HttpContext!.Response,
-            refreshToken);
-
         // Створюємо UserDto
         var userDto = this.mapper.Map<UserDto>(user);
 
         // Отримуємо ролі користувача
         var roles = await this.userService.GetRolesAsync(user);
         userDto = userDto with { Role = roles.FirstOrDefault() ?? "User" };
+
+        var accessToken = this.jwtService.GenerateAccessToken(user, roles);
+        var refreshToken = this.jwtService.GenerateRefreshToken(user.Id);
+
+        // Встановлюємо cookie для Refresh Token
+        this.jwtService.SetRefreshTokenCookie(
+            this.httpContextAccessor.HttpContext!.Response,
+            refreshToken);
 
         this.logger.LogInformation("2FA успішно пройдена користувачем {Email}", user.Email);
 

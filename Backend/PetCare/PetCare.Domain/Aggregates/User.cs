@@ -350,26 +350,46 @@ public sealed class User : IdentityUser<Guid>
     /// <summary>
     /// Updates the user's profile with the provided values.
     /// </summary>
+    /// <param name="email">The new email of the user, if provided. If null or whitespace, the email remains unchanged.</param>
+    /// <param name="userName">The new username of the user, if provided. If null or whitespace, the username remains unchanged.</param>
+    /// <param name="passwordHash">The new password hash of the user, if provided. If null or whitespace, the password remains unchanged.</param>
     /// <param name="firstName">The new first name of the user, if provided. If null or whitespace, the first name remains unchanged.</param>
     /// <param name="lastName">The new last name of the user, if provided. If null or whitespace, the last name remains unchanged.</param>
     /// <param name="phone">The new phone number of the user, if provided. If null or whitespace, the phone number remains unchanged.</param>
+    /// <param name="role">The new role of the user, if provided. If null, the role remains unchanged.</param>
+    /// <param name="preferences">The new preferences dictionary of the user, if provided. If null, preferences remain unchanged.</param>
+    /// <param name="points">The new points value of the user, if provided. If null, points remain unchanged.</param>
     /// <param name="profilePhoto">The new URL of the user's profile photo, if provided. If null or whitespace, the profile photo remains unchanged.</param>
     /// <param name="language">The new preferred language of the user, if provided. If null or whitespace, the language remains unchanged.</param>
-    /// <param name="postalCode">The new postal code of the user, if provided.</param>
-    /// <param name="requestingUserId">The ID of the user requesting the update. Must match the current user's ID.</param>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="phone"/> is invalid according to the <see cref="PhoneNumber.Create"/> method.</exception>
+    /// <param name="postalCode">The new postal code of the user, if provided. If null or whitespace, the postal code remains unchanged.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="postalCode"/> is longer than 20 characters.</exception>
     public void UpdateProfile(
+        string? email = null,
+        string? userName = null,
+        string? passwordHash = null,
         string? firstName = null,
         string? lastName = null,
         string? phone = null,
+        UserRole? role = null,
+        Dictionary<string, string>? preferences = null,
+        int? points = null,
         string? profilePhoto = null,
         string? language = null,
-        string? postalCode = null,
-        Guid requestingUserId = default)
+        string? postalCode = null)
     {
-        if (requestingUserId != this.Id && !this.IsAdminOrModerator())
+        if (!string.IsNullOrWhiteSpace(email))
         {
-            throw new UnauthorizedAccessException("Недостатньо прав для оновлення профілю іншого користувача.");
+            this.Email = email;
+        }
+
+        if (!string.IsNullOrWhiteSpace(userName))
+        {
+            this.UserName = userName;
+        }
+
+        if (!string.IsNullOrWhiteSpace(passwordHash))
+        {
+            this.PasswordHash = passwordHash;
         }
 
         if (!string.IsNullOrWhiteSpace(firstName))
@@ -385,6 +405,24 @@ public sealed class User : IdentityUser<Guid>
         if (!string.IsNullOrWhiteSpace(phone))
         {
             this.Phone = phone;
+        }
+
+        if (role.HasValue)
+        {
+            this.Role = role.Value;
+        }
+
+        if (preferences != null && preferences.Count > 0)
+        {
+            foreach (var kvp in preferences)
+            {
+                this.Preferences[kvp.Key] = kvp.Value;
+            }
+        }
+
+        if (points.HasValue)
+        {
+            this.Points = points.Value;
         }
 
         if (!string.IsNullOrWhiteSpace(profilePhoto))
@@ -409,6 +447,16 @@ public sealed class User : IdentityUser<Guid>
 
         this.UpdatedAt = DateTime.UtcNow;
         this.AddDomainEvent(new UserProfileUpdatedEvent(this.Id));
+    }
+
+    /// <summary>
+    /// Updates user preferences.
+    /// </summary>
+    /// <param name="preferences">Dictionary of preferences.</param>
+    public void UpdatePreferences(Dictionary<string, string> preferences)
+    {
+        this.Preferences = preferences ?? throw new ArgumentNullException(nameof(preferences));
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -472,11 +520,6 @@ public sealed class User : IdentityUser<Guid>
     /// <param name="requestingUserId">The ID of the user requesting the update. Must match the current user's ID.</param>
     public void AddPoints(int amount, Guid requestingUserId)
     {
-        if (!this.IsAdmin())
-        {
-            throw new UnauthorizedAccessException("Тільки адміністратор може додавати бали.");
-        }
-
         if (amount < 0)
         {
             return;
@@ -495,11 +538,6 @@ public sealed class User : IdentityUser<Guid>
     /// <exception cref="ArgumentException">Thrown when <paramref name="amount"/> is negative or exceeds current points.</exception>
     public void DeductPoints(int amount, Guid requestingUserId)
     {
-        if (!this.IsAdmin())
-        {
-            throw new UnauthorizedAccessException("Тільки адміністратор може віднімати бали.");
-        }
-
         if (amount < 0)
         {
             throw new ArgumentException("Сума віднімання балів не може бути від'ємною.", nameof(amount));
@@ -569,6 +607,26 @@ public sealed class User : IdentityUser<Guid>
         }
 
         this.PostalCode = postalCode.Trim();
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Sets the role of the user.
+    /// This method should be used instead of setting the Role property directly.
+    /// </summary>
+    /// <param name="role">The new role to assign.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the role is invalid.</exception>
+    public void SetRole(UserRole role)
+    {
+        // Можна додати додаткову валідацію бізнес-логіки, якщо потрібно
+        if (!Enum.IsDefined(typeof(UserRole), role))
+        {
+            throw new InvalidOperationException("Невірна роль користувача.");
+        }
+
+        this.Role = role;
+
+        // Оновлюємо час останньої зміни для аудиту
         this.UpdatedAt = DateTime.UtcNow;
     }
 

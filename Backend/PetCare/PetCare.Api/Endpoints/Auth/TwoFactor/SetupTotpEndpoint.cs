@@ -15,20 +15,23 @@ public static class SetupTotpEndpoint
     /// <param name="app">The <see cref="WebApplication"/> instance to configure endpoints on.</param>
     public static void MapSetupTotpEndpoint(this WebApplication app)
     {
-        app.MapPost("/api/auth/2fa/totp/setup", async (IMediator mediator, ILoggerFactory loggerFactory) =>
+        app.MapPost("/api/auth/2fa/totp/setup", async (
+            SetupTotpCommand command,
+            IMediator mediator,
+            ILoggerFactory loggerFactory) =>
         {
             var logger = loggerFactory.CreateLogger("SetupTotpEndpoint");
 
-            var response = await mediator.Send(new SetupTotpCommand());
+            var response = await mediator.Send(command);
             return Results.Ok(response);
         })
-        .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("SetupTotp")
         .WithTags("Auth")
         .Produces<SetupTotpResponseDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
-        .Produces(StatusCodes.Status500InternalServerError);
+        .Produces(StatusCodes.Status500InternalServerError)
+        .Accepts<SetupTotpCommand>("application/json");
     }
 }

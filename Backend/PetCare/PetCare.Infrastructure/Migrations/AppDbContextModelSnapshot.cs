@@ -37,7 +37,7 @@ namespace PetCare.Infrastructure.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "io_t_device_status", new[] { "active", "inactive", "error" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "io_t_device_type", new[] { "feeder", "temperature", "camera" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "lost_pet_status", new[] { "lost", "found", "reunited" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "user_role", new[] { "user", "admin", "moderator" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "user_role", new[] { "user", "admin", "moderator", "shelter_manager", "veterinarian", "volunteer" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "volunteer_task_status", new[] { "open", "in_progress", "completed", "cancelled" });
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "postgis");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);

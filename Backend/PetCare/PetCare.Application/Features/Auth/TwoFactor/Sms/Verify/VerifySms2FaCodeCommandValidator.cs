@@ -16,5 +16,7 @@ public sealed class VerifySms2FaCodeCommandValidator : AbstractValidator<VerifyS
         this.RuleFor(x => x.Code)
             .NotEmpty().WithMessage("Код обов'язковий.")
             .Length(6).WithMessage("Код має складатися з 6 цифр.");
+        this.RuleFor(x => x.TwoFaToken)
+            .NotEmpty().WithMessage("Токен 2FA обов'язковий.");
     }
 }

@@ -17,24 +17,24 @@ public static class SendSms2FaCodeEndpoint
     {
         app.MapPost("/api/auth/2fa/sms/send", async (
             IMediator mediator,
+            SendSms2FaCodeCommand command,
             ILoggerFactory loggerFactory) =>
         {
             var logger = loggerFactory.CreateLogger("SendSms2FaCodeEndpoint");
 
-            var command = new SendSms2FaCodeCommand();
             var result = await mediator.Send(command);
 
             logger.LogInformation("SMS 2FA code successfully sent.");
 
             return Results.Ok(result);
         })
-        .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("SendSms2FaCode")
         .WithTags("Auth")
         .Produces<SendSms2FaCodeResponseDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
-        .Produces(StatusCodes.Status500InternalServerError);
+        .Produces(StatusCodes.Status500InternalServerError)
+        .Accepts<SendSms2FaCodeCommand>("application/json");
     }
 }

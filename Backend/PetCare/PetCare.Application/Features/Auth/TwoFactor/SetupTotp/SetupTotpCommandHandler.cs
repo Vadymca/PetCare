@@ -39,7 +39,7 @@ public sealed class SetupTotpCommandHandler : IRequestHandler<SetupTotpCommand, 
     public async Task<SetupTotpResponseDto> Handle(SetupTotpCommand request, CancellationToken cancellationToken)
     {
         // Отримуємо поточного користувача
-        var user = await this.userService.GetCurrentUserAsync()
+        var user = await this.userService.GetUserByTwoFaTokenAsync(request.TwoFaToken)
                    ?? throw new InvalidOperationException("Не вдалося визначити користувача.");
 
         // Отримуємо або генеруємо ключ TOTP

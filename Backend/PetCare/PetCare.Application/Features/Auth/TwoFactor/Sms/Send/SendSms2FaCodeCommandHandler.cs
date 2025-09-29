@@ -40,7 +40,7 @@ public sealed class SendSms2FaCodeCommandHandler : IRequestHandler<SendSms2FaCod
     /// <returns>Response indicating success or failure.</returns>
     public async Task<SendSms2FaCodeResponseDto> Handle(SendSms2FaCodeCommand request, CancellationToken cancellationToken)
     {
-        var user = await this.userService.GetCurrentUserAsync()
+        var user = await this.userService.GetUserByTwoFaTokenAsync(request.TwoFaToken)
                     ?? throw new UnauthorizedAccessException("Користувач не авторизований.");
 
         if (string.IsNullOrWhiteSpace(user.Phone))

@@ -46,31 +46,35 @@ public class GenericRepository<T> : IRepository<T>
     /// Updates an existing entity in the database.
     /// </summary>
     /// <param name="entity">The entity to update.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The updated entity.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when entity is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the entity has no primary key or does not exist.</exception>
     public async Task<T> UpdateAsync(T entity, CancellationToken cancellationToken = default)
     {
         if (entity == null)
         {
-            throw new ArgumentNullException(nameof(entity));
+            throw new ArgumentNullException(nameof(entity), "Сутність не може бути null.");
         }
 
+        // Отримуємо метадані первинного ключа сутності
         var key = this.Context.Model.FindEntityType(typeof(T))?.FindPrimaryKey();
 
         if (key == null || key.Properties.Count != 1)
         {
-            throw new InvalidOperationException("Сутність повинна мати єдиний первинний ключ");
+            throw new InvalidOperationException("Сутність повинна мати один первинний ключ.");
         }
 
         var keyProperty = key.Properties[0];
 
+        // Отримуємо значення ключа
         var keyValue = typeof(T).GetProperty(keyProperty.Name)?.GetValue(entity);
-
         if (keyValue == null)
         {
-            throw new InvalidOperationException("Значення ключа не може бути нульовимl");
+            throw new InvalidOperationException("Значення ключа не може бути null.");
         }
 
+        // Перевіряємо чи існує сутність у БД
         var exists = await this.Context.Set<T>()
             .AsNoTracking()
             .AnyAsync(e => EF.Property<object>(e, keyProperty.Name)!.Equals(keyValue), cancellationToken);
@@ -80,8 +84,8 @@ public class GenericRepository<T> : IRepository<T>
             throw new InvalidOperationException($"Сутність типу {typeof(T).Name} з ключем {keyValue} не знайдено.");
         }
 
-        this.Context.Set<T>().Attach(entity);
-        this.Context.Entry(entity).State = EntityState.Modified;
+        // Оновлюємо сутність
+        this.Context.Set<T>().Update(entity);
 
         await this.Context.SaveChangesAsync(cancellationToken);
 

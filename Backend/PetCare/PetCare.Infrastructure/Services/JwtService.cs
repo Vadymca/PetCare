@@ -59,16 +59,17 @@ public sealed class JwtService : IJwtService
     }
 
     /// <summary>
-    /// Generates a short-lived access token containing user claims.
+    /// Generates a short-lived access token containing user claims and roles.
     /// </summary>
     /// <param name="user">The user for whom the token is generated.</param>
+    /// <param name="roles">The list of roles for the user.</param>
     /// <returns>Serialized JWT access token.</returns>
-    public string GenerateAccessToken(User user)
+    public string GenerateAccessToken(User user, IEnumerable<string> roles)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(this.secretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -77,6 +78,12 @@ public sealed class JwtService : IJwtService
             new Claim("phone", user.Phone ?? string.Empty),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
+
+        // Add role claims
+        foreach (var role in roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
 
         var token = new JwtSecurityToken(
             issuer: this.issuer,
@@ -87,7 +94,11 @@ public sealed class JwtService : IJwtService
             signingCredentials: creds);
 
         var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-        this.logger.LogInformation("JWT згенеровано для користувача {UserId}", user.Id);
+        this.logger.LogInformation(
+            "JWT згенеровано для користувача {UserId} з ролями: {Roles}",
+            user.Id,
+            string.Join(", ", roles));
+
         return tokenString;
     }
 

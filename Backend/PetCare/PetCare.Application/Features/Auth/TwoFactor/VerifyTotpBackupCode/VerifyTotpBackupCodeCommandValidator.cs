@@ -16,5 +16,7 @@ public sealed class VerifyTotpBackupCodeCommandValidator : AbstractValidator<Ver
         this.RuleFor(x => x.Code)
             .NotEmpty().WithMessage("Резервний код обов'язковий.")
             .Matches(@"^[A-Z0-9]{5}-[A-Z0-9]{5}$").WithMessage("Невірний формат резервного коду. Повинно бути у вигляді XXXXX-XXXXX.");
+        this.RuleFor(x => x.TwoFaToken)
+            .NotEmpty().WithMessage("Токен 2FA обов'язковий");
     }
 }

@@ -28,7 +28,6 @@ public static class VerifySms2FaCodeEndpoint
             logger.LogInformation("SMS 2FA code verified successfully for user {UserId}", result.User?.Id);
             return Results.Ok(result);
         })
-        .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("VerifySms2FaCode")
         .WithTags("Auth")

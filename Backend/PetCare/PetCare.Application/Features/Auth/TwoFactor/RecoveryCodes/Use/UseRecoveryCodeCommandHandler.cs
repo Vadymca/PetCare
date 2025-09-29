@@ -51,7 +51,7 @@ public sealed class UseRecoveryCodeCommandHandler : IRequestHandler<UseRecoveryC
     /// <inheritdoc/>
     public async Task<UseRecoveryCodeResponseDto> Handle(UseRecoveryCodeCommand request, CancellationToken cancellationToken)
     {
-        var user = await this.userService.GetCurrentUserAsync();
+        var user = await this.userService.GetUserByTwoFaTokenAsync(request.TwoFaToken);
         if (user == null)
         {
             this.logger.LogWarning("Unauthorized attempt to use recovery code.");
@@ -64,8 +64,15 @@ public sealed class UseRecoveryCodeCommandHandler : IRequestHandler<UseRecoveryC
             throw new InvalidOperationException("Невірний або вже використаний код відновлення.");
         }
 
+        // Створюємо UserDto
+        var userDto = this.mapper.Map<UserDto>(user);
+
+        // Отримуємо ролі користувача
+        var roles = await this.userService.GetRolesAsync(user);
+        userDto = userDto with { Role = roles.FirstOrDefault() ?? "User" };
+
         // Генеруємо Access Token
-        var accessToken = this.jwtService.GenerateAccessToken(user);
+        var accessToken = this.jwtService.GenerateAccessToken(user, roles);
 
         // Генеруємо Refresh Token
         var refreshToken = this.jwtService.GenerateRefreshToken(user.Id);
@@ -74,13 +81,6 @@ public sealed class UseRecoveryCodeCommandHandler : IRequestHandler<UseRecoveryC
         this.jwtService.SetRefreshTokenCookie(
             this.httpContextAccessor.HttpContext!.Response,
             refreshToken);
-
-        // Створюємо UserDto
-        var userDto = this.mapper.Map<UserDto>(user);
-
-        // Отримуємо ролі користувача
-        var roles = await this.userService.GetRolesAsync(user);
-        userDto = userDto with { Role = roles.FirstOrDefault() ?? "User" };
 
         return new UseRecoveryCodeResponseDto(
              Success: true,

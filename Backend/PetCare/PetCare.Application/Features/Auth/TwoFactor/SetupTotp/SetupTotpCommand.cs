@@ -3,5 +3,6 @@
 using MediatR;
 using PetCare.Application.Dtos.AuthDtos;
 
-public sealed record SetupTotpCommand()
+public sealed record SetupTotpCommand(
+    string TwoFaToken)
     : IRequest<SetupTotpResponseDto>;

@@ -49,7 +49,7 @@ public sealed class VerifyTotpBackupCodeCommandHandler
     public async Task<VerifyTotpResponseDto> Handle(VerifyTotpBackupCodeCommand request, CancellationToken cancellationToken)
     {
         // Отримуємо поточного користувача
-        var user = await this.userService.GetCurrentUserAsync();
+        var user = await this.userService.GetUserByTwoFaTokenAsync(request.TwoFaToken);
         if (user == null)
         {
             this.logger.LogWarning("Unauthorized attempt to verify TOTP backup code.");
@@ -64,18 +64,18 @@ public sealed class VerifyTotpBackupCodeCommandHandler
             throw new InvalidOperationException("Невірний резервний код.");
         }
 
-        // Генеруємо токени та ставимо cookie
-        var accessToken = this.jwtService.GenerateAccessToken(user);
-        var refreshToken = this.jwtService.GenerateRefreshToken(user.Id);
-
-        this.jwtService.SetRefreshTokenCookie(this.httpContextAccessor.HttpContext!.Response, refreshToken);
-
         // Створюємо UserDto
         var userDto = this.mapper.Map<UserDto>(user);
 
         // Отримуємо ролі користувача
         var roles = await this.userService.GetRolesAsync(user);
         userDto = userDto with { Role = roles.FirstOrDefault() ?? "User" };
+
+        // Генеруємо токени та ставимо cookie
+        var accessToken = this.jwtService.GenerateAccessToken(user, roles);
+        var refreshToken = this.jwtService.GenerateRefreshToken(user.Id);
+
+        this.jwtService.SetRefreshTokenCookie(this.httpContextAccessor.HttpContext!.Response, refreshToken);
 
         this.logger.LogInformation("TOTP backup code successfully verified for user {Email}", user.Email);
 

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Abstractions.Services;
+using System.Security.Cryptography;
 
 /// <summary>
 /// Handles the <see cref="LoginUserCommand"/> request to authenticate a user and generate tokens.
@@ -80,12 +81,16 @@ public sealed class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, 
         }
 
         // 2FA логіка
+        var twoFaToken = Generate2FaToken();
+        await this.userService.Save2FaTokenAsync(user.Id, twoFaToken, TimeSpan.FromMinutes(5));
+
         if (user.PhoneNumberConfirmed && !user.TwoFactorEnabled)
         {
             return new LoginResponseDto(
                 Status: "2fa_required",
                 Method: "sms",
                 HiddenPhoneNumber: this.HidePhoneNumber(user.Phone),
+                TwoFaToken: twoFaToken,
                 Message: "Необхідна двофакторна автентифікація. Будь ласка, пройдіть SMS перевірку перед входом.");
         }
 
@@ -94,6 +99,7 @@ public sealed class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, 
             return new LoginResponseDto(
                 Status: "2fa_required",
                 Method: "totp",
+                TwoFaToken: twoFaToken,
                 Message: "Необхідна двофакторна автентифікація. Будь ласка, пройдіть TOTP перевірку перед входом.");
         }
 
@@ -111,7 +117,7 @@ public sealed class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, 
         };
 
         // Генеруємо Access Token
-        var accessToken = this.jwtService.GenerateAccessToken(user);
+        var accessToken = this.jwtService.GenerateAccessToken(user, roles);
 
         // Генеруємо Refresh Token
         var refreshToken = this.jwtService.GenerateRefreshToken(user.Id);
@@ -139,5 +145,20 @@ public sealed class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, 
         var last2 = phone[^2..];
         var countryCode = phone.StartsWith("+380") ? "+380" : phone[..4];
         return $"{countryCode}*******{last2}";
+    }
+
+    private static string Generate2FaToken(int length = 6)
+    {
+        const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        var bytes = RandomNumberGenerator.GetBytes(length);
+        var result = new char[length];
+
+        for (int i = 0; i < length; i++)
+        {
+            // Вибираємо символ з chars за індексом
+            result[i] = chars[bytes[i] % chars.Length];
+        }
+
+        return new string(result);
     }
 }

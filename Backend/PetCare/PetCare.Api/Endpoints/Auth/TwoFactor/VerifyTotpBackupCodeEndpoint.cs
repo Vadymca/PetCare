@@ -24,7 +24,6 @@ public static class VerifyTotpBackupCodeEndpoint
             logger.LogInformation("TOTP backup code successfully verified.");
             return Results.Ok(new { message = result.Message });
         })
-        .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("VerifyTotpBackupCode")
         .WithTags("Auth")

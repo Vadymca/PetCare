@@ -1,0 +1,29 @@
+﻿namespace PetCare.Application.Dtos.AnimalDtos;
+using System;
+using System.Collections.Generic;
+
+public sealed record AnimalDto(
+ Guid Id,
+ string Slug,
+ string Name,
+ DateTime? Birthday,
+ string Gender,
+ string? Description,
+ string? HealthStatus,
+ IReadOnlyList<string> Photos,
+ IReadOnlyList<string> Videos,
+ string Status,
+ string? AdoptionRequirements,
+ string? MicrochipId,
+ int IdNumber,
+ float? Weight,
+ float? Height,
+ string? Color,
+ bool IsSterilized,
+ bool HaveDocuments,
+ DateTime CreatedAt,
+ DateTime UpdatedAt,
+ Guid BreedId,
+ string? BreedName,
+ Guid ShelterId,
+ string ShelterName);
