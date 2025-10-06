@@ -37,12 +37,28 @@ public sealed class Slug : ValueObject
     }
 
     /// <summary>
+    /// Creates a <see cref="Slug"/> from an existing slug string (e.g. loaded from DB).
+    /// Does NOT add a random suffix.
+    /// </summary>
+    /// <param name="slug">Existing slug string.</param>
+    /// <returns>A <see cref="Slug"/>.</returns>
+    public static Slug FromExisting(string slug)
+    {
+        if (!IsValid(slug))
+        {
+            throw new ArgumentException("Slug не дійсний.", nameof(slug));
+        }
+
+        return new Slug(slug);
+    }
+
+    /// <summary>
     /// Generates a normalized slug from a name (e.g. title or label).
     /// Converts Ukrainian letters to Latin, then normalizes the string.
     /// </summary>
     /// <param name="name">The name to convert.</param>
     /// <returns>A normalized slug string.</returns>
-    public static string GenerateFromName(string name)
+    private static string GenerateFromName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
         {

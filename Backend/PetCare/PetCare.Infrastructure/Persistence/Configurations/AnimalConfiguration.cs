@@ -1,9 +1,13 @@
 ﻿namespace PetCare.Infrastructure.Persistence.Configurations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using NpgsqlTypes;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Entities;
+using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 /// <summary>
 /// Configures the Animal entity mapping and constraints.
@@ -27,8 +31,8 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
         builder.Property(a => a.Slug)
            .HasConversion(
                 slug => slug.Value,
-                value => Slug.Create(value))
-           .HasMaxLength(64)
+                value => Slug.FromExisting(value))
+           .HasMaxLength(256)
            .IsRequired();
 
         builder.HasIndex(a => a.Slug)
@@ -57,9 +61,10 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Property(a => a.Birthday)
-            .HasConversion(
-                birthday => birthday.Value,
-                value => Birthday.Create(value));
+           .HasConversion(
+               birthday => birthday.Value,
+               value => Birthday.Create(value))
+           .HasColumnType("timestamp with time zone");
 
         builder.Property(a => a.Gender)
             .HasColumnType("animal_gender")
@@ -68,8 +73,33 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
         builder.Property(a => a.Description)
             .IsRequired(false);
 
-        builder.Property(a => a.HealthStatus)
-            .IsRequired(false);
+        builder.Property(a => a.Size)
+             .HasColumnType("animal_size")
+             .IsRequired();
+
+        builder.Property(a => a.SpecialNeeds)
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>())
+            .HasColumnType("jsonb");
+
+        builder.Property(a => a.HealthConditions)
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>())
+            .HasColumnType("jsonb");
+
+        builder.Property(a => a.Temperaments)
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, new JsonSerializerOptions
+                {
+                    Converters = { new JsonStringEnumConverter() },
+                }),
+                v => JsonSerializer.Deserialize<List<AnimalTemperament>>(v, new JsonSerializerOptions
+                {
+                    Converters = { new JsonStringEnumConverter() },
+                }) ?? new List<AnimalTemperament>())
+            .HasColumnType("jsonb");
 
         builder.Property(a => a.Photos)
            .HasColumnType("jsonb")
@@ -91,6 +121,11 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
            .HasColumnType("animal_status")
            .IsRequired();
 
+        builder.Property(a => a.CareCost)
+           .HasColumnType("int")
+           .IsRequired()
+           .HasDefaultValue(AnimalCareCost.SixHundred);
+
         builder.Property(a => a.AdoptionRequirements)
            .IsRequired(false);
 
@@ -101,12 +136,6 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
            .HasMaxLength(50);
 
         builder.HasIndex(a => a.MicrochipId)
-            .IsUnique();
-
-        builder.Property(a => a.IdNumber)
-            .IsRequired();
-
-        builder.HasIndex(a => new { a.ShelterId, a.IdNumber })
             .IsUnique();
 
         builder.Property(a => a.Weight)
@@ -153,5 +182,17 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
                {
                    j.HasKey("AnimalId", "TagId");
                });
+
+        // --- Full-text search vector ---
+        builder.Property<NpgsqlTsVector>("SearchVector")
+            .HasColumnType("tsvector")
+            .HasComputedColumnSql(
+            @"
+            to_tsvector('simple', coalesce(""Name"",'') || ' ' || coalesce(""Description"",''))
+            || to_tsvector('english', coalesce(""Name"",'') || ' ' || coalesce(""Description"",''))
+        ", stored: true);
+
+        builder.HasIndex("SearchVector")
+            .HasMethod("GIN");
     }
 }

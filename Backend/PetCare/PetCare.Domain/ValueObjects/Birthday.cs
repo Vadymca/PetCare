@@ -1,41 +1,44 @@
 ﻿namespace PetCare.Domain.ValueObjects;
 using PetCare.Domain.Common;
+using System.Text.Json.Serialization;
 
 /// <summary>
-/// Represents a birthday as a value object.
+/// Represents a birthday as a value object, including time in UTC.
 /// </summary>
 public sealed class Birthday : ValueObject
 {
-    private static readonly DateOnly MinDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-120));
+    private static readonly DateTime MinDate = DateTime.UtcNow.AddYears(-120);
+    private static readonly DateTime MaxDate = DateTime.UtcNow;
 
-    private static readonly DateOnly MaxDate = DateOnly.FromDateTime(DateTime.UtcNow);
-
-    private Birthday(DateOnly value) => this.Value = value;
+    [JsonConstructor]
+    private Birthday(DateTime value) => this.Value = value;
 
     /// <summary>
-    /// Gets the value of the birthday.
+    /// Gets the value of the birthday in UTC.
     /// </summary>
-    public DateOnly Value { get; }
+    public DateTime Value { get; }
 
     /// <summary>
     /// Creates a new <see cref="Birthday"/> instance after validating the input.
     /// </summary>
-    /// <param name="date">The birthday date.</param>
+    /// <param name="date">The birthday date (UTC).</param>
     /// <returns>A new instance of <see cref="Birthday"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the date is in the future or unreasonably far in the past.</exception>
-    public static Birthday Create(DateOnly date)
+    public static Birthday Create(DateTime date)
     {
-        if (date > MaxDate)
+        var utcDate = date.ToUniversalTime();
+
+        if (utcDate > MaxDate)
         {
             throw new ArgumentOutOfRangeException(nameof(date), "Дата народження не може бути в майбутньому.");
         }
 
-        if (date < MinDate)
+        if (utcDate < MinDate)
         {
             throw new ArgumentOutOfRangeException(nameof(date), "Дата народження надто стара для системи.");
         }
 
-        return new Birthday(date);
+        return new Birthday(utcDate);
     }
 
     /// <summary>
@@ -43,11 +46,31 @@ public sealed class Birthday : ValueObject
     /// </summary>
     /// <param name="date">The birthday date to validate.</param>
     /// <returns>True if the date is within valid bounds; otherwise, false.</returns>
-    public static bool IsValid(DateOnly date) =>
-        date <= MaxDate && date >= MinDate;
+    public static bool IsValid(DateTime date)
+    {
+        var utcDate = date.ToUniversalTime();
+        return utcDate <= MaxDate && utcDate >= MinDate;
+    }
+
+    /// <summary>
+    /// Calculates the age in years based on the current date.
+    /// </summary>
+    /// <returns>The age in complete years.</returns>
+    public int CalculateAge()
+    {
+        var today = DateTime.UtcNow;
+        int age = today.Year - this.Value.Year;
+
+        if (today < this.Value.AddYears(age))
+        {
+            age--;
+        }
+
+        return age;
+    }
 
     /// <inheritdoc/>
-    public override string ToString() => this.Value.ToString("yyyy-MM-dd");
+    public override string ToString() => this.Value.ToString("yyyy-MM-ddTHH:mm:ss.fffffffZ");
 
     /// <inheritdoc/>
     protected override IEnumerable<object> GetEqualityComponents() => new object[] { this.Value };

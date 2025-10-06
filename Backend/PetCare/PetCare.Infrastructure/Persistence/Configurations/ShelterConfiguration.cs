@@ -29,7 +29,7 @@ public class ShelterConfiguration : IEntityTypeConfiguration<Shelter>
             .HasConversion(
                 slug => slug.Value,
                 value => Slug.Create(value))
-            .HasMaxLength(64)
+            .HasMaxLength(256)
             .IsRequired();
 
         builder.HasIndex(s => s.Slug)

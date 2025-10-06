@@ -33,8 +33,7 @@ public sealed class ExceptionHandlingMiddleware : IMiddleware
                 .GroupBy(e => e.PropertyName)
                 .ToDictionary(
                     g => g.Key,
-                    g => g.Select(x => x.ErrorMessage).ToArray()
-                );
+                    g => g.Select(x => x.ErrorMessage).ToArray());
 
             var payload = new
             {
@@ -45,6 +44,15 @@ public sealed class ExceptionHandlingMiddleware : IMiddleware
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
             await context.Response.WriteAsync(JsonSerializer.Serialize(payload));
+        }
+        catch (JsonException ex)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await context.Response.WriteAsJsonAsync(new
+            {
+                error = "Некоректний формат JSON",
+                details = ex.Message
+            });
         }
         catch (InvalidOperationException ex) // business rule violation
         {

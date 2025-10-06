@@ -235,6 +235,8 @@ public class AppDbContext : IdentityDbContext<User, AppRole, Guid>
         modelBuilder.HasPostgresEnum<LostPetStatus>();
         modelBuilder.HasPostgresEnum<UserRole>();
         modelBuilder.HasPostgresEnum<VolunteerTaskStatus>();
+        modelBuilder.HasPostgresEnum<AnimalSize>();
+        modelBuilder.HasPostgresEnum<AnimalTemperament>();
 
         base.OnModelCreating(modelBuilder);
 

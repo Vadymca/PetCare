@@ -12,6 +12,7 @@ public sealed class AnimalSubscriptionConfiguration : IEntityTypeConfiguration<A
         builder.ToTable("AnimalSubscriptions");
 
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).HasDefaultValueSql("gen_random_uuid()");
 
         builder.Property(x => x.SubscribedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 

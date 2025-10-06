@@ -6,4 +6,4 @@ using System.Collections.Generic;
 
 public sealed record GetUserSubscriptionsResponseDto(
  IReadOnlyList<ShelterDto> Shelters,
- IReadOnlyList<AnimalDto> Animals);
+ IReadOnlyList<AnimalListDto> Animals);

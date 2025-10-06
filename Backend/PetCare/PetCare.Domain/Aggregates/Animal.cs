@@ -17,6 +17,9 @@ public sealed class Animal : AggregateRoot
     private readonly List<Tag> tags = new();
     private readonly List<SuccessStory> successStories = new();
     private readonly List<AnimalSubscription> subscribers = new();
+    private readonly List<string> specialNeeds = new();
+    private readonly List<string> healthConditions = new();
+    private readonly List<AnimalTemperament> temperaments = new();
 
     private Animal()
     {
@@ -32,14 +35,17 @@ public sealed class Animal : AggregateRoot
         Birthday? birthday,
         AnimalGender gender,
         string? description,
-        string? healthStatus,
+        List<string> healthConditions,
+        List<string> specialNeeds,
+        List<AnimalTemperament> temperaments,
+        AnimalSize size,
         List<string> photos,
-        List<string> videos,
+        List<string>? videos,
         Guid shelterId,
         AnimalStatus status,
+        AnimalCareCost careCost,
         string? adoptionRequirements,
         MicrochipId? microchipId,
-        int idNumber,
         float? weight,
         float? height,
         string? color,
@@ -57,16 +63,19 @@ public sealed class Animal : AggregateRoot
         this.Birthday = birthday;
         this.Gender = gender;
         this.Description = description;
-        this.HealthStatus = healthStatus;
+        this.healthConditions = healthConditions ?? new List<string>();
+        this.specialNeeds = specialNeeds ?? new List<string>();
+        this.temperaments = temperaments ?? new List<AnimalTemperament>();
+        this.Size = size;
         this.photos = photos ?? new List<string>();
         this.videos = videos ?? new List<string>();
         this.ShelterId = shelterId != Guid.Empty
            ? shelterId
            : throw new ArgumentException("Ідентифікатор притулку не може бути порожнім.", nameof(shelterId));
         this.Status = status;
+        this.CareCost = careCost;
         this.AdoptionRequirements = adoptionRequirements;
         this.MicrochipId = microchipId;
-        this.IdNumber = idNumber;
         this.Weight = weight;
         this.Height = height;
         this.Color = color;
@@ -102,9 +111,24 @@ public sealed class Animal : AggregateRoot
     public string? Description { get; private set; }
 
     /// <summary>
-    /// Gets the health status of the animal, if any. Can be null.
+    /// Gets the health conditions of the animal.
     /// </summary>
-    public string? HealthStatus { get; private set; }
+    public IReadOnlyCollection<string> HealthConditions => this.healthConditions.AsReadOnly();
+
+    /// <summary>
+    /// Gets the special needs of the animal.
+    /// </summary>
+    public IReadOnlyCollection<string> SpecialNeeds => this.specialNeeds.AsReadOnly();
+
+    /// <summary>
+    /// Gets the size of the animal.
+    /// </summary>
+    public AnimalSize Size { get; private set; }
+
+    /// <summary>
+    /// Gets the temperaments of the animal.
+    /// </summary>
+    public IReadOnlyCollection<AnimalTemperament> Temperaments => this.temperaments.AsReadOnly();
 
     /// <summary>
     /// Gets the photos of the animal.
@@ -133,6 +157,11 @@ public sealed class Animal : AggregateRoot
     public AnimalStatus Status { get; private set; }
 
     /// <summary>
+    /// Gets the care cost of the animal.
+    /// </summary>
+    public AnimalCareCost CareCost { get; private set; }
+
+    /// <summary>
     /// Gets the adoption requirements for the animal, if any. Can be null.
     /// </summary>
     public string? AdoptionRequirements { get; private set; }
@@ -141,11 +170,6 @@ public sealed class Animal : AggregateRoot
     /// Gets the microchip identifier for the animal, if any. Can be null.
     /// </summary>
     public MicrochipId? MicrochipId { get; private set; }
-
-    /// <summary>
-    /// Gets the identification number of the animal.
-    /// </summary>
-    public int IdNumber { get; private set; }
 
     /// <summary>
     /// Gets the weight of the animal in kilograms, if known. Can be null.
@@ -235,21 +259,23 @@ public sealed class Animal : AggregateRoot
     /// <summary>
     /// Creates a new <see cref="Animal"/> instance with the specified parameters.
     /// </summary>
-    /// <param name="slug">The unique slug identifier for the animal.</param>
     /// <param name="userId">The unique identifier of the user associated with the animal.</param>
     /// <param name="name">The name of the animal.</param>
     /// <param name="breedId">The unique identifier of the animal's breed.</param>
     /// <param name="birthday">The birthday of the animal, if known. Can be null.</param>
     /// <param name="gender">The gender of the animal.</param>
     /// <param name="description">The description of the animal, if any. Can be null.</param>
-    /// <param name="healthStatus">The health status of the animal, if any. Can be null.</param>
+    /// <param name="healthConditions">The list of health conditions for the animal. Can be null.</param>
+    /// <param name="specialNeeds">The list of special needs for the animal. Can be null.</param>
+    /// <param name="temperaments">The list of temperaments for the animal. Can be null.</param>
+    /// <param name="size">The size of the animal.</param>
     /// <param name="photos">The list of photo URLs for the animal. Can be null.</param>
     /// <param name="videos">The list of video URLs for the animal. Can be null.</param>
     /// <param name="shelterId">The unique identifier of the shelter hosting the animal.</param>
     /// <param name="status">The current status of the animal.</param>
+    /// <param name="careCost">The care cost of the animal.</param>
     /// <param name="adoptionRequirements">The adoption requirements for the animal, if any. Can be null.</param>
     /// <param name="microchipId">The microchip identifier for the animal, if any. Can be null.</param>
-    /// <param name="idNumber">The identification number of the animal.</param>
     /// <param name="weight">The weight of the animal in kilograms, if known. Can be null.</param>
     /// <param name="height">The height of the animal in centimeters, if known. Can be null.</param>
     /// <param name="color">The color of the animal, if any. Can be null.</param>
@@ -258,21 +284,23 @@ public sealed class Animal : AggregateRoot
     /// <returns>A new instance of <see cref="Animal"/> with the specified parameters.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="slug"/>, <paramref name="name"/>, or <paramref name="microchipId"/> is invalid according to their respective <see cref="ValueObject"/> creation methods.</exception>
     public static Animal Create(
-        string slug,
         Guid userId,
         string name,
         Guid breedId,
         Birthday? birthday,
         AnimalGender gender,
         string? description,
-        string? healthStatus,
+        List<string>? healthConditions,
+        List<string>? specialNeeds,
+        List<AnimalTemperament>? temperaments,
+        AnimalSize size,
         List<string>? photos,
         List<string>? videos,
         Guid shelterId,
         AnimalStatus status,
+        AnimalCareCost careCost,
         string? adoptionRequirements,
         string? microchipId,
-        int idNumber,
         float? weight,
         float? height,
         string? color,
@@ -280,21 +308,24 @@ public sealed class Animal : AggregateRoot
         bool haveDocuments)
     {
         var animal = new Animal(
-            Slug.Create(slug),
+            Slug.Create(name),
             userId,
             Name.Create(name),
             breedId,
             birthday is not null ? Birthday.Create(birthday.Value) : null,
             gender,
             description,
-            healthStatus,
+            healthConditions ?? new(),
+            specialNeeds ?? new(),
+            temperaments ?? new(),
+            size,
             photos ?? new(),
             videos ?? new(),
             shelterId,
             status,
+            careCost,
             adoptionRequirements,
             microchipId is not null ? MicrochipId.Create(microchipId) : null,
-            idNumber,
             weight,
             height,
             color,
@@ -311,7 +342,6 @@ public sealed class Animal : AggregateRoot
     /// <param name="birthday">The new birthday of the animal, if provided. If null, the birthday remains unchanged.</param>
     /// <param name="gender">The new gender of the animal, if provided. If null, the gender remains unchanged.</param>
     /// <param name="description">The new description of the animal, if provided. If null, the description remains unchanged.</param>
-    /// <param name="healthStatus">The new health status of the animal, if provided. If null, the health status remains unchanged.</param>
     /// <param name="status">The new status of the animal, if provided. If null, the status remains unchanged.</param>
     /// <param name="adoptionRequirements">The new adoption requirements for the animal, if provided. If null, the adoption requirements remain unchanged.</param>
     /// <param name="microchipId">The new microchip identifier for the animal, if provided. If null, the microchip identifier remains unchanged.</param>
@@ -326,7 +356,6 @@ public sealed class Animal : AggregateRoot
         Birthday? birthday = null,
         AnimalGender? gender = null,
         string? description = null,
-        string? healthStatus = null,
         AnimalStatus? status = null,
         string? adoptionRequirements = null,
         string? microchipId = null,
@@ -336,9 +365,10 @@ public sealed class Animal : AggregateRoot
         bool? isSterilized = null,
         bool? haveDocuments = null)
     {
-        if (name is not null)
+        if (!string.IsNullOrWhiteSpace(name))
         {
             this.Name = Name.Create(name);
+            this.Slug = Slug.Create(name);
         }
 
         if (birthday is not null)
@@ -354,11 +384,6 @@ public sealed class Animal : AggregateRoot
         if (description is not null)
         {
             this.Description = description;
-        }
-
-        if (healthStatus is not null)
-        {
-            this.HealthStatus = healthStatus;
         }
 
         if (status is not null)
@@ -406,6 +431,59 @@ public sealed class Animal : AggregateRoot
     }
 
     /// <summary>
+    /// Updates the health conditions of the animal.
+    /// </summary>
+    /// <param name="conditions">The new list of health conditions. If null, the list is cleared.</param>
+    public void UpdateHealthConditions(List<string> conditions)
+    {
+        this.healthConditions.Clear();
+        this.healthConditions.AddRange(conditions ?? new List<string>());
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Updates the special needs of the animal.
+    /// </summary>
+    /// <param name="needs">The new list of special needs. If null, the list is cleared.</param>
+    public void UpdateSpecialNeeds(List<string> needs)
+    {
+        this.specialNeeds.Clear();
+        this.specialNeeds.AddRange(needs ?? new List<string>());
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Updates the temperaments of the animal.
+    /// </summary>
+    /// <param name="values">The new list of temperaments. If null, the list is cleared.</param>
+    public void UpdateTemperaments(List<AnimalTemperament> values)
+    {
+        this.temperaments.Clear();
+        this.temperaments.AddRange(values ?? new List<AnimalTemperament>());
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Updates the size of the animal and sets the update timestamp.
+    /// </summary>
+    /// <param name="newSize">The new size to apply.</param>
+    public void UpdateSize(AnimalSize newSize)
+    {
+        this.Size = newSize;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Updates the care cost of the animal.
+    /// </summary>
+    /// <param name="newCost">The new care cost.</param>
+    public void UpdateCareCost(AnimalCareCost newCost)
+    {
+        this.CareCost = newCost;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
     /// Changes the status of the animal.
     /// </summary>
     /// /// <param name="newStatus">The new status to apply.</param>
@@ -442,10 +520,20 @@ public sealed class Animal : AggregateRoot
     {
         if (string.IsNullOrWhiteSpace(photoUrl))
         {
-            return false;
+            throw new InvalidOperationException("URL фото не може бути порожнім.");
         }
 
-        var removed = this.photos.Remove(photoUrl);
+        var normalizedUrl = photoUrl.Trim().ToLowerInvariant();
+
+        var existingPhoto = this.photos.FirstOrDefault(p =>
+        p.Trim().ToLowerInvariant() == normalizedUrl);
+
+        if (existingPhoto is null)
+        {
+            throw new InvalidOperationException($"Фото з URL '{photoUrl}' не знайдено.");
+        }
+
+        var removed = this.photos.Remove(existingPhoto);
         if (removed)
         {
             this.UpdatedAt = DateTime.UtcNow;
@@ -657,6 +745,58 @@ public sealed class Animal : AggregateRoot
 
         this.AddDomainEvent(new SuccessStoryRemovedEvent(this.Id, storyId));
     }
+
+    /// <summary>
+    /// Subscribes a user to the animal if not already subscribed.
+    /// </summary>
+    /// <param name="userId">The ID of the user subscribing to the animal.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the user is already subscribed.</exception>
+    /// <returns>The created <see cref="AnimalSubscription"/> instance.</returns>
+    public AnimalSubscription SubscribeUser(Guid userId)
+    {
+        if (this.subscribers.Any(s => s.UserId == userId))
+        {
+            throw new InvalidOperationException("Користувач вже підписаний на тварину.");
+        }
+
+        var subscription = AnimalSubscription.Create(userId, this.Id);
+        this.subscribers.Add(subscription);
+        return subscription;
+    }
+
+    /// <summary>
+    /// Unsubscribes a user from the animal if subscribed.
+    /// </summary>
+    /// <param name="userId">The ID of the user unsubscribing from the animal.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the user is not subscribed.</exception>
+    /// <returns>The removed <see cref="AnimalSubscription"/> instance.</returns>
+    public AnimalSubscription UnsubscribeUser(Guid userId)
+    {
+        if (userId == Guid.Empty)
+        {
+            throw new ArgumentException("Ідентифікатор користувача не може бути порожнім.", nameof(userId));
+        }
+
+        var subscription = this.subscribers.FirstOrDefault(s => s.UserId == userId);
+
+        if (subscription is null)
+        {
+            throw new InvalidOperationException("Користувач не підписаний на цю тварину.");
+        }
+
+        this.subscribers.Remove(subscription);
+        this.UpdatedAt = DateTime.UtcNow;
+
+        return subscription;
+    }
+
+    /// <summary>
+    /// Checks if the specified user is subscribed to the animal.
+    /// </summary>
+    /// <param name="userId">The ID of the user.</param>
+    /// <returns><c>true</c> if the user is subscribed; otherwise, <c>false</c>.</returns>
+    public bool IsSubscribed(Guid userId)
+        => this.subscribers.Any(s => s.UserId == userId);
 
     /// <summary>
     /// Checks if the given user is the owner of the animal.

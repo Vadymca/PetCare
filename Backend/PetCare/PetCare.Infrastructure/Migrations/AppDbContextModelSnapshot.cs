@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using NpgsqlTypes;
 using PetCare.Domain.Enums;
 using PetCare.Infrastructure.Persistence;
 
@@ -27,7 +28,9 @@ namespace PetCare.Infrastructure.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "aid_category", new[] { "food", "medical", "equipment", "other" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "aid_status", new[] { "open", "in_progress", "fulfilled", "cancelled" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "animal_gender", new[] { "male", "female", "unknown" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "animal_size", new[] { "small", "medium", "medium_plus", "large" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "animal_status", new[] { "available", "adopted", "reserved", "in_treatment", "dead", "euthanized" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "animal_temperament", new[] { "friendly", "shy", "needs_socialization", "independent", "affectionate", "protective", "curious", "playful", "calm", "energetic", "gentle", "vocal", "quiet", "cuddly", "nervous", "confident", "food_motivated", "trainable", "stubborn", "good_with_kids", "good_with_other_animals", "needs_experienced_owner", "senior_and_relaxed", "young_and_learning", "special_needs", "bonded_pair" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "article_status", new[] { "draft", "published", "archived" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "audit_operation", new[] { "insert", "update", "delete" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "comment_status", new[] { "pending", "approved", "rejected" });
@@ -192,7 +195,7 @@ namespace PetCare.Infrastructure.Migrations
                     b.Property<string>("RejectionReason")
                         .HasColumnType("text");
 
-                    b.Property<int>("Status")
+                    b.Property<AdoptionStatus>("Status")
                         .HasColumnType("adoption_status");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -228,11 +231,16 @@ namespace PetCare.Infrastructure.Migrations
                     b.Property<string>("AdoptionRequirements")
                         .HasColumnType("text");
 
-                    b.Property<DateOnly?>("Birthday")
-                        .HasColumnType("date");
+                    b.Property<DateTime?>("Birthday")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("BreedId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("CareCost")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(600);
 
                     b.Property<string>("Color")
                         .HasMaxLength(50)
@@ -246,7 +254,7 @@ namespace PetCare.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<int>("Gender")
+                    b.Property<AnimalGender>("Gender")
                         .HasColumnType("animal_gender");
 
                     b.Property<bool>("HaveDocuments")
@@ -254,14 +262,12 @@ namespace PetCare.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
-                    b.Property<string>("HealthStatus")
-                        .HasColumnType("text");
+                    b.Property<string>("HealthConditions")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
 
                     b.Property<float?>("Height")
                         .HasColumnType("real");
-
-                    b.Property<int>("IdNumber")
-                        .HasColumnType("integer");
 
                     b.Property<bool>("IsSterilized")
                         .ValueGeneratedOnAdd()
@@ -280,19 +286,35 @@ namespace PetCare.Infrastructure.Migrations
                     b.Property<IReadOnlyList<string>>("Photos")
                         .HasColumnType("jsonb");
 
+                    b.Property<NpgsqlTsVector>("SearchVector")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("tsvector")
+                        .HasComputedColumnSql("\r\n            to_tsvector('simple', coalesce(\"Name\",'') || ' ' || coalesce(\"Description\",''))\r\n            || to_tsvector('english', coalesce(\"Name\",'') || ' ' || coalesce(\"Description\",''))\r\n        ", true);
+
                     b.Property<Guid>("ShelterId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid?>("ShelterId1")
                         .HasColumnType("uuid");
 
+                    b.Property<AnimalSize>("Size")
+                        .HasColumnType("animal_size");
+
                     b.Property<string>("Slug")
                         .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
-                    b.Property<int>("Status")
+                    b.Property<string>("SpecialNeeds")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<AnimalStatus>("Status")
                         .HasColumnType("animal_status");
+
+                    b.Property<string>("Temperaments")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -315,6 +337,10 @@ namespace PetCare.Infrastructure.Migrations
                     b.HasIndex("MicrochipId")
                         .IsUnique();
 
+                    b.HasIndex("SearchVector");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("SearchVector"), "GIN");
+
                     b.HasIndex("ShelterId");
 
                     b.HasIndex("ShelterId1");
@@ -323,9 +349,6 @@ namespace PetCare.Infrastructure.Migrations
                         .IsUnique();
 
                     b.HasIndex("UserId");
-
-                    b.HasIndex("ShelterId", "IdNumber")
-                        .IsUnique();
 
                     b.ToTable("Animals", null, t =>
                         {
@@ -388,8 +411,8 @@ namespace PetCare.Infrastructure.Migrations
 
                     b.Property<string>("Slug")
                         .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
                     b.Property<IReadOnlyDictionary<string, string>>("SocialMedia")
                         .IsRequired()
@@ -611,7 +634,7 @@ namespace PetCare.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("jsonb");
 
-                    b.Property<int>("Status")
+                    b.Property<VolunteerTaskStatus>("Status")
                         .HasColumnType("volunteer_task_status");
 
                     b.Property<string>("Title")
@@ -646,7 +669,8 @@ namespace PetCare.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<Guid>("AnimalAidRequestId")
                         .HasColumnType("uuid");
@@ -675,7 +699,7 @@ namespace PetCare.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
 
-                    b.Property<int>("Category")
+                    b.Property<AidCategory>("Category")
                         .HasColumnType("aid_category");
 
                     b.Property<DateTime>("CreatedAt")
@@ -696,7 +720,7 @@ namespace PetCare.Infrastructure.Migrations
                     b.Property<Guid?>("ShelterId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Status")
+                    b.Property<AidStatus>("Status")
                         .HasColumnType("aid_status");
 
                     b.Property<string>("Title")
@@ -734,7 +758,8 @@ namespace PetCare.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<Guid>("AnimalId")
                         .HasColumnType("uuid");
@@ -778,7 +803,7 @@ namespace PetCare.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<int>("Status")
+                    b.Property<ArticleStatus>("Status")
                         .HasColumnType("article_status");
 
                     b.Property<string>("Thumbnail")
@@ -833,7 +858,7 @@ namespace PetCare.Infrastructure.Migrations
                     b.Property<Guid?>("ParentCommentId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Status")
+                    b.Property<CommentStatus>("Status")
                         .HasColumnType("comment_status");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -876,7 +901,7 @@ namespace PetCare.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<int>("Operation")
+                    b.Property<AuditOperation>("Operation")
                         .HasColumnType("audit_operation");
 
                     b.Property<Guid>("RecordId")
@@ -1002,7 +1027,7 @@ namespace PetCare.Infrastructure.Migrations
                     b.Property<Guid?>("ShelterId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Status")
+                    b.Property<DonationStatus>("Status")
                         .HasColumnType("donation_status");
 
                     b.Property<string>("TransactionId")
@@ -1062,7 +1087,7 @@ namespace PetCare.Infrastructure.Migrations
                     b.Property<Guid?>("ShelterId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Status")
+                    b.Property<EventStatus>("Status")
                         .HasColumnType("event_status");
 
                     b.Property<string>("Title")
@@ -1070,7 +1095,7 @@ namespace PetCare.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<int>("Type")
+                    b.Property<EventType>("Type")
                         .HasColumnType("event_type");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -1100,7 +1125,8 @@ namespace PetCare.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<Guid>("EventId")
                         .HasColumnType("uuid");
@@ -1195,10 +1221,10 @@ namespace PetCare.Infrastructure.Migrations
                     b.Property<Guid>("ShelterId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Status")
+                    b.Property<IoTDeviceStatus>("Status")
                         .HasColumnType("io_t_device_status");
 
-                    b.Property<int>("Type")
+                    b.Property<IoTDeviceType>("Type")
                         .HasColumnType("io_t_device_type");
 
                     b.HasKey("Id");
@@ -1306,10 +1332,10 @@ namespace PetCare.Infrastructure.Migrations
 
                     b.Property<string>("Slug")
                         .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
-                    b.Property<int>("Status")
+                    b.Property<LostPetStatus>("Status")
                         .HasColumnType("lost_pet_status");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -1436,7 +1462,8 @@ namespace PetCare.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<Guid>("ShelterId")
                         .HasColumnType("uuid");
@@ -1555,7 +1582,8 @@ namespace PetCare.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<DateTime>("AssignedAt")
                         .ValueGeneratedOnAdd()

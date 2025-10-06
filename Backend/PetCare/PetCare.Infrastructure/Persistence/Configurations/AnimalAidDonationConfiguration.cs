@@ -12,6 +12,7 @@ public sealed class AnimalAidDonationConfiguration : IEntityTypeConfiguration<An
         builder.ToTable("AnimalAidDonations");
 
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).HasDefaultValueSql("gen_random_uuid()");
 
         builder.Property(x => x.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 

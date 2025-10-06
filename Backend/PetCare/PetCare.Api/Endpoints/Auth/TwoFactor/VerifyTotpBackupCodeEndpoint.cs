@@ -22,7 +22,7 @@ public static class VerifyTotpBackupCodeEndpoint
             var result = await mediator.Send(command);
 
             logger.LogInformation("TOTP backup code successfully verified.");
-            return Results.Ok(new { message = result.Message });
+            return Results.Ok(result);
         })
         .RequireRateLimiting("GlobalPolicy")
         .WithName("VerifyTotpBackupCode")

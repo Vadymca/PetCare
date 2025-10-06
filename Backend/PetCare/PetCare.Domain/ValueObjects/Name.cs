@@ -21,11 +21,6 @@ public sealed class Name : ValueObject
     /// <exception cref="ArgumentException">Thrown when the name is null or whitespace.</exception>
     public static Name Create(string value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new ArgumentException("Ім'я не може бути порожнім.", nameof(value));
-        }
-
         return new Name(value);
     }
 

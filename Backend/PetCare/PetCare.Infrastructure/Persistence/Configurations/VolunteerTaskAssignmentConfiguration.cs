@@ -12,6 +12,7 @@ public sealed class VolunteerTaskAssignmentConfiguration : IEntityTypeConfigurat
         builder.ToTable("VolunteerTaskAssignments");
 
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).HasDefaultValueSql("gen_random_uuid()");
 
         builder.Property(x => x.AssignedAt)
             .HasDefaultValueSql("CURRENT_TIMESTAMP");

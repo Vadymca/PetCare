@@ -45,7 +45,7 @@ public sealed class Shelter : AggregateRoot
         string? virtualTourUrl,
         string? workingHours,
         Dictionary<string, string> socialMedia,
-        Guid managerId)
+        Guid? managerId)
     {
         this.Slug = slug;
         this.Name = name;
@@ -218,7 +218,7 @@ public sealed class Shelter : AggregateRoot
         string? virtualTourUrl,
         string? workingHours,
         Dictionary<string, string>? socialMedia,
-        Guid managerId)
+        Guid? managerId)
     {
         var shelter = new Shelter(
             Slug.Create(slug),

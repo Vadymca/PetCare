@@ -450,6 +450,26 @@ public sealed class User : IdentityUser<Guid>
     }
 
     /// <summary>
+    /// Updates the avatar URL for the user profile.
+    /// </summary>
+    /// <param name="newAvatarUrl">The new avatar URL to set. Cannot be null, empty, or consist only of whitespace.</param>
+    /// <returns>The previous avatar URL, or <see langword="null"/> if no avatar was previously set.</returns>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="newAvatarUrl"/> is null, empty, or consists only of whitespace.</exception>
+    public string? UpdateAvatar(string newAvatarUrl)
+    {
+        if (string.IsNullOrWhiteSpace(newAvatarUrl))
+        {
+            throw new ArgumentException("Avatar URL cannot be empty.", nameof(newAvatarUrl));
+        }
+
+        var oldAvatarUrl = this.ProfilePhoto;
+        this.ProfilePhoto = newAvatarUrl;
+        this.UpdatedAt = DateTime.UtcNow;
+
+        return oldAvatarUrl; // Повертаємо старий URL, щоб сервіс його видалив
+    }
+
+    /// <summary>
     /// Updates user preferences.
     /// </summary>
     /// <param name="preferences">Dictionary of preferences.</param>

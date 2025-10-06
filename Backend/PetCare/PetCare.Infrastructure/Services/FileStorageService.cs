@@ -77,10 +77,13 @@ public class FileStorageService : IFileStorageService
     /// Deletes a file from storage by its URL.
     /// </summary>
     /// <param name="fileUrl">The URL of the file to delete.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public Task DeleteAsync(string fileUrl)
     {
         if (string.IsNullOrWhiteSpace(fileUrl))
+        {
             return Task.CompletedTask;
+        }
 
         var fileName = Path.GetFileName(fileUrl);
         var filePath = Path.Combine(this.uploadsFolder, fileName);

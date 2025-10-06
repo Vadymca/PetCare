@@ -51,7 +51,7 @@ public class UserRepository : GenericRepository<User>, IUserRepository
         if (!string.IsNullOrWhiteSpace(search))
         {
             query = query.Where(u =>
-                EF.Functions.ILike(u.Email, $"%{search}%") ||
+                EF.Functions.ILike(u.Email!, $"%{search}%") ||
                 EF.Functions.ILike(u.FirstName, $"%{search}%") ||
                 EF.Functions.ILike(u.LastName, $"%{search}%"));
         }
@@ -130,11 +130,22 @@ public class UserRepository : GenericRepository<User>, IUserRepository
     {
         await this.EnsureUserExistsAsync(userId, cancellationToken);
 
-        return await this.Context.Set<User>()
+        var user = await this.Context.Users
             .AsNoTracking()
-            .Where(u => u.Id == userId)
-            .SelectMany(u => u.AnimalSubscriptions)
-            .ToListAsync(cancellationToken);
+            .Include(u => u.AnimalSubscriptions)
+                .ThenInclude(s => s.Animal)
+                    .ThenInclude(a => a.Breed)
+                        .ThenInclude(b => b!.Specie)
+            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken)
+            ?? throw new KeyNotFoundException($"Користувача з Id '{userId}' не знайдено.");
+
+        var sortedSubscriptions = user.AnimalSubscriptions
+           .OrderByDescending(s => s.Animal!.Status != AnimalStatus.Dead)
+           .ThenByDescending(s => s.Animal!.CreatedAt)
+           .ToList()
+           .AsReadOnly();
+
+        return sortedSubscriptions;
     }
 
     /// <summary>

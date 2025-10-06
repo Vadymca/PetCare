@@ -54,7 +54,7 @@ public sealed class GetUserSubscriptionsCommandHandler
 
         // Map to DTOs in application layer (AutoMapper or manual projection)
         var shelterDtos = shelters.Select(s => this.mapper.Map<ShelterDto>(s)).ToList();
-        var animalDtos = animals.Select(a => this.mapper.Map<AnimalDto>(a)).ToList();
+        var animalDtos = animals.Select(a => this.mapper.Map<AnimalListDto>(a.Animal)).ToList();
 
         this.logger.LogInformation(
             "Fetched subscriptions for user {UserId}: {ShelterCount} shelters, {AnimalCount} animals",

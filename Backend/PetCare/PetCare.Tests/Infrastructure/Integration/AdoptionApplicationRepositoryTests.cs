@@ -159,19 +159,23 @@ public sealed class AdoptionApplicationRepositoryTests : IAsyncLifetime
             birthday: null,
             gender: AnimalGender.Female,
             description: null,
-            healthStatus: null,
+            healthConditions: new List<string>(),
+            specialNeeds: new List<string>(),
+            temperaments: new List<AnimalTemperament>(),
+            size: AnimalSize.Medium,
             photos: new List<string>(),
             videos: new List<string>(),
             shelterId: (await this.context.Shelters.FirstAsync()).Id,
             status: AnimalStatus.Available,
+            careCost: AnimalCareCost.SixHundred,
             adoptionRequirements: null,
             microchipId: null,
-            idNumber: 2,
             weight: null,
             height: null,
             color: null,
             isSterilized: false,
-            haveDocuments: false);
+            haveDocuments: false,
+            Guid.NewGuid());
         await this.context.Animals.AddAsync(otherAnimal);
         await this.context.SaveChangesAsync();
 
@@ -258,19 +262,23 @@ public sealed class AdoptionApplicationRepositoryTests : IAsyncLifetime
             birthday: null,
             gender: AnimalGender.Male,
             description: null,
-            healthStatus: null,
+            healthConditions: new List<string>(),
+            specialNeeds: new List<string>(),
+            temperaments: new List<AnimalTemperament>(),
+            size: AnimalSize.Medium,
             photos: new List<string>(),
             videos: new List<string>(),
             shelterId: shelter.Id,
             status: AnimalStatus.Available,
+            careCost: AnimalCareCost.SixHundred,
             adoptionRequirements: null,
             microchipId: null,
-            idNumber: 1,
             weight: null,
             height: null,
             color: null,
             isSterilized: false,
-            haveDocuments: false);
+            haveDocuments: false,
+            specieId: Guid.NewGuid());
         await this.context.Animals.AddAsync(this.testAnimal);
         await this.context.SaveChangesAsync();
     }

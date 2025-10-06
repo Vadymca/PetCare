@@ -22,7 +22,7 @@ public sealed class LostPetConfiguration : IEntityTypeConfiguration<LostPet>
             .HasConversion(
                 slug => slug.Value,
                 value => Slug.Create(value))
-            .HasMaxLength(64)
+            .HasMaxLength(256)
             .IsRequired();
         builder.HasIndex(x => x.Slug).IsUnique();
 

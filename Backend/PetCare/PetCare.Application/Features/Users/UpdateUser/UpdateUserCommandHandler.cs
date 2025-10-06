@@ -21,6 +21,7 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
     private readonly IMapper mapper;
     private readonly IUserService userService;
     private readonly IZipcodebaseService zipcodebaseService;
+    private readonly IFileStorageService fileStorage;
     private readonly ILogger<UpdateUserCommandHandler> logger;
 
     /// <summary>
@@ -31,17 +32,20 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
     /// <param name="userService">User service (for roles, password).</param>
     /// <param name="logger">Logger instance.</param>
     /// <param name="zipcodebaseService">Service to resolve addresses by postal code.</param>
+    /// <param name="fileStorage">File storage service for handling profile photos.</param>
     public UpdateUserCommandHandler(
         IUserRepository userRepository,
         IMapper mapper,
         IUserService userService,
         IZipcodebaseService zipcodebaseService,
+        IFileStorageService fileStorage,
         ILogger<UpdateUserCommandHandler> logger)
     {
         this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
         this.zipcodebaseService = zipcodebaseService ?? throw new ArgumentNullException(nameof(zipcodebaseService));
+        this.fileStorage = fileStorage ?? throw new ArgumentNullException(nameof(fileStorage));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -57,6 +61,9 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
         var user = await this.userRepository.GetByIdAsync(request.Id, cancellationToken)
             ?? throw new KeyNotFoundException("Користувача не знайдено.");
 
+        string? oldAvatarUrl = user.ProfilePhoto;
+        string? oldPhone = user.Phone;
+
         user.UpdateProfile(
             firstName: request.FirstName,
             lastName: request.LastName,
@@ -64,6 +71,13 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
             profilePhoto: request.ProfilePhoto,
             language: request.Language,
             postalCode: request.PostalCode);
+
+        // Якщо телефон змінився — скидаємо підтвердження
+        if (!string.IsNullOrWhiteSpace(request.Phone) && request.Phone != oldPhone)
+        {
+            user.PhoneNumberConfirmed = false;
+            this.logger.LogInformation("Phone number updated for user {UserId}, PhoneNumberConfirmed reset to false", request.Id);
+        }
 
         if (!string.IsNullOrWhiteSpace(request.Email) && request.Email != user.Email)
         {
@@ -132,6 +146,19 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
         }
 
         await this.userRepository.UpdateAsync(user, cancellationToken);
+
+        if (!string.IsNullOrWhiteSpace(oldAvatarUrl))
+        {
+            try
+            {
+                await this.fileStorage.DeleteAsync(oldAvatarUrl);
+                this.logger.LogInformation("Old avatar {OldAvatar} deleted successfully", oldAvatarUrl);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogWarning(ex, "Failed to delete old avatar {OldAvatar}", oldAvatarUrl);
+            }
+        }
 
         if (!string.IsNullOrWhiteSpace(request.Password))
         {

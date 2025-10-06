@@ -1,4 +1,6 @@
 ﻿namespace PetCare.Application.Dtos.AnimalDtos;
+
+using PetCare.Domain.Enums;
 using System;
 using System.Collections.Generic;
 
@@ -6,16 +8,18 @@ public sealed record AnimalDto(
  Guid Id,
  string Slug,
  string Name,
- DateTime? Birthday,
+ string? Birthday,
  string Gender,
  string? Description,
- string? HealthStatus,
+ IReadOnlyList<string> HealthConditions,
+ IReadOnlyList<string> SpecialNeeds,
+ string Size,
+ IReadOnlyList<string> Temperaments,
  IReadOnlyList<string> Photos,
- IReadOnlyList<string> Videos,
  string Status,
- string? AdoptionRequirements,
+ AnimalCareCost CareCost,
+string? AdoptionRequirements,
  string? MicrochipId,
- int IdNumber,
  float? Weight,
  float? Height,
  string? Color,
@@ -23,7 +27,6 @@ public sealed record AnimalDto(
  bool HaveDocuments,
  DateTime CreatedAt,
  DateTime UpdatedAt,
- Guid BreedId,
- string? BreedName,
- Guid ShelterId,
- string ShelterName);
+ SpecieDto Specie,
+ ShelterInfoDto Shelter,
+ BreedDto Breed);

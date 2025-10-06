@@ -10,12 +10,14 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using PetCare.Api.Authorization;
+using PetCare.Api.Endpoints.Animals;
 using PetCare.Api.Endpoints.Auth;
 using PetCare.Api.Endpoints.Auth.TwoFactor;
 using PetCare.Api.Endpoints.Auth.TwoFactor.Sms;
 using PetCare.Api.Endpoints.Media;
 using PetCare.Api.Endpoints.Users;
 using PetCare.Api.Middleware;
+using PetCare.Api.Swagger;
 using PetCare.Application;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Enums;
@@ -57,6 +59,9 @@ public class Program
                 builder.Configuration["Jwt:Secret"] = envSecret;
             }
 
+            // -------------------- Enable Dynamic JSON for Npgsql --------------------
+            NpgsqlConnection.GlobalTypeMapper.EnableDynamicJson();
+
             // -------------------- Authentication & Authorization --------------------
             builder.Services.AddAuthentication(options =>
             {
@@ -70,7 +75,7 @@ public class Program
                                 ?? builder.Configuration["JwtSettings:SecretKey"]
                                 ?? throw new InvalidOperationException("JWT SecretKey не встановлено");
 
-                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.ASCII.GetBytes(secretKey)),
@@ -90,7 +95,11 @@ public class Program
                 options.AddPolicy("ResourceOwnerOrAdmin", policy =>
                     policy.Requirements.Add(new ResourceOwnerOrAdminRequirement()));
 
-                options.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+                // Політика для ShelterManager або Admin
+                options.AddPolicy("CanManageAnimals", policy =>
+                    policy.RequireRole("Admin", "ShelterManager"));
+
+                options.DefaultPolicy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
                     .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
                     .Build();
@@ -106,7 +115,24 @@ public class Program
                     npgsql =>
                     {
                         npgsql.UseNetTopologySuite();
+                        npgsql.MapEnum<AdoptionStatus>("adoption_status");
+                        npgsql.MapEnum<AidCategory>("aid_category");
+                        npgsql.MapEnum<AidStatus>("aid_status");
+                        npgsql.MapEnum<AnimalGender>("animal_gender");
+                        npgsql.MapEnum<AnimalSize>("animal_size");
+                        npgsql.MapEnum<AnimalStatus>("animal_status");
+                        npgsql.MapEnum<AnimalTemperament>("animal_temperament");
+                        npgsql.MapEnum<ArticleStatus>("article_status");
+                        npgsql.MapEnum<AuditOperation>("audit_operation");
+                        npgsql.MapEnum<CommentStatus>("comment_status");
+                        npgsql.MapEnum<DonationStatus>("donation_status");
+                        npgsql.MapEnum<EventStatus>("event_status");
+                        npgsql.MapEnum<EventType>("event_type");
+                        npgsql.MapEnum<IoTDeviceStatus>("io_t_device_status");
+                        npgsql.MapEnum<IoTDeviceType>("io_t_device_type");
+                        npgsql.MapEnum<LostPetStatus>("lost_pet_status");
                         npgsql.MapEnum<UserRole>("user_role");
+                        npgsql.MapEnum<VolunteerTaskStatus>("volunteer_task_status");
                     })
                        .EnableSensitiveDataLogging()
                        .EnableDetailedErrors());
@@ -154,7 +180,30 @@ public class Program
             builder.Services.AddHttpContextAccessor();
 
             // -------------------- Controllers --------------------
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+             .AddJsonOptions(options =>
+             {
+                 // Enum -> string (camelCase у JSON)
+                 options.JsonSerializerOptions.Converters.Insert(
+                    0,
+                    new Serialization.FlexibleStringEnumConverterFactory(
+                        System.Text.Json.JsonNamingPolicy.CamelCase,
+                        allowIntegerValues: true
+            ));
+             });
+
+            // -------------------- Minimal API JSON Options --------------------
+            builder.Services.ConfigureHttpJsonOptions(options =>
+            {
+                // Flexible enum converter: дозволяє string ("available") і int (0)
+                options.SerializerOptions.Converters.Insert(
+                    0,
+                    new Serialization.FlexibleStringEnumConverterFactory(
+                        System.Text.Json.JsonNamingPolicy.CamelCase,
+                        allowIntegerValues: true
+                    )
+                );
+            });
 
             // -------------------- Logging --------------------
             builder.Host.UseSerilog();
@@ -166,6 +215,8 @@ public class Program
             builder.Services.AddSwaggerGen(opt =>
             {
                 opt.SwaggerDoc("v1", new OpenApiInfo { Title = "PetCare API", Version = "v1" });
+
+                opt.SchemaGeneratorOptions.SchemaFilters.Add(new EnumSchemaFilter(System.Text.Json.JsonNamingPolicy.CamelCase));
 
                 opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
@@ -319,6 +370,19 @@ public class Program
             app.MapGetCurrentUserEndpoint(); // /api/users/me
             app.MapGetUserSubscriptionsEndpoint(); // /api/users/{id}/subscriptions
             app.MapGetUserActivityEndpoint(); // /api/users/{id}/activity
+
+            // ----------------------Animals-----------------------
+            app.MapGetAnimalsEndpoint(); // /api/animals
+            app.MapGetAnimalByIdEndpoint(); // /api/animals/{id}
+            app.MapGetAnimalBySlugEndpoint(); // /api/animals/{slug}
+            app.MapCreateAnimalEndpoint(); // /api/animals
+            app.MapUpdateAnimalEndpoint(); // /api/animals/{id}
+            app.MapDeleteAnimalEndpoint(); // /api/animals/{id}
+            app.MapAddAnimalPhotoEndpoint(); // /api/animals/{id}/photos
+            app.MapRemoveAnimalPhotoEndpoint(); // /api/animals/{id:guid}/photos
+            app.MapSubscribeToAnimalEndpoint(); // /api/animals/{id}/subscribe
+            app.MapUnsubscribeFromAnimalEndpoint(); // /api/animals/{id:guid}/subscribe
+            app.MapGetFavoriteAnimalsEndpoint(); // /api/animals/favorites
 
             // -------------------- Migrations & Seeding --------------------
             using (var scope = app.Services.CreateScope())

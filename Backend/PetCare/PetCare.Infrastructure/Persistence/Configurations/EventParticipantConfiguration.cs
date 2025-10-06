@@ -12,6 +12,7 @@ public sealed class EventParticipantConfiguration : IEntityTypeConfiguration<Eve
         builder.ToTable("EventParticipants");
 
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).HasDefaultValueSql("gen_random_uuid()");
 
         builder.Property(x => x.RegisteredAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
