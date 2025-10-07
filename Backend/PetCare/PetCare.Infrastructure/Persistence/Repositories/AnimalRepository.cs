@@ -75,6 +75,7 @@ public class AnimalRepository : GenericRepository<Animal>, IAnimalRepository
     /// <param name="maxAge">The maximum age of the animal to filter by (optional).</param>
     /// <param name="careCosts">The care costs of the animal to filter by (optional).</param>
     /// <param name="isSterilized">Whether the animal is sterilized to filter by (optional).</param>
+    /// <param name="isUnderCare">Whether the animal is under care to filter by (optional).</param>
     /// <param name="shelterId">The unique identifier of the shelter to filter by (optional).</param>
     /// <param name="statuses">The statuses of the animal to filter by (optional).</param>
     /// <param name="specieId">The unique identifier of the specie to filter by (optional).</param>
@@ -91,6 +92,7 @@ public class AnimalRepository : GenericRepository<Animal>, IAnimalRepository
     int? maxAge = null,
     IEnumerable<AnimalCareCost>? careCosts = null,
     bool? isSterilized = null,
+    bool? isUnderCare = null,
     Guid? shelterId = null,
     IEnumerable<AnimalStatus>? statuses = null,
     Guid? specieId = null,
@@ -124,6 +126,11 @@ public class AnimalRepository : GenericRepository<Animal>, IAnimalRepository
         if (isSterilized.HasValue)
         {
             query = query.Where(a => a.IsSterilized == isSterilized.Value);
+        }
+
+        if (isUnderCare.HasValue)
+        {
+            query = query.Where(a => a.IsUnderCare == isUnderCare.Value);
         }
 
         if (shelterId.HasValue)
@@ -232,6 +239,7 @@ public class AnimalRepository : GenericRepository<Animal>, IAnimalRepository
     /// <param name="height">The height of the animal in centimeters (optional).</param>
     /// <param name="color">The color of the animal, if any. Can be null.</param>
     /// <param name="isSterilized">Indicates whether the animal is sterilized.</param>
+    /// <param name="isUnderCare">Indicates whether the animal is under care.</param>
     /// <param name="haveDocuments">Indicates whether the animal has documents.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>The created animal.</returns>
@@ -257,6 +265,7 @@ public class AnimalRepository : GenericRepository<Animal>, IAnimalRepository
     float? height,
     string? color,
     bool isSterilized,
+    bool isUnderCare,
     bool haveDocuments,
     CancellationToken cancellationToken = default)
     {
@@ -282,6 +291,7 @@ public class AnimalRepository : GenericRepository<Animal>, IAnimalRepository
             height,
             color,
             isSterilized,
+            isUnderCare,
             haveDocuments);
 
         await this.AddAsync(animal, cancellationToken);

@@ -50,6 +50,7 @@ public sealed class Animal : AggregateRoot
         float? height,
         string? color,
         bool isSterilized,
+        bool isUnderCare,
         bool haveDocuments)
     {
         this.Slug = slug;
@@ -80,6 +81,7 @@ public sealed class Animal : AggregateRoot
         this.Height = height;
         this.Color = color;
         this.IsSterilized = isSterilized;
+        this.IsUnderCare = isUnderCare;
         this.HaveDocuments = haveDocuments;
         this.CreatedAt = DateTime.UtcNow;
         this.UpdatedAt = DateTime.UtcNow;
@@ -192,6 +194,11 @@ public sealed class Animal : AggregateRoot
     public bool IsSterilized { get; private set; }
 
     /// <summary>
+    /// Indicates whether the animal is currently under care.
+    /// </summary>
+    public bool IsUnderCare { get; private set; }
+
+    /// <summary>
     /// Gets a value indicating whether the animal has documents.
     /// </summary>
     public bool HaveDocuments { get; private set; }
@@ -280,6 +287,7 @@ public sealed class Animal : AggregateRoot
     /// <param name="height">The height of the animal in centimeters, if known. Can be null.</param>
     /// <param name="color">The color of the animal, if any. Can be null.</param>
     /// <param name="isSterilized">Indicates whether the animal is sterilized.</param>
+    /// <param name="isUnderCare">Indicates whether the animal is under care.</param>
     /// <param name="haveDocuments">Indicates whether the animal has documents.</param>
     /// <returns>A new instance of <see cref="Animal"/> with the specified parameters.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="slug"/>, <paramref name="name"/>, or <paramref name="microchipId"/> is invalid according to their respective <see cref="ValueObject"/> creation methods.</exception>
@@ -305,6 +313,7 @@ public sealed class Animal : AggregateRoot
         float? height,
         string? color,
         bool isSterilized,
+        bool isUnderCare,
         bool haveDocuments)
     {
         var animal = new Animal(
@@ -330,6 +339,7 @@ public sealed class Animal : AggregateRoot
             height,
             color,
             isSterilized,
+            isUnderCare,
             haveDocuments);
         animal.AddDomainEvent(new AnimalCreatedEvent(animal.Id, animal.Slug, animal.Name));
         return animal;
@@ -349,6 +359,7 @@ public sealed class Animal : AggregateRoot
     /// <param name="height">The new height of the animal in centimeters, if provided. If null, the height remains unchanged.</param>
     /// <param name="color">The new color of the animal, if provided. If null, the color remains unchanged.</param>
     /// <param name="isSterilized">Indicates whether the animal is sterilized, if provided. If null, the sterilization status remains unchanged.</param>
+    /// <param name="isUnderCare">Indicates whether the animal is under care.</param>
     /// <param name="haveDocuments">Indicates whether the animal has documents, if provided. If null, the document status remains unchanged.</param>
     /// <exception cref="ArgumentException">Thrown when <paramref name="name"/> or <paramref name="microchipId"/> is invalid according to their respective <see cref="ValueObject"/> creation methods.</exception>
     public void Update(
@@ -363,6 +374,7 @@ public sealed class Animal : AggregateRoot
         float? height = null,
         string? color = null,
         bool? isSterilized = null,
+        bool? isUnderCare = null,
         bool? haveDocuments = null)
     {
         if (!string.IsNullOrWhiteSpace(name))
@@ -419,6 +431,11 @@ public sealed class Animal : AggregateRoot
         if (isSterilized is not null)
         {
             this.IsSterilized = isSterilized.Value;
+        }
+
+        if (isUnderCare is not null)
+        {
+            this.IsUnderCare = isUnderCare.Value;
         }
 
         if (haveDocuments is not null)

@@ -8,5 +8,6 @@ string? Photo,
 string Status,
 string? Birthday,
 string Gender,
+bool IsUnderCare,
 SpecieDto? Specie,
 BreedDto? Breed);

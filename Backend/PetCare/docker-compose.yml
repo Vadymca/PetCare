@@ -64,6 +64,21 @@
       Zipcodebase__Country: "UA"
       Zipcodebase__Language: "uk"
 
+      # Facebook OAuth settings
+      Facebook__AppId: "815828120942948"
+      Facebook__AppSecret: "028510a7b32314e3703bc6fbe219cf5c"
+      Facebook__RedirectUri: "http://localhost:5000/api/auth/facebook/callback"
+      Facebook__BaseUrl: "https://www.facebook.com/v23.0/dialog/oauth"
+
+      # Google OAuth settings
+      Google__ClientId: "462048732074-7pv6cua679gc75qb8ap6r0b6l117fkfn.apps.googleusercontent.com"
+      Google__ClientSecret: "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"
+      Google__RedirectUri: "http://localhost:5000/api/auth/google/callback"
+      Google__AuthorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth"
+      Google__TokenEndpoint: "https://oauth2.googleapis.com/token"
+      Google__UserInfoEndpoint: "https://www.googleapis.com/oauth2/v2/userinfo"
+      Google__Scope: "openid email profile"
+
     ports:
       - '5000:80'
     volumes:

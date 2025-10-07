@@ -35,10 +35,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.Phone)
             .HasMaxLength(30)
-            .IsRequired();
+            .IsRequired(false);
 
         builder.HasIndex(u => u.Phone)
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("\"Phone\" IS NOT NULL");
 
         builder.Property(u => u.Role)
             .HasColumnType("user_role")

@@ -28,6 +28,7 @@ public sealed record CreateAnimalBody(
     float? Height,
     string? Color,
     bool IsSterilized,
+    bool IsUnderCare,
     bool HaveDocuments);
 
 /// <summary>
@@ -81,6 +82,7 @@ public static class CreateAnimalEndpoint
                 body.Height,
                 body.Color,
                 body.IsSterilized,
+                body.IsUnderCare,
                 body.HaveDocuments);
 
             var addedAnimal = await mediator.Send(command);

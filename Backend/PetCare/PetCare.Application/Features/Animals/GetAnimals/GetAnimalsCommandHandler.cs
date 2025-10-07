@@ -45,6 +45,7 @@ public sealed class GetAnimalsCommandHandler
              request.MaxAge,
              request.CareCosts,
              request.IsSterilized,
+             request.IsUndercare,
              request.ShelterId,
              request.Statuses,
              request.SpecieId,

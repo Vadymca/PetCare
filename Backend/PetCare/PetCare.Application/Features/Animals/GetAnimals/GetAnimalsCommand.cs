@@ -14,6 +14,7 @@ public sealed record GetAnimalsCommand(
     int? MaxAge = null,
     IEnumerable<AnimalCareCost>? CareCosts = null,
     bool? IsSterilized = null,
+    bool? IsUndercare = null,
     Guid? ShelterId = null,
     IEnumerable<AnimalStatus>? Statuses = null,
     Guid? SpecieId = null,

@@ -26,5 +26,6 @@ public sealed record CreateAnimalCommand(
     float? Height,
     string? Color,
     bool IsSterilized,
+    bool IsUnderCare,
     bool HaveDocuments
 ) : IRequest<AnimalDto>;

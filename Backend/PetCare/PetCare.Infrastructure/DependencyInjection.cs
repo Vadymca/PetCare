@@ -92,6 +92,16 @@ public static class DependencyInjection
             return new FileStorageService(env.WebRootPath);
         });
 
+        // Facebook OAuth settings
+        services.Configure<FacebookSettings>(
+            configuration.GetSection("Facebook"));
+        services.AddScoped<IFacebookAuthService, FacebookAuthService>();
+
+        // Google OAuth settings
+        services.Configure<GoogleSettings>(
+            configuration.GetSection("Google"));
+        services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
+
         return services;
     }
 }

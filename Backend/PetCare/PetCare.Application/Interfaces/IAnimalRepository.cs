@@ -56,6 +56,7 @@ public interface IAnimalRepository : IRepository<Animal>
     /// <param name="maxAge">The maximum age of the animal in years (optional).</param>
     /// <param name="careCosts">The expected care costs of the animal to filter by (optional).</param>
     /// <param name="isSterilized">Whether the animal is sterilized (optional).</param>
+    /// <param name="isUnderCare">Whether the animal is under care to filter by (optional).</param>
     /// <param name="shelterId">The unique identifier of the shelter to filter by (optional).</param>
     /// <param name="statuses">The adoption statuses of the animal to filter by (optional).</param>
     /// <param name="specieId">The unique identifier of the specie to filter by (optional).</param>
@@ -74,6 +75,7 @@ public interface IAnimalRepository : IRepository<Animal>
         int? maxAge = null,
         IEnumerable<AnimalCareCost>? careCosts = null,
         bool? isSterilized = null,
+        bool? isUnderCare = null,
         Guid? shelterId = null,
         IEnumerable<AnimalStatus>? statuses = null,
         Guid? specieId = null,
@@ -105,6 +107,7 @@ public interface IAnimalRepository : IRepository<Animal>
     /// <param name="height">The height of the animal in centimeters (optional).</param>
     /// <param name="color">The color of the animal, if any. Can be null.</param>
     /// <param name="isSterilized">Indicates whether the animal is sterilized.</param>
+    /// <param name="isUnderCare">Indicates whether the animal is under care.</param>
     /// <param name="haveDocuments">Indicates whether the animal has documents.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>The created animal.</returns>
@@ -130,6 +133,7 @@ public interface IAnimalRepository : IRepository<Animal>
     float? height,
     string? color,
     bool isSterilized,
+    bool isUnderCare,
     bool haveDocuments,
     CancellationToken cancellationToken = default);
 

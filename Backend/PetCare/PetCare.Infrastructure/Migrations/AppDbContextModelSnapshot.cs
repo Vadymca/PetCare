@@ -274,6 +274,11 @@ namespace PetCare.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
+                    b.Property<bool>("IsUnderCare")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("MicrochipId")
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
@@ -534,7 +539,6 @@ namespace PetCare.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)");
 
@@ -589,7 +593,8 @@ namespace PetCare.Infrastructure.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.HasIndex("Phone")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"Phone\" IS NOT NULL");
 
                     b.ToTable("Users", null, t =>
                         {

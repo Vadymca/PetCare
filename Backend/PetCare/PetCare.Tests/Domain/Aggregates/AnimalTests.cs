@@ -50,6 +50,7 @@ public class AnimalTests
             height: null,
             color: null,
             isSterilized: false,
+            isUnderCare: false,
             haveDocuments: false);
 
         // Assert
@@ -90,6 +91,7 @@ public class AnimalTests
             height: null,
             color: null,
             isSterilized: false,
+            isUnderCare: false,
             haveDocuments: false);
 
         act.Should().Throw<ArgumentException>().WithMessage("*користувача не може бути порожнім*");
@@ -123,6 +125,7 @@ public class AnimalTests
             height: null,
             color: null,
             isSterilized: false,
+            isUnderCare: false,
             haveDocuments: false);
 
         animal.Update(
@@ -165,6 +168,7 @@ public class AnimalTests
             height: null,
             color: null,
             isSterilized: false,
+            isUnderCare: false,
             haveDocuments: false);
 
         var oldUpdatedAt = animal.UpdatedAt;
@@ -202,6 +206,7 @@ public class AnimalTests
             height: null,
             color: null,
             isSterilized: false,
+            isUnderCare: false,
             haveDocuments: false);
 
         Action act = () => animal.ValidateAdoptionRequirements();

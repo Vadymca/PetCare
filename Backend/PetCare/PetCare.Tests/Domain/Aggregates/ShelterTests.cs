@@ -365,6 +365,7 @@ public class ShelterTests
             height: null,
             color: null,
             isSterilized: false,
+            isUnderCare: false,
             haveDocuments: false);
     }
 

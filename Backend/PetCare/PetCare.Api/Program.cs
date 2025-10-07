@@ -12,6 +12,8 @@ using Npgsql;
 using PetCare.Api.Authorization;
 using PetCare.Api.Endpoints.Animals;
 using PetCare.Api.Endpoints.Auth;
+using PetCare.Api.Endpoints.Auth.Facebook;
+using PetCare.Api.Endpoints.Auth.Google;
 using PetCare.Api.Endpoints.Auth.TwoFactor;
 using PetCare.Api.Endpoints.Auth.TwoFactor.Sms;
 using PetCare.Api.Endpoints.Media;
@@ -356,6 +358,14 @@ public class Program
             app.MapDisableAllTwoFactorEndpoint(); // /api/auth/2fa/disable-all
             app.MapRecoveryCodesEndpoint(); // /api/auth/2fa/recovery-codes
             app.MapUseRecoveryCodeEndpoint(); // /api/auth/2fa/use-recovery-code
+
+            // --------------------Auth-Facebook----------------------
+            app.MapFacebookLoginEndpoint(); // /api/auth/facebook
+            app.MapFacebookCallbackEndpoint(); // /api/auth/facebook/callback
+
+            // ---------------------Auth-Google-----------------------
+            app.MapGoogleLoginEndpoint(); // /api/auth/google
+            app.MapGoogleCallbackEndpoint(); // /api/auth/google/callback
 
             // ----------------------Media-----------------------
             app.MapUploadMediaEndpoint(); // /api/media/upload

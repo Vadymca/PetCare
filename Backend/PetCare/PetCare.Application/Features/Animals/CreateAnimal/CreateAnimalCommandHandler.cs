@@ -58,6 +58,7 @@ public sealed class CreateAnimalCommandHandler : IRequestHandler<CreateAnimalCom
              height: request.Height,
              color: request.Color,
              isSterilized: request.IsSterilized,
+             isUnderCare: request.IsUnderCare,
              haveDocuments: request.HaveDocuments,
              cancellationToken: cancellationToken);
 

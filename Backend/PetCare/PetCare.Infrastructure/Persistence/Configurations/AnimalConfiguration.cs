@@ -151,6 +151,10 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
             .HasDefaultValue(false)
             .IsRequired();
 
+        builder.Property(a => a.IsUnderCare)
+            .HasDefaultValue(false)
+            .IsRequired();
+
         builder.Property(a => a.HaveDocuments)
             .HasDefaultValue(false)
             .IsRequired();

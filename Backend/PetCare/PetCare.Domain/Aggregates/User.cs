@@ -46,7 +46,7 @@ public sealed class User : IdentityUser<Guid>
         string passwordHash,
         string firstName,
         string lastName,
-        string phone,
+        string? phone,
         UserRole role,
         Dictionary<string, string> preferences,
         int points,
@@ -102,7 +102,7 @@ public sealed class User : IdentityUser<Guid>
     /// <summary>
     /// Gets the phone number of the user.
     /// </summary>
-    public string Phone { get; private set; }
+    public string? Phone { get; private set; }
 
     /// <summary>
     /// Gets the role of the user.
@@ -289,7 +289,7 @@ public sealed class User : IdentityUser<Guid>
         string email,
         string firstName,
         string lastName,
-        string phone,
+        string? phone,
         UserRole role,
         string? userName = null,
         string? passwordHash = null,

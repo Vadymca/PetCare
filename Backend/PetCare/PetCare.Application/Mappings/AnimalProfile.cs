@@ -45,6 +45,7 @@ public sealed class AnimalProfile : Profile
             .ForMember(dest => dest.Height, opt => opt.MapFrom(src => src.Height))
             .ForMember(dest => dest.Color, opt => opt.MapFrom(src => src.Color))
             .ForMember(dest => dest.IsSterilized, opt => opt.MapFrom(src => src.IsSterilized))
+            .ForMember(dest => dest.IsUnderCare, opt => opt.MapFrom(src => src.IsUnderCare))
             .ForMember(dest => dest.HaveDocuments, opt => opt.MapFrom(src => src.HaveDocuments))
             .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
             .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))

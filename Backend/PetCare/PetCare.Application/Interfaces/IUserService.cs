@@ -22,6 +22,20 @@ public interface IUserService
     Task<User> CreateUserAsync(string email, string password, string firstName, string lastName, string phoneNumber, string? postalCode);
 
     /// <summary>
+    /// Creates a new user from Facebook user info.
+    /// </summary>
+    /// <param name="fbUser">Facebook user info DTO.</param>
+    /// <returns>The created user.</returns>
+    Task<User> CreateUserFromFacebookAsync(FacebookUserInfoDto fbUser);
+
+    /// <summary>
+    /// Creates a new user based on Google user information without a password.
+    /// </summary>
+    /// <param name="googleUser">The Google user information.</param>
+    /// <returns>The created <see cref="User"/> entity.</returns>
+    Task<User> CreateUserFromGoogleAsync(GoogleUserInfoDto googleUser);
+
+    /// <summary>
     /// Updates the last login date of a user.
     /// </summary>
     /// <param name="user">The user aggregate.</param>

@@ -158,6 +158,86 @@ public sealed class UserService : IUserService
     }
 
     /// <summary>
+    /// Creates a new user based on Facebook user information without a password,
+    /// </summary>
+    /// <param name="fbUser">The Facebook user information.</param>
+    /// <returns>The created <see cref="User"/> entity.</returns>
+    public async Task<User> CreateUserFromFacebookAsync(FacebookUserInfoDto fbUser)
+    {
+        this.logger.LogInformation("Створення користувача через Facebook: {Email}", fbUser.Email);
+
+        var user = User.Create(
+            email: fbUser.Email,
+            firstName: fbUser.FirstName,
+            lastName: fbUser.LastName,
+            phone: null,
+            role: UserRole.User,
+            postalCode: null);
+
+        if (!string.IsNullOrWhiteSpace(fbUser.ProfilePhotoUrl))
+        {
+            user.UpdateAvatar(fbUser.ProfilePhotoUrl);
+            this.logger.LogInformation("Profile photo додано для користувача {Email}", fbUser.Email);
+        }
+
+        var result = await this.userManager.CreateAsync(user);
+        if (!result.Succeeded)
+        {
+            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+            this.logger.LogError("Не вдалося створити користувача через Facebook {Email}: {Errors}", fbUser.Email, errors);
+            throw new InvalidOperationException($"Не вдалося створити користувача через Facebook: {errors}");
+        }
+
+        // Додаємо доменну подію
+        user.AddUserCreatedEvent();
+        await this.dbContext.SaveChangesAsync();
+        user.ClearDomainEvents();
+
+        this.logger.LogInformation("Користувач через Facebook створений успішно: {UserId}", user.Id);
+        return user;
+    }
+
+    /// <summary>
+    /// Creates a new user based on Google user information without a password.
+    /// </summary>
+    /// <param name="googleUser">The Google user information.</param>
+    /// <returns>The created <see cref="User"/> entity.</returns>
+    public async Task<User> CreateUserFromGoogleAsync(GoogleUserInfoDto googleUser)
+    {
+        this.logger.LogInformation("Створення користувача через Google: {Email}", googleUser.Email);
+
+        var user = User.Create(
+            email: googleUser.Email,
+            firstName: googleUser.FirstName,
+            lastName: googleUser.LastName,
+            phone: null,
+            role: UserRole.User,
+            postalCode: null);
+
+        if (!string.IsNullOrWhiteSpace(googleUser.ProfilePhotoUrl))
+        {
+            user.UpdateAvatar(googleUser.ProfilePhotoUrl);
+            this.logger.LogInformation("Profile photo додано для користувача {Email}", googleUser.Email);
+        }
+
+        var result = await this.userManager.CreateAsync(user);
+        if (!result.Succeeded)
+        {
+            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+            this.logger.LogError("Не вдалося створити користувача через Google {Email}: {Errors}", googleUser.Email, errors);
+            throw new InvalidOperationException($"Не вдалося створити користувача через Google: {errors}");
+        }
+
+        // Додаємо доменну подію
+        user.AddUserCreatedEvent();
+        await this.dbContext.SaveChangesAsync();
+        user.ClearDomainEvents();
+
+        this.logger.LogInformation("Користувач через Google створений успішно: {UserId}", user.Id);
+        return user;
+    }
+
+    /// <summary>
     /// Updates the <see cref="User.LastLogin"/> property to the specified date and time,
     /// adds a domain event, and persists the changes via <see cref="UserManager{User}.UpdateAsync"/>.
     /// </summary>
