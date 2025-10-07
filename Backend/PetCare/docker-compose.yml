@@ -19,66 +19,6 @@
     container_name: petcare_api
     depends_on:
       - db
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: "http://+:80"
-      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=petcare_db;Username=postgres;Password=postgres"
-
-      # Email settings
-      EmailSettings__SmtpServer: "smtp.gmail.com"
-      EmailSettings__Port: "587"
-      EmailSettings__SenderName: "PetCare"
-      EmailSettings__SenderEmail: "petcare.app.noreply@gmail.com"
-      EmailSettings__Username: "petcare.app.noreply@gmail.com"
-      EmailSettings__Password: "zamd hyxb cmro hdgj"
-
-       # JWT settings
-      JWT_SECRET_KEY: "MyVeryLongSecretKeyForJWTTokenGeneration123456789"
-      JWT_ISSUER: "PetCare.Api"
-      JWT_AUDIENCE: "PetCare.Client"
-      JWT_EXPIRATION_MINUTES: "15"          # короткий час для access token
-      JWT_REFRESH_EXPIRATION_DAYS: "7"      # refresh token живе довше
-
-       # SMS settings
-      SmsSettings__Provider: "SmsFly"
-      SmsSettings__ApplicationName: "PetCare"
-      SmsSettings__CodeExpirationMinutes: "5"
-      SmsSettings__MaxAttemptsPerPeriod: "3"
-      SmsSettings__RateLimitPeriodMinutes: "10"
-
-      # SMS-Fly settings
-      SmsFly__ApiKey: "2rZjKbu4tg0XZ6puvBJEQPlBNWDepEWf"
-      SmsFly__Sender: "InfoCenter"
-      SmsFly__BaseUrl: "https://sms-fly.ua/api/v2/api.php"
-
-      # Twilio settings
-      TwilioSettings__AccountSid: "AC3736a78f2439de378c907a3ac9face06"
-      TwilioSettings__AuthToken: "b265d91abb3fa1973d2218e557c89c63"
-      TwilioSettings__FromPhoneNumber: "+14195412828"
-      TwilioSettings__EnableLogging: "true"
-      TwilioSettings__TimeoutSeconds: "30"
-
-      # Zipcodebase settings
-      Zipcodebase__BaseUrl: "https://app.zipcodebase.com/api/v1"
-      Zipcodebase__ApiKey: "b351ca10-9587-11f0-b03c-b7d50a123afd"
-      Zipcodebase__Country: "UA"
-      Zipcodebase__Language: "uk"
-
-      # Facebook OAuth settings
-      Facebook__AppId: "815828120942948"
-      Facebook__AppSecret: "028510a7b32314e3703bc6fbe219cf5c"
-      Facebook__RedirectUri: "http://localhost:5000/api/auth/facebook/callback"
-      Facebook__BaseUrl: "https://www.facebook.com/v23.0/dialog/oauth"
-
-      # Google OAuth settings
-      Google__ClientId: "462048732074-7pv6cua679gc75qb8ap6r0b6l117fkfn.apps.googleusercontent.com"
-      Google__ClientSecret: "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"
-      Google__RedirectUri: "http://localhost:5000/api/auth/google/callback"
-      Google__AuthorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth"
-      Google__TokenEndpoint: "https://oauth2.googleapis.com/token"
-      Google__UserInfoEndpoint: "https://www.googleapis.com/oauth2/v2/userinfo"
-      Google__Scope: "openid email profile"
-
     ports:
       - '5000:80'
     volumes:
@@ -95,9 +35,6 @@
       - dotnet_tools_cache:/root/.dotnet/tools
     depends_on:
       - db
-    environment:
-      DOTNET_RUNNING_IN_CONTAINER: true
-      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=petcare_db;Username=postgres;Password=postgres"
     entrypoint: ["tail", "-f", "/dev/null"]  # залишаємо контейнер активним для dotnet ef
     restart: unless-stopped
 
