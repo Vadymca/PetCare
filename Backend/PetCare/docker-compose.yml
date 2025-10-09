@@ -12,6 +12,32 @@
       - pgdata:/var/lib/postgresql/data
     restart: unless-stopped
 
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: petcare_minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio_data:/data
+    restart: unless-stopped
+
+  petcare.migrations:
+    image: mcr.microsoft.com/dotnet/sdk:9.0
+    container_name: petcare_migrations
+    working_dir: /app
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    entrypoint: >
+      sh -c "dotnet tool restore &&
+             dotnet ef database update --project PetCare.Infrastructure --startup-project PetCare.Api"
+
   petcare.api:
     build:
       context: .
@@ -20,6 +46,7 @@
     depends_on:
       - db
       - minio
+      - petcare.migrations
     env_file:
       - .env
     ports:
@@ -29,31 +56,16 @@
       - "${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro"
     restart: unless-stopped
 
-     # 🟣 MinIO (S3-сумісне сховище)
-  minio:
-    image: quay.io/minio/minio:latest
-    container_name: petcare_minio
-    command: server /data --console-address ":9001"
-    ports:
-      - "9000:9000"   # API
-      - "9001:9001"   # Веб-консоль
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    volumes:
-      - minio_data:/data
-    restart: unless-stopped
-
   petcare.api.sdk:
     image: mcr.microsoft.com/dotnet/sdk:9.0
     container_name: petcare_api_sdk
     working_dir: /app
     volumes:
-      - .:/app                     # Монтуємо всю папку PetCare
+      - .:/app
       - dotnet_tools_cache:/root/.dotnet/tools
     depends_on:
       - db
-    entrypoint: ["tail", "-f", "/dev/null"]  # залишаємо контейнер активним для dotnet ef
+    entrypoint: ["tail", "-f", "/dev/null"]
     restart: unless-stopped
 
 volumes:
