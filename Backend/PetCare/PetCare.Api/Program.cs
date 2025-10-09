@@ -112,8 +112,13 @@ public class Program
 
             // -------------------- DbContext --------------------
             builder.Services.AddDbContext<AppDbContext>(options =>
+            {
+                var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                    ?? builder.Configuration["ConnectionStrings__DefaultConnection"] // для Docker
+                    ?? throw new InvalidOperationException("Рядок підключення до бази даних не знайдено.");
+
                 options.UseNpgsql(
-                    builder.Configuration.GetConnectionString("DefaultConnection"),
+                    connectionString,
                     npgsql =>
                     {
                         npgsql.UseNetTopologySuite();
@@ -136,8 +141,9 @@ public class Program
                         npgsql.MapEnum<UserRole>("user_role");
                         npgsql.MapEnum<VolunteerTaskStatus>("volunteer_task_status");
                     })
-                       .EnableSensitiveDataLogging()
-                       .EnableDetailedErrors());
+                    .EnableSensitiveDataLogging()
+                    .EnableDetailedErrors();
+            });
 
             // -------------------- Application & Infrastructure --------------------
             builder.Services.AddApplication();
