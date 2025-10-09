@@ -10,10 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="appsettings.json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="AutoMapper" Version="15.0.1" />
     <PackageReference Include="coverlet.collector" Version="6.0.2">
       <PrivateAssets>all</PrivateAssets>
@@ -78,14 +74,6 @@
 	<ItemGroup>
 	  <Folder Include="wwwroot\images\" />
 	  <Folder Include="wwwroot\uploads\" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Include="appsettings.json">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-	  </None>
 	</ItemGroup>
 
 	<PropertyGroup>
