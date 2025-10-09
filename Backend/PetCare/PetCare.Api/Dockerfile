@@ -45,4 +45,4 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 
 # Використовуємо ENTRYPOINT
-ENTRYPOINT ["dotnet", "PetCare.Api.dll"]
+ENTRYPOINT ["sh", "-c", "dotnet ef database update --project PetCare.Infrastructure --startup-project PetCare.Api && dotnet PetCare.Api.dll"]
