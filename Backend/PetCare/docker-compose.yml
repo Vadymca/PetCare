@@ -12,6 +12,27 @@
       - pgdata:/var/lib/postgresql/data
     restart: unless-stopped
 
+  petcare.api.sdk:
+    image: mcr.microsoft.com/dotnet/sdk:9.0
+    container_name: petcare_api_sdk
+    working_dir: /app
+    volumes:
+      - .:/app
+      - dotnet_tools_cache:/root/.dotnet/tools
+    depends_on:
+      - db
+    entrypoint: /bin/bash -c "
+        echo '🔧 Installing EF Core Tools...' &&
+        dotnet tool install --global dotnet-ef &&
+        echo '🏗️ Running migrations...' &&
+        export PATH=\"$PATH:/root/.dotnet/tools\" &&
+        dotnet ef database update --project PetCare.Infrastructure --startup-project PetCare.Api &&
+        echo ' Migrations applied successfully!' &&
+        tail -f /dev/null
+      "
+    restart: unless-stopped
+
+
   petcare.api:
     build:
       context: .
@@ -31,7 +52,7 @@
       - "${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro"
     restart: unless-stopped
 
-     # 🟣 MinIO (S3-сумісне сховище)
+     # MinIO (S3-сумісне сховище)
   minio:
     image: quay.io/minio/minio:latest
     container_name: petcare_minio
@@ -44,18 +65,6 @@
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     volumes:
       - minio_data:/data
-    restart: unless-stopped
-
-  petcare.api.sdk:
-    image: mcr.microsoft.com/dotnet/sdk:9.0
-    container_name: petcare_api_sdk
-    working_dir: /app
-    volumes:
-      - .:/app                     # Монтуємо всю папку PetCare
-      - dotnet_tools_cache:/root/.dotnet/tools
-    depends_on:
-      - db
-    entrypoint: ["tail", "-f", "/dev/null"]  # залишаємо контейнер активним для dotnet ef
     restart: unless-stopped
 
 volumes:
