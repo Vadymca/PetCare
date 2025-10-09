@@ -102,6 +102,9 @@ public static class DependencyInjection
             configuration.GetSection("Google"));
         services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
 
+        // Minio Storage service
+        services.AddScoped<IStorageService, MinioStorageService>();
+
         return services;
     }
 }

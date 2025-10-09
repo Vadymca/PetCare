@@ -3,9 +3,9 @@
     image: postgis/postgis:16-3.4
     container_name: petcare_db
     environment:
-      POSTGRES_DB: petcare_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - '5432:5432'
     volumes:
@@ -19,11 +19,29 @@
     container_name: petcare_api
     depends_on:
       - db
+      - minio
+    env_file:
+      - .env
     ports:
-      - '5000:80'
+      - '5100:80'
     volumes:
       - "${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro"
       - "${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro"
+    restart: unless-stopped
+
+     # 🟣 MinIO (S3-сумісне сховище)
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: petcare_minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"   # API
+      - "9001:9001"   # Веб-консоль
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio_data:/data
     restart: unless-stopped
 
   petcare.api.sdk:
@@ -41,3 +59,4 @@
 volumes:
   pgdata:
   dotnet_tools_cache:
+  minio_data:

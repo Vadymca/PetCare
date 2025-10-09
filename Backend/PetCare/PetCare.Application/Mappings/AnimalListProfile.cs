@@ -19,6 +19,7 @@ public class AnimalListProfile : Profile
         // Mapping nested entities
         this.CreateMap<Specie, SpecieDto>();
         this.CreateMap<Breed, BreedDto>();
+        this.CreateMap<Shelter, ShelterInfoDto>();
 
         // Main mapping: Animal → AnimalListDto
         this.CreateMap<Animal, AnimalListDto>()
@@ -31,6 +32,7 @@ public class AnimalListProfile : Profile
              .ForCtorParam("Gender", opt => opt.MapFrom(src => src.Gender.ToString()))
              .ForCtorParam("IsUnderCare", opt => opt.MapFrom(src => src.IsUnderCare))
              .ForCtorParam("Specie", opt => opt.MapFrom(src => src.Breed!.Specie))
-             .ForCtorParam("Breed", opt => opt.MapFrom(src => src.Breed));
+             .ForCtorParam("Breed", opt => opt.MapFrom(src => src.Breed))
+             .ForCtorParam("Shelter", opt => opt.MapFrom(src => src.Shelter));
     }
 }

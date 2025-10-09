@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 /// </summary>
 public class UploadMediaHandler : IRequestHandler<UploadMediaCommand, string>
 {
-    private readonly IFileStorageService fileStorage;
+    private readonly IStorageService storageService;
 
     /// <summary>
     /// Supported photo file extensions.
@@ -46,10 +46,10 @@ public class UploadMediaHandler : IRequestHandler<UploadMediaCommand, string>
     /// <summary>
     /// Initializes a new instance of the <see cref="UploadMediaHandler"/> class.
     /// </summary>
-    /// <param name="fileStorage">The file storage service used to save uploaded files.</param>
-    public UploadMediaHandler(IFileStorageService fileStorage)
+    /// <param name="storageService">The file storage service used to save uploaded files.</param>
+    public UploadMediaHandler(IStorageService storageService)
     {
-        this.fileStorage = fileStorage;
+        this.storageService = storageService ?? throw new ArgumentNullException(nameof(storageService), "Сервіс збереження файлів не може бути null.");
     }
 
     /// <summary>
@@ -102,10 +102,8 @@ public class UploadMediaHandler : IRequestHandler<UploadMediaCommand, string>
             throw new ArgumentException($"Файл перевищує максимальний розмір {maxSizeBytes / (1024 * 1024)} MB для {mediaType}.");
         }
 
-        return await this.fileStorage.UploadAsync(
-            request.File.OpenReadStream(),
-            request.File.FileName,
-            maxSizeBytes,
-            allowedExtensions);
+        await using var stream = request.File.OpenReadStream();
+        var url = await this.storageService.UploadFileAsync(request.File.FileName, stream, request.File.ContentType);
+        return url;
     }
 }
