@@ -3,9 +3,14 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS sdk
 WORKDIR /src
 
 # Встановлюємо PostgreSQL client та netcat
-RUN apt-get update && \
-    apt-get install -y postgresql-client netcat-traditional && \
-    rm -rf /var/lib/apt/lists/*# Копіюємо csproj і робимо restore
+RUN apt-get update -y && \
+    apt-get install -y ca-certificates apt-transport-https gnupg && \
+    update-ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get update -y && \
+    apt-get install -y netcat-traditional postgresql-client && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY ["PetCare.Api/PetCare.Api.csproj", "PetCare.Api/"]
 COPY ["PetCare.Application/PetCare.Application.csproj", "PetCare.Application/"]
