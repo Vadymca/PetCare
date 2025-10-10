@@ -40,7 +40,7 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS final
 WORKDIR /app
 EXPOSE 80
 
-# Install PostgreSQL client and netcat for wait-for-db
+# Install PostgreSQL client and netcat
 RUN apt-get update && \
     apt-get install -y postgresql-client netcat-traditional && \
     rm -rf /var/lib/apt/lists/*
@@ -48,8 +48,9 @@ RUN apt-get update && \
 # Copy published files
 COPY --from=publish /app/publish ./
 
-# Copy Infrastructure проект для EF Core міграцій
+# Copy Infrastructure проект та csproj для EF Core
 COPY ["PetCare.Infrastructure", "/app/PetCare.Infrastructure"]
+COPY ["PetCare.Api/PetCare.Api.csproj", "/app/PetCare.Api/PetCare.Api.csproj"]
 
 # Copy wait-for-db script
 COPY wait-for-db.sh /wait-for-db.sh
