@@ -1,20 +1,17 @@
 #!/bin/sh
-set -e
+# Usage: ./wait-for-db.sh <host> <port> <cmd> <args...>
 
-host="$1"
-port="$2"
+HOST=$1
+PORT=$2
 shift 2
+CMD="$@"
 
-echo "Waiting for database $host:$port..."
-while ! nc -z $host $port; do
+echo "Waiting for database $HOST:$PORT..."
+
+until nc -z "$HOST" "$PORT"; do
+  echo "Database is not ready, sleeping..."
   sleep 2
 done
+
 echo "Database ready!"
-
-# Apply migrations
-echo "Applying EF Core migrations..."
-dotnet ef database update --project /src/PetCare.Infrastructure/PetCare.Infrastructure.csproj --startup-project /src/PetCare.Api/PetCare.Api.csproj
-echo "Migrations applied."
-
-# Run the application
-exec dotnet PetCare.Api.dll "$@"
+exec $CMD

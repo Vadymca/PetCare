@@ -14,6 +14,29 @@ services:
       - pgdata:/var/lib/postgresql/data
     restart: unless-stopped
 
+  migrations:
+    build:
+      context: .
+      dockerfile: PetCare.Api/Dockerfile
+      target: build
+    depends_on:
+      - db
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+    entrypoint: >
+      sh -c "
+      until nc -z db 5432; do
+        echo 'Waiting for database...'
+        sleep 2
+      done
+      echo 'Database is ready. Applying migrations...'
+      dotnet tool restore
+      dotnet ef database update \
+        --project /src/PetCare.Infrastructure/PetCare.Infrastructure.csproj \
+        --startup-project /src/PetCare.Api/PetCare.Api.csproj
+      echo 'Migrations applied.'
+      "
+
   petcare.api:
     build:
       context: .
