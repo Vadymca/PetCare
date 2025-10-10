@@ -13,7 +13,7 @@ FROM base AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# Копіюємо csproj файли
+# Copy csproj files
 COPY ["PetCare.Api/PetCare.Api.csproj", "PetCare.Api/"]
 COPY ["PetCare.Application/PetCare.Application.csproj", "PetCare.Application/"]
 COPY ["PetCare.Infrastructure/PetCare.Infrastructure.csproj", "PetCare.Infrastructure/"]
@@ -23,19 +23,19 @@ COPY ["PetCare.Api/stylecop.json", "PetCare.Api/"]
 # Restore packages
 RUN dotnet restore "./PetCare.Api/PetCare.Api.csproj"
 
-# Копіюємо весь код
+# Copy all code
 COPY . .
 
 # Build project
 WORKDIR "/src/PetCare.Api"
 RUN dotnet build "./PetCare.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# ===== Apply migrations and seed data during build =====
-RUN dotnet tool install --global dotnet-ef --version 9.0.7 && \
-    export PATH="$PATH:/root/.dotnet/tools" && \
+# ===== Apply migrations during build =====
+RUN dotnet tool restore && \
     echo "Applying EF Core migrations..." && \
-    dotnet ef database update --project /src/PetCare.Infrastructure/PetCare.Infrastructure.csproj \
-                              --startup-project /src/PetCare.Api/PetCare.Api.csproj && \
+    dotnet ef database update \
+        --project /src/PetCare.Infrastructure/PetCare.Infrastructure.csproj \
+        --startup-project /src/PetCare.Api/PetCare.Api.csproj && \
     echo "Migrations applied."
 
 # ===== Publish stage =====
