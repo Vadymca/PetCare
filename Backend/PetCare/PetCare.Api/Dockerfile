@@ -1,13 +1,14 @@
 # See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-# This stage is used when running from VS in fast mode (Default for Debug configuration)
+# ===== Base runtime image =====
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
-USER $APP_UID
 WORKDIR /app
 EXPOSE 80
 
+# Install PostgreSQL client for pg_isready
+RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
 
-# This stage is used to build the service project
+# ===== Build stage =====
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
@@ -20,18 +21,21 @@ COPY . .
 WORKDIR "/src/PetCare.Api"
 RUN dotnet build "./PetCare.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# This stage is used to publish the service project to be copied to the final stage
+# ===== Publish stage =====
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./PetCare.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
+# ===== Final image =====
 FROM base AS final
 WORKDIR /app
+
+# Copy published files
 COPY --from=publish /app/publish .
 
-# Скрипт для очікування підключення до DB
+# Copy wait-for-db script (розташований поряд із docker-compose.yml)
 COPY wait-for-db.sh /wait-for-db.sh
 RUN chmod +x /wait-for-db.sh
 
-ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "dotnet", "PetCare.Api.dll"]
+# Run app only after DB is ready
+ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "--", "dotnet", "PetCare.Api.dll"]
