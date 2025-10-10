@@ -18,7 +18,7 @@ services:
     build:
       context: .
       dockerfile: PetCare.Api/Dockerfile
-      target: sdk   # будуємо тільки SDK шар
+      target: sdk
     depends_on:
       - db
     entrypoint: >
@@ -41,6 +41,7 @@ services:
     depends_on:
       - db
       - minio
+      - migrations
     environment:
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
