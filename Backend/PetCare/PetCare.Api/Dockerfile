@@ -4,9 +4,9 @@ WORKDIR /src
 
 # Встановлюємо PostgreSQL client та netcat
 RUN apt-get update && \
-    apt-get install -y netcat-traditional postgresql-client && \
-    rm -rf /var/lib/apt/lists/*
-# Копіюємо csproj і робимо restore
+    apt-get install -y postgresql-client netcat-traditional && \
+    rm -rf /var/lib/apt/lists/*# Копіюємо csproj і робимо restore
+
 COPY ["PetCare.Api/PetCare.Api.csproj", "PetCare.Api/"]
 COPY ["PetCare.Application/PetCare.Application.csproj", "PetCare.Application/"]
 COPY ["PetCare.Infrastructure/PetCare.Infrastructure.csproj", "PetCare.Infrastructure/"]
