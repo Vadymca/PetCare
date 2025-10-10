@@ -25,8 +25,8 @@ services:
 
   petcare.api:
     build:
-      context: .
-      dockerfile: PetCare.Api/Dockerfile
+      context: ./PetCare.Api
+      dockerfile: Dockerfile
     container_name: petcare_api
     depends_on:
       - db
