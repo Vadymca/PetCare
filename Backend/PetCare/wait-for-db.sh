@@ -1,5 +1,6 @@
 #!/bin/sh
 # wait-for-db.sh
+# Wait for PostgreSQL to be ready and apply EF Core migrations
 
 set -e
 
@@ -9,6 +10,7 @@ shift 2
 
 echo "Waiting for database $HOST:$PORT..."
 
+# Чекаємо, поки PostgreSQL слухає порт
 until nc -z "$HOST" "$PORT" 2>/dev/null; do
   echo "Waiting for DB..."
   sleep 1
@@ -16,8 +18,17 @@ done
 
 echo "Database is ready."
 
+# Перевірка наявності dotnet-ef і встановлення глобально, якщо нема
+if ! command -v dotnet-ef >/dev/null 2>&1; then
+  echo "Installing dotnet-ef tool..."
+  dotnet tool install --global dotnet-ef
+fi
+
+# Додаємо шлях до глобальних інструментів у PATH
+export PATH="$PATH:/root/.dotnet/tools"
+
 # Запускаємо міграції з Infrastructure проекту
-if [ -d "/app/PetCare.Infrastructure" ]; then
+if [ -f "/app/PetCare.Infrastructure/PetCare.Infrastructure.csproj" ]; then
   echo "Applying EF Core migrations..."
   dotnet ef database update \
     --no-build \
