@@ -1,18 +1,22 @@
 #!/bin/sh
 # wait-for-db.sh
-# Usage: wait-for-db.sh <host> <port> <command> [args...]
 
-host="$1"
-port="$2"
+set -e
+
+HOST="$1"
+PORT="$2"
 shift 2
 
-echo "Waiting for database $host:$port..."
+echo "Waiting for database $HOST:$PORT..."
 
-# простий .NET TCP loop
-while ! nc -z "$host" "$port"; do
-  echo "Waiting for DB..."
-  sleep 3
+# „екаЇмо на в≥дкритт€ порту (netcat)
+while ! nc -z "$HOST" "$PORT"; do
+  sleep 1
 done
 
 echo "Database is ready. Starting application..."
-exec "$@"
+
+# якщо залишилис€ аргументи Ч виконуЇмо њх
+if [ "$#" -gt 0 ]; then
+  exec "$@"
+fi

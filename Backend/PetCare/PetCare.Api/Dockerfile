@@ -7,7 +7,7 @@ EXPOSE 80
 
 # Install PostgreSQL client and netcat
 RUN apt-get update && \
-    apt-get install -y postgresql-client netcat-traditional && \
+    apt-get install -y netcat && \
     rm -rf /var/lib/apt/lists/*
 
 # Install PostgreSQL client for pg_isready
@@ -43,4 +43,4 @@ COPY wait-for-db.sh /wait-for-db.sh
 RUN chmod +x /wait-for-db.sh
 
 # Run app only after DB is ready
-ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "--", "dotnet", "PetCare.Api.dll"]
+ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "dotnet", "PetCare.Api.dll"]
