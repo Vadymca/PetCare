@@ -1,5 +1,5 @@
 #!/bin/sh
-# $1 = host, $2 = port, $3.. = команда
+# $1 = host, $2 = port, $3.. = РєРѕРјР°РЅРґР°
 
 HOST=$1
 PORT=$2
@@ -13,5 +13,5 @@ done
 
 echo "Database ready!"
 
-# Виконуємо команду (наприклад, dotnet PetCare.Api.dll)
+# Р’РёРєРѕРЅСѓС”РјРѕ РєРѕРјР°РЅРґСѓ (РЅР°РїСЂРёРєР»Р°Рґ, dotnet PetCare.Api.dll)
 exec "$@"
