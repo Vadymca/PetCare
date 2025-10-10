@@ -4,7 +4,7 @@ WORKDIR /src
 
 # Встановлюємо PostgreSQL client та netcat
 RUN apt-get update && \
-    apt-get install -y postgresql-client netcat && \
+    apt-get install -y postgresql-client netcat-openbsd && \
     rm -rf /var/lib/apt/lists/*
 
 # Копіюємо csproj і робимо restore
