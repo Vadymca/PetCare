@@ -44,6 +44,9 @@ COPY ["PetCare.Domain", "/app/PetCare.Domain"]
 COPY ["PetCare.Application", "/app/PetCare.Application"]
 COPY ["PetCare.Api/PetCare.Api.csproj", "/app/"]
 
+# Install dotnet-ef global tool
+RUN dotnet tool install --global dotnet-ef --version 9.0.7
+
 # Copy wait-for-db script
 COPY wait-for-db.sh /wait-for-db.sh
 RUN chmod +x /wait-for-db.sh
