@@ -29,15 +29,16 @@ FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./PetCare.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# ===== Final image (SDK for migrations!) =====
+# ===== Final image (SDK for migrations) =====
 FROM base AS final
 WORKDIR /app
 
 # Copy published files
-COPY --from=publish /app/publish .
+COPY --from=publish /app/publish ./
 
-# Copy Infrastructure project for EF Core migrations
+# Copy Infrastructure project + csproj for EF Core migrations
 COPY ["PetCare.Infrastructure", "/app/PetCare.Infrastructure"]
+COPY ["PetCare.Api/PetCare.Api.csproj", "/app/PetCare.Api/PetCare.Api.csproj"]
 
 # Copy wait-for-db script
 COPY wait-for-db.sh /wait-for-db.sh

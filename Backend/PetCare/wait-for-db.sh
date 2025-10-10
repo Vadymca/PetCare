@@ -21,8 +21,9 @@ if [ -d "/app/PetCare.Infrastructure" ]; then
   dotnet restore PetCare.Api/PetCare.Api.csproj
   dotnet build /app/PetCare.Api/PetCare.Api.csproj
   dotnet ef database update \
-    --project /app/PetCare.Infrastructure/PetCare.Infrastructure.csproj \
-    --startup-project /app/PetCare.Api/PetCare.Api.csproj
+  --no-build \
+  --project /app/PetCare.Infrastructure/PetCare.Infrastructure.csproj \
+  --startup-project /app/PetCare.Api/PetCare.Api.csproj
 fi
 
 # Запускаємо основну команду
