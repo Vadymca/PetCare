@@ -17,6 +17,11 @@ RUN dotnet restore "PetCare.Api/PetCare.Api.csproj"
 # Копіюємо весь код
 COPY . .
 
+# Копіюємо скрипти міграцій
+COPY PetCare.Api/wait-for-db.sh /wait-for-db.sh
+COPY PetCare.Api/migrate.sh /migrate.sh
+RUN chmod +x /wait-for-db.sh /migrate.sh
+
 # Build та publish
 RUN dotnet publish "PetCare.Api/PetCare.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
