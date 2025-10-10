@@ -34,7 +34,6 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
 COPY ["PetCare.Api/PetCare.Api.csproj", "PetCare.Api/"]
-COPY ["PetCare.Api/stylecop.json", "PetCare.Api/"]
 COPY ["PetCare.Application/PetCare.Application.csproj", "PetCare.Application/"]
 COPY ["PetCare.Infrastructure/PetCare.Infrastructure.csproj", "PetCare.Infrastructure/"]
 COPY ["PetCare.Domain/PetCare.Domain.csproj", "PetCare.Domain/"]
