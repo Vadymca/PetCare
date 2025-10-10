@@ -7,7 +7,7 @@ EXPOSE 80
 
 # Install PostgreSQL client and netcat
 RUN apt-get update && \
-    apt-get install -y netcat && \
+    apt-get install -y postgresql-client netcat-traditional && \
     rm -rf /var/lib/apt/lists/*
 
 # Install PostgreSQL client for pg_isready
