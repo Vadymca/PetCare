@@ -43,7 +43,7 @@ services:
     env_file:
       - .env
     ports:
-      - '5100:80'
+      - '5100:5100'
     restart: unless-stopped
     entrypoint: ["/wait-for-db.sh", "db", "5432", "dotnet", "PetCare.Api.dll"]
 
