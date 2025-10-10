@@ -18,6 +18,7 @@ echo "Database is ready."
 # Виконуємо міграції через SDK (не через runtime)
 if [ -d "/app/PetCare.Infrastructure" ]; then
   echo "Applying EF Core migrations..."
+  dotnet restore PetCare.Api/PetCare.Api.csproj
   dotnet build /app/PetCare.Api/PetCare.Api.csproj
   dotnet ef database update \
     --project /app/PetCare.Infrastructure/PetCare.Infrastructure.csproj \
