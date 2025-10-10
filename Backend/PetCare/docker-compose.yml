@@ -17,7 +17,7 @@ services:
   migrations:
     build:
       context: ./PetCare.Api
-      dockerfile: PetCare.Api/Dockerfile
+      dockerfile: Dockerfile
       target: runtime
     depends_on:
       - db
