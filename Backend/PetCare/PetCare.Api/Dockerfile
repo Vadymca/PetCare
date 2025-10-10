@@ -1,4 +1,4 @@
-# ===== SDK stage (для build та міграцій) =====
+# ===== SDK stage =====
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS sdk
 WORKDIR /src
 
@@ -6,6 +6,10 @@ WORKDIR /src
 RUN apt-get update && \
     apt-get install -y --no-install-recommends netcat-traditional postgresql-client && \
     rm -rf /var/lib/apt/lists/*
+
+# Копіюємо скрипти, щоб міграції могли їх використати
+COPY PetCare.Api/wait-for-db.sh /wait-for-db.sh
+RUN chmod +x /wait-for-db.sh
 
 # Копіюємо csproj і робимо restore
 COPY ["PetCare.Api/PetCare.Api.csproj", "PetCare.Api/"]
@@ -20,19 +24,14 @@ COPY . .
 # Build та publish
 RUN dotnet publish "PetCare.Api/PetCare.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# ===== Runtime stage (для API) =====
+# ===== Runtime stage =====
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
-# Встановлюємо netcat та postgresql-client
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends netcat-traditional postgresql-client && \
-    rm -rf /var/lib/apt/lists/*
-
 # Копіюємо публішовані файли
-COPY --from=sdk /app/publish ./
+COPY --from=sdk /app/publish ./  
 
-# Копіюємо скрипти з PetCare.Api
+# Копіюємо скрипт, щоб API міг чекати базу
 COPY PetCare.Api/wait-for-db.sh /wait-for-db.sh
 RUN chmod +x /wait-for-db.sh
 
