@@ -290,7 +290,16 @@ public class Program
                     }));
             });
 
+            // -------------------- Force HTTP for Docker --------------------
+            var urls = builder.Configuration["ASPNETCORE_URLS"] ?? "http://+:5100";
+            builder.WebHost.UseUrls(urls);
+
             var app = builder.Build();
+
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseHsts();
+            }
 
             // -------------------- Security Middleware --------------------
             if (!app.Environment.IsDevelopment())
@@ -300,20 +309,8 @@ public class Program
 
             app.UseExceptionHandling();
             app.UseStaticFiles();
-
-            // -------------------- Force HTTP for Docker --------------------
-            var urls = builder.Configuration["ASPNETCORE_URLS"] ?? "http://+:5100";
-            builder.WebHost.UseUrls(urls);
-
-            var appl = builder.Build();
-
-            if (!appl.Environment.IsDevelopment())
-            {
-                appl.UseHsts();
-            }
-
-            appl.UseCors("PetCarePolicy");
-            appl.UseRateLimiter();
+            app.UseCors("PetCarePolicy");
+            app.UseRateLimiter();
 
             //app.MapGet("/api/csrf-token", (IAntiforgery antiforgery, HttpContext context) =>
             //{
