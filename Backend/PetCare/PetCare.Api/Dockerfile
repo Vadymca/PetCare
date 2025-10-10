@@ -36,12 +36,13 @@ WORKDIR /app
 
 # Copy published files
 COPY --from=publish /app/publish ./
-
+# Copy stylecop.json for migrations
+COPY --from=build /src/PetCare.Api/stylecop.json /app/stylecop.json
 # Copy all projects for EF Core migrations
 COPY ["PetCare.Infrastructure", "/app/PetCare.Infrastructure"]
 COPY ["PetCare.Domain", "/app/PetCare.Domain"]
 COPY ["PetCare.Application", "/app/PetCare.Application"]
-COPY ["PetCare.Api/PetCare.Api.csproj", "/app/PetCare.Api/PetCare.Api.csproj"]
+COPY ["PetCare.Api/PetCare.Api.csproj", "/app/"]
 
 # Copy wait-for-db script
 COPY wait-for-db.sh /wait-for-db.sh

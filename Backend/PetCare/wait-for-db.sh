@@ -1,5 +1,4 @@
 #!/bin/sh
-# wait-for-db.sh
 set -e
 
 HOST="$1"
@@ -15,15 +14,13 @@ done
 
 echo "Database is ready."
 
-# Виконуємо міграції через SDK (не через runtime)
+# Виконуємо міграції через SDK
 if [ -d "/app/PetCare.Infrastructure" ]; then
   echo "Applying EF Core migrations..."
-  dotnet restore PetCare.Api/PetCare.Api.csproj
-  dotnet build /app/PetCare.Api/PetCare.Api.csproj
   dotnet ef database update \
-  --no-build \
-  --project /app/PetCare.Infrastructure/PetCare.Infrastructure.csproj \
-  --startup-project /app/PetCare.Api/PetCare.Api.csproj
+      --no-build \
+      --project /app/PetCare.Infrastructure/PetCare.Infrastructure.csproj \
+      --startup-project /app/PetCare.Api.csproj
 fi
 
 # Запускаємо основну команду
