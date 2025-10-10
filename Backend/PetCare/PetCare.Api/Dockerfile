@@ -2,7 +2,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS sdk
 WORKDIR /src
 
-# Встановлюємо netcat та postgresql-client (Debian-based)
+# Встановлюємо netcat та postgresql-client
 RUN apt-get update && \
     apt-get install -y --no-install-recommends netcat-traditional postgresql-client && \
     rm -rf /var/lib/apt/lists/*
@@ -14,7 +14,7 @@ COPY ["PetCare.Infrastructure/PetCare.Infrastructure.csproj", "PetCare.Infrastru
 COPY ["PetCare.Domain/PetCare.Domain.csproj", "PetCare.Domain/"]
 RUN dotnet restore "PetCare.Api/PetCare.Api.csproj"
 
-# Копіюємо увесь проект
+# Копіюємо весь код
 COPY . .
 
 # Build та publish
@@ -30,14 +30,12 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Копіюємо публішовані файли
-COPY --from=sdk /app/publish ./ 
+COPY --from=sdk /app/publish ./  
 
-# Копіюємо скрипт міграцій
-COPY PetCare.Api/migrate.sh /migrate.sh
-RUN chmod +x /migrate.sh
+# Копіюємо скрипти з Docker-compose
+COPY Docker-compose/wait-for-db.sh /wait-for-db.sh
+COPY Docker-compose/migrate.sh /migrate.sh
+RUN chmod +x /wait-for-db.sh /migrate.sh
 
-# Скрипт очікування DB для основного API
-COPY PetCare.Api/wait-for-db.sh /wait-for-db.sh
-RUN chmod +x /wait-for-db.sh
-
+# Стандартний entrypoint
 ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "dotnet", "PetCare.Api.dll"]
