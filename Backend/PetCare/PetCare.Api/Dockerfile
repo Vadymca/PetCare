@@ -26,6 +26,9 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish ./
 COPY wait-for-db.sh /wait-for-db.sh
+RUN apt-get update && \
+    apt-get install -y postgresql-client netcat-traditional && \
+    rm -rf /var/lib/apt/lists/*
 RUN chmod +x /wait-for-db.sh
 
 ENTRYPOINT ["/wait-for-db.sh", "db", "5432"]
