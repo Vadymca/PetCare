@@ -29,4 +29,5 @@ RUN dotnet publish "./PetCare.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publis
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY ["PetCare.Api/appsettings.json", "./"]
 ENTRYPOINT ["dotnet", "PetCare.Api.dll"]

@@ -53,6 +53,13 @@ public class Program
 
             var builder = WebApplication.CreateBuilder(args);
 
+            // -------------------- Configuration Loading --------------------
+            builder.Configuration
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables();
+
             builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 
             var envSecret = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
