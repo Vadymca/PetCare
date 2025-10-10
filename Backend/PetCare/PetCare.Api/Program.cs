@@ -305,7 +305,11 @@ public class Program
                 app.UseHttpsRedirection();
             }
 
-            app.UseHttpsRedirection();
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseHttpsRedirection();
+            }
+
             app.UseCors("PetCarePolicy");
             app.UseRateLimiter();
 
