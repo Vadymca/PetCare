@@ -1,5 +1,5 @@
-# ===== Base runtime image =====
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
+# ===== Base SDK image =====
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS base
 WORKDIR /app
 EXPOSE 80
 
@@ -9,46 +9,42 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # ===== Build stage =====
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM base AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# Копіюємо проєкти
 COPY ["PetCare.Api/PetCare.Api.csproj", "PetCare.Api/"]
 COPY ["PetCare.Application/PetCare.Application.csproj", "PetCare.Application/"]
 COPY ["PetCare.Infrastructure/PetCare.Infrastructure.csproj", "PetCare.Infrastructure/"]
 COPY ["PetCare.Domain/PetCare.Domain.csproj", "PetCare.Domain/"]
 
-# Відновлюємо пакети
 RUN dotnet restore "./PetCare.Api/PetCare.Api.csproj"
 
-# Копіюємо решту коду
 COPY . .
-
 WORKDIR "/src/PetCare.Api"
-
-# Збираємо проєкт
 RUN dotnet build "./PetCare.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# Публікуємо проєкт
+# ===== Publish stage =====
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./PetCare.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# ===== Final runtime image =====
+# ===== Final image (SDK for migrations!) =====
 FROM base AS final
 WORKDIR /app
 
-# Копіюємо публікацію
+# Copy published files
 COPY --from=publish /app/publish .
 
-# Копіюємо Infrastructure для міграцій
-COPY --from=build /src/PetCare.Infrastructure /app/PetCare.Infrastructure
-COPY --from=build /src/PetCare.Api /app/PetCare.Api
+# Copy Infrastructure project for EF Core migrations
+COPY ["PetCare.Infrastructure", "/app/PetCare.Infrastructure"]
 
-# Копіюємо скрипт для чекання БД
+# Copy wait-for-db script
 COPY wait-for-db.sh /wait-for-db.sh
 RUN chmod +x /wait-for-db.sh
 
-# Запускаємо скрипт
+# Ensure dotnet global tools are in PATH (for dotnet-ef)
+ENV PATH="$PATH:/root/.dotnet/tools"
+
+# Run app only after DB is ready
 ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "dotnet", "PetCare.Api.dll"]
