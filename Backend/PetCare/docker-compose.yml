@@ -61,6 +61,30 @@ services:
       - minio_data:/data
     restart: unless-stopped
 
+   nginx:
+    image: nginx:latest
+    container_name: petcare_nginx
+    depends_on:
+      - petcare.api
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/certs:/etc/letsencrypt/live
+      - ./nginx/html:/usr/share/nginx/html
+    restart: unless-stopped
+
+  certbot:
+    image: certbot/certbot
+    container_name: petcare_certbot
+    depends_on:
+      - nginx
+    volumes:
+      - ./nginx/certs:/etc/letsencrypt
+      - ./nginx/html:/usr/share/nginx/html
+    command: certonly --webroot --webroot-path=/usr/share/nginx/html --email ${LETSENCRYPT_EMAIL} --agree-tos --no-eff-email -d api-dobrodiy.kn314-uz.keenetic.pro
+
 volumes:
   pgdata:
   minio_data:
