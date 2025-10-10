@@ -21,7 +21,9 @@ services:
       target: sdk
     depends_on:
       - db
-    entrypoint: ["/wait-for-db.sh", "db", "5432", "dotnet", "ef", "database", "update", "--project", "PetCare.Api/PetCare.Api.csproj"]
+    command: >
+      sh -c "dotnet tool restore &&
+             dotnet ef database update --project PetCare.Infrastructure/PetCare.Infrastructure.csproj --startup-project PetCare.Api/PetCare.Api.csproj"
 
   petcare.api:
     build:

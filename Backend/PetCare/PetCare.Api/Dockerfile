@@ -2,12 +2,12 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS sdk
 WORKDIR /src
 
-# Встановлюємо netcat та postgresql-client для міграцій
+# Встановлюємо netcat та postgresql-client
 RUN apt-get update && \
     apt-get install -y --no-install-recommends netcat-traditional postgresql-client && \
     rm -rf /var/lib/apt/lists/*
 
-# Копіюємо скрипт для чекання бази
+# Копіюємо скрипт wait-for-db
 COPY PetCare.Api/wait-for-db.sh /wait-for-db.sh
 RUN chmod +x /wait-for-db.sh
 
@@ -28,15 +28,10 @@ RUN dotnet publish "PetCare.Api/PetCare.Api.csproj" -c Release -o /app/publish /
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
-# Встановлюємо netcat для wait-for-db.sh
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends netcat-traditional postgresql-client && \
-    rm -rf /var/lib/apt/lists/*
-
 # Копіюємо публішовані файли
-COPY --from=sdk /app/publish ./  
+COPY --from=sdk /app/publish ./
 
-# Копіюємо скрипт для чекання бази
+# Копіюємо скрипт
 COPY PetCare.Api/wait-for-db.sh /wait-for-db.sh
 RUN chmod +x /wait-for-db.sh
 

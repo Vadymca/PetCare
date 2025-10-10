@@ -49,7 +49,7 @@ public class Program
             .CreateLogger();
         try
         {
-            Log.Information("Запуск PetCare.Api...");
+            Log.Information("Р—Р°РїСѓСЃРє PetCare.Api...");
 
             var builder = WebApplication.CreateBuilder(args);
 
@@ -74,7 +74,7 @@ public class Program
             // -------------------- Authentication & Authorization --------------------
             builder.Services.AddAuthentication(options =>
             {
-                // Встановлюємо JWT як схему за замовчуванням
+                // Р’СЃС‚Р°РЅРѕРІР»СЋС”РјРѕ JWT СЏРє СЃС…РµРјСѓ Р·Р° Р·Р°РјРѕРІС‡СѓРІР°РЅРЅСЏРј
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
@@ -82,7 +82,7 @@ public class Program
             {
                 var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
                                 ?? builder.Configuration["JwtSettings:SecretKey"]
-                                ?? throw new InvalidOperationException("JWT SecretKey не встановлено");
+                                ?? throw new InvalidOperationException("JWT SecretKey РЅРµ РІСЃС‚Р°РЅРѕРІР»РµРЅРѕ");
 
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -93,18 +93,18 @@ public class Program
                 };
             });
 
-            // Застосовуємо схему авторизації за замовчуванням
+            // Р—Р°СЃС‚РѕСЃРѕРІСѓС”РјРѕ СЃС…РµРјСѓ Р°РІС‚РѕСЂРёР·Р°С†С–С— Р·Р° Р·Р°РјРѕРІС‡СѓРІР°РЅРЅСЏРј
             builder.Services.AddAuthorization(options =>
             {
-                // Політика для Admin
+                // РџРѕР»С–С‚РёРєР° РґР»СЏ Admin
                 options.AddPolicy("AdminOnly", policy =>
                     policy.RequireRole("Admin"));
 
-                // Політика для власника ресурсу або Admin
+                // РџРѕР»С–С‚РёРєР° РґР»СЏ РІР»Р°СЃРЅРёРєР° СЂРµСЃСѓСЂСЃСѓ Р°Р±Рѕ Admin
                 options.AddPolicy("ResourceOwnerOrAdmin", policy =>
                     policy.Requirements.Add(new ResourceOwnerOrAdminRequirement()));
 
-                // Політика для ShelterManager або Admin
+                // РџРѕР»С–С‚РёРєР° РґР»СЏ ShelterManager Р°Р±Рѕ Admin
                 options.AddPolicy("CanManageAnimals", policy =>
                     policy.RequireRole("Admin", "ShelterManager"));
 
@@ -114,15 +114,15 @@ public class Program
                     .Build();
             });
 
-            // Реєструємо handler для перевірки власника ресурсу
+            // Р РµС”СЃС‚СЂСѓС”РјРѕ handler РґР»СЏ РїРµСЂРµРІС–СЂРєРё РІР»Р°СЃРЅРёРєР° СЂРµСЃСѓСЂСЃСѓ
             builder.Services.AddSingleton<IAuthorizationHandler, ResourceOwnerOrAdminHandler>();
 
             // -------------------- DbContext --------------------
             builder.Services.AddDbContext<AppDbContext>(options =>
             {
                 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                    ?? builder.Configuration["ConnectionStrings__DefaultConnection"] // для Docker
-                    ?? throw new InvalidOperationException("Рядок підключення до бази даних не знайдено.");
+                    ?? builder.Configuration["ConnectionStrings__DefaultConnection"] // РґР»СЏ Docker
+                    ?? throw new InvalidOperationException("Р СЏРґРѕРє РїС–РґРєР»СЋС‡РµРЅРЅСЏ РґРѕ Р±Р°Р·Рё РґР°РЅРёС… РЅРµ Р·РЅР°Р№РґРµРЅРѕ.");
 
                 options.UseNpgsql(
                     connectionString,
@@ -164,7 +164,7 @@ public class Program
                 typeof(Application.Common.Behaviors.ValidationBehavior<,>));
 
             // -------------------- AutoMapper --------------------
-            // Реєструємо AutoMapper з усіма профілями поточної збірки
+            // Р РµС”СЃС‚СЂСѓС”РјРѕ AutoMapper Р· СѓСЃС–РјР° РїСЂРѕС„С–Р»СЏРјРё РїРѕС‚РѕС‡РЅРѕС— Р·Р±С–СЂРєРё
             builder.Services.AddAutoMapper(
                 cfg =>
             {
@@ -198,7 +198,7 @@ public class Program
             builder.Services.AddControllers()
              .AddJsonOptions(options =>
              {
-                 // Enum -> string (camelCase у JSON)
+                 // Enum -> string (camelCase Сѓ JSON)
                  options.JsonSerializerOptions.Converters.Insert(
                     0,
                     new Serialization.FlexibleStringEnumConverterFactory(
@@ -210,7 +210,7 @@ public class Program
             // -------------------- Minimal API JSON Options --------------------
             builder.Services.ConfigureHttpJsonOptions(options =>
             {
-                // Flexible enum converter: дозволяє string ("available") і int (0)
+                // Flexible enum converter: РґРѕР·РІРѕР»СЏС” string ("available") С– int (0)
                 options.SerializerOptions.Converters.Insert(
                     0,
                     new Serialization.FlexibleStringEnumConverterFactory(
@@ -274,7 +274,7 @@ public class Program
             // -------------------- CSRF --------------------
             builder.Services.AddAntiforgery(options =>
             {
-                options.HeaderName = "X-CSRF-TOKEN"; // Клієнт повинен відправляти цей заголовок
+                options.HeaderName = "X-CSRF-TOKEN"; // РљР»С–С”РЅС‚ РїРѕРІРёРЅРµРЅ РІС–РґРїСЂР°РІР»СЏС‚Рё С†РµР№ Р·Р°РіРѕР»РѕРІРѕРє
             });
 
             // -------------------- Rate Limiting --------------------
@@ -417,10 +417,10 @@ public class Program
                 {
                     var dbContext = services.GetRequiredService<AppDbContext>();
 
-                    // Застосовуємо всі міграції перед сидінгом
+                    // Р—Р°СЃС‚РѕСЃРѕРІСѓС”РјРѕ РІСЃС– РјС–РіСЂР°С†С–С— РїРµСЂРµРґ СЃРёРґС–РЅРіРѕРј
                     dbContext.Database.Migrate();
 
-                    // Тільки після цього запускаємо сидінг
+                    // РўС–Р»СЊРєРё РїС–СЃР»СЏ С†СЊРѕРіРѕ Р·Р°РїСѓСЃРєР°С”РјРѕ СЃРёРґС–РЅРі
                    // await DataSeeder.SeedAsync(services);
                     Log.Information("Database migrated and seeded successfully.");
                 }
@@ -428,7 +428,7 @@ public class Program
                 {
                     var logger = loggerFactory.CreateLogger<Program>();
                     logger.LogError(ex, "An error occurred during database migration or seeding.");
-                    throw; // Зупиняємо запуск, якщо міграція/сидінг не вдалася
+                    throw; // Р—СѓРїРёРЅСЏС”РјРѕ Р·Р°РїСѓСЃРє, СЏРєС‰Рѕ РјС–РіСЂР°С†С–СЏ/СЃРёРґС–РЅРі РЅРµ РІРґР°Р»Р°СЃСЏ
                 }
             }
 
@@ -436,7 +436,7 @@ public class Program
         }
         catch (Exception ex)
         {
-            Log.Fatal(ex, "Аварійне завершення PetCare.Api");
+            Log.Fatal(ex, "РђРІР°СЂС–Р№РЅРµ Р·Р°РІРµСЂС€РµРЅРЅСЏ PetCare.Api");
         }
         finally
         {
