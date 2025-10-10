@@ -3,11 +3,8 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS sdk
 WORKDIR /src
 
 # Встановлюємо PostgreSQL client та netcat
-RUN sed -i 's|deb.debian.org|archive.debian.org|g' /etc/apt/sources.list && \
-    sed -i 's|security.debian.org|archive.debian.org|g' /etc/apt/sources.list && \
-    apt-get update -y --allow-releaseinfo-change && \
-    apt-get install -y --no-install-recommends ca-certificates netcat-traditional postgresql-client && \
-    rm -rf /var/lib/apt/lists/*
+RUN tdnf install -y netcat postgresql && \
+    tdnf clean all
 
 COPY ["PetCare.Api/PetCare.Api.csproj", "PetCare.Api/"]
 COPY ["PetCare.Application/PetCare.Application.csproj", "PetCare.Application/"]
