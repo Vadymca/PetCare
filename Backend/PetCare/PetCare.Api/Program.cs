@@ -421,7 +421,7 @@ public class Program
                     dbContext.Database.Migrate();
 
                     // Тільки після цього запускаємо сидінг
-                   // await DataSeeder.SeedAsync(services);
+                    await DataSeeder.SeedAsync(services);
                     Log.Information("Database migrated and seeded successfully.");
                 }
                 catch (Exception ex)
