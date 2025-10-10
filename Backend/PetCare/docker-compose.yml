@@ -52,12 +52,16 @@
     container_name: petcare_api_sdk
     working_dir: /app
     volumes:
-      - .:/app                     # Монтуємо всю папку PetCare
+      - .:/app
       - dotnet_tools_cache:/root/.dotnet/tools
     depends_on:
       - db
-    entrypoint: ["tail", "-f", "/dev/null"]  # залишаємо контейнер активним для dotnet ef
-    restart: unless-stopped
+    command: >
+      sh -c "dotnet tool install --global dotnet-ef --version 9.0.7 &&
+             dotnet restore PetCare.Api/PetCare.Api.csproj &&
+             dotnet restore PetCare.Infrastructure/PetCare.Infrastructure.csproj &&
+             /wait-for-db.sh db 5432 dotnet ef database update --no-build --project PetCare.Infrastructure/PetCare.Infrastructure.csproj --startup-project PetCare.Api/PetCare.Api.csproj"
+    restart: on-failure
 
 volumes:
   pgdata:
