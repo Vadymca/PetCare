@@ -300,18 +300,20 @@ public class Program
 
             app.UseExceptionHandling();
             app.UseStaticFiles();
-            if (app.Environment.IsDevelopment())
+
+            // -------------------- Force HTTP for Docker --------------------
+            var urls = builder.Configuration["ASPNETCORE_URLS"] ?? "http://+:5100";
+            builder.WebHost.UseUrls(urls);
+
+            var appl = builder.Build();
+
+            if (!appl.Environment.IsDevelopment())
             {
-                app.UseHttpsRedirection();
+                appl.UseHsts();
             }
 
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseHttpsRedirection();
-            }
-
-            app.UseCors("PetCarePolicy");
-            app.UseRateLimiter();
+            appl.UseCors("PetCarePolicy");
+            appl.UseRateLimiter();
 
             //app.MapGet("/api/csrf-token", (IAntiforgery antiforgery, HttpContext context) =>
             //{
