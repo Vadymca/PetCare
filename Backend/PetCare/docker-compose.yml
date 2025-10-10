@@ -21,7 +21,7 @@ services:
       target: sdk
     depends_on:
       - db
-    entrypoint: ["/migrate.sh"]
+    entrypoint: ["/migrate.sh", "db", "5432"]
 
   petcare.api:
     build:
