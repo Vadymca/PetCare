@@ -290,16 +290,7 @@ public class Program
                     }));
             });
 
-            // -------------------- Force HTTP for Docker --------------------
-            var urls = builder.Configuration["ASPNETCORE_URLS"] ?? "http://+:5100";
-            builder.WebHost.UseUrls(urls);
-
             var app = builder.Build();
-
-            if (!app.Environment.IsDevelopment())
-            {
-                app.UseHsts();
-            }
 
             // -------------------- Security Middleware --------------------
             if (!app.Environment.IsDevelopment())
@@ -309,6 +300,7 @@ public class Program
 
             app.UseExceptionHandling();
             app.UseStaticFiles();
+            app.UseHttpsRedirection();
             app.UseCors("PetCarePolicy");
             app.UseRateLimiter();
 
@@ -418,26 +410,10 @@ public class Program
             // -------------------- Migrations & Seeding --------------------
             using (var scope = app.Services.CreateScope())
             {
-                var services = scope.ServiceProvider;
-                var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                await dbContext.Database.MigrateAsync();
 
-                try
-                {
-                    var dbContext = services.GetRequiredService<AppDbContext>();
-
-                    // Застосовуємо всі міграції перед сидінгом
-                    dbContext.Database.Migrate();
-
-                    // Тільки після цього запускаємо сидінг
-                    //await DataSeeder.SeedAsync(services);
-                    Log.Information("Database migrated and seeded successfully.");
-                }
-                catch (Exception ex)
-                {
-                    var logger = loggerFactory.CreateLogger<Program>();
-                    logger.LogError(ex, "An error occurred during database migration or seeding.");
-                    throw; // Зупиняємо запуск, якщо міграція/сидінг не вдалася
-                }
+                await DataSeeder.SeedAsync(scope.ServiceProvider);
             }
 
             app.Run();
