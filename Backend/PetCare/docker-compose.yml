@@ -61,18 +61,6 @@ services:
       - minio_data:/data
     restart: unless-stopped
 
-  nginx:
-    image: nginx:latest
-    container_name: petcare_nginx
-    ports:
-      - "9100:9100"
-    volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/certs:/etc/letsencrypt/live
-    depends_on:
-      - petcare.api
-    restart: unless-stopped
-
 volumes:
   pgdata:
   minio_data:
