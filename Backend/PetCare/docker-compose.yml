@@ -21,17 +21,19 @@ services:
       target: sdk
     depends_on:
       - db
-    entrypoint: ["/migrate.sh", "db", "5432"]
+    entrypoint: ["/wait-for-db.sh", "db", "5432", "sh", "-c", "dotnet tool restore && dotnet ef database update --project PetCare.Api/PetCare.Api.csproj"]
 
   petcare.api:
     build:
       context: .
       dockerfile: PetCare.Api/Dockerfile
+      target: runtime
     container_name: petcare_api
     depends_on:
       - db
       - minio
       - migrations
+    entrypoint: ["/wait-for-db.sh", "db", "5432", "dotnet", "PetCare.Api.dll"]
     environment:
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}

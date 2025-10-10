@@ -1,4 +1,4 @@
-# ===== SDK stage =====
+# ===== SDK stage (для build та міграцій) =====
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS sdk
 WORKDIR /src
 
@@ -17,15 +17,10 @@ RUN dotnet restore "PetCare.Api/PetCare.Api.csproj"
 # Копіюємо весь код
 COPY . .
 
-# Копіюємо скрипти міграцій
-COPY PetCare.Api/wait-for-db.sh /wait-for-db.sh
-COPY PetCare.Api/migrate.sh /migrate.sh
-RUN chmod +x /wait-for-db.sh /migrate.sh
-
 # Build та publish
 RUN dotnet publish "PetCare.Api/PetCare.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# ===== Runtime stage =====
+# ===== Runtime stage (для API) =====
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
@@ -35,12 +30,11 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Копіюємо публішовані файли
-COPY --from=sdk /app/publish ./  
+COPY --from=sdk /app/publish ./
 
 # Копіюємо скрипти з PetCare.Api
 COPY PetCare.Api/wait-for-db.sh /wait-for-db.sh
-COPY PetCare.Api/migrate.sh /migrate.sh
-RUN chmod +x /wait-for-db.sh /migrate.sh
+RUN chmod +x /wait-for-db.sh
 
 # Стандартний entrypoint для API
 ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "dotnet", "PetCare.Api.dll"]
