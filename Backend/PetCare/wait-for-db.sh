@@ -14,8 +14,5 @@ done
 
 echo "Database is ready."
 
-# Запускаємо основну команду
-if [ "$#" -gt 0 ]; then
-  echo "Starting application..."
-  exec "$@"
-fi
+# Execute the rest of the command
+exec "$@"

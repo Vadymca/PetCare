@@ -1,4 +1,6 @@
-﻿services:
+﻿version: "3.9"
+
+services:
   db:
     image: postgis/postgis:16-3.4
     container_name: petcare_db
@@ -12,26 +14,6 @@
       - pgdata:/var/lib/postgresql/data
     restart: unless-stopped
 
-  petcare.api.sdk:
-    image: mcr.microsoft.com/dotnet/sdk:9.0
-    container_name: petcare_api_sdk
-    working_dir: /app
-    volumes:
-      - .:/app
-      - dotnet_tools_cache:/root/.dotnet/tools
-    depends_on:
-      - db
-    command: >
-      sh -c "echo 'Listing /app/PetCare.Infrastructure/Migrations...' &&
-             ls -la /app/PetCare.Infrastructure/Migrations 2>/dev/null || echo 'Migrations directory not found' &&
-             dotnet tool install --global dotnet-ef --version 9.0.7 &&
-             dotnet restore /app/PetCare.Api/PetCare.Api.csproj &&
-             dotnet restore /app/PetCare.Infrastructure/PetCare.Infrastructure.csproj &&
-             /wait-for-db.sh db 5432 dotnet ef database update --no-build --project /app/PetCare.Infrastructure/PetCare.Infrastructure.csproj --startup-project /app/PetCare.Api/PetCare.Api.csproj &&
-             echo 'Seeding data...' &&
-             dotnet run --project /app/PetCare.Api/PetCare.Api.csproj --no-build --no-launch-profile -- --seed"
-    restart: on-failure
-
   petcare.api:
     build:
       context: .
@@ -43,21 +25,19 @@
     environment:
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-    entrypoint: ["/wait-for-db.sh", "db", "5432", "dotnet", "PetCare.Api.dll"]
     env_file:
       - .env
     ports:
       - '5100:80'
     restart: unless-stopped
 
-     # MinIO (S3-сумісне сховище)
   minio:
     image: quay.io/minio/minio:latest
     container_name: petcare_minio
     command: server /data --console-address ":9001"
     ports:
-      - "9000:9000"   # API
-      - "9001:9001"   # Веб-консоль
+      - "9000:9000"
+      - "9001:9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
@@ -67,5 +47,4 @@
 
 volumes:
   pgdata:
-  dotnet_tools_cache:
   minio_data:
