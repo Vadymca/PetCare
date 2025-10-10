@@ -83,7 +83,6 @@ ehthumbs.db
 desktop.ini
 
 # Local configuration files
-**/appsettings.json
 docker-compose.override.yml
 
 .env
