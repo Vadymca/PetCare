@@ -1,24 +1,27 @@
 #!/bin/sh
 # wait-for-db.sh
-# ---------------------------
-# Waits for a PostgreSQL database to become available
-# Usage: ./wait-for-db.sh host port [cmd args...]
+# Waits for a TCP service (Postgres) to become available, then executes the given command.
 
 set -e
 
-HOST="$1"
-PORT="$2"
+host="$1"
+port="$2"
 shift 2
+cmd="$@"
 
-echo "Waiting for database $HOST:$PORT..."
+# Check that host and port are provided
+if [ -z "$host" ] || [ -z "$port" ]; then
+  echo "Usage: $0 <host> <port> <command>"
+  exit 1
+fi
 
-# Чекаємо, поки база буде доступна
-until nc -z "$HOST" "$PORT"; do
+echo "Waiting for database $host:$port..."
+
+# Loop until the database is available
+while ! nc -z "$host" "$port"; do
   echo "Database is unavailable - sleeping 2s..."
   sleep 2
 done
 
-echo "Database ready!"
-
-# Виконуємо передану команду (наприклад, dotnet PetCare.Api.dll або dotnet ef database update)
-exec "$@"
+echo "Database is available! Running command..."
+exec $cmd
