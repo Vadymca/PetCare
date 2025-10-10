@@ -20,7 +20,10 @@ echo "Database is ready."
 # Запускаємо міграції перед стартом додатку
 if [ -f "/app/PetCare.Api.csproj" ]; then
   echo "Applying EF Core migrations..."
-  dotnet ef database update --no-build --project /app/PetCare.Api.csproj --startup-project /app/PetCare.Api.csproj
+  dotnet ef database update \
+  --no-build \
+  --project /app/PetCare.Infrastructure/PetCare.Infrastructure.csproj \
+  --startup-project /app/PetCare.Api/PetCare.Api.csproj
 fi
 
 # Запускаємо основну команду
