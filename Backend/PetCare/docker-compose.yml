@@ -12,6 +12,26 @@
       - pgdata:/var/lib/postgresql/data
     restart: unless-stopped
 
+  petcare.api.sdk:
+    image: mcr.microsoft.com/dotnet/sdk:9.0
+    container_name: petcare_api_sdk
+    working_dir: /app
+    volumes:
+      - .:/app
+      - dotnet_tools_cache:/root/.dotnet/tools
+    depends_on:
+      - db
+    command: >
+      sh -c "echo 'Listing /app/PetCare.Infrastructure/Migrations...' &&
+             ls -la /app/PetCare.Infrastructure/Migrations 2>/dev/null || echo 'Migrations directory not found' &&
+             dotnet tool install --global dotnet-ef --version 9.0.7 &&
+             dotnet restore /app/PetCare.Api/PetCare.Api.csproj &&
+             dotnet restore /app/PetCare.Infrastructure/PetCare.Infrastructure.csproj &&
+             /wait-for-db.sh db 5432 dotnet ef database update --no-build --project /app/PetCare.Infrastructure/PetCare.Infrastructure.csproj --startup-project /app/PetCare.Api/PetCare.Api.csproj &&
+             echo 'Seeding data...' &&
+             dotnet run --project /app/PetCare.Api/PetCare.Api.csproj --no-build --no-launch-profile -- --seed"
+    restart: on-failure
+
   petcare.api:
     build:
       context: .
@@ -44,26 +64,6 @@
     volumes:
       - minio_data:/data
     restart: unless-stopped
-
-  petcare.api.sdk:
-    image: mcr.microsoft.com/dotnet/sdk:9.0
-    container_name: petcare_api_sdk
-    working_dir: /app
-    volumes:
-      - .:/app
-      - dotnet_tools_cache:/root/.dotnet/tools
-    depends_on:
-      - db
-    command: >
-      sh -c "echo 'Listing /app/PetCare.Infrastructure/Migrations...' &&
-             ls -la /app/PetCare.Infrastructure/Migrations 2>/dev/null || echo 'Migrations directory not found' &&
-             dotnet tool install --global dotnet-ef --version 9.0.7 &&
-             dotnet restore /app/PetCare.Api/PetCare.Api.csproj &&
-             dotnet restore /app/PetCare.Infrastructure/PetCare.Infrastructure.csproj &&
-             /wait-for-db.sh db 5432 dotnet ef database update --no-build --project /app/PetCare.Infrastructure/PetCare.Infrastructure.csproj --startup-project /app/PetCare.Api/PetCare.Api.csproj &&
-             echo 'Seeding data...' &&
-             dotnet run --project /app/PetCare.Api/PetCare.Api.csproj --no-build --no-launch-profile -- --seed"
-    restart: on-failure
 
 volumes:
   pgdata:
