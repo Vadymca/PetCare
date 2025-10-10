@@ -300,6 +300,11 @@ public class Program
 
             app.UseExceptionHandling();
             app.UseStaticFiles();
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseHttpsRedirection();
+            }
+
             app.UseHttpsRedirection();
             app.UseCors("PetCarePolicy");
             app.UseRateLimiter();
