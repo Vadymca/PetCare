@@ -410,10 +410,26 @@ public class Program
             // -------------------- Migrations & Seeding --------------------
             using (var scope = app.Services.CreateScope())
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                await dbContext.Database.MigrateAsync();
+                var services = scope.ServiceProvider;
+                var loggerFactory = services.GetRequiredService<ILoggerFactory>();
 
-                await DataSeeder.SeedAsync(scope.ServiceProvider);
+                try
+                {
+                    var dbContext = services.GetRequiredService<AppDbContext>();
+
+                    // Застосовуємо всі міграції перед сидінгом
+                    dbContext.Database.Migrate();
+
+                    // Тільки після цього запускаємо сидінг
+                    await DataSeeder.SeedAsync(services);
+                    Log.Information("Database migrated and seeded successfully.");
+                }
+                catch (Exception ex)
+                {
+                    var logger = loggerFactory.CreateLogger<Program>();
+                    logger.LogError(ex, "An error occurred during database migration or seeding.");
+                    throw; // Зупиняємо запуск, якщо міграція/сидінг не вдалася
+                }
             }
 
             app.Run();
