@@ -1,23 +1,20 @@
 #!/bin/sh
 set -e
 
-HOST="$1"
-PORT="$2"
+host="$1"
+port="$2"
 shift 2
 
-echo "Waiting for database $HOST:$PORT..."
-until nc -z "$HOST" "$PORT" 2>/dev/null; do
-  echo "Waiting for DB..."
-  sleep 1
+echo "Waiting for database $host:$port..."
+while ! nc -z $host $port; do
+  sleep 2
 done
-echo "Database is ready."
+echo "Database ready!"
 
+# Apply migrations
 echo "Applying EF Core migrations..."
-dotnet tool restore
-dotnet ef database update \
-    --project /app/PetCare.Infrastructure/PetCare.Infrastructure.csproj \
-    --startup-project /app/PetCare.Api.dll
+dotnet ef database update --project /src/PetCare.Infrastructure/PetCare.Infrastructure.csproj --startup-project /src/PetCare.Api/PetCare.Api.csproj
 echo "Migrations applied."
 
-# Start the API
-exec "$@"
+# Run the application
+exec dotnet PetCare.Api.dll "$@"
