@@ -13,8 +13,6 @@
     </None>
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
-    <None Include="migrate.sh" />
-    <None Include="wait-for-db.sh" />
   </ItemGroup>
   <ItemGroup>
     <None Update="appsettings.json">
