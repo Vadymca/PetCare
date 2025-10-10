@@ -29,6 +29,10 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends netcat-traditional postgresql-client && \
     rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends dotnet-sdk-9.0 && \
+    rm -rf /var/lib/apt/lists/*
+
 # Копіюємо публішовані файли
 COPY --from=sdk /app/publish ./  
 
