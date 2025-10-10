@@ -22,17 +22,15 @@
       - minio
     environment:
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
     entrypoint: ["/wait-for-db.sh", "db", "5432", "dotnet", "PetCare.Api.dll"]
     env_file:
       - .env
     ports:
       - '5100:80'
-    volumes:
-      - "${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro"
-      - "${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro"
     restart: unless-stopped
 
-     # 🟣 MinIO (S3-сумісне сховище)
+     # MinIO (S3-сумісне сховище)
   minio:
     image: quay.io/minio/minio:latest
     container_name: petcare_minio
@@ -57,10 +55,14 @@
     depends_on:
       - db
     command: >
-      sh -c "dotnet tool install --global dotnet-ef --version 9.0.7 &&
-             dotnet restore PetCare.Api/PetCare.Api.csproj &&
-             dotnet restore PetCare.Infrastructure/PetCare.Infrastructure.csproj &&
-             /wait-for-db.sh db 5432 dotnet ef database update --no-build --project PetCare.Infrastructure/PetCare.Infrastructure.csproj --startup-project PetCare.Api/PetCare.Api.csproj"
+      sh -c "echo 'Listing /app/PetCare.Infrastructure/Migrations...' &&
+             ls -la /app/PetCare.Infrastructure/Migrations 2>/dev/null || echo 'Migrations directory not found' &&
+             dotnet tool install --global dotnet-ef --version 9.0.7 &&
+             dotnet restore /app/PetCare.Api/PetCare.Api.csproj &&
+             dotnet restore /app/PetCare.Infrastructure/PetCare.Infrastructure.csproj &&
+             /wait-for-db.sh db 5432 dotnet ef database update --no-build --project /app/PetCare.Infrastructure/PetCare.Infrastructure.csproj --startup-project /app/PetCare.Api/PetCare.Api.csproj &&
+             echo 'Seeding data...' &&
+             dotnet run --project /app/PetCare.Api/PetCare.Api.csproj --no-build --no-launch-profile -- --seed"
     restart: on-failure
 
 volumes:
