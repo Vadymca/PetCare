@@ -1,17 +1,24 @@
 #!/bin/sh
-# Usage: ./wait-for-db.sh <host> <port> <cmd> <args...>
+set -e
 
-HOST=$1
-PORT=$2
+host="$1"
+port="$2"
 shift 2
-CMD="$@"
+cmd="$@"
 
-echo "Waiting for database $HOST:$PORT..."
+echo "Waiting for database $host:$port..."
 
-until nc -z "$HOST" "$PORT"; do
-  echo "Database is not ready, sleeping..."
+while ! nc -z $host $port; do
+  echo "Database is unavailable - sleeping"
   sleep 2
 done
 
-echo "Database ready!"
-exec $CMD
+echo "Database ready! Applying EF Core migrations..."
+
+# Виконати міграції у SDK (тут /app вже містить лише dll, тому робимо через dotnet run у SDK)
+dotnet ef database update \
+    --project /src/PetCare.Infrastructure/PetCare.Infrastructure.csproj \
+    --startup-project /src/PetCare.Api/PetCare.Api.csproj
+
+echo "Migrations applied. Starting app..."
+exec $cmd
