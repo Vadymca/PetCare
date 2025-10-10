@@ -38,6 +38,9 @@ WORKDIR /app
 # Copy published files
 COPY --from=publish /app/publish .
 
+# Копіюємо Infrastructure для EF Core міграцій
+COPY ["PetCare.Infrastructure", "/app/PetCare.Infrastructure"]
+
 # Copy wait-for-db script (розташований поряд із docker-compose.yml)
 COPY wait-for-db.sh /wait-for-db.sh
 RUN chmod +x /wait-for-db.sh
