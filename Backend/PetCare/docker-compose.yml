@@ -21,9 +21,7 @@ services:
       target: sdk
     depends_on:
       - db
-    command: >
-      sh -c "dotnet tool restore &&
-             dotnet ef database update --project PetCare.Api/PetCare.Api.csproj"
+    entrypoint: ["/wait-for-db.sh", "db", "5432", "dotnet", "ef", "database", "update", "--project", "PetCare.Api/PetCare.Api.csproj"]
 
   petcare.api:
     build:
@@ -43,6 +41,7 @@ services:
     ports:
       - '5100:80'
     restart: unless-stopped
+    entrypoint: ["/wait-for-db.sh", "db", "5432", "dotnet", "PetCare.Api.dll"]
 
   minio:
     image: quay.io/minio/minio:latest
