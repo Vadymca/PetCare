@@ -292,12 +292,6 @@ public class Program
 
             var app = builder.Build();
 
-            // -------------------- Security Middleware --------------------
-            if (!app.Environment.IsDevelopment())
-            {
-                app.UseHsts();  // HTTP Strict Transport Security
-            }
-
             app.UseExceptionHandling();
             app.UseStaticFiles();
             app.UseHttpsRedirection();
@@ -406,6 +400,8 @@ public class Program
             app.MapSubscribeToAnimalEndpoint(); // /api/animals/{id}/subscribe
             app.MapUnsubscribeFromAnimalEndpoint(); // /api/animals/{id:guid}/subscribe
             app.MapGetFavoriteAnimalsEndpoint(); // /api/animals/favorites
+
+            app.MapGet("/", () => Results.Ok("✅ PetCare.Api is running successfully!"));
 
             // -------------------- Migrations & Seeding --------------------
             using (var scope = app.Services.CreateScope())

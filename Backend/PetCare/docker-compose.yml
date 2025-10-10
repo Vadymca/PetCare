@@ -36,10 +36,10 @@ services:
       - minio
       - migrations
     environment:
+      ASPNETCORE_URLS: "http://+:5100"
+      ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      ASPNETCORE_URLS: "https://+:5100"
-      ASPNETCORE_ENVIRONMENT: "Production"
     env_file:
       - .env
     ports:

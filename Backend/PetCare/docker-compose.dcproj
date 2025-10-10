@@ -14,7 +14,6 @@
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
     <None Include="migrate.sh" />
-    <None Include="nginx\conf.d\petcare.conf" />
     <None Include="wait-for-db.sh" />
   </ItemGroup>
   <ItemGroup>

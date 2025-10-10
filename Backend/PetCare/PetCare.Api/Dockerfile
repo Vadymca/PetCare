@@ -40,8 +40,7 @@ COPY --from=sdk /app/publish ./
 COPY PetCare.Api/wait-for-db.sh /wait-for-db.sh
 RUN chmod +x /wait-for-db.sh
 
-# Встановлюємо змінну середовища для Kestrel (тільки HTTP)
-ENV DOTNET_URLS=http://+:5100
+ENV ASPNETCORE_URLS=http://+:5100
 
 # Стандартний entrypoint для API
 ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "dotnet", "PetCare.Api.dll"]
