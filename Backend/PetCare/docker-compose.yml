@@ -21,7 +21,8 @@
       - db
       - minio
     environment:
-     ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+    entrypoint: ["/bin/sh", "-c", "until pg_isready -h db -p 5432; do echo waiting for db; sleep 2; done; dotnet PetCare.Api.dll"]
     env_file:
       - .env
     ports:
