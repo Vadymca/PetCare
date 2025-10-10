@@ -65,7 +65,7 @@ services:
     image: nginx:latest
     container_name: petcare_nginx
     ports:
-      - "80:80"
+      - "9100:9100"
       - "443:443"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
