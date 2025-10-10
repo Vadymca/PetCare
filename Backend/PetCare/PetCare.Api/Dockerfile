@@ -33,9 +33,9 @@ RUN apt-get update && \
 COPY --from=sdk /app/publish ./  
 
 # Копіюємо скрипти з Docker-compose
-COPY Docker-compose/wait-for-db.sh /wait-for-db.sh
-COPY Docker-compose/migrate.sh /migrate.sh
-RUN chmod +x /wait-for-db.sh /migrate.sh
+COPY ../Docker-compose/wait-for-db.sh /wait-for-db.sh
+COPY ../Docker-compose/migrate.sh /migrate.sh
+RUN chmod +x /wait-for-db.sh /migrate.shRUN chmod +x /wait-for-db.sh /migrate.sh
 
 # Стандартний entrypoint
 ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "dotnet", "PetCare.Api.dll"]
