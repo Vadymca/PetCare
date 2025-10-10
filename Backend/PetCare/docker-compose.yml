@@ -22,7 +22,7 @@
       - minio
     environment:
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
-    entrypoint: ["/wait-for-db.sh", "db:5432", "--", "dotnet", "PetCare.Api.dll"]
+    entrypoint: ["/wait-for-db.sh", "db", "5432", "--", "dotnet", "PetCare.Api.dll"]
     env_file:
       - .env
     ports:
