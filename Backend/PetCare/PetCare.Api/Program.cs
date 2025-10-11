@@ -53,17 +53,16 @@ public class Program
 
             var builder = WebApplication.CreateBuilder(new WebApplicationOptions
             {
+                ContentRootPath = Directory.GetCurrentDirectory(),
                 Args = args,
-                // Це вимикає file watchers для appsettings.json
-                EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production",
             });
 
             // -------------------- Configuration Loading --------------------
             builder.Configuration
-             .SetBasePath(Directory.GetCurrentDirectory())
-             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: !builder.Environment.IsProduction())
-             .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: !builder.Environment.IsProduction())
-             .AddEnvironmentVariables();
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+                .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: false, reloadOnChange: false)
+                .AddEnvironmentVariables();
 
             builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 
