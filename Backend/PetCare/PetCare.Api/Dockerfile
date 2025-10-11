@@ -11,7 +11,7 @@ RUN apt-get update && \
 COPY PetCare.Api/wait-for-db.sh /wait-for-db.sh
 RUN chmod +x /wait-for-db.sh
 
-# Копіюємо csproj і робимо restore
+# Копіюємо csproj файли і робимо restore
 COPY ["PetCare.Api/PetCare.Api.csproj", "PetCare.Api/"]
 COPY ["PetCare.Application/PetCare.Application.csproj", "PetCare.Application/"]
 COPY ["PetCare.Infrastructure/PetCare.Infrastructure.csproj", "PetCare.Infrastructure/"]
@@ -21,9 +21,15 @@ RUN dotnet restore "PetCare.Api/PetCare.Api.csproj"
 # Копіюємо весь код
 COPY . .
 
-# Build Infrastructure та API
+# Build всі проєкти
 RUN dotnet build PetCare.Infrastructure/PetCare.Infrastructure.csproj -c Release
 RUN dotnet build PetCare.Api/PetCare.Api.csproj -c Release
+
+# ===== Apply EF Core migrations at build time =====
+RUN dotnet ef database update \
+    --project PetCare.Infrastructure/PetCare.Infrastructure.csproj \
+    --startup-project PetCare.Api/PetCare.Api.csproj \
+    --configuration Release
 
 # Публікація API
 RUN dotnet publish "PetCare.Api/PetCare.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
@@ -40,12 +46,13 @@ RUN apt-get update && \
 # Копіюємо публішені файли
 COPY --from=sdk /app/publish ./ 
 
-# Копіюємо скрипт
+# Копіюємо скрипт wait-for-db
 COPY PetCare.Api/wait-for-db.sh /wait-for-db.sh
 RUN chmod +x /wait-for-db.sh
 
+# Налаштування середовища
 ENV ASPNETCORE_ENVIRONMENT=Development
 ENV ASPNETCORE_URLS=http://+:5100
 
-# EntryPoint 
+# EntryPoint
 ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "dotnet", "PetCare.Api.dll"]
