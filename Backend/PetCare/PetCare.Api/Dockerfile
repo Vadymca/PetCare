@@ -12,7 +12,7 @@ RUN dotnet tool install --global dotnet-ef --version 9.0.7
 ENV PATH="$PATH:/root/.dotnet/tools"
 
 # Копіюємо скрипт wait-for-db
-COPY PetCare.Api/wait-for-db.sh /wait-for-db.sh
+COPY wait-for-db.sh /wait-for-db.sh
 RUN chmod +x /wait-for-db.sh
 
 # Копіюємо csproj файли і робимо restore
@@ -45,7 +45,7 @@ RUN apt-get update && \
 COPY --from=sdk /app/publish ./ 
 
 # Копіюємо скрипт wait-for-db
-COPY PetCare.Api/wait-for-db.sh /wait-for-db.sh
+COPY wait-for-db.sh /wait-for-db.sh
 RUN chmod +x /wait-for-db.sh
 
 # Налаштування середовища

@@ -18,6 +18,29 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - petcare-network
+
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: petcare_minio
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - petcare-network
 
   petcare.api:
     build:
@@ -41,26 +64,13 @@ services:
     ports:
       - '5100:5100'
     restart: unless-stopped
-
-  minio:
-    image: quay.io/minio/minio:latest
-    container_name: petcare_minio
-    command: server /data --console-address ":9001"
-    restart: unless-stopped
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    volumes:
-      - minio_data:/data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+    networks:
+      - petcare-network
 
 volumes:
   pgdata:
   minio_data:
+
+networks:
+  petcare-network:
+    driver: bridge
