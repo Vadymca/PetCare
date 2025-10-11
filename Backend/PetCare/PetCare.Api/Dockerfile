@@ -21,8 +21,8 @@ RUN dotnet restore "PetCare.Api/PetCare.Api.csproj"
 # Копіюємо весь код
 COPY . .
 
-# Build всіх проектів
-RUN dotnet build -c Release
+# Build Infrastructure (щоб EF Core бачив міграції)
+RUN dotnet build PetCare.Infrastructure/PetCare.Infrastructure.csproj -c Release
 
 # ===== Міграції =====
 # Виконуємо міграції під час build
