@@ -60,8 +60,8 @@ public class Program
             // -------------------- Configuration Loading --------------------
             builder.Configuration
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false)
                 .AddEnvironmentVariables();
 
             builder.Services.AddTransient<ExceptionHandlingMiddleware>();
