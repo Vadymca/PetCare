@@ -413,7 +413,7 @@ public class Program
                 var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 await dbContext.Database.MigrateAsync();
 
-                //await DataSeeder.SeedAsync(scope.ServiceProvider);
+                await DataSeeder.SeedAsync(scope.ServiceProvider);
             }
 
             app.Run();
