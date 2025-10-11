@@ -59,10 +59,10 @@ public class Program
 
             // -------------------- Configuration Loading --------------------
             builder.Configuration
-             .SetBasePath(Directory.GetCurrentDirectory())
-             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: !builder.Environment.IsProduction())
-             .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: !builder.Environment.IsProduction())
-             .AddEnvironmentVariables();
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables();
 
             builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 
@@ -154,8 +154,6 @@ public class Program
                         npgsql.MapEnum<LostPetStatus>("lost_pet_status");
                         npgsql.MapEnum<UserRole>("user_role");
                         npgsql.MapEnum<VolunteerTaskStatus>("volunteer_task_status");
-
-                        npgsql.MigrationsAssembly("PetCare.Infrastructure.Migrations"); // <-- Вказуємо проект з міграціями
                     })
                     .EnableSensitiveDataLogging()
                     .EnableDetailedErrors();
