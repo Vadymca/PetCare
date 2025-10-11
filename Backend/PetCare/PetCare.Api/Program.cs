@@ -423,7 +423,7 @@ public class Program
                 await dbContext.Database.MigrateAsync(); // Міграції беруться з MigrationsAssembly, що задано у UseNpgsql
 
                 // Виконуємо seed ролей та інших даних
-                await DataSeeder.SeedAsync(services);
+                //await DataSeeder.SeedAsync(services);
             }
 
             app.Run();
