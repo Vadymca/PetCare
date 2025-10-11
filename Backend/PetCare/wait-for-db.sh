@@ -1,24 +1,22 @@
 #!/bin/sh
-# wait-for-db.sh
-# Script waits for a database to be ready before starting the application
-# Usage: ./wait-for-db.sh <host> <port> <command...>
 
-set -e
-
-host="$1"
-port="$2"
+# Параметри
+HOST="$1"
+PORT="$2"
 shift 2
-cmd="$@"
+CMD="$@"
 
-echo "Waiting for database at $host:$port..."
-
-# Чекаємо поки порт стане доступним
-while ! nc -z "$host" "$port"; do
-  echo "Database is unavailable - sleeping 1s..."
+echo "Очікуємо запуск бази $HOST:$PORT..."
+while ! nc -z $HOST $PORT; do
   sleep 1
 done
 
-echo "Database is up! Starting application..."
+echo "База доступна. Виконуємо міграції..."
+dotnet tool restore # якщо використовується manifest
+dotnet ef database update \
+    --project PetCare.Infrastructure/PetCare.Infrastructure.csproj \
+    --startup-project PetCare.Api/PetCare.Api.csproj \
+    --configuration Release
 
-# Виконуємо команду, передану скрипту (наприклад, dotnet PetCare.Api.dll)
-exec $cmd
+echo "Запускаємо додаток..."
+exec $CMD

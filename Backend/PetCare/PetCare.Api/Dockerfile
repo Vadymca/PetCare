@@ -29,12 +29,6 @@ COPY . .
 RUN dotnet build PetCare.Infrastructure/PetCare.Infrastructure.csproj -c Release
 RUN dotnet build PetCare.Api/PetCare.Api.csproj -c Release
 
-# ===== Apply EF Core migrations at build time =====
-RUN dotnet ef database update \
-    --project PetCare.Infrastructure/PetCare.Infrastructure.csproj \
-    --startup-project PetCare.Api/PetCare.Api.csproj \
-    --configuration Release
-
 # Публікація API
 RUN dotnet publish "PetCare.Api/PetCare.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
