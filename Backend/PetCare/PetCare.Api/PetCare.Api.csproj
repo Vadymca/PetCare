@@ -9,9 +9,11 @@
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Content Remove="appsettings.json" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Update="appsettings.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="15.0.1" />
