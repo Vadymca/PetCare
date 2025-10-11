@@ -133,6 +133,9 @@ public class Program
                     npgsql =>
                     {
                         npgsql.UseNetTopologySuite();
+
+                        // Enum mapping
+                        npgsql.UseNetTopologySuite();
                         npgsql.MapEnum<AdoptionStatus>("adoption_status");
                         npgsql.MapEnum<AidCategory>("aid_category");
                         npgsql.MapEnum<AidStatus>("aid_status");
