@@ -51,7 +51,11 @@ public class Program
         {
             Log.Information("Запуск PetCare.Api...");
 
-            var builder = WebApplication.CreateBuilder(args);
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+            {
+                ContentRootPath = Directory.GetCurrentDirectory(),
+                Args = args,
+            });
 
             // -------------------- Configuration Loading --------------------
             builder.Configuration
@@ -264,7 +268,7 @@ public class Program
             {
                 options.AddPolicy("PetCarePolicy", policy =>
                 {
-                    policy.WithOrigins("http://localhost:4200")
+                    policy.AllowAnyOrigin()
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .AllowCredentials();
@@ -294,7 +298,7 @@ public class Program
 
             app.UseExceptionHandling();
             app.UseStaticFiles();
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseCors("PetCarePolicy");
             app.UseRateLimiter();
 

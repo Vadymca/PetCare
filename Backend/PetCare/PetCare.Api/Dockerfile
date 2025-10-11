@@ -40,6 +40,7 @@ COPY --from=sdk /app/publish ./
 COPY PetCare.Api/wait-for-db.sh /wait-for-db.sh
 RUN chmod +x /wait-for-db.sh
 
+ENV ASPNETCORE_ENVIRONMENT=Development
 ENV ASPNETCORE_URLS=http://+:5100
 
 # Стандартний entrypoint для API
