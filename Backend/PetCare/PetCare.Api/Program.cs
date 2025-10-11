@@ -132,6 +132,7 @@ public class Program
                     connectionString,
                     npgsql =>
                     {
+                        npgsql.MigrationsAssembly("PetCare.Infrastructure");
                         npgsql.UseNetTopologySuite();
 
                         // Enum mapping
@@ -413,10 +414,16 @@ public class Program
             // -------------------- Migrations & Seeding --------------------
             using (var scope = app.Services.CreateScope())
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                await dbContext.Database.MigrateAsync();
+                var services = scope.ServiceProvider;
 
-                await DataSeeder.SeedAsync(scope.ServiceProvider);
+                // Отримуємо DbContext
+                var dbContext = services.GetRequiredService<AppDbContext>();
+
+                // Застосовуємо міграції з правильною збіркою
+                await dbContext.Database.MigrateAsync(); // Міграції беруться з MigrationsAssembly, що задано у UseNpgsql
+
+                // Виконуємо seed ролей та інших даних
+                await DataSeeder.SeedAsync(services);
             }
 
             app.Run();
