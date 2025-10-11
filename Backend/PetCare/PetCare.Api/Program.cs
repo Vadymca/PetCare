@@ -51,7 +51,11 @@ public class Program
         {
             Log.Information("Запуск PetCare.Api...");
 
-            var builder = WebApplication.CreateBuilder(args);
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+            {
+                ContentRootPath = Directory.GetCurrentDirectory(),
+                Args = args,
+            });
 
             // -------------------- Configuration Loading --------------------
             builder.Configuration
@@ -150,8 +154,6 @@ public class Program
                         npgsql.MapEnum<LostPetStatus>("lost_pet_status");
                         npgsql.MapEnum<UserRole>("user_role");
                         npgsql.MapEnum<VolunteerTaskStatus>("volunteer_task_status");
-
-                        npgsql.MigrationsAssembly("PetCare.Infrastructure.Migrations"); // <-- Вказуємо проект з міграціями
                     })
                     .EnableSensitiveDataLogging()
                     .EnableDetailedErrors();
