@@ -4,7 +4,17 @@
 		<TargetFramework>net9.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Include="Migrations\**\*.cs" />
+		<Compile Include="Persistence\**\*.cs" />
+		<Compile Include="Services\**\*.cs" />
+		<Compile Include="Options\**\*.cs" />
+		<Compile Include="Data\**\*.cs" />
+		<Compile Include="Identity\**\*.cs" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="AutoMapper" Version="15.0.1" />
