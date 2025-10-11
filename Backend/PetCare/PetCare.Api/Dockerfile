@@ -45,6 +45,7 @@ RUN apt-get update && \
 
 RUN dotnet tool install --global dotnet-ef --version 9.0.7
 ENV PATH="$PATH:/root/.dotnet/tools"
+"
 
 # Копіюємо публішені файли
 COPY --from=sdk /app/publish ./ 
