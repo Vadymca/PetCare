@@ -25,6 +25,7 @@ RUN dotnet restore "PetCare.Api/PetCare.Api.csproj"
 
 # Копіюємо весь код
 COPY . .
+RUN ls -R /src/PetCare.Infrastructure/Migrations  # Дебаг: перевірка наявності міграцій
 
 # Build всі проєкти
 RUN dotnet build PetCare.Infrastructure/PetCare.Infrastructure.csproj -c Release
@@ -33,7 +34,7 @@ RUN dotnet build PetCare.Api/PetCare.Api.csproj -c Release
 # Публікація API
 RUN dotnet publish "PetCare.Api/PetCare.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# Дебаг: перевірка наявності файлів міграцій
+# Дебаг: перевірка наявності файлів міграцій у опублікованому результаті
 RUN ls -R /app/publish
 
 # ===== Runtime stage =====
