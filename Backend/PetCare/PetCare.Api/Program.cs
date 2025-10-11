@@ -268,7 +268,7 @@ public class Program
             {
                 options.AddPolicy("PetCarePolicy", policy =>
                 {
-                    policy.AllowAnyOrigin()
+                    policy.WithOrigins("http://localhost:4200", "http://192.168.1.104:4200")
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .AllowCredentials();
