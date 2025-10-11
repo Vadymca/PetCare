@@ -7,7 +7,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends netcat-traditional postgresql-client && \
     rm -rf /var/lib/apt/lists/*
 
-# Встановлюємо dotnet-ef CLI
+# Встановлюємо dotnet-ef CLI (для локальної роботи в SDK)
 RUN dotnet tool install --global dotnet-ef --version 9.0.7
 ENV PATH="$PATH:/root/.dotnet/tools"
 
@@ -52,5 +52,5 @@ RUN chmod +x /wait-for-db.sh
 ENV ASPNETCORE_ENVIRONMENT=Development
 ENV ASPNETCORE_URLS=http://+:5100
 
-# EntryPoint
+# EntryPoint: чекаємо базу, потім запускаємо API
 ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "dotnet", "PetCare.Api.dll"]
