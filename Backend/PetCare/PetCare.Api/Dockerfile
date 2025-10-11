@@ -21,7 +21,7 @@ RUN dotnet restore "PetCare.Api/PetCare.Api.csproj"
 # Копіюємо весь код
 COPY . .
 
-# Build усіх потрібних проектів (Infrastructure + Api)
+# Build Infrastructure та API
 RUN dotnet build PetCare.Infrastructure/PetCare.Infrastructure.csproj -c Release
 RUN dotnet build PetCare.Api/PetCare.Api.csproj -c Release
 
@@ -38,21 +38,20 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Копіюємо публішені файли
-COPY --from=sdk /app/publish ./
+COPY --from=sdk /app/publish ./ 
 
 # Копіюємо скрипт
 COPY PetCare.Api/wait-for-db.sh /wait-for-db.sh
 RUN chmod +x /wait-for-db.sh
 
-# Env
 ENV ASPNETCORE_ENVIRONMENT=Development
 ENV ASPNETCORE_URLS=http://+:5100
 
-# EntryPoint: чекаємо базу, виконуємо міграції та запускаємо API
+# EntryPoint з міграціями
 ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "sh", "-c", "\
+    echo 'Database is up! Running migrations...' && \
     dotnet tool restore && \
-    dotnet ef database update \
-        --project PetCare.Infrastructure/PetCare.Infrastructure.csproj \
-        --startup-project PetCare.Api/PetCare.Api.csproj && \
-    dotnet PetCare.Api.dll \
-  "]
+    dotnet ef database update --project PetCare.Infrastructure/PetCare.Infrastructure.csproj --startup-project PetCare.Api/PetCare.Api.csproj && \
+    echo 'Starting API...' && \
+    exec dotnet PetCare.Api.dll \
+"]
