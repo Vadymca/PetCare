@@ -7,7 +7,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends netcat-traditional postgresql-client && \
     rm -rf /var/lib/apt/lists/*
 
-# Встановлюємо dotnet-ef CLI (для локальної роботи в SDK)
+# Встановлюємо dotnet-ef CLI у SDK-етапі
 RUN dotnet tool install --global dotnet-ef --version 9.0.7
 ENV PATH="$PATH:/root/.dotnet/tools"
 
@@ -31,8 +31,6 @@ RUN dotnet build PetCare.Api/PetCare.Api.csproj -c Release
 
 # Публікація API
 RUN dotnet publish "PetCare.Api/PetCare.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
-RUN ls -R /app/publish  # Дебаг: вивести список файлів
-CMD ["sleep", "infinity"]  # Зупинити для перевірки
 
 # ===== Runtime stage =====
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
@@ -43,20 +41,20 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends netcat-traditional && \
     rm -rf /var/lib/apt/lists/*
 
-RUN dotnet tool install --global dotnet-ef --version 9.0.7
+# Копіюємо dotnet-ef із SDK-етапу
+COPY --from=sdk /root/.dotnet/tools /root/.dotnet/tools
 ENV PATH="$PATH:/root/.dotnet/tools"
-"
 
 # Копіюємо публішені файли
-COPY --from=sdk /app/publish ./ 
+COPY --from=sdk /app/publish ./
 
 # Копіюємо скрипт wait-for-db
-COPY wait-for-db.sh /wait-for-db.sh
+COPY --from=sdk /wait-for-db.sh /wait-for-db.sh
 RUN chmod +x /wait-for-db.sh
 
 # Налаштування середовища
 ENV ASPNETCORE_ENVIRONMENT=Development
 ENV ASPNETCORE_URLS=http://+:5100
 
-# EntryPoint: чекаємо базу, потім запускаємо API
+# EntryPoint: чекаємо базу, застосовуємо міграції, запускаємо API
 ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "sh", "-c", "dotnet ef database update --project PetCare.Infrastructure --startup-project PetCare.Api && dotnet PetCare.Api.dll"]
