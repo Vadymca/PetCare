@@ -40,11 +40,6 @@ services:
     ports:
       - '5100:5100'
     restart: unless-stopped
-    volumes:
-      - .:/src
-    sysctls:
-      fs.inotify.max_user_instances: 1024
-      fs.inotify.max_user_watches: 1048576
 
   minio:
     image: quay.io/minio/minio:latest
