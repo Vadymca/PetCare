@@ -53,7 +53,7 @@
       - .env
     environment:
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
-    entrypoint: ["/wait-for-db.sh", "db", "5432", "sh", "-c", "dotnet ef migrations list --project /src/PetCare.Infrastructure --startup-project /src/PetCare.Api && dotnet ef database update --project /src/PetCare.Infrastructure --startup-project /src/PetCare.Api"]
+    entrypoint: ["/wait-for-db.sh", "db", "5432", "sh", "-c", "echo 'Checking migrations...' && dotnet ef migrations list --project /src/PetCare.Infrastructure --startup-project /src/PetCare.Api --verbose && echo 'Applying migrations...' && dotnet ef database update --project /src/PetCare.Infrastructure --startup-project /src/PetCare.Api --verbose"]
     networks:
       - petcare-network
 
