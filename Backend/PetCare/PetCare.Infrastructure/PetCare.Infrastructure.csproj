@@ -68,9 +68,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update="Migrations\**\*">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
+		<None Include="Migrations\**\*.*" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 
 	<PropertyGroup>

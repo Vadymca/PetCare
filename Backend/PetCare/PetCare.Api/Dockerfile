@@ -31,6 +31,8 @@ RUN dotnet build PetCare.Api/PetCare.Api.csproj -c Release
 
 # Публікація API
 RUN dotnet publish "PetCare.Api/PetCare.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN ls -R /app/publish  # Дебаг: вивести список файлів
+CMD ["sleep", "infinity"]  # Зупинити для перевірки
 
 # ===== Runtime stage =====
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
@@ -40,6 +42,9 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y --no-install-recommends netcat-traditional && \
     rm -rf /var/lib/apt/lists/*
+
+RUN dotnet tool install --global dotnet-ef --version 9.0.7
+ENV PATH="$PATH:/root/.dotnet/tools"
 
 # Копіюємо публішені файли
 COPY --from=sdk /app/publish ./ 
@@ -53,4 +58,4 @@ ENV ASPNETCORE_ENVIRONMENT=Development
 ENV ASPNETCORE_URLS=http://+:5100
 
 # EntryPoint: чекаємо базу, потім запускаємо API
-ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "dotnet", "PetCare.Api.dll"]
+ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "sh", "-c", "dotnet ef database update --project PetCare.Infrastructure --startup-project PetCare.Api && dotnet PetCare.Api.dll"]
