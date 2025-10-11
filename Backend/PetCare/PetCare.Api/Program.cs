@@ -53,16 +53,17 @@ public class Program
 
             var builder = WebApplication.CreateBuilder(new WebApplicationOptions
             {
-                ContentRootPath = Directory.GetCurrentDirectory(),
                 Args = args,
+                // Це вимикає file watchers для appsettings.json
+                EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production",
             });
 
             // -------------------- Configuration Loading --------------------
             builder.Configuration
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables();
+             .SetBasePath(Directory.GetCurrentDirectory())
+             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: !builder.Environment.IsProduction())
+             .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: !builder.Environment.IsProduction())
+             .AddEnvironmentVariables();
 
             builder.Services.AddTransient<ExceptionHandlingMiddleware>();
 
@@ -154,6 +155,8 @@ public class Program
                         npgsql.MapEnum<LostPetStatus>("lost_pet_status");
                         npgsql.MapEnum<UserRole>("user_role");
                         npgsql.MapEnum<VolunteerTaskStatus>("volunteer_task_status");
+
+                        npgsql.MigrationsAssembly("PetCare.Infrastructure.Migrations"); // <-- Вказуємо проект з міграціями
                     })
                     .EnableSensitiveDataLogging()
                     .EnableDetailedErrors();
