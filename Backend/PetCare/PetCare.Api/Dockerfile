@@ -21,19 +21,28 @@ RUN dotnet restore "PetCare.Api/PetCare.Api.csproj"
 # Копіюємо весь код
 COPY . .
 
-# Build та publish
+# Build всіх проектів
+RUN dotnet build -c Release
+
+# ===== Міграції =====
+# Виконуємо міграції під час build
+RUN dotnet ef database update \
+    --project PetCare.Infrastructure/PetCare.Infrastructure.csproj \
+    --startup-project PetCare.Api/PetCare.Api.csproj
+
+# Публікація API
 RUN dotnet publish "PetCare.Api/PetCare.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # ===== Runtime stage =====
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
-# Встановлюємо netcat, щоб wait-for-db.sh працював
+# Встановлюємо netcat
 RUN apt-get update && \
     apt-get install -y --no-install-recommends netcat-traditional && \
     rm -rf /var/lib/apt/lists/*
 
-# Копіюємо публішовані файли
+# Копіюємо публішені файли
 COPY --from=sdk /app/publish ./
 
 # Копіюємо скрипт
@@ -43,5 +52,5 @@ RUN chmod +x /wait-for-db.sh
 ENV ASPNETCORE_ENVIRONMENT=Development
 ENV ASPNETCORE_URLS=http://+:5100
 
-# Стандартний entrypoint для API
+# EntryPoint
 ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "dotnet", "PetCare.Api.dll"]
