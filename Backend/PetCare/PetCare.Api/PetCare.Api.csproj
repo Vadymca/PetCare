@@ -76,6 +76,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Compile Include="..\PetCare.Infrastructure\Migrations\**\*.cs" />
+		<Compile Include="..\PetCare.Infrastructure\Persistence\**\*.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <Folder Include="wwwroot\images\" />
 	  <Folder Include="wwwroot\uploads\" />
 	</ItemGroup>
