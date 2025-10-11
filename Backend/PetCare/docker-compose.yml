@@ -24,7 +24,7 @@ services:
     command: >
       sh -c "dotnet tool restore &&
              dotnet build PetCare.Api/PetCare.Api.csproj -c Release &&
-             dotnet ef database update --project PetCare.Infrastructure/PetCare.Infrastructure.csproj --startup-project PetCare.Api/PetCare.Api.csproj --namespace PetCare.Infrastructure.Migrations"
+             dotnet ef database update --project PetCare.Infrastructure/PetCare.Infrastructure.csproj --startup-project PetCare.Api/PetCare.Api.csproj"
 
   petcare.api:
     build:
