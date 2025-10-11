@@ -7,13 +7,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- Включаємо всі cs-файли в проекті, зокрема міграції -->
-		<Compile Include="**\*.cs" />
-		<!-- Виключаємо bin/ та obj/ щоб уникнути дублювання -->
-		<Compile Remove="bin\**;obj\**" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="AutoMapper" Version="15.0.1" />
 		<PackageReference Include="coverlet.collector" Version="6.0.2">
 			<PrivateAssets>all</PrivateAssets>
