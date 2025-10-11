@@ -47,11 +47,5 @@ RUN chmod +x /wait-for-db.sh
 ENV ASPNETCORE_ENVIRONMENT=Development
 ENV ASPNETCORE_URLS=http://+:5100
 
-# EntryPoint з міграціями
-ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "sh", "-c", "\
-    echo 'Database is up! Running migrations...' && \
-    dotnet tool restore && \
-    dotnet ef database update --project PetCare.Infrastructure/PetCare.Infrastructure.csproj --startup-project PetCare.Api/PetCare.Api.csproj && \
-    echo 'Starting API...' && \
-    exec dotnet PetCare.Api.dll \
-"]
+# EntryPoint 
+ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "dotnet", "PetCare.Api.dll"]
