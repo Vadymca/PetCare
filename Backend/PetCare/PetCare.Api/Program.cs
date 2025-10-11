@@ -51,11 +51,7 @@ public class Program
         {
             Log.Information("Запуск PetCare.Api...");
 
-            var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-            {
-                ContentRootPath = Directory.GetCurrentDirectory(),
-                Args = args,
-            });
+            var builder = WebApplication.CreateBuilder(args);
 
             // -------------------- Configuration Loading --------------------
             builder.Configuration
