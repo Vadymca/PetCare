@@ -4,6 +4,7 @@ services:
   db:
     image: postgis/postgis:16-3.4
     container_name: petcare_db
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -12,7 +13,11 @@ services:
       - '5432:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
-    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   petcare.api:
     build:
@@ -21,32 +26,42 @@ services:
       target: runtime
     container_name: petcare_api
     depends_on:
-      - db
-      - minio
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    env_file:
+      - .env
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: "http://+:5100"
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-    env_file:
-      - .env
     ports:
       - '5100:5100'
     restart: unless-stopped
+    sysctls:
+      fs.inotify.max_user_instances: 1024
+      fs.inotify.max_user_watches: 1048576
 
   minio:
     image: quay.io/minio/minio:latest
     container_name: petcare_minio
     command: server /data --console-address ":9001"
-    ports:
-      - "9000:9000"
-      - "9001:9001"
+    restart: unless-stopped
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
     volumes:
       - minio_data:/data
-    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 volumes:
   pgdata:
