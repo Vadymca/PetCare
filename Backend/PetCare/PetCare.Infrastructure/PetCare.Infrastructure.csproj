@@ -67,6 +67,12 @@
 		<ProjectReference Include="..\PetCare.Application\PetCare.Application.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<None Update="Migrations\**\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
 	<PropertyGroup>
 		<NoWarn>$(NoWarn);SA1633</NoWarn>
 		<NoWarn>$(NoWarn);SA1000</NoWarn>
