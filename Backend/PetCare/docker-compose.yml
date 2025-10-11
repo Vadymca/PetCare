@@ -33,6 +33,13 @@ services:
     ports:
       - '5100:5100'
     restart: unless-stopped
+    entrypoint: ["/wait-for-db.sh", "db", "5432", "sh", "-c", "\
+        echo 'Database ready! Running migrations...' && \
+        dotnet tool restore && \
+        dotnet ef database update --project PetCare.Infrastructure/PetCare.Infrastructure.csproj --startup-project PetCare.Api/PetCare.Api.csproj && \
+        echo 'Starting API...' && \
+        dotnet PetCare.Api.dll \
+      "]
 
   minio:
     image: quay.io/minio/minio:latest

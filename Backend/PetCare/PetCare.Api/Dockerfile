@@ -1,11 +1,15 @@
 # ===== SDK stage =====
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS sdk
 WORKDIR /src
 
 # Встановлюємо netcat та postgresql-client
 RUN apt-get update && \
     apt-get install -y --no-install-recommends netcat-traditional postgresql-client && \
     rm -rf /var/lib/apt/lists/*
+
+# Копіюємо скрипт wait-for-db
+COPY PetCare.Api/wait-for-db.sh /wait-for-db.sh
+RUN chmod +x /wait-for-db.sh
 
 # Копіюємо csproj і робимо restore
 COPY ["PetCare.Api/PetCare.Api.csproj", "PetCare.Api/"]
@@ -17,7 +21,11 @@ RUN dotnet restore "PetCare.Api/PetCare.Api.csproj"
 # Копіюємо весь код
 COPY . .
 
-# Build і publish API
+# Build усіх потрібних проектів (Infrastructure + Api)
+RUN dotnet build PetCare.Infrastructure/PetCare.Infrastructure.csproj -c Release
+RUN dotnet build PetCare.Api/PetCare.Api.csproj -c Release
+
+# Публікація API
 RUN dotnet publish "PetCare.Api/PetCare.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # ===== Runtime stage =====
@@ -29,15 +37,22 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends netcat-traditional && \
     rm -rf /var/lib/apt/lists/*
 
-# Копіюємо публішені файли з build stage
-COPY --from=build /app/publish ./ 
+# Копіюємо публішені файли
+COPY --from=sdk /app/publish ./
 
-# Копіюємо скрипт wait-for-db
+# Копіюємо скрипт
 COPY PetCare.Api/wait-for-db.sh /wait-for-db.sh
 RUN chmod +x /wait-for-db.sh
 
+# Env
 ENV ASPNETCORE_ENVIRONMENT=Development
 ENV ASPNETCORE_URLS=http://+:5100
 
-# EntryPoint: чекаємо БД, потім запускаємо додаток (міграції + seed через Program.cs)
-ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "dotnet", "PetCare.Api.dll"]
+# EntryPoint: чекаємо базу, виконуємо міграції та запускаємо API
+ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "sh", "-c", "\
+    dotnet tool restore && \
+    dotnet ef database update \
+        --project PetCare.Infrastructure/PetCare.Infrastructure.csproj \
+        --startup-project PetCare.Api/PetCare.Api.csproj && \
+    dotnet PetCare.Api.dll \
+  "]
