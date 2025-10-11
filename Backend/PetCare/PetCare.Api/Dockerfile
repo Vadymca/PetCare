@@ -21,17 +21,9 @@ RUN dotnet restore "PetCare.Api/PetCare.Api.csproj"
 # Копіюємо весь код
 COPY . .
 
-# Build Infrastructure (щоб EF Core бачив міграції)
+# Build Infrastructure та API
 RUN dotnet build PetCare.Infrastructure/PetCare.Infrastructure.csproj -c Release
-
-# ===== Міграції =====
-# Виконуємо міграції під час build
-RUN dotnet ef database update \
-    --project PetCare.Infrastructure/PetCare.Infrastructure.csproj \
-    --startup-project PetCare.Api/PetCare.Api.csproj
-
-# Публікація API
-RUN dotnet publish "PetCare.Api/PetCare.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish PetCare.Api/PetCare.Api.csproj -c Release -o /app/publish /p:UseAppHost=false
 
 # ===== Runtime stage =====
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
@@ -52,5 +44,9 @@ RUN chmod +x /wait-for-db.sh
 ENV ASPNETCORE_ENVIRONMENT=Development
 ENV ASPNETCORE_URLS=http://+:5100
 
-# EntryPoint
-ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "dotnet", "PetCare.Api.dll"]
+# EntryPoint: чекаємо базу, застосовуємо міграції, потім запускаємо API
+ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "sh", "-c", "\
+    dotnet tool restore && \
+    dotnet ef database update --project PetCare.Infrastructure/PetCare.Infrastructure.csproj --startup-project PetCare.Api/PetCare.Api.csproj && \
+    dotnet PetCare.Api.dll \
+"]
