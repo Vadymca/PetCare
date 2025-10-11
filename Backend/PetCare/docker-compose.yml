@@ -37,6 +37,7 @@ services:
       ASPNETCORE_URLS: "http://+:5100"
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE: "false"
     ports:
       - '5100:5100'
     restart: unless-stopped
