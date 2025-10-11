@@ -154,6 +154,8 @@ public class Program
                         npgsql.MapEnum<LostPetStatus>("lost_pet_status");
                         npgsql.MapEnum<UserRole>("user_role");
                         npgsql.MapEnum<VolunteerTaskStatus>("volunteer_task_status");
+
+                        npgsql.MigrationsAssembly("PetCare.Infrastructure.Migrations"); // <-- Вказуємо проект з міграціями
                     })
                     .EnableSensitiveDataLogging()
                     .EnableDetailedErrors();
