@@ -28,6 +28,9 @@ RUN dotnet build PetCare.Api/PetCare.Api.csproj -c Release
 # Публікація API
 RUN dotnet publish "PetCare.Api/PetCare.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
+# Дебаг: перевірка наявності файлів міграцій
+RUN ls -R /app/publish
+
 # ===== Runtime stage =====
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
@@ -37,12 +40,20 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends netcat-traditional && \
     rm -rf /var/lib/apt/lists/*
 
+# Копіюємо dotnet-ef із SDK-етапу
+COPY --from=sdk /root/.dotnet/tools /root/.dotnet/tools
+ENV PATH="$PATH:/root/.dotnet/tools"
+
 # Копіюємо публішені файли
-COPY --from=sdk /app/publish ./ 
+COPY --from=sdk /app/publish ./
+
+# Копіюємо скрипт wait-for-db
+COPY --from=sdk /wait-for-db.sh /wait-for-db.sh
+RUN chmod +x /wait-for-db.sh
 
 # Налаштування середовища
 ENV ASPNETCORE_ENVIRONMENT=Development
 ENV ASPNETCORE_URLS=http://+:5100
 
-# EntryPoint
-ENTRYPOINT ["dotnet", "PetCare.Api.dll"]
+# EntryPoint: чекаємо базу, застосовуємо міграції, запускаємо API
+ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "sh", "-c", "dotnet ef database update --project /app/publish/PetCare.Infrastructure.dll --startup-project /app/publish/PetCare.Api.dll && dotnet /app/PetCare.Api.dll"]

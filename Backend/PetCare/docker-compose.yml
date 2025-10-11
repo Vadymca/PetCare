@@ -40,6 +40,23 @@
     networks:
       - petcare-network
 
+  migration:
+    build:
+      context: .
+      dockerfile: PetCare.Api/Dockerfile
+      target: sdk
+    container_name: petcare_migration
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+    entrypoint: ["/wait-for-db.sh", "db", "5432", "dotnet", "ef", "database", "update", "--project", "/src/PetCare.Infrastructure", "--startup-project", "/src/PetCare.Api"]
+    networks:
+      - petcare-network
+
   petcare.api:
     build:
       context: .
@@ -51,6 +68,8 @@
         condition: service_healthy
       minio:
         condition: service_healthy
+      migration:
+        condition: service_completed_successfully
     env_file:
       - .env
     environment:
