@@ -63,6 +63,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Compile Include="Migrations\**\*.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\PetCare.Domain\PetCare.Domain.csproj" />
 		<ProjectReference Include="..\PetCare.Application\PetCare.Application.csproj" />
 	</ItemGroup>
