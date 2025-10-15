@@ -1,5 +1,5 @@
 # ===== SDK stage =====
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS sdk
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Встановлюємо netcat та postgresql-client
@@ -11,12 +11,7 @@ RUN apt-get update && \
 RUN dotnet tool install --global dotnet-ef --version 9.0.7
 ENV PATH="$PATH:/root/.dotnet/tools"
 
-# Копіюємо скрипт wait-for-db
-COPY wait-for-db.sh /wait-for-db.sh
-RUN chmod +x /wait-for-db.sh
-RUN ls -l /wait-for-db.sh  # Дебаг: перевірка наявності файлу
-
-# Копіюємо csproj файли і робимо restore
+# Копіюємо csproj та робимо restore
 COPY ["PetCare.Api/PetCare.Api.csproj", "PetCare.Api/"]
 COPY ["PetCare.Application/PetCare.Application.csproj", "PetCare.Application/"]
 COPY ["PetCare.Infrastructure/PetCare.Infrastructure.csproj", "PetCare.Infrastructure/"]
@@ -25,17 +20,13 @@ RUN dotnet restore "PetCare.Api/PetCare.Api.csproj"
 
 # Копіюємо весь код
 COPY . .
-RUN ls -R /src/PetCare.Infrastructure/Migrations || echo "Migrations folder not found"  # Дебаг: перевірка наявності міграцій
 
-# Build всі проєкти
+# Build усіх проектів
 RUN dotnet build PetCare.Infrastructure/PetCare.Infrastructure.csproj -c Release
 RUN dotnet build PetCare.Api/PetCare.Api.csproj -c Release
 
 # Публікація API
 RUN dotnet publish "PetCare.Api/PetCare.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
-
-# Дебаг: перевірка наявності файлів міграцій у опублікованому результаті
-RUN ls -R /app/publish || echo "Publish folder not found"
 
 # ===== Runtime stage =====
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
@@ -46,21 +37,20 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends netcat-traditional && \
     rm -rf /var/lib/apt/lists/*
 
-# Копіюємо dotnet-ef із SDK-етапу
-COPY --from=sdk /root/.dotnet/tools /root/.dotnet/tools
+# Копіюємо dotnet-ef
+COPY --from=build /root/.dotnet/tools /root/.dotnet/tools
 ENV PATH="$PATH:/root/.dotnet/tools"
 
 # Копіюємо публішені файли
-COPY --from=sdk /app/publish ./
+COPY --from=build /app/publish ./
 
 # Копіюємо скрипт wait-for-db
-COPY --from=sdk /wait-for-db.sh /wait-for-db.sh
+COPY --from=build /src/wait-for-db.sh /wait-for-db.sh
 RUN chmod +x /wait-for-db.sh
-RUN ls -l /wait-for-db.sh  # Дебаг: перевірка наявності файлу
 
 # Налаштування середовища
 ENV ASPNETCORE_ENVIRONMENT=Development
 ENV ASPNETCORE_URLS=http://+:5100
 
-# EntryPoint: чекаємо базу, запускаємо API
+# EntryPoint: чекаємо базу та запускаємо API
 ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "dotnet", "/app/PetCare.Api.dll"]
