@@ -1,10 +1,10 @@
 ﻿namespace PetCare.Application.Mappings;
 
+using System.Linq;
 using AutoMapper;
 using PetCare.Application.Dtos.AnimalDtos;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Entities;
-using System.Linq;
 
 /// <summary>
 /// AutoMapper profile for mapping Animal aggregates to AnimalListDto.

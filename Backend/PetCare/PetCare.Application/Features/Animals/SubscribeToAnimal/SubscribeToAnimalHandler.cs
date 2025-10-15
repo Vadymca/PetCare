@@ -1,10 +1,10 @@
 ﻿namespace PetCare.Application.Features.Animals.SubscribeToAnimal;
 
+using System;
+using System.Threading.Tasks;
 using MediatR;
 using PetCare.Application.Dtos.AnimalDtos;
 using PetCare.Application.Interfaces;
-using System;
-using System.Threading.Tasks;
 
 /// <summary>
 /// XHandles the subscription of a user to an animal.

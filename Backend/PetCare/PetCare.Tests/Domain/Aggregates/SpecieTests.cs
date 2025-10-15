@@ -1,8 +1,9 @@
 ﻿namespace PetCare.Tests.Domain.Aggregates;
+
+using System;
 using FluentAssertions;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Entities;
-using System;
 using Xunit;
 
 /// <summary>

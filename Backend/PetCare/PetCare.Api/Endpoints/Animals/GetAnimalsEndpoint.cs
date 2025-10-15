@@ -32,21 +32,17 @@ public static class GetAnimalsEndpoint
             [FromQuery] Guid? shelterId = null,
             [FromQuery] Guid? specieId = null,
             [FromQuery] Guid? breedId = null,
-            [FromQuery] string? search = null
-        ) =>
+            [FromQuery] string? search = null) =>
         {
             // Конвертуємо рядки у enum, регістронезалежно
             AnimalGender[]? genders = gendersStr?.Select(s =>
-                Enum.Parse<AnimalGender>(s, ignoreCase: true)
-            ).ToArray();
+                Enum.Parse<AnimalGender>(s, ignoreCase: true)).ToArray();
 
             AnimalSize[]? sizes = sizesStr?.Select(s =>
-                Enum.Parse<AnimalSize>(s, ignoreCase: true)
-            ).ToArray();
+                Enum.Parse<AnimalSize>(s, ignoreCase: true)).ToArray();
 
             AnimalStatus[]? statuses = statusesStr?.Select(s =>
-                Enum.Parse<AnimalStatus>(s, ignoreCase: true)
-            ).ToArray();
+                Enum.Parse<AnimalStatus>(s, ignoreCase: true)).ToArray();
 
             var command = new GetAnimalsCommand(
                 Page: page,
@@ -60,8 +56,7 @@ public static class GetAnimalsEndpoint
                 ShelterId: shelterId,
                 SpecieId: specieId,
                 BreedId: breedId,
-                Search: search
-            );
+                Search: search);
 
             var result = await mediator.Send(command);
             return Results.Ok(result);

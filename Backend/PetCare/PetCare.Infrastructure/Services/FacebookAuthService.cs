@@ -1,12 +1,12 @@
 ﻿namespace PetCare.Infrastructure.Services;
 
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Web;
 using Microsoft.Extensions.Options;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
 using PetCare.Infrastructure.Options;
-using System.Net.Http.Json;
-using System.Text.Json;
-using System.Web;
 
 /// <summary>
 /// Service for handling Facebook authentication.

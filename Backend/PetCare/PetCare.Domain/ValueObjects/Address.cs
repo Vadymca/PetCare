@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Domain.ValueObjects;
+
 using PetCare.Domain.Common;
 
 /// <summary>

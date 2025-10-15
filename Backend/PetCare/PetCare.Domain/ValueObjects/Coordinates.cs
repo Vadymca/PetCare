@@ -1,7 +1,8 @@
 ﻿namespace PetCare.Domain.ValueObjects;
+
+using System.Device.Location;
 using NetTopologySuite.Geometries;
 using PetCare.Domain.Common;
-using System.Device.Location;
 
 /// <summary>
 /// Represents geographical coordinates (latitude and longitude) as a value object.
@@ -11,6 +12,11 @@ public sealed class Coordinates : ValueObject
     private const int Srid = 4326;
 
     private Coordinates(Point point) => this.Point = point;
+
+    /// <summary>
+    /// Gets a default origin coordinate (0, 0).
+    /// </summary>
+    public static Coordinates Origin => From(0, 0);
 
     /// <summary>
     /// Gets the underlying Point (with SRID 4326).
@@ -26,11 +32,6 @@ public sealed class Coordinates : ValueObject
     /// Gets the longitude value.
     /// </summary>
     public double Longitude => this.Point.X;
-
-    /// <summary>
-    /// Gets a default origin coordinate (0, 0).
-    /// </summary>
-    public static Coordinates Origin => From(0, 0);
 
     /// <summary>
     /// Creates a new <see cref="Coordinates"/> instance from latitude and longitude.

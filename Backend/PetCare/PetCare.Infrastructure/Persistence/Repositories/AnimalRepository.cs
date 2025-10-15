@@ -1,4 +1,6 @@
 ﻿namespace PetCare.Infrastructure.Persistence.Repositories;
+
+using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Aggregates;
@@ -7,7 +9,6 @@ using PetCare.Domain.Enums;
 using PetCare.Domain.Specifications.Animal;
 using PetCare.Domain.ValueObjects;
 using PetCare.Infrastructure.Persistence;
-using System.Threading;
 
 /// <summary>
 /// Repository for managing <see cref="Animal"/> aggregate.

@@ -1,10 +1,11 @@
 ﻿namespace PetCare.Infrastructure.Services.Sms;
+
+using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PetCare.Application.Interfaces;
 using PetCare.Infrastructure.Options;
-using System;
-using System.Threading.Tasks;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;
@@ -31,11 +32,11 @@ public sealed class TwilioSmsService : ISmsService
         IOptions<SmsSettings> smsOptions,
         ILogger<TwilioSmsService> logger)
     {
-        twilio = twilioOptions.Value;
-        sms = smsOptions.Value;
+        this.twilio = twilioOptions.Value;
+        this.sms = smsOptions.Value;
         this.logger = logger;
 
-        TwilioClient.Init(twilio.AccountSid, twilio.AuthToken);
+        TwilioClient.Init(this.twilio.AccountSid, this.twilio.AuthToken);
     }
 
     /// <summary>
@@ -54,20 +55,20 @@ public sealed class TwilioSmsService : ISmsService
         try
         {
             var result = await MessageResource.CreateAsync(
-                body: $"[{sms.ApplicationName}] {message}",
-                from: new PhoneNumber(twilio.FromPhoneNumber),
+                body: $"[{this.sms.ApplicationName}] {message}",
+                from: new PhoneNumber(this.twilio.FromPhoneNumber),
                 to: new PhoneNumber(toPhoneE164));
 
-            if (twilio.EnableLogging)
+            if (this.twilio.EnableLogging)
             {
-                logger.LogInformation("SMS sent to {To}. Status: {Status}; Sid: {Sid}", toPhoneE164, result.Status, result.Sid);
+                this.logger.LogInformation("SMS sent to {To}. Status: {Status}; Sid: {Sid}", toPhoneE164, result.Status, result.Sid);
             }
 
             return true;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to send SMS to {To}", toPhoneE164);
+            this.logger.LogError(ex, "Failed to send SMS to {To}", toPhoneE164);
             return false;
         }
     }

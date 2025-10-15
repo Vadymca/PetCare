@@ -1,7 +1,7 @@
 ﻿namespace PetCare.Application.Features.Users.Roles;
 
-using FluentValidation;
 using System;
+using FluentValidation;
 
 /// <summary>
 /// Validator for the <see cref="AddUserRoleCommand"/> command.

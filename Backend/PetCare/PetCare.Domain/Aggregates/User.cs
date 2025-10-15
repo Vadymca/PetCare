@@ -30,6 +30,12 @@ public sealed class User : IdentityUser<Guid>
     // Domain events - using AggregateRoot pattern
     private readonly List<DomainEvent> domainEvents = new();
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="User"/> class with default property values.
+    /// </summary>
+    /// <remarks>The default constructor sets string properties to empty strings, initializes the Preferences
+    /// dictionary, sets the Language property to "uk", and sets the CreatedAt and UpdatedAt properties to the current
+    /// UTC date and time.</remarks>
     public User()
     {
         this.FirstName = string.Empty;
@@ -72,7 +78,7 @@ public sealed class User : IdentityUser<Guid>
     }
 
     /// <summary>
-    /// Gets the email address of the user.
+    /// Gets or sets the email address of the user.
     /// </summary>
     public new string? Email
     {
@@ -81,7 +87,7 @@ public sealed class User : IdentityUser<Guid>
     }
 
     /// <summary>
-    /// Gets the hashed password of the user.
+    /// Gets or sets the hashed password of the user.
     /// </summary>
     public new string? PasswordHash
     {
@@ -138,7 +144,6 @@ public sealed class User : IdentityUser<Guid>
     /// Gets the user's postal address.
     /// </summary>
     public Address? Address { get; private set; }
-
 
     /// <summary>
     /// Gets the preferred language of the user.
@@ -232,41 +237,6 @@ public sealed class User : IdentityUser<Guid>
     public IReadOnlyCollection<DomainEvent> DomainEvents => this.domainEvents.AsReadOnly();
 
     /// <summary>
-    /// Clears all domain events from the aggregate.
-    /// </summary>
-    public void ClearDomainEvents()
-    {
-        this.domainEvents.Clear();
-    }
-
-    /// <summary>
-    /// Adds a domain event to the aggregate's event collection.
-    /// </summary>
-    /// <param name="domainEvent">The domain event to add.</param>
-    private void AddDomainEvent(DomainEvent domainEvent)
-    {
-        this.domainEvents.Add(domainEvent);
-    }
-
-    /// <summary>
-    /// Adds a UserCreatedEvent to the aggregate's event collection.
-    /// This should be called after the user has been persisted and has a valid ID.
-    /// </summary>
-    public void AddUserCreatedEvent()
-    {
-        this.AddDomainEvent(new UserCreatedEvent(this.Id));
-    }
-
-    /// <summary>
-    /// Adds a UserEmailConfirmedEvent to the aggregate's event collection.
-    /// Should be called after the user's email has been confirmed.
-    /// </summary>
-    public void AddEmailConfirmedEvent()
-    {
-        this.AddDomainEvent(new UserEmailConfirmedEvent(this.Id, this.Email!));
-    }
-
-    /// <summary>
     /// Creates a new <see cref="User"/> instance with the specified parameters.
     /// </summary>
     /// <param name="email">The email address of the user.</param>
@@ -300,7 +270,6 @@ public sealed class User : IdentityUser<Guid>
         string language = "uk",
         string? postalCode = null)
     {
-
         if (string.IsNullOrWhiteSpace(firstName) || firstName.Length > 50)
         {
             throw new ArgumentException("Ім'я невірне", nameof(firstName));
@@ -345,6 +314,21 @@ public sealed class User : IdentityUser<Guid>
 
         // Domain event will be added in UserService after the user gets an ID from the database
         return user;
+    }
+
+    /// <summary>
+    /// Adds a UserCreatedEvent to the aggregate's event collection.
+    /// This should be called after the user has been persisted and has a valid ID.
+    /// </summary>
+    public void AddUserCreatedEvent() => this.AddDomainEvent(new UserCreatedEvent(this.Id));
+
+    /// <summary>
+    /// Adds a UserEmailConfirmedEvent to the aggregate's event collection.
+    /// Should be called after the user's email has been confirmed.
+    /// </summary>
+    public void AddEmailConfirmedEvent()
+    {
+        this.AddDomainEvent(new UserEmailConfirmedEvent(this.Id, this.Email!));
     }
 
     /// <summary>
@@ -1375,6 +1359,23 @@ public sealed class User : IdentityUser<Guid>
     /// </summary>
     /// <returns>Always returns true, users of any role can apply for adoption.</returns>
     public bool CanSubmitAdoptionApplication() => true;
+
+    /// <summary>
+    /// Clears all domain events from the aggregate.
+    /// </summary>
+    public void ClearDomainEvents()
+    {
+        this.domainEvents.Clear();
+    }
+
+    /// <summary>
+    /// Adds a domain event to the aggregate's event collection.
+    /// </summary>
+    /// <param name="domainEvent">The domain event to add.</param>
+    private void AddDomainEvent(DomainEvent domainEvent)
+    {
+        this.domainEvents.Add(domainEvent);
+    }
 
     private bool IsAdmin() => this.Role == UserRole.Admin;
 

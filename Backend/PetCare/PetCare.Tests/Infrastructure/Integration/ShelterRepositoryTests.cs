@@ -1,4 +1,9 @@
 ﻿namespace PetCare.Tests.Infrastructure.Integration;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Npgsql;
@@ -9,10 +14,6 @@ using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
 using PetCare.Infrastructure.Persistence;
 using PetCare.Infrastructure.Persistence.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Testcontainers.PostgreSql;
 
 /// <summary>
@@ -41,8 +42,12 @@ public sealed class ShelterRepositoryTests : IAsyncLifetime
     }
 
     /// <summary>
-    /// Initializes DB and repository before each test.
+    /// Initializes the database context and related infrastructure asynchronously for testing purposes.
     /// </summary>
+    /// <remarks>This method is obsolete and may be removed in a future release. It configures the database
+    /// context, sets up required type mappings, and seeds test data. Intended for use in test scenarios only.</remarks>
+    /// <returns>A task that represents the asynchronous initialization operation.</returns>
+    [Obsolete]
     public async Task InitializeAsync()
     {
         NpgsqlConnection.GlobalTypeMapper.EnableDynamicJson();
@@ -66,12 +71,16 @@ public sealed class ShelterRepositoryTests : IAsyncLifetime
 
         this.repository = new ShelterRepository(this.context);
 
-        await SeedTestDataAsync();
+        await this.SeedTestDataAsync();
     }
 
     /// <summary>
-    /// Disposes the DB context and stops the container.
+    /// Asynchronously releases all resources used by the current instance.
     /// </summary>
+    /// <remarks>This method should be called when the instance is no longer needed to ensure that all
+    /// underlying resources are released properly. Await the returned task to guarantee that disposal has completed
+    /// before proceeding.</remarks>
+    /// <returns>A task that represents the asynchronous dispose operation.</returns>
     public async Task DisposeAsync()
     {
         await this.context.DisposeAsync();
@@ -79,30 +88,14 @@ public sealed class ShelterRepositoryTests : IAsyncLifetime
     }
 
     /// <summary>
-    /// Seeds required test data: user and breed.
+    /// Verifies that retrieving a shelter by its slug returns the shelter entity with all related data, including
+    /// animals and IoT devices, correctly included.
     /// </summary>
-    private async Task SeedTestDataAsync()
-    {
-        // Create user
-        this.testUser = User.Create(
-            email: "user@example.com",
-            passwordHash: "hashed_password",
-            firstName: "User",
-            lastName: "Name",
-            phone: "+380501234567",
-            role: UserRole.User);
-        await context.Users.AddAsync(this.testUser);
-
-        // Create species and breed
-        var species = Specie.Create("Dog");
-        await context.Species.AddAsync(species);
-
-        this.testBreed = Breed.Create(species.Id, "Dog", "Common dog breed");
-        await context.Breeds.AddAsync(this.testBreed);
-
-        await context.SaveChangesAsync();
-    }
-
+    /// <remarks>This test ensures that the data context properly loads all navigation properties for a
+    /// shelter, such as animals, donations, volunteer tasks, animal aid requests, IoT devices, events, and subscribers,
+    /// when queried by slug. It also confirms that specific related entities added during setup are present in the
+    /// result.</remarks>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [Fact]
     public async Task GetBySlugAsync_ShouldReturnShelterWithIncludes()
     {
@@ -138,7 +131,6 @@ public sealed class ShelterRepositoryTests : IAsyncLifetime
 
         // Додаємо тварину в Shelter
         var animal = Animal.Create(
-            slug: "dog-" + Guid.NewGuid().ToString("N"),
             userId: this.testUser.Id,
             name: "Doggy",
             breedId: this.testBreed.Id,
@@ -160,8 +152,8 @@ public sealed class ShelterRepositoryTests : IAsyncLifetime
             height: null,
             color: null,
             isSterilized: false,
-            haveDocuments: false,
-            Guid.NewGuid());
+            isUnderCare: false,
+            haveDocuments: false);
 
         shelter.AddAnimal(animal, this.testUser.Id);
         await this.context.Shelters.AddAsync(shelter);
@@ -196,6 +188,13 @@ public sealed class ShelterRepositoryTests : IAsyncLifetime
         Assert.Contains(fromDb.IoTDevices, d => d.Id == device.Id);
     }
 
+    /// <summary>
+    /// Verifies that GetByManagerIdAsync returns all shelters managed by the specified manager.
+    /// </summary>
+    /// <remarks>This test ensures that the repository correctly retrieves all shelters associated with a
+    /// given manager ID. It adds two shelters with the same manager and asserts that both are returned by the method
+    /// under test.</remarks>
+    /// <returns>A task that represents the asynchronous test operation.</returns>
     [Fact]
     public async Task GetByManagerIdAsync_ShouldReturnSheltersForManager()
     {
@@ -232,12 +231,12 @@ public sealed class ShelterRepositoryTests : IAsyncLifetime
             socialMedia: null,
             managerId: this.testUser.Id);
 
-        await context.Shelters.AddAsync(shelter1);
-        await context.Shelters.AddAsync(shelter2);
-        await context.SaveChangesAsync();
+        await this.context.Shelters.AddAsync(shelter1);
+        await this.context.Shelters.AddAsync(shelter2);
+        await this.context.SaveChangesAsync();
 
         // Act
-        var shelters = await repository.GetByManagerIdAsync(this.testUser.Id);
+        var shelters = await this.repository.GetByManagerIdAsync(this.testUser.Id);
 
         // Assert
         Assert.Equal(2, shelters.Count);
@@ -245,6 +244,12 @@ public sealed class ShelterRepositoryTests : IAsyncLifetime
         Assert.Contains(shelters, s => s.Id == shelter2.Id);
     }
 
+    /// <summary>
+    /// Verifies that the GetWithFreeCapacityAsync method returns only shelters that have available capacity.
+    /// </summary>
+    /// <remarks>This test ensures that shelters at full capacity are excluded from the results, and only
+    /// those with available space are returned by the repository method.</remarks>
+    /// <returns>A task that represents the asynchronous test operation.</returns>
     [Fact]
     public async Task GetWithFreeCapacityAsync_ShouldReturnSheltersWithAvailableSpace()
     {
@@ -281,18 +286,26 @@ public sealed class ShelterRepositoryTests : IAsyncLifetime
             socialMedia: null,
             managerId: this.testUser.Id);
 
-        await context.Shelters.AddAsync(fullShelter);
-        await context.Shelters.AddAsync(freeShelter);
-        await context.SaveChangesAsync();
+        await this.context.Shelters.AddAsync(fullShelter);
+        await this.context.Shelters.AddAsync(freeShelter);
+        await this.context.SaveChangesAsync();
 
         // Act
-        var result = await repository.GetWithFreeCapacityAsync();
+        var result = await this.repository.GetWithFreeCapacityAsync();
 
         // Assert
         Assert.Single(result);
         Assert.Equal(freeShelter.Id, result.First().Id);
     }
 
+    /// <summary>
+    /// Verifies that the GetShelterByDeviceIdAsync method returns the correct shelter associated with a given IoT
+    /// device identifier.
+    /// </summary>
+    /// <remarks>This test ensures that when a shelter and an associated IoT device are added to the context,
+    /// retrieving the shelter by the device's identifier returns the expected shelter and includes the device in its
+    /// collection.</remarks>
+    /// <returns>A task that represents the asynchronous test operation.</returns>
     [Fact]
     public async Task GetShelterByDeviceIdAsync_ShouldReturnShelter()
     {
@@ -313,8 +326,8 @@ public sealed class ShelterRepositoryTests : IAsyncLifetime
             socialMedia: null,
             managerId: this.testUser.Id);
 
-        await context.Shelters.AddAsync(shelter);
-        await context.SaveChangesAsync();
+        await this.context.Shelters.AddAsync(shelter);
+        await this.context.SaveChangesAsync();
 
         // Створюємо IoT-пристрій
         var device = IoTDevice.Create(
@@ -325,15 +338,40 @@ public sealed class ShelterRepositoryTests : IAsyncLifetime
             serialNumber: "SN123456");
 
         // Додаємо пристрій у контекст без виклику Update
-        await context.IoTDevices.AddAsync(device);
-        await context.SaveChangesAsync();
+        await this.context.IoTDevices.AddAsync(device);
+        await this.context.SaveChangesAsync();
 
         // Act
-        var fromDb = await repository.GetShelterByDeviceIdAsync(device.Id);
+        var fromDb = await this.repository.GetShelterByDeviceIdAsync(device.Id);
 
         // Assert
         Assert.NotNull(fromDb);
         Assert.Equal(shelter.Id, fromDb!.Id);
         Assert.Contains(fromDb.IoTDevices, d => d.Id == device.Id);
+    }
+
+    /// <summary>
+    /// Seeds required test data: user and breed.
+    /// </summary>
+    private async Task SeedTestDataAsync()
+    {
+        // Create user
+        this.testUser = User.Create(
+            email: "user@example.com",
+            passwordHash: "hashed_password",
+            firstName: "User",
+            lastName: "Name",
+            phone: "+380501234567",
+            role: UserRole.User);
+        await this.context.Users.AddAsync(this.testUser);
+
+        // Create species and breed
+        var species = Specie.Create("Dog");
+        await this.context.Species.AddAsync(species);
+
+        this.testBreed = Breed.Create(species.Id, "Dog", "Common dog breed");
+        await this.context.Breeds.AddAsync(this.testBreed);
+
+        await this.context.SaveChangesAsync();
     }
 }

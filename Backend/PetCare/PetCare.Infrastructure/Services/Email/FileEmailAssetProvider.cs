@@ -1,8 +1,8 @@
 ﻿namespace PetCare.Infrastructure.Services.Email;
 
+using System;
 using Microsoft.AspNetCore.Hosting;
 using PetCare.Application.Interfaces;
-using System;
 
 /// <summary>
 /// Provides access to email-related assets (such as images) from the file system.

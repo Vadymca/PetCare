@@ -1,8 +1,9 @@
 ﻿namespace PetCare.Domain.Specifications.Animal;
-using PetCare.Domain.Aggregates;
-using PetCare.Domain.Enums;
+
 using System;
 using System.Linq.Expressions;
+using PetCare.Domain.Aggregates;
+using PetCare.Domain.Enums;
 
 /// <summary>
 /// Specification for filtering animals that are available for adoption.

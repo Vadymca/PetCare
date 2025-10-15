@@ -1,10 +1,10 @@
 ﻿namespace PetCare.Infrastructure.Services;
 
-using PetCare.Application.Interfaces;
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using PetCare.Application.Interfaces;
 
 /// <summary>
 /// Implementation of IFileStorageService that stores files in wwwroot/uploads.

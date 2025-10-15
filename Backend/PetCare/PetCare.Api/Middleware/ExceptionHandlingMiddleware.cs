@@ -51,7 +51,7 @@ public sealed class ExceptionHandlingMiddleware : IMiddleware
             await context.Response.WriteAsJsonAsync(new
             {
                 error = "Некоректний формат JSON",
-                details = ex.Message
+                details = ex.Message,
             });
         }
         catch (InvalidOperationException ex) // business rule violation

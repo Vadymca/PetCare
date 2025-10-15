@@ -1,13 +1,13 @@
 ﻿namespace PetCare.Application.Features.Auth.TwoFactor.SetupTotp;
 
-using MediatR;
-using Microsoft.Extensions.Logging;
-using PetCare.Application.Dtos.AuthDtos;
-using PetCare.Application.Interfaces;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
+using Microsoft.Extensions.Logging;
+using PetCare.Application.Dtos.AuthDtos;
+using PetCare.Application.Interfaces;
 
 /// <summary>
 /// Handles TOTP setup by generating shared key, QR code, and recovery codes

@@ -1,9 +1,10 @@
 ﻿namespace PetCare.Infrastructure.Services.Sms;
+
+using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using PetCare.Application.Interfaces;
-using System;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Provides functionality to manage SMS-based two-factor authentication (2FA) setup for users.
@@ -44,15 +45,15 @@ public sealed class Sms2FaService : ISms2FaService
         var code = new Random().Next(100000, 999999).ToString();
 
         // Зберігаємо код у кеші на 5 хвилин
-        cache.Set(GetCacheKey(userId), code, TimeSpan.FromMinutes(5));
+        this.cache.Set(this.GetCacheKey(userId), code, TimeSpan.FromMinutes(5));
 
-        var result = await smsService.SendAsync(
+        var result = await this.smsService.SendAsync(
             phoneNumber,
             $"Ваш код підтвердження для входу: {code}. Він дійсний протягом 5 хвилин.");
 
         if (result)
         {
-            logger.LogInformation("SMS 2FA code sent to {PhoneNumber} for user {UserId}", phoneNumber, userId);
+            this.logger.LogInformation("SMS 2FA code sent to {PhoneNumber} for user {UserId}", phoneNumber, userId);
         }
 
         return result;
@@ -70,12 +71,12 @@ public sealed class Sms2FaService : ISms2FaService
     /// </returns>
     public Task<bool> VerifySetupCodeAsync(string userId, string code)
     {
-        if (cache.TryGetValue(GetCacheKey(userId), out string? cachedCode))
+        if (this.cache.TryGetValue(this.GetCacheKey(userId), out string? cachedCode))
         {
             if (cachedCode == code)
             {
                 // Видаляємо код після успішної перевірки
-                cache.Remove(GetCacheKey(userId));
+                this.cache.Remove(this.GetCacheKey(userId));
                 return Task.FromResult(true);
             }
         }

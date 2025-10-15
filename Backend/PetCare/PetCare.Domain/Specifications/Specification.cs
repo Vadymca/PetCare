@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Domain.Specifications;
+
 using System;
 using System.Linq.Expressions;
 

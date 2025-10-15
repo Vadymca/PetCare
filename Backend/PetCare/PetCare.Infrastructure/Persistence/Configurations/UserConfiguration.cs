@@ -1,9 +1,10 @@
 ﻿namespace PetCare.Infrastructure.Persistence.Configurations;
+
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.ValueObjects;
-using System.Text.Json;
 
 /// <summary>
 /// Configures the <see cref="User"/> entity for Entity Framework Core.
@@ -14,6 +15,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
     /// Configures the entity type builder for <see cref="User"/>.
     /// </summary>
     /// <param name="builder">The builder to configure the entity.</param>
+    [Obsolete]
     public void Configure(EntityTypeBuilder<User> builder)
     {
         builder.HasCheckConstraint("CK_Users_Points", "\"Points\" >= 0");
@@ -22,8 +24,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.Id)
             .HasDefaultValueSql("gen_random_uuid()");
-
-        // Email конфігурація наслідується від IdentityUser
 
         builder.Property(u => u.FirstName)
            .HasMaxLength(50)
@@ -70,7 +70,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.Address)
            .HasConversion(
-               addr => addr.ToString(),
+               addr => addr!.ToString(),
                str => Address.Create(str))
            .IsRequired(false);
 

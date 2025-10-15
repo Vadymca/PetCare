@@ -1,11 +1,11 @@
 ﻿namespace PetCare.Domain.DomainServices;
 
+using System;
+using System.Threading.Tasks;
 using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Abstractions.Services;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Entities;
-using System;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Domain service for handling IoT devices across shelters,

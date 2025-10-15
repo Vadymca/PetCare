@@ -1,7 +1,7 @@
 ﻿namespace PetCare.Application.Features.Animals.RemoveAnimalPhoto;
 
-using FluentValidation;
 using System;
+using FluentValidation;
 
 /// <summary>
 /// Validator for <see cref="RemoveAnimalPhotoCommand"/>.

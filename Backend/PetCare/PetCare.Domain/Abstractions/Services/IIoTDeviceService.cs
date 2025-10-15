@@ -1,9 +1,9 @@
 ﻿namespace PetCare.Domain.Abstractions.Services;
 
-using PetCare.Domain.Aggregates;
-using PetCare.Domain.Entities;
 using System;
 using System.Threading.Tasks;
+using PetCare.Domain.Aggregates;
+using PetCare.Domain.Entities;
 
 /// <summary>
 /// Provides operations for managing IoT devices across shelters and other related aggregates.

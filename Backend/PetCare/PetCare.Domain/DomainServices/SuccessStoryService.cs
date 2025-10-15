@@ -1,10 +1,11 @@
 ﻿namespace PetCare.Domain.DomainServices;
-using PetCare.Domain.Abstractions.Services;
-using PetCare.Domain.Aggregates;
-using PetCare.Domain.Entities;
+
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using PetCare.Domain.Abstractions.Services;
+using PetCare.Domain.Aggregates;
+using PetCare.Domain.Entities;
 
 /// <summary>
 /// Implementation of the domain service for managing success stories.

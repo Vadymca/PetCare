@@ -1,6 +1,7 @@
 ﻿namespace PetCare.Domain.Events;
-using PetCare.Domain.ValueObjects;
+
 using System;
+using PetCare.Domain.ValueObjects;
 
 /// <summary>
 /// Raised when a role is assigned to a user.

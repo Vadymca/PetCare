@@ -1,35 +1,10 @@
 ﻿namespace PetCare.Api.Endpoints.Animals;
 
+using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using PetCare.Application.Dtos.AnimalDtos;
 using PetCare.Application.Features.Animals.CreateAnimal;
-using PetCare.Domain.Enums;
-using System.Security.Claims;
-
-public sealed record CreateAnimalBody(
-    string Name,
-    Guid BreedId,
-    DateTime? Birthday,
-    AnimalGender Gender,
-    string? Description,
-    List<string>? HealthConditions,
-    List<string>? SpecialNeeds,
-    List<AnimalTemperament>? Temperaments,
-    AnimalSize Size,
-    List<string>? Photos,
-    List<string>? Videos,
-    Guid ShelterId,
-    AnimalStatus Status,
-    AnimalCareCost CareCost,
-    string? AdoptionRequirements,
-    string? MicrochipId,
-    float? Weight,
-    float? Height,
-    string? Color,
-    bool IsSterilized,
-    bool IsUnderCare,
-    bool HaveDocuments);
 
 /// <summary>
 /// Endpoint for creating a new animal.

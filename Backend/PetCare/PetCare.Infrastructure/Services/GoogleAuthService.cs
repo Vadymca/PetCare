@@ -1,15 +1,15 @@
 ﻿namespace PetCare.Infrastructure.Services;
 
-using Microsoft.Extensions.Options;
-using PetCare.Application.Dtos.AuthDtos;
-using PetCare.Application.Interfaces;
-using PetCare.Infrastructure.Options;
 using System;
 using System.Collections.Generic;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.Extensions.Options;
+using PetCare.Application.Dtos.AuthDtos;
+using PetCare.Application.Interfaces;
+using PetCare.Infrastructure.Options;
 
 /// <summary>
 /// Service for handling Google OAuth authentication.

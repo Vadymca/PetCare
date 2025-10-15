@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Infrastructure.Persistence.Repositories;
+
 using Microsoft.EntityFrameworkCore;
 using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Aggregates;

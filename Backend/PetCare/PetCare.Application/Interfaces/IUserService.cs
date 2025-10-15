@@ -247,7 +247,7 @@ public interface IUserService
     Task ReplaceRoleAsync(User user, string newRole);
 
     /// <summary>
-    /// Changes the password of the user with the specified Id by generating a reset token 
+    /// Changes the password of the user with the specified Id by generating a reset token
     /// and applying the new password using <see cref="UserManager{User}"/>.
     /// Throws an exception if the password change fails.
     /// </summary>

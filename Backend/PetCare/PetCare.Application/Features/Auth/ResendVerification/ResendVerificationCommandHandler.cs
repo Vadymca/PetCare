@@ -1,10 +1,10 @@
 ﻿namespace PetCare.Application.Features.Auth.ResendVerification;
 
+using System.Web;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
-using System.Web;
 
 /// <summary>
 /// Handles the <see cref="ResendVerificationCommand"/> request.

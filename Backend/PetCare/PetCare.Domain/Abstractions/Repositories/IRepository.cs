@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Domain.Abstractions.Repositories;
+
 using PetCare.Domain.Specifications;
 
 /// <summary>

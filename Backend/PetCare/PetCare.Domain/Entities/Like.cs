@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Domain.Entities;
+
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 
@@ -80,5 +81,4 @@ public sealed class Like : BaseEntity
     /// <returns>A new like instance.</returns>
     public static Like Create(Guid userId, string likedEntity, Guid likedEntityId, Guid? articleCommentId = null)
         => new(userId, likedEntity, likedEntityId, articleCommentId);
-
 }

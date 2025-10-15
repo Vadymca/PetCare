@@ -1,5 +1,5 @@
 ﻿namespace PetCare.Domain.Abstractions.Events;
-using PetCare.Domain.Events;
+
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

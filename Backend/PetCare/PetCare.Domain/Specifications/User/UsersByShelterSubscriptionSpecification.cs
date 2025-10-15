@@ -1,8 +1,9 @@
 ﻿namespace PetCare.Domain.Specifications.User;
-using PetCare.Domain.Aggregates;
+
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using PetCare.Domain.Aggregates;
 
 /// <summary>
 /// Specification for filtering users by subscription to a specific shelter.

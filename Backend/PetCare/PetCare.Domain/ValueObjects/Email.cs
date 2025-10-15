@@ -1,6 +1,7 @@
 ﻿namespace PetCare.Domain.ValueObjects;
-using PetCare.Domain.Common;
+
 using System.Text.RegularExpressions;
+using PetCare.Domain.Common;
 
 /// <summary>
 /// Represents an email address as a value object with validation.

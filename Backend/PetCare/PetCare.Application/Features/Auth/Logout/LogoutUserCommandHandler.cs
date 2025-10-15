@@ -1,11 +1,11 @@
 ﻿namespace PetCare.Application.Features.Auth.Logout;
 
+using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Domain.Abstractions.Services;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles <see cref="LogoutUserCommand"/> request.

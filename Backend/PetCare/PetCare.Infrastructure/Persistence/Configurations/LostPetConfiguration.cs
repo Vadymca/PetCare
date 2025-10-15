@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Infrastructure.Persistence.Configurations;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PetCare.Domain.Entities;
@@ -28,14 +29,14 @@ public sealed class LostPetConfiguration : IEntityTypeConfiguration<LostPet>
 
         builder.Property(x => x.Name)
              .HasConversion(
-                name => name.Value,
+                name => name!.Value,
                 value => Name.Create(value))
             .HasMaxLength(50);
         builder.Property(x => x.Description);
 
         builder.Property(x => x.LastSeenLocation)
             .HasConversion(
-                 c => c.Point,
+                 c => c!.Point,
                  p => Coordinates.From(p.Y, p.X))
             .HasColumnType("geometry (Point, 4326)");
         builder.Property(x => x.LastSeenDate).HasColumnType("timestamptz");
@@ -48,7 +49,7 @@ public sealed class LostPetConfiguration : IEntityTypeConfiguration<LostPet>
         builder.Property(x => x.ContactAlternative).HasMaxLength(255);
         builder.Property(x => x.MicrochipId)
              .HasConversion(
-                microchipId => microchipId.Value,
+                microchipId => microchipId!.Value,
                 value => MicrochipId.Create(value))
             .HasMaxLength(50);
 

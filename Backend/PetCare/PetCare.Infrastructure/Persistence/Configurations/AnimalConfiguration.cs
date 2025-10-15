@@ -1,4 +1,7 @@
 ﻿namespace PetCare.Infrastructure.Persistence.Configurations;
+
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NpgsqlTypes;
@@ -6,8 +9,6 @@ using PetCare.Domain.Aggregates;
 using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 /// <summary>
 /// Configures the Animal entity mapping and constraints.
@@ -62,7 +63,7 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
 
         builder.Property(a => a.Birthday)
            .HasConversion(
-               birthday => birthday.Value,
+               birthday => birthday!.Value,
                value => Birthday.Create(value))
            .HasColumnType("timestamp with time zone");
 
@@ -131,7 +132,7 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
 
         builder.Property(a => a.MicrochipId)
            .HasConversion(
-           microchipId => microchipId.Value,
+           microchipId => microchipId!.Value,
            value => MicrochipId.Create(value))
            .HasMaxLength(50);
 
@@ -194,7 +195,8 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
             @"
             to_tsvector('simple', coalesce(""Name"",'') || ' ' || coalesce(""Description"",''))
             || to_tsvector('english', coalesce(""Name"",'') || ' ' || coalesce(""Description"",''))
-        ", stored: true);
+        ",
+            stored: true);
 
         builder.HasIndex("SearchVector")
             .HasMethod("GIN");

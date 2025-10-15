@@ -1,9 +1,9 @@
 ﻿namespace PetCare.Api.Endpoints.Animals;
 
+using System.Security.Claims;
 using MediatR;
 using PetCare.Application.Dtos.AnimalDtos;
 using PetCare.Application.Features.Animals.GetFavoriteAnimals;
-using System.Security.Claims;
 
 /// <summary>
 /// Endpoint for fetching the current user's favorite animals.

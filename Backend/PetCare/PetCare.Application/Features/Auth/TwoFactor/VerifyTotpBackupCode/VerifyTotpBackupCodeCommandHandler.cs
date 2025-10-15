@@ -1,5 +1,7 @@
 ﻿namespace PetCare.Application.Features.Auth.TwoFactor.VerifyTotpBackupCode;
 
+using System;
+using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -7,8 +9,6 @@ using Microsoft.Extensions.Logging;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Abstractions.Services;
-using System;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles verification of a TOTP backup code for the current user.

@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Domain.Entities;
+
 using PetCare.Domain.Common;
 using PetCare.Domain.ValueObjects;
 

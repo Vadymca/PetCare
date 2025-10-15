@@ -1,8 +1,8 @@
 ﻿namespace PetCare.Infrastructure.Services.Email;
 
+using System.Threading.Tasks;
 using PetCare.Application.Interfaces;
 using RazorLight;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Renders Razor templates to string using embedded resources.

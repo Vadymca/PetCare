@@ -5,6 +5,9 @@
 /// </summary>
 public sealed class ZipcodebaseOptions
 {
+    /// <summary>
+    /// The name of the configuration section that contains settings for Zipcodebase integration.
+    /// </summary>
     public const string SectionName = "Zipcodebase";
 
     /// <summary>

@@ -1,9 +1,10 @@
 ﻿namespace PetCare.Application.Common.Behaviors;
-using FluentValidation;
-using MediatR;
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentValidation;
+using MediatR;
 
 /// <summary>
 /// Pipeline behavior for automatic FluentValidation execution.

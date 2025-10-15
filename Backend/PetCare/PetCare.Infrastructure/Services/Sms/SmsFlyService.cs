@@ -1,14 +1,14 @@
 ﻿namespace PetCare.Infrastructure.Services.Sms;
 
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using PetCare.Application.Interfaces;
 using System;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using PetCare.Application.Interfaces;
 
 /// <summary>
 /// SMS service implementation using SmsFly as the provider.
@@ -151,45 +151,6 @@ public class SmsFlyService : ISmsService
         }
     }
 
-    private async Task<decimal> CheckBalanceAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            var request = new { auth = new { key = this.settings.ApiKey }, action = "BALANCE" };
-            var response = await this.httpClient.PostAsJsonAsync(this.settings.BaseUrl, request, cancellationToken);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return 0;
-            }
-
-            var content = await response.Content.ReadAsStringAsync(cancellationToken);
-
-            // Спроба парсингу JSON
-            using var doc = JsonDocument.Parse(content);
-            var root = doc.RootElement;
-
-            if (root.TryGetProperty("balance", out var balanceProp) &&
-                balanceProp.ValueKind == JsonValueKind.Number &&
-                balanceProp.TryGetDecimal(out var balance))
-            {
-                return balance;
-            }
-
-            // Фолбек на простий текст
-            return decimal.TryParse(
-                content?.Trim(),
-                System.Globalization.NumberStyles.Float,
-                System.Globalization.CultureInfo.InvariantCulture,
-                out var textBalance) ? textBalance : 0;
-        }
-        catch (Exception ex)
-        {
-            this.logger.LogWarning(ex, "Failed to check balance");
-            return 0;
-        }
-    }
-
     /// <summary>
     /// Normalizes phone number to international format for Ukrainian numbers.
     /// </summary>
@@ -264,5 +225,44 @@ public class SmsFlyService : ISmsService
         var maskedMiddle = middleLength > 0 ? new string('*', middleLength) : string.Empty;
 
         return $"+{countryCode}{maskedMiddle}{lastDigits}";
+    }
+
+    private async Task<decimal> CheckBalanceAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var request = new { auth = new { key = this.settings.ApiKey }, action = "BALANCE" };
+            var response = await this.httpClient.PostAsJsonAsync(this.settings.BaseUrl, request, cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return 0;
+            }
+
+            var content = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            // Спроба парсингу JSON
+            using var doc = JsonDocument.Parse(content);
+            var root = doc.RootElement;
+
+            if (root.TryGetProperty("balance", out var balanceProp) &&
+                balanceProp.ValueKind == JsonValueKind.Number &&
+                balanceProp.TryGetDecimal(out var balance))
+            {
+                return balance;
+            }
+
+            // Фолбек на простий текст
+            return decimal.TryParse(
+                content?.Trim(),
+                System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var textBalance) ? textBalance : 0;
+        }
+        catch (Exception ex)
+        {
+            this.logger.LogWarning(ex, "Failed to check balance");
+            return 0;
+        }
     }
 }

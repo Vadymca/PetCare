@@ -63,6 +63,8 @@
 	<PropertyGroup>
 		<NoWarn>$(NoWarn);SA1633</NoWarn>
 		<NoWarn>$(NoWarn);SA1000</NoWarn>
+		<NoWarn>$(NoWarn);SA1649</NoWarn>
+		<NoWarn>$(NoWarn);SA1402</NoWarn>
 	</PropertyGroup>
 
 

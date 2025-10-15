@@ -1,8 +1,8 @@
 ﻿namespace PetCare.Domain.Abstractions.Services;
 
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using PetCare.Domain.Aggregates;
-using System.Security.Claims;
 
 /// <summary>
 /// Service for generating JWT tokens for users, including access and refresh tokens.

@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Domain.Events;
+
 using PetCare.Domain.Abstractions.Events;
 
 /// <summary>

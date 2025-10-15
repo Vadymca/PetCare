@@ -1,8 +1,9 @@
 ﻿namespace PetCare.Domain.Abstractions.Repositories;
-using PetCare.Domain.Aggregates;
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using PetCare.Domain.Aggregates;
 
 /// <summary>
 /// Represents a repository interface for managing <see cref="AdoptionApplication"/> entities.

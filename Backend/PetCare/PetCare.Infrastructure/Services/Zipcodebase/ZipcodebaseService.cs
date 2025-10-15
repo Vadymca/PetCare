@@ -1,13 +1,13 @@
 ﻿namespace PetCare.Infrastructure.Services.Zipcodebase;
 
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using PetCare.Application.Interfaces;
-using PetCare.Domain.ValueObjects;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using PetCare.Application.Interfaces;
+using PetCare.Domain.ValueObjects;
 
 /// <summary>
 /// Implementation of <see cref="IZipcodebaseService"/> using the Zipcodebase API.

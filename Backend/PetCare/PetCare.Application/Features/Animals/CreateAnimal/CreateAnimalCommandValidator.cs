@@ -1,10 +1,10 @@
 ﻿namespace PetCare.Application.Features.Animals.CreateAnimal;
 
+using System;
+using System.Linq;
 using FluentValidation;
 using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
-using System;
-using System.Linq;
 
 /// <summary>
 /// Validator for <see cref="CreateAnimalCommand"/>.

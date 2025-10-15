@@ -1,12 +1,12 @@
 ﻿namespace PetCare.Application.Features.Users.Roles;
 
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using PetCare.Application.Dtos.UserDtos;
 using PetCare.Application.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles the <see cref="AddUserRoleCommand"/> command.

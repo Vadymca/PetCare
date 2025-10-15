@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Domain.Entities;
+
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Common;
 

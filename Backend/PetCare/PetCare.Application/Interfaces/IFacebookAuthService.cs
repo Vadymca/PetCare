@@ -2,7 +2,6 @@
 
 using PetCare.Application.Dtos.AuthDtos;
 
-
 /// <summary>
 /// Interface for Facebook authentication service.
 /// </summary>

@@ -1,5 +1,8 @@
 ﻿namespace PetCare.Application.Features.Users.GetUserActivity;
 
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -7,9 +10,6 @@ using PetCare.Application.Dtos.AdoptionApplicationDtos;
 using PetCare.Application.Dtos.EventDtos;
 using PetCare.Application.Dtos.UserDtos;
 using PetCare.Application.Interfaces;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Returns user's activity including adoption applications and event participation mapped to DTOs.

@@ -1,12 +1,12 @@
 ﻿namespace PetCare.Infrastructure.Services;
 
+using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Minio;
 using Minio.DataModel.Args;
 using PetCare.Application.Interfaces;
-using System;
-using System.Threading.Tasks;
 
 /// <summary>
 /// MinIO-based implementation of IStorageService.

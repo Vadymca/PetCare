@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Domain.Aggregates;
+
 using PetCare.Domain.Common;
 using PetCare.Domain.Enums;
 using PetCare.Domain.Events;

@@ -1,9 +1,9 @@
 ﻿namespace PetCare.Application.Features.Users.EventHandlers;
 
+using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using PetCare.Domain.Events;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles <see cref="UserProfileUpdatedEvent"/>.

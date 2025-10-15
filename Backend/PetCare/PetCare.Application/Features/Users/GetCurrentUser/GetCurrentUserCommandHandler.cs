@@ -1,14 +1,14 @@
 ﻿namespace PetCare.Application.Features.Users.GetCurrentUser;
 
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles <see cref="GetCurrentUserCommand"/> — returns the profile of the current user.

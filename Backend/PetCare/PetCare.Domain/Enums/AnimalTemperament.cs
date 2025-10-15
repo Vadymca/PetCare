@@ -135,7 +135,7 @@ public enum AnimalTemperament
     SpecialNeeds,          // Має особливі потреби (емоційні чи фізичні)
 
     /// <summary>
-    /// Represents a bonded pair temperament or behavior, indicating that the animal is part of a pair
+    /// Represents a bonded pair temperament or behavior, indicating that the animal is part of a pair.
     /// </summary>
     BondedPair,            // Частина пари, яку бажано всиновити разом
 }

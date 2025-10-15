@@ -1,8 +1,8 @@
 ﻿namespace PetCare.Application.EventHandlers.Users;
 
+using System.Threading.Tasks;
 using MediatR;
 using PetCare.Domain.Events;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles AdoptionApplicationRemovedEvent.

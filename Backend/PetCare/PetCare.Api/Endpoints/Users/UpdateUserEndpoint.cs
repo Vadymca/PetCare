@@ -4,18 +4,6 @@ using MediatR;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Users.UpdateUser;
 
-public sealed record UpdateUserCommandBody(
-    string? Email,
-    string? Password,
-    string? FirstName,
-    string? LastName,
-    string? Phone,
-    Dictionary<string, string>? Preferences,
-    int? Points,
-    string? ProfilePhoto,
-    string? Language,
-    string? PostalCode);
-
 /// <summary>
 /// Endpoint for updating a user (Admin).
 /// </summary>

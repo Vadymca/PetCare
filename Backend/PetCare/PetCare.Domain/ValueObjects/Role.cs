@@ -1,10 +1,11 @@
 ﻿namespace PetCare.Domain.ValueObjects;
+
 using PetCare.Domain.Enums;
 
 /// <summary>
 /// Represents a strongly-typed user role in the domain.
 /// </summary>
-public record Role(UserRole value)
+public record Role(UserRole Value)
 {
     /// <summary>
     /// Gets the default role for regular users.
@@ -22,5 +23,5 @@ public record Role(UserRole value)
     public static Role Moderator => new(UserRole.Moderator);
 
     /// <inheritdoc/>
-    public override string ToString() => this.value.ToString();
+    public override string ToString() => this.Value.ToString();
 }

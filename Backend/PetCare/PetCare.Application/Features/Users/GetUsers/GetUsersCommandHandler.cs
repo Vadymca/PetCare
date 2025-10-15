@@ -1,13 +1,13 @@
 ﻿namespace PetCare.Application.Features.Users.GetUsers;
 
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Dtos.UserDtos;
 using PetCare.Application.Interfaces;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles the <see cref="GetUsersCommand"/> and returns a paginated list of users with optional filtering.

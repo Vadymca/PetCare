@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Application.Interfaces;
+
 using System.Threading.Tasks;
 
 /// <summary>

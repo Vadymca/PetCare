@@ -1,12 +1,13 @@
 ﻿namespace PetCare.Tests.Domain.Specifications;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
 using PetCare.Domain.Specifications.Shelter;
 using PetCare.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 /// <summary>
 /// Unit tests for shelter specifications.

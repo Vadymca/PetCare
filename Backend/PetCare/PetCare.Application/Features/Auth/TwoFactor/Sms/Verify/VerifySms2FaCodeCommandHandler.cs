@@ -1,5 +1,7 @@
 ﻿namespace PetCare.Application.Features.Auth.TwoFactor.Sms.Verify;
 
+using System;
+using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -7,8 +9,6 @@ using Microsoft.Extensions.Logging;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Abstractions.Services;
-using System;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles verification of the SMS 2FA code for the current user.
@@ -40,7 +40,6 @@ public sealed class VerifySms2FaCodeCommandHandler : IRequestHandler<VerifySms2F
         IHttpContextAccessor httpContextAccessor,
         ILogger<VerifySms2FaCodeCommandHandler> logger,
         IMapper mapper)
-
     {
         this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
         this.sms2FaService = sms2FaService ?? throw new ArgumentNullException(nameof(sms2FaService));

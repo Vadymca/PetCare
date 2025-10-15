@@ -1,6 +1,7 @@
 ﻿namespace PetCare.Domain.Abstractions.Events;
-using MediatR;
+
 using System;
+using MediatR;
 
 /// <summary>
 /// Represents a marker interface for all domain events.

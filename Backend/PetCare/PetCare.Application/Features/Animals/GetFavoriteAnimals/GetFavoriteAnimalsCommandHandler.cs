@@ -1,13 +1,13 @@
 ﻿namespace PetCare.Application.Features.Animals.GetFavoriteAnimals;
 
-using AutoMapper;
-using MediatR;
-using PetCare.Application.Dtos.AnimalDtos;
-using PetCare.Application.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using MediatR;
+using PetCare.Application.Dtos.AnimalDtos;
+using PetCare.Application.Interfaces;
 
 /// <summary>
 /// Handler for the <see cref="GetFavoriteAnimalsCommand"/>.
@@ -31,8 +31,8 @@ public sealed class GetFavoriteAnimalsCommandHandler : IRequestHandler<GetFavori
     /// <inheritdoc/>
     public async Task<IReadOnlyList<AnimalListDto>> Handle(GetFavoriteAnimalsCommand request, CancellationToken cancellationToken)
     {
-        var subscriptions = await userRepository.GetUserAnimalSubscriptionsAsync(request.UserId, cancellationToken);
+        var subscriptions = await this.userRepository.GetUserAnimalSubscriptionsAsync(request.UserId, cancellationToken);
         var animals = subscriptions.Select(s => s.Animal!).ToList();
-        return mapper.Map<IReadOnlyList<AnimalListDto>>(animals);
+        return this.mapper.Map<IReadOnlyList<AnimalListDto>>(animals);
     }
 }

@@ -1,8 +1,8 @@
 ﻿namespace PetCare.Domain.Specifications.Specie;
 
-using PetCare.Domain.Aggregates;
 using System;
 using System.Linq.Expressions;
+using PetCare.Domain.Aggregates;
 
 /// <summary>
 /// Specification for filtering species by name.

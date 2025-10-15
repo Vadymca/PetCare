@@ -1,9 +1,9 @@
 ﻿namespace PetCare.Api.Endpoints.Users;
 
+using System.Security.Claims;
 using MediatR;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Users.GetCurrentUser;
-using System.Security.Claims;
 
 /// <summary>
 /// Endpoint for fetching the current user's profile.

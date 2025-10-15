@@ -1,12 +1,12 @@
 ﻿namespace PetCare.Application.Features.Auth.ForgotPassword;
 
+using System;
+using System.Threading.Tasks;
+using System.Web;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
-using System;
-using System.Threading.Tasks;
-using System.Web;
 
 /// <summary>
 /// Handles sending a password reset token to the user's email (mock).
@@ -27,7 +27,7 @@ public sealed class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswor
     /// <param name="emailService">Service for sending emails.</param>
     /// <param name="templateRenderer">
     /// The service responsible for rendering Razor email templates to HTML strings.</param>
-    ///  <param name="emailAssetProvider">Service for loading and providing email assets (e.g., logo).</param>
+    /// <param name="emailAssetProvider">Service for loading and providing email assets (e.g., logo).</param>
     /// <exception cref="ArgumentNullException">Thrown if a dependency is <c>null</c>.</exception>
     public ForgotPasswordCommandHandler(
         IUserService userService,

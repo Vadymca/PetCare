@@ -1,5 +1,6 @@
 namespace PetCare.Api;
 
+using System.Threading.RateLimiting;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -29,7 +30,6 @@ using PetCare.Infrastructure.Identity;
 using PetCare.Infrastructure.Persistence;
 using Scalar.AspNetCore;
 using Serilog;
-using System.Threading.RateLimiting;
 
 /// <summary>
 /// The main entry point class for the PetCare API application.
@@ -40,6 +40,9 @@ public class Program
     /// Application entry point.
     /// Configures services, middleware, and runs the web application.
     /// </summary>
+    /// /// <param name="args">Command-line arguments.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    [Obsolete]
     public static async Task Main(string[] args)
     {
         Log.Logger = new LoggerConfiguration()
@@ -177,7 +180,8 @@ public class Program
                 cfg =>
             {
                 cfg.AddMaps(typeof(Program).Assembly);
-            }, AppDomain.CurrentDomain.GetAssemblies());
+            },
+                AppDomain.CurrentDomain.GetAssemblies());
 
             // -------------------- Identity --------------------
             builder.Services.AddIdentityCore<User>(options =>
@@ -211,8 +215,7 @@ public class Program
                     0,
                     new Serialization.FlexibleStringEnumConverterFactory(
                         System.Text.Json.JsonNamingPolicy.CamelCase,
-                        allowIntegerValues: true
-            ));
+                        allowIntegerValues: true));
              });
 
             // -------------------- Minimal API JSON Options --------------------
@@ -223,9 +226,7 @@ public class Program
                     0,
                     new Serialization.FlexibleStringEnumConverterFactory(
                         System.Text.Json.JsonNamingPolicy.CamelCase,
-                        allowIntegerValues: true
-                    )
-                );
+                        allowIntegerValues: true));
             });
 
             // -------------------- Logging --------------------
@@ -302,29 +303,27 @@ public class Program
 
             app.UseExceptionHandling();
             app.UseStaticFiles();
-            //app.UseHttpsRedirection();
+
+            // app.UseHttpsRedirection();
             app.UseCors("PetCarePolicy");
             app.UseRateLimiter();
 
-            //app.MapGet("/api/csrf-token", (IAntiforgery antiforgery, HttpContext context) =>
-            //{
-            //    var tokens = antiforgery.GetAndStoreTokens(context);
-            //    return Results.Ok(new { token = tokens.RequestToken });
-            //});
-            //app.Use(async (context, next) =>
-            //{
-            //    var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
-
-            //    if (HttpMethods.IsPost(context.Request.Method) ||
-            //        HttpMethods.IsPut(context.Request.Method) ||
-            //        HttpMethods.IsDelete(context.Request.Method))
-            //    {
-            //        await antiforgery.ValidateRequestAsync(context);
-            //    }
-
-            //    await next();
-            //});
-
+           // app.MapGet("/api/csrf-token", (IAntiforgery antiforgery, HttpContext context) =>
+           // {
+               // var tokens = antiforgery.GetAndStoreTokens(context);
+               // return Results.Ok(new { token = tokens.RequestToken });
+           // });
+           // app.Use(async (context, next) =>
+           // {
+               // var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
+               // if (HttpMethods.IsPost(context.Request.Method) ||
+                  //  HttpMethods.IsPut(context.Request.Method) ||
+                  //  HttpMethods.IsDelete(context.Request.Method))
+               // {
+                   // await antiforgery.ValidateRequestAsync(context);
+               // }
+               // await next();
+           // });
             app.UseAuthentication();
             app.UseAuthorization();
 

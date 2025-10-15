@@ -1,5 +1,11 @@
 ﻿namespace PetCare.Application.Features.Auth.Refresh;
 
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading;
+using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -7,12 +13,6 @@ using Microsoft.Extensions.Logging;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Abstractions.Services;
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles refreshing of JWT access and refresh tokens using refresh token from cookie.

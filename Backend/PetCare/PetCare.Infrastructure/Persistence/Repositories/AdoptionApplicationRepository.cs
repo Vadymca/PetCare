@@ -1,10 +1,11 @@
 ﻿namespace PetCare.Infrastructure.Persistence.Repositories;
-using PetCare.Domain.Abstractions.Repositories;
-using PetCare.Domain.Aggregates;
-using PetCare.Domain.Specifications.AdoptionApplication;
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using PetCare.Domain.Abstractions.Repositories;
+using PetCare.Domain.Aggregates;
+using PetCare.Domain.Specifications.AdoptionApplication;
 
 /// <summary>
 /// Repository implementation for managing <see cref="AdoptionApplication"/> entities.

@@ -52,7 +52,7 @@ public class AppDbContext : IdentityDbContext<User, AppRole, Guid>
     /// <summary>
     /// Gets the user entities.
     /// </summary>
-    public DbSet<User> Users => this.Set<User>();
+    public new DbSet<User> Users => this.Set<User>();
 
     /// <summary>
     /// Gets the volunteerTask entities.
@@ -282,6 +282,5 @@ public class AppDbContext : IdentityDbContext<User, AppRole, Guid>
             entity.ToTable("RoleClaims");
             entity.HasKey(rc => rc.Id);
         });
-
     }
 }

@@ -1,10 +1,10 @@
 ﻿namespace PetCare.Infrastructure.Services.Email;
 
+using System.Threading.Tasks;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using PetCare.Application.Interfaces;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Implementation of email service using SMTP.

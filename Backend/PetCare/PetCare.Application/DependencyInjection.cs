@@ -1,9 +1,9 @@
 ﻿namespace PetCare.Application;
 
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using PetCare.Application.Abstractions.Events;
 using PetCare.Domain.Abstractions.Events;
-using System.Reflection;
 
 /// <summary>
 /// Configures dependencies for the Application layer.

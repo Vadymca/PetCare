@@ -1,11 +1,11 @@
 ﻿namespace PetCare.Application.Features.Animals.GetAnimals;
 
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using PetCare.Application.Dtos.AnimalDtos;
 using PetCare.Application.Interfaces;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles <see cref="GetAnimalsCommand"/>.

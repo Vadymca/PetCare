@@ -1,12 +1,12 @@
 ﻿namespace PetCare.Application.Features.Animals.UpdateAnimal;
 
+using System;
+using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using PetCare.Application.Dtos.AnimalDtos;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.ValueObjects;
-using System;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handler for processing <see cref="UpdateAnimalCommand"/>.

@@ -1,9 +1,9 @@
 ﻿namespace PetCare.Application.Features.Auth.Google.GetGoogleLoginUrl;
 
-using MediatR;
-using PetCare.Application.Interfaces;
 using System;
 using System.Threading.Tasks;
+using MediatR;
+using PetCare.Application.Interfaces;
 
 /// <summary>
 /// Handler for the <see cref="GetGoogleLoginUrlCommand"/>.

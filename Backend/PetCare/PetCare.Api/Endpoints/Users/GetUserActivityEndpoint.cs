@@ -11,7 +11,8 @@ public static class GetUserActivityEndpoint
 {
     /// <summary>
     /// Maps the GET endpoint <c>/api/users/{id}/activity</c> to fetch user activity.
-    /// <param name="app">The web application instance.</param>
+    /// </summary>
+    /// <param name="app">The <see cref="WebApplication"/> to map the endpoint on.</param>
     public static void MapGetUserActivityEndpoint(this WebApplication app)
     {
         app.MapGet(

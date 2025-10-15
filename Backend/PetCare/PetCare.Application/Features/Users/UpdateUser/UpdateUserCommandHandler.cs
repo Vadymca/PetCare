@@ -1,15 +1,15 @@
 ﻿namespace PetCare.Application.Features.Users.UpdateUser;
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles UpdateUserCommand — admin updates an existing user.
@@ -168,7 +168,7 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
         var updated = await this.userRepository.GetByIdAsync(request.Id, cancellationToken);
 
         var userDto = this.mapper.Map<UserDto>(updated);
-        var roles = await this.userService.GetRolesAsync(updated);
+        var roles = await this.userService.GetRolesAsync(updated!);
         userDto = userDto with { Role = roles.FirstOrDefault() ?? "User" };
 
         this.logger.LogInformation("User {UserId} updated by admin", request.Id);

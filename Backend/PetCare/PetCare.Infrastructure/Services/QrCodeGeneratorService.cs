@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Infrastructure.Services;
+
 using PetCare.Application.Interfaces;
 using QRCoder;
 

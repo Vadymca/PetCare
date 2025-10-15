@@ -1,13 +1,15 @@
 ﻿namespace PetCare.Domain.ValueObjects;
-using PetCare.Domain.Common;
+
 using System.Text.RegularExpressions;
+using PetCare.Domain.Common;
 
 /// <summary>
 /// Represents a microchip identifier as a value object with validation.
 /// </summary>
 public sealed class MicrochipId : ValueObject
 {
-    private static readonly Regex MicrochipRegex = new(@"^[A-Z0-9]{5,20}$",
+    private static readonly Regex MicrochipRegex = new(
+        @"^[A-Z0-9]{5,20}$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private MicrochipId(string value) => this.Value = value;

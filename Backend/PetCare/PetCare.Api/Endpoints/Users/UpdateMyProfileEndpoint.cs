@@ -1,20 +1,9 @@
 ﻿namespace PetCare.Api.Endpoints.Users;
 
+using System.Security.Claims;
 using MediatR;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Users.UpdateUser;
-using System.Security.Claims;
-
-public sealed record UpdateMyProfileCommandBody(
-    string? Email,
-    string? Password,
-    string? FirstName,
-    string? LastName,
-    string? Phone,
-    Dictionary<string, string>? Preferences,
-    string? ProfilePhoto,
-    string? Language,
-    string? PostalCode);
 
 /// <summary>
 /// Endpoint for updating the authenticated user's profile.

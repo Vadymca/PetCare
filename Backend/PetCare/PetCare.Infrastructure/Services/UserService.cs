@@ -1,5 +1,9 @@
 ﻿namespace PetCare.Infrastructure.Services;
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,22 +16,12 @@ using PetCare.Domain.Aggregates;
 using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
 using PetCare.Infrastructure.Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Service for user management operations using ASP.NET Core Identity.
 /// </summary>
 public sealed class UserService : IUserService
 {
-    private readonly UserManager<User> userManager;
-    private readonly AppDbContext dbContext;
-    private readonly ILogger<UserService> logger;
-    private readonly IZipcodebaseService zipcodebaseService;
-    private readonly IHttpContextAccessor httpContextAccessor;
-    private readonly IMemoryCache memoryCache;
     private static readonly string[] ValidRoles = new[]
    {
         "User",
@@ -36,6 +30,13 @@ public sealed class UserService : IUserService
         "Veterinarian",
         "Volunteer",
    };
+
+    private readonly UserManager<User> userManager;
+    private readonly AppDbContext dbContext;
+    private readonly ILogger<UserService> logger;
+    private readonly IZipcodebaseService zipcodebaseService;
+    private readonly IHttpContextAccessor httpContextAccessor;
+    private readonly IMemoryCache memoryCache;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserService"/> class.
@@ -158,7 +159,7 @@ public sealed class UserService : IUserService
     }
 
     /// <summary>
-    /// Creates a new user based on Facebook user information without a password,
+    /// Creates a new user based on Facebook user information without a password.
     /// </summary>
     /// <param name="fbUser">The Facebook user information.</param>
     /// <returns>The created <see cref="User"/> entity.</returns>
@@ -779,11 +780,11 @@ public sealed class UserService : IUserService
     }
 
     /// <summary>
-    /// Changes the password of the specified <see cref="User"/> by generating a reset token 
+    /// Changes the password of the specified <see cref="User"/> by generating a reset token
     /// and applying the new password using <see cref="UserManager{User}"/>.
     /// Throws an exception if the password change fails.
     /// </summary>
-    ///  <param name="userId">The Id of the user whose password will be changed.</param>
+    /// <param name="userId">The Id of the user whose password will be changed.</param>
     /// <param name="newPassword">The new plain text password to set.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> to cancel the operation.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
@@ -832,7 +833,7 @@ public sealed class UserService : IUserService
     /// <param name="userId">The unique identifier of the user.</param>
     /// <param name="token">The token to verify.</param>
     /// <returns>
-    /// <c>true</c> if the token is valid and removed after verification; 
+    /// <c>true</c> if the token is valid and removed after verification;
     /// <c>false</c> if the token is missing or does not match.
     /// </returns>
     public Task<bool> Verify2FaTokenAsync(Guid userId, string token)

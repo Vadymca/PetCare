@@ -1,8 +1,8 @@
 ﻿namespace PetCare.Domain.ValueObjects;
 
-using PetCare.Domain.Common;
 using System.Text;
 using System.Text.RegularExpressions;
+using PetCare.Domain.Common;
 
 /// <summary>
 /// Represents a URL-friendly slug as a value object with validation and normalization.
@@ -53,6 +53,22 @@ public sealed class Slug : ValueObject
     }
 
     /// <summary>
+    /// Checks whether a given string is a valid slug.
+    /// </summary>
+    /// <param name="value">The slug string to check.</param>
+    /// <returns><c>true</c> if valid; otherwise <c>false</c>.</returns>
+    public static bool IsValid(string value)
+    {
+        return !string.IsNullOrWhiteSpace(value) && SlugRegex.IsMatch(value);
+    }
+
+    /// <inheritdoc/>
+    public override string ToString() => this.Value;
+
+    /// <inheritdoc/>
+    protected override IEnumerable<object> GetEqualityComponents() => new[] { this.Value };
+
+    /// <summary>
     /// Generates a normalized slug from a name (e.g. title or label).
     /// Converts Ukrainian letters to Latin, then normalizes the string.
     /// </summary>
@@ -79,22 +95,6 @@ public sealed class Slug : ValueObject
 
         return $"{normalized}-{randomSuffix}";
     }
-
-    /// <summary>
-    /// Checks whether a given string is a valid slug.
-    /// </summary>
-    /// <param name="value">The slug string to check.</param>
-    /// <returns><c>true</c> if valid; otherwise <c>false</c>.</returns>
-    public static bool IsValid(string value)
-    {
-        return !string.IsNullOrWhiteSpace(value) && SlugRegex.IsMatch(value);
-    }
-
-    /// <inheritdoc/>
-    public override string ToString() => this.Value;
-
-    /// <inheritdoc/>
-    protected override IEnumerable<object> GetEqualityComponents() => new[] { this.Value };
 
     private static string GenerateRandomSuffix(int length)
     {

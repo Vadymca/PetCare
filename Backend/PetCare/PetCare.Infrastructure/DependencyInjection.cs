@@ -53,7 +53,6 @@ public static class DependencyInjection
         // Sms and Twilio services
         services.Configure<SmsSettings>(configuration.GetSection("SmsSettings"));
         services.Configure<TwilioSettings>(configuration.GetSection("TwilioSettings"));
-        //services.AddTransient<ISmsService, TwilioSmsService>();
         services.AddScoped<ISms2FaService, Sms2FaService>();
         services.Configure<SmsFlySettings>(configuration.GetSection("SmsFly"));
         services.AddHttpClient<ISmsService, SmsFlyService>((sp, client) =>

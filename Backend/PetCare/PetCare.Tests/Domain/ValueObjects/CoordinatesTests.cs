@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Tests.Domain.ValueObjects;
+
 using FluentAssertions;
 using PetCare.Domain.ValueObjects;
 using Xunit;

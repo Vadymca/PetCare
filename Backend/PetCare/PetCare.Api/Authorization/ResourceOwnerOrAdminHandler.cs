@@ -1,7 +1,7 @@
 ﻿namespace PetCare.Api.Authorization;
 
-using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 /// <summary>
 /// Authorization handler to enforce the "ResourceOwnerOrAdmin" policy.

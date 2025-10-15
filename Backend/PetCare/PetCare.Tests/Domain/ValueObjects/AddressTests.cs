@@ -1,7 +1,8 @@
 ﻿namespace PetCare.Tests.Domain.ValueObjects;
+
+using System;
 using FluentAssertions;
 using PetCare.Domain.ValueObjects;
-using System;
 using Xunit;
 
 /// <summary>
@@ -37,7 +38,7 @@ public class AddressTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void Create_WithNullOrWhitespace_ShouldThrowArgumentException(string invalidAddress)
+    public void Create_WithNullOrWhitespace_ShouldThrowArgumentException(string? invalidAddress)
     {
         // Act
         Action act = () => Address.Create(invalidAddress!);

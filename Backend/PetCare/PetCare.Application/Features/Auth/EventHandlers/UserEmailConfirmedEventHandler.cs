@@ -1,9 +1,10 @@
 ﻿namespace PetCare.Application.Features.Auth.EventHandlers;
+
+using System;
+using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using PetCare.Domain.Events;
-using System;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles <see cref="UserEmailConfirmedEvent"/>.

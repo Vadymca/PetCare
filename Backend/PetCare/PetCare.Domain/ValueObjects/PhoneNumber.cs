@@ -1,6 +1,7 @@
 ﻿namespace PetCare.Domain.ValueObjects;
-using PetCare.Domain.Common;
+
 using System.Text.RegularExpressions;
+using PetCare.Domain.Common;
 
 /// <summary>
 /// Represents a phone number as a value object, validated against the E.164 format.

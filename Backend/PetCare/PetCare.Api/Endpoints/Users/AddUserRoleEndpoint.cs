@@ -4,8 +4,6 @@ using MediatR;
 using PetCare.Application.Dtos.UserDtos;
 using PetCare.Application.Features.Users.Roles;
 
-public sealed record AddUserRoleCommandBody(string Role);
-
 /// <summary>
 /// Endpoint for adding a role to a user.
 /// </summary>

@@ -1,5 +1,8 @@
 ﻿namespace PetCare.Application.Features.Users.GetUserSubscriptions;
 
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -7,9 +10,6 @@ using PetCare.Application.Dtos.AnimalDtos;
 using PetCare.Application.Dtos.ShelterDtos;
 using PetCare.Application.Dtos.UserDtos;
 using PetCare.Application.Interfaces;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Returns user's subscribed shelters and animals mapped to DTOs.

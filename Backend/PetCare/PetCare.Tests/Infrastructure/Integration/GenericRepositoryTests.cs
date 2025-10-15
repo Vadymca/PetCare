@@ -1,11 +1,12 @@
 ﻿namespace PetCare.Tests.Infrastructure.Integration;
+
+using System;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using PetCare.Domain.Abstractions.Events;
 using PetCare.Domain.Aggregates;
 using PetCare.Infrastructure.Persistence;
-using System;
-using System.Threading.Tasks;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -149,6 +150,4 @@ public sealed class GenericRepositoryTests : IAsyncLifetime
 
         Assert.Equal(2, count);
     }
-
-
 }

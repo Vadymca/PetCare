@@ -1,12 +1,12 @@
 ﻿namespace PetCare.Application.Features.Auth.Facebook.FacebookLogin;
 
+using System;
+using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Abstractions.Services;
-using System;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles Facebook OAuth login callback logic.

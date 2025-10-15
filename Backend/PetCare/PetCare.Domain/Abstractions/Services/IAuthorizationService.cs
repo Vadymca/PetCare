@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Domain.Abstractions.Services;
+
 using PetCare.Domain.ValueObjects;
 
 /// <summary>

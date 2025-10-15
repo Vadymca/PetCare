@@ -1,4 +1,8 @@
 ﻿namespace PetCare.Tests.Infrastructure.Integration;
+
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Npgsql;
@@ -9,9 +13,6 @@ using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
 using PetCare.Infrastructure.Persistence;
 using PetCare.Infrastructure.Persistence.Repositories;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -44,6 +45,7 @@ public sealed class AdoptionApplicationRepositoryTests : IAsyncLifetime
     /// Sets up the database and seeds initial data before each test run.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    [Obsolete]
     public async Task InitializeAsync()
     {
         NpgsqlConnection.GlobalTypeMapper.EnableDynamicJson();
@@ -152,7 +154,6 @@ public sealed class AdoptionApplicationRepositoryTests : IAsyncLifetime
 
         // Створюємо заявку для іншої тварини
         var otherAnimal = Animal.Create(
-            slug: "kitty",
             userId: this.testUser.Id,
             name: "Kitty",
             breedId: (await this.context.Breeds.FirstAsync()).Id,
@@ -174,8 +175,8 @@ public sealed class AdoptionApplicationRepositoryTests : IAsyncLifetime
             height: null,
             color: null,
             isSterilized: false,
-            haveDocuments: false,
-            Guid.NewGuid());
+            isUnderCare: false,
+            haveDocuments: false);
         await this.context.Animals.AddAsync(otherAnimal);
         await this.context.SaveChangesAsync();
 
@@ -255,7 +256,6 @@ public sealed class AdoptionApplicationRepositoryTests : IAsyncLifetime
 
         // 5. Animal
         this.testAnimal = Animal.Create(
-            slug: "doggy",
             userId: this.testUser.Id,
             name: "Doggy",
             breedId: breed.Id,
@@ -277,8 +277,8 @@ public sealed class AdoptionApplicationRepositoryTests : IAsyncLifetime
             height: null,
             color: null,
             isSterilized: false,
-            haveDocuments: false,
-            specieId: Guid.NewGuid());
+            isUnderCare: false,
+            haveDocuments: false);
         await this.context.Animals.AddAsync(this.testAnimal);
         await this.context.SaveChangesAsync();
     }

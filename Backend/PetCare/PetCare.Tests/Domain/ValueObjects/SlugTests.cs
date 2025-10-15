@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Tests.Domain.ValueObjects;
+
 using FluentAssertions;
 using PetCare.Domain.ValueObjects;
 using Xunit;
@@ -12,7 +13,7 @@ public class SlugTests
     /// Tests creation of slug from valid Ukrainian and Latin input strings.
     /// </summary>
     /// <param name="input">The input string to convert to slug.</param>
-    /// <param name="expected">The expected slug result.</param>
+    /// <param name="expectedBase">The expected slug result.</param>
     [Theory]
     [InlineData("Барсік", "barsik")]
     [InlineData("Київ", "kyiv")]

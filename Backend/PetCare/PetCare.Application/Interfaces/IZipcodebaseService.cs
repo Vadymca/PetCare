@@ -1,8 +1,8 @@
 ﻿namespace PetCare.Application.Interfaces;
 
-using PetCare.Domain.ValueObjects;
 using System.Threading;
 using System.Threading.Tasks;
+using PetCare.Domain.ValueObjects;
 
 /// <summary>
 /// Provides access to external zipcode service.

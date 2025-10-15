@@ -1,7 +1,7 @@
 ﻿namespace PetCare.Application.Features.Auth.Facebook.GetFacebookLoginUrl;
 
-using FluentValidation;
 using System;
+using FluentValidation;
 
 /// <summary>
 /// Validator for <see cref="GetFacebookLoginUrlCommand"/>.

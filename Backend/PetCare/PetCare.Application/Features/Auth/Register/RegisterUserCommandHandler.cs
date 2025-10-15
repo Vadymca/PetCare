@@ -1,15 +1,15 @@
 ﻿namespace PetCare.Application.Features.Auth.Register;
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
 using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Features.Auth.ResendVerification;
 using PetCare.Application.Interfaces;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web;
 
 /// <summary>
 /// Handles the <see cref="RegisterUserCommand"/> request.
@@ -40,7 +40,6 @@ public sealed class RegisterUserCommandHandler : IRequestHandler<RegisterUserCom
         IEmailTemplateRenderer templateRenderer,
         ILogger<RegisterUserCommandHandler> logger,
         IMapper mapper)
-
     {
         this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
         this.emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));

@@ -1,12 +1,12 @@
 ﻿namespace PetCare.Application.Interfaces;
 
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Repository interface for accessing user entities.

@@ -1,12 +1,12 @@
 ﻿namespace PetCare.Application.Features.Auth.TwoFactor.DisableTotp;
 
+using System;
+using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
-using System;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles the disabling of TOTP (two-factor authentication) for the current user.

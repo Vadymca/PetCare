@@ -1,10 +1,10 @@
 ﻿namespace PetCare.Application.Features.Auth.TwoFactor.VerifyTotpSetup;
 
+using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles verification of TOTP setup for the currently authenticated user.

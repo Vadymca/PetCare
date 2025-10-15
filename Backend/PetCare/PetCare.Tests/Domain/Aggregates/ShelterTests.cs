@@ -1,11 +1,11 @@
 ﻿namespace PetCare.Tests.Domain.Aggregates;
 
+using System;
+using System.Collections.Generic;
 using FluentAssertions;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
 using Xunit;
 
 /// <summary>
@@ -397,8 +397,7 @@ public class ShelterTests
             virtualTourUrl,
             workingHours,
             socialMedia ?? new Dictionary<string, string> { { "Facebook", "fb.com/default" } },
-            this.validManagerId
-        );
+            this.validManagerId);
 
         for (int i = 0; i < currentOccupancy; i++)
         {

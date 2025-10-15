@@ -1,15 +1,16 @@
 ﻿namespace PetCare.Application.Features.Auth.EventHandlers;
 
+using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using PetCare.Domain.Events;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles UserLastLoginSetEvent.
 /// </summary>
 public sealed class UserLastLoginSetEventHandler : INotificationHandler<UserLastLoginSetEvent>
 {
+    private readonly string message = "Подія UserLastLoginSetEvent спрацювала для користувача {UserId} з часом {LastLogin}";
     private readonly ILogger<UserLastLoginSetEventHandler> logger;
 
     /// <summary>
@@ -25,9 +26,10 @@ public sealed class UserLastLoginSetEventHandler : INotificationHandler<UserLast
     public async Task Handle(UserLastLoginSetEvent notification, CancellationToken cancellationToken)
     {
         var handlerInstanceId = Guid.NewGuid().ToString("N")[..8];
+
         // Логування події
         this.logger.LogInformation(
-            "Подія UserLastLoginSetEvent спрацювала для користувача {UserId} з часом {LastLogin}",
+            this.message,
             handlerInstanceId,
             notification.UserId,
             notification.LastLogin);

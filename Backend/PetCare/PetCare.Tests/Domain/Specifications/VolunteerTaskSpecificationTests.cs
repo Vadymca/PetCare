@@ -1,10 +1,11 @@
 ﻿namespace PetCare.Tests.Domain.Specifications;
-using PetCare.Domain.Aggregates;
-using PetCare.Domain.Enums;
-using PetCare.Domain.Specifications.VolunteerTask;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using PetCare.Domain.Aggregates;
+using PetCare.Domain.Enums;
+using PetCare.Domain.Specifications.VolunteerTask;
 
 /// <summary>
 /// Contains unit tests for <see cref="VolunteerTask"/> specifications.

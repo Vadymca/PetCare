@@ -1,10 +1,10 @@
 ﻿namespace PetCare.Application.Features.Animals.DeleteAnimal;
 
+using System;
+using System.Threading.Tasks;
 using MediatR;
 using PetCare.Application.Dtos.AnimalDtos;
 using PetCare.Application.Interfaces;
-using System;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handler for processing <see cref="DeleteAnimalCommand"/>.

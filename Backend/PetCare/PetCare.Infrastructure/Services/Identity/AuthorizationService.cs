@@ -1,14 +1,14 @@
 ﻿namespace PetCare.Infrastructure.Services.Identity;
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PetCare.Domain.Abstractions.Services;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.ValueObjects;
 using PetCare.Infrastructure.Persistence;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Provides authorization checks using ASP.NET Identity and EF Core.

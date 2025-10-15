@@ -174,13 +174,13 @@ public class AdoptionApplicationTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData(" ")]
-    public void AddAdminNotes_WithNullOrWhitespace_ShouldThrowArgumentException(string invalidNotes)
+    public void AddAdminNotes_WithNullOrWhitespace_ShouldThrowArgumentException(string? invalidNotes)
     {
         // Arrange
         var app = AdoptionApplication.Create(Guid.NewGuid(), Guid.NewGuid(), null);
 
         // Act
-        Action act = () => app.AddAdminNotes(invalidNotes);
+        Action act = () => app.AddAdminNotes(invalidNotes!);
 
         // Assert
         act.Should().Throw<ArgumentException>()

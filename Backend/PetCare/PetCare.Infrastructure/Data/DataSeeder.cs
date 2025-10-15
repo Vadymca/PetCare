@@ -1,12 +1,12 @@
 ﻿namespace PetCare.Infrastructure.Data;
 
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PetCare.Infrastructure.Identity;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Provides data seeding functionality for the application.

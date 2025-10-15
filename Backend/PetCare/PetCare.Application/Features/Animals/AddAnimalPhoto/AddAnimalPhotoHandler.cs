@@ -1,11 +1,11 @@
 ﻿namespace PetCare.Application.Features.Animals.AddAnimalPhoto;
 
+using System;
+using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using PetCare.Application.Dtos.AnimalDtos;
 using PetCare.Application.Interfaces;
-using System;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handler for adding a photo to an animal.

@@ -1,12 +1,12 @@
 ﻿namespace PetCare.Application.Features.Users.GetUserById;
 
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles the <see cref="GetUserByIdCommand"/> to retrieve a specific user by Id.

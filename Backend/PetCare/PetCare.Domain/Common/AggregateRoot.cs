@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Domain.Common;
+
 using PetCare.Domain.Events;
 
 /// <summary>

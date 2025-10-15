@@ -1,11 +1,11 @@
 ﻿namespace PetCare.Application.Features.Auth.TwoFactor.Sms.Send;
 
+using System;
+using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
-using System;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles sending SMS 2FA code to the current user.

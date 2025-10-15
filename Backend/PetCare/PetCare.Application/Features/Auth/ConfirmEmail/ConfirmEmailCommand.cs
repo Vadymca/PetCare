@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Application.Features.Auth.ConfirmEmail;
+
 using MediatR;
 using PetCare.Application.Dtos.AuthDtos;
 

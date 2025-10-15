@@ -1,7 +1,8 @@
 ﻿namespace PetCare.Domain.Abstractions.Services;
-using PetCare.Domain.Aggregates;
+
 using System;
 using System.Threading.Tasks;
+using PetCare.Domain.Aggregates;
 
 /// <summary>
 /// Defines operations for managing adoption applications within the system.

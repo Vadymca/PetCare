@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Infrastructure.Persistence.Configurations;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PetCare.Domain.Entities;
@@ -46,6 +47,5 @@ public sealed class ArticleCommentConfiguration : IEntityTypeConfiguration<Artic
 
         builder.HasIndex(x => x.Status);
         builder.HasIndex(x => x.CreatedAt);
-
     }
 }

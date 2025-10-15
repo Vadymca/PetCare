@@ -3,26 +3,6 @@
 using MediatR;
 using PetCare.Application.Dtos.AnimalDtos;
 using PetCare.Application.Features.Animals.UpdateAnimal;
-using PetCare.Domain.Enums;
-
-public sealed record UpdateAnimalBody(
-string? Name,
-DateTime? Birthday,
-AnimalGender? Gender,
-string? Description,
-AnimalStatus? Status,
-string? AdoptionRequirements,
-string? MicrochipId,
-float? Weight,
-float? Height,
-string? Color,
-bool? IsSterilized,
-bool? HaveDocuments,
-List<string>? HealthConditions,
-List<string>? SpecialNeeds,
-List<AnimalTemperament>? Temperaments,
-AnimalSize? Size,
-AnimalCareCost? CareCost);
 
 /// <summary>
 /// Endpoint for updating an existing animal.
@@ -61,8 +41,7 @@ public static class UpdateAnimalEndpoint
                 SpecialNeeds: body.SpecialNeeds,
                 Temperaments: body.Temperaments,
                 Size: body.Size,
-                CareCost: body.CareCost
-            );
+                CareCost: body.CareCost);
 
             var updatedAnimal = await mediator.Send(command);
 

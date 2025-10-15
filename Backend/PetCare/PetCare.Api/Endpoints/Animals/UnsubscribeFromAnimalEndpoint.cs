@@ -1,8 +1,8 @@
 ﻿namespace PetCare.Api.Endpoints.Animals;
 
+using System.Security.Claims;
 using MediatR;
 using PetCare.Application.Features.Animals.UnsubscribeFromAnimal;
-using System.Security.Claims;
 
 /// <summary>
 /// Endpoint for unsubscribing the authenticated user from notifications about a specific animal.

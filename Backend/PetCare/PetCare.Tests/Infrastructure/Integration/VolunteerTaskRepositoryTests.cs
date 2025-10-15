@@ -1,4 +1,8 @@
 ﻿namespace PetCare.Tests.Infrastructure.Integration;
+
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Npgsql;
@@ -8,9 +12,6 @@ using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
 using PetCare.Infrastructure.Persistence;
 using PetCare.Infrastructure.Persistence.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Testcontainers.PostgreSql;
 
 /// <summary>
@@ -44,6 +45,7 @@ public sealed class VolunteerTaskRepositoryTests : IAsyncLifetime
     /// Sets up database and repository before tests.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    [Obsolete]
     public async Task InitializeAsync()
     {
         NpgsqlConnection.GlobalTypeMapper.EnableDynamicJson();

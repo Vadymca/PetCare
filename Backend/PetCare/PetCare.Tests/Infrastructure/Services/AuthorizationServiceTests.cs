@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Tests.Infrastructure.Services;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -9,12 +10,25 @@ using PetCare.Domain.ValueObjects;
 using PetCare.Infrastructure.Persistence;
 using PetCare.Infrastructure.Services.Identity;
 
+/// <summary>
+/// Contains unit tests for the AuthorizationService class, verifying role-based authorization logic.
+/// </summary>
+/// <remarks>These tests use mocked dependencies and an in-memory database to isolate and validate the behavior of
+/// the AuthorizationService. The tests focus on scenarios such as checking user roles and handling cases where users
+/// are not found.</remarks>
 public class AuthorizationServiceTests
 {
     private readonly AuthorizationService service;
     private readonly Mock<UserManager<User>> userManagerMock;
     private readonly AppDbContext dbContext;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AuthorizationServiceTests"/> class for unit testing the AuthorizationService.
+    /// component.
+    /// </summary>
+    /// <remarks>This constructor sets up in-memory dependencies and mock objects required for isolated
+    /// testing of authorization logic. It configures an in-memory database and mock implementations of user management
+    /// and domain event dispatching to ensure tests do not depend on external resources.</remarks>
     public AuthorizationServiceTests()
     {
         var store = new Mock<IUserStore<User>>();
@@ -31,6 +45,12 @@ public class AuthorizationServiceTests
         this.service = new AuthorizationService(this.dbContext, this.userManagerMock.Object);
     }
 
+    /// <summary>
+    /// Verifies that HasRoleAsync returns true when the specified user is assigned the given role.
+    /// </summary>
+    /// <remarks>This unit test ensures that the HasRoleAsync method correctly identifies when a user
+    /// possesses a specific role. It uses mocked dependencies to simulate the user and role assignment.</remarks>
+    /// <returns>A task that represents the asynchronous test operation.</returns>
     [Fact]
     public async Task HasRoleAsync_ShouldReturnTrue_WhenUserHasRole()
     {
@@ -54,6 +74,10 @@ public class AuthorizationServiceTests
         Assert.True(result);
     }
 
+    /// <summary>
+    /// Verifies that HasRoleAsync returns false when the specified user cannot be found.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous test operation.</returns>
     [Fact]
     public async Task HasRoleAsync_ShouldReturnFalse_WhenUserNotFound()
     {

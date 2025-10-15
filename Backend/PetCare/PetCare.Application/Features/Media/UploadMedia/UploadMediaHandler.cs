@@ -1,12 +1,12 @@
 ﻿namespace PetCare.Application.Features.Media.UploadMedia;
 
-using MediatR;
-using PetCare.Application.Interfaces;
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
+using PetCare.Application.Interfaces;
 
 /// <summary>
 /// Handles uploading media files and returning their URL.
@@ -15,7 +15,15 @@ using System.Threading.Tasks;
 /// </summary>
 public class UploadMediaHandler : IRequestHandler<UploadMediaCommand, string>
 {
-    private readonly IStorageService storageService;
+    /// <summary>
+    /// Maximum allowed photo size in bytes (5 MB).
+    /// </summary>
+    private const long MaxPhotoSize = 5 * 1024 * 1024;
+
+    /// <summary>
+    /// Maximum allowed video size in bytes (50 MB).
+    /// </summary>
+    private const long MaxVideoSize = 50 * 1024 * 1024;
 
     /// <summary>
     /// Supported photo file extensions.
@@ -33,15 +41,7 @@ public class UploadMediaHandler : IRequestHandler<UploadMediaCommand, string>
         ".mp4", ".avi", ".mov", ".mkv", ".wmv", ".flv", ".webm", ".mpeg",
     };
 
-    /// <summary>
-    /// Maximum allowed photo size in bytes (5 MB).
-    /// </summary>
-    private const long MaxPhotoSize = 5 * 1024 * 1024;
-
-    /// <summary>
-    /// Maximum allowed video size in bytes (50 MB).
-    /// </summary>
-    private const long MaxVideoSize = 50 * 1024 * 1024;
+    private readonly IStorageService storageService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UploadMediaHandler"/> class.

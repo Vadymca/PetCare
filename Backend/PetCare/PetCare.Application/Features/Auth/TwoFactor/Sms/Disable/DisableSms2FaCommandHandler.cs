@@ -1,11 +1,11 @@
 ﻿namespace PetCare.Application.Features.Auth.TwoFactor.Sms.Disable;
 
+using System;
+using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
-using System;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles the disabling of SMS 2FA for the current user.

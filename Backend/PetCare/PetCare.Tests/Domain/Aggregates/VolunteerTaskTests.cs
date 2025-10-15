@@ -1,9 +1,10 @@
 ﻿namespace PetCare.Tests.Domain.Aggregates;
+
+using System;
+using System.Collections.Generic;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
 using Xunit;
 
 /// <summary>

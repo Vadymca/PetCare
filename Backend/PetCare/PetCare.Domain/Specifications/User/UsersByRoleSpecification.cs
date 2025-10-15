@@ -1,7 +1,8 @@
 ﻿namespace PetCare.Domain.Specifications.User;
+
+using System.Linq.Expressions;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Enums;
-using System.Linq.Expressions;
 
 /// <summary>
 /// Specification for filtering users by role.

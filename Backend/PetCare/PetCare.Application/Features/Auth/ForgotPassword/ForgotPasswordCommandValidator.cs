@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Application.Features.Auth.ForgotPassword;
+
 using FluentValidation;
 
 /// <summary>

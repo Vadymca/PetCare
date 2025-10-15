@@ -1,15 +1,15 @@
 ﻿namespace PetCare.Infrastructure.Services;
 
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using PetCare.Domain.Abstractions.Services;
 using PetCare.Domain.Aggregates;
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 /// <summary>
 /// JWT token generation service.

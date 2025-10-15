@@ -1,4 +1,5 @@
 ﻿namespace PetCare.Infrastructure.Persistence.Configurations;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using PetCare.Domain.Aggregates;
@@ -36,7 +37,7 @@ public sealed class VolunteerTaskConfiguration : IEntityTypeConfiguration<Volunt
 
         builder.Property(x => x.Location)
              .HasConversion(
-                 c => c.Point,
+                 c => c!.Point,
                  p => Coordinates.From(p.Y, p.X))
             .HasColumnType("geometry(Point, 4326)");
         builder.Property(x => x.SkillsRequired).HasColumnType("jsonb");

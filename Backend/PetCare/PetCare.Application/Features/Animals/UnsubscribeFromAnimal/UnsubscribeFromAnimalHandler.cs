@@ -1,10 +1,10 @@
 ﻿namespace PetCare.Application.Features.Animals.UnsubscribeFromAnimal;
 
+using System;
+using System.Threading.Tasks;
 using MediatR;
 using PetCare.Application.Dtos.AnimalDtos;
 using PetCare.Application.Interfaces;
-using System;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles the unsubscription of a user from an animal.

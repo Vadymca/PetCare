@@ -194,7 +194,7 @@ public sealed class Animal : AggregateRoot
     public bool IsSterilized { get; private set; }
 
     /// <summary>
-    /// Indicates whether the animal is currently under care.
+    /// Gets a value indicating whether indicates whether the animal is currently under care.
     /// </summary>
     public bool IsUnderCare { get; private set; }
 

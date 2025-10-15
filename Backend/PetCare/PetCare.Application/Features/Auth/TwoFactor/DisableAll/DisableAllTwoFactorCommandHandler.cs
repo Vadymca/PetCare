@@ -1,11 +1,11 @@
 ﻿namespace PetCare.Application.Features.Auth.TwoFactor.DisableAll;
 
+using System;
+using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
-using System;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Handles the disabling of all 2FA methods for the current user.

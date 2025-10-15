@@ -1,6 +1,7 @@
 ﻿namespace PetCare.Domain.ValueObjects;
-using PetCare.Domain.Common;
+
 using System.Text.Json.Serialization;
+using PetCare.Domain.Common;
 
 /// <summary>
 /// Represents a birthday as a value object, including time in UTC.

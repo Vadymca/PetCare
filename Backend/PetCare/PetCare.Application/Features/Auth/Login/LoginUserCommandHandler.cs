@@ -1,5 +1,6 @@
 ﻿namespace PetCare.Application.Features.Auth.Login;
 
+using System.Security.Cryptography;
 using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -7,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Abstractions.Services;
-using System.Security.Cryptography;
 
 /// <summary>
 /// Handles the <see cref="LoginUserCommand"/> request to authenticate a user and generate tokens.
@@ -89,7 +89,7 @@ public sealed class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, 
             return new LoginResponseDto(
                 Status: "2fa_required",
                 Method: "sms",
-                HiddenPhoneNumber: this.HidePhoneNumber(user.Phone),
+                HiddenPhoneNumber: this.HidePhoneNumber(user.Phone!),
                 TwoFaToken: twoFaToken,
                 Message: "Необхідна двофакторна автентифікація. Будь ласка, пройдіть SMS перевірку перед входом.");
         }
@@ -113,7 +113,7 @@ public sealed class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, 
         // Створюємо UserDto
         var userDto = this.mapper.Map<UserDto>(user) with
         {
-            Role = userRole
+            Role = userRole,
         };
 
         // Генеруємо Access Token
@@ -135,18 +135,6 @@ public sealed class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, 
             User: userDto);
     }
 
-    private string? HidePhoneNumber(string phone)
-    {
-        if (string.IsNullOrEmpty(phone) || phone.Length < 7)
-        {
-            return phone;
-        }
-
-        var last2 = phone[^2..];
-        var countryCode = phone.StartsWith("+380") ? "+380" : phone[..4];
-        return $"{countryCode}*******{last2}";
-    }
-
     private static string Generate2FaToken(int length = 6)
     {
         const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -160,5 +148,17 @@ public sealed class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, 
         }
 
         return new string(result);
+    }
+
+    private string? HidePhoneNumber(string phone)
+    {
+        if (string.IsNullOrEmpty(phone) || phone.Length < 7)
+        {
+            return phone;
+        }
+
+        var last2 = phone[^2..];
+        var countryCode = phone.StartsWith("+380") ? "+380" : phone[..4];
+        return $"{countryCode}*******{last2}";
     }
 }

@@ -1,6 +1,7 @@
 ﻿namespace PetCare.Infrastructure.Identity;
-using Microsoft.AspNetCore.Identity;
+
 using System;
+using Microsoft.AspNetCore.Identity;
 
 /// <summary>
 /// Represents a role in the PetCare system for ASP.NET Identity.

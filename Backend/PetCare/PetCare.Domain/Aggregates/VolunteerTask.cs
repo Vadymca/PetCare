@@ -1,10 +1,11 @@
 ﻿namespace PetCare.Domain.Aggregates;
+
+using System.Collections.ObjectModel;
 using PetCare.Domain.Common;
 using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
 using PetCare.Domain.Events;
 using PetCare.Domain.ValueObjects;
-using System.Collections.ObjectModel;
 
 /// <summary>
 /// Represents a volunteer task in the system.

@@ -1,7 +1,8 @@
 ﻿namespace PetCare.Domain.Specifications.Shelter;
-using PetCare.Domain.Aggregates;
+
 using System;
 using System.Linq.Expressions;
+using PetCare.Domain.Aggregates;
 
 /// <summary>
 /// Specification for filtering shelters that have free capacity.

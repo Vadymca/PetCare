@@ -134,7 +134,7 @@ public class UserRepository : GenericRepository<User>, IUserRepository
             .AsNoTracking()
             .Include(u => u.AnimalSubscriptions)
                 .ThenInclude(s => s.Animal)
-                    .ThenInclude(a => a.Breed)
+                    .ThenInclude(a => a!.Breed)
                         .ThenInclude(b => b!.Specie)
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken)
             ?? throw new KeyNotFoundException($"Користувача з Id '{userId}' не знайдено.");

@@ -1,7 +1,7 @@
 ﻿namespace PetCare.Application.Features.Animals.AddAnimalPhoto;
 
-using FluentValidation;
 using System;
+using FluentValidation;
 
 /// <summary>
 /// Validator for <see cref="AddAnimalPhotoCommand"/>.
