@@ -25,8 +25,12 @@ COPY . .
 RUN dotnet build PetCare.Infrastructure/PetCare.Infrastructure.csproj -c Release
 RUN dotnet build PetCare.Api/PetCare.Api.csproj -c Release
 
-# Публікація API
-RUN dotnet publish "PetCare.Api/PetCare.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
+# Публікація API з усіма залежностями, щоб міграції були доступні
+RUN dotnet publish "PetCare.Api/PetCare.Api.csproj" \
+    -c Release \
+    -o /app/publish \
+    /p:UseAppHost=false \
+    /p:CopyLocalLockFileAssemblies=true
 
 # ===== Runtime stage =====
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
