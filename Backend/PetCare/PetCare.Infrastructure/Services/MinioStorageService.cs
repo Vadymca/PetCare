@@ -52,11 +52,17 @@ public sealed class MinioStorageService : IStorageService
     }
 
     /// <inheritdoc/>
-    public async Task<string> UploadFileAsync(string objectName, Stream data, string contentType)
+    public async Task<string> UploadFileAsync(Stream data, string originalFileName, string contentType)
     {
         try
         {
             await this.EnsureBucketExistsAsync();
+
+            // Витягуємо розширення з оригінальної назви файлу
+            var extension = Path.GetExtension(originalFileName)?.ToLowerInvariant() ?? ".dat";
+
+            // Генеруємо унікальне ім'я файлу
+            var objectName = $"{Guid.NewGuid()}{extension}";
 
             var putObjectArgs = new PutObjectArgs()
                 .WithBucket(this.bucketName)
@@ -74,8 +80,8 @@ public sealed class MinioStorageService : IStorageService
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Failed to upload file '{Object}'", objectName);
-            throw new InvalidOperationException($"Не вдалося завантажити файл '{objectName}'.");
+            this.logger.LogError(ex, "Failed to upload file '{Object}'", originalFileName);
+            throw new InvalidOperationException($"Не вдалося завантажити файл '{originalFileName}'.");
         }
     }
 
