@@ -51,24 +51,18 @@ public sealed class MinioStorageService : IStorageService
             .Build();
     }
 
-    /// <summary>
-    /// Asynchronously uploads a file to the configured object storage bucket and returns the URL of the uploaded file.
-    /// </summary>
-    /// <remarks>The method ensures that the target bucket exists before uploading the file. The returned URL
-    /// format depends on the configured endpoint and may not guarantee public accessibility unless the bucket policy
-    /// allows it.</remarks>
-    /// <param name="objectName">The name to assign to the uploaded object in the storage bucket. Must not be null or empty.</param>
-    /// <param name="data">The stream containing the file data to upload. The stream must be readable and its length must match the file
-    /// size.</param>
-    /// <param name="contentType">The MIME type of the file being uploaded. Used to set the content type metadata for the object.</param>
-    /// <returns>A string containing the URL of the uploaded file in the object storage. The URL can be used to access the file
-    /// directly if public access is enabled.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the file upload fails due to an error with the storage service or network.</exception>
-    public async Task<string> UploadFileAsync(string objectName, Stream data, string contentType)
+    /// <inheritdoc/>
+    public async Task<string> UploadFileAsync(Stream data, string originalFileName, string contentType)
     {
         try
         {
             await this.EnsureBucketExistsAsync();
+
+            // Витягуємо розширення з оригінальної назви файлу
+            var extension = Path.GetExtension(originalFileName)?.ToLowerInvariant() ?? ".dat";
+
+            // Генеруємо унікальне ім'я файлу
+            var objectName = $"{Guid.NewGuid()}{extension}";
 
             var putObjectArgs = new PutObjectArgs()
                 .WithBucket(this.bucketName)
@@ -86,8 +80,10 @@ public sealed class MinioStorageService : IStorageService
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Failed to upload file '{Object}'", objectName);
-            throw new InvalidOperationException($"Не вдалося завантажити файл '{objectName}'."); } }
+            this.logger.LogError(ex, "Failed to upload file '{Object}'", originalFileName);
+            throw new InvalidOperationException($"Не вдалося завантажити файл '{originalFileName}'.");
+        }
+    }
 
     /// <inheritdoc/>
     public async Task<Stream> DownloadFileAsync(string objectName)

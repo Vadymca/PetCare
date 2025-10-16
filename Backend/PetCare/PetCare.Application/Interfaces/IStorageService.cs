@@ -8,15 +8,17 @@ using System.Threading.Tasks;
 public interface IStorageService
 {
     /// <summary>
-    /// Asynchronously uploads a file to the storage service with the specified object name and content type.
+    /// Asynchronously uploads a file to the storage service using the provided data stream and metadata.
     /// </summary>
-    /// <param name="objectName">The name to assign to the uploaded object in the storage service. Cannot be null or empty.</param>
-    /// <param name="data">A stream containing the file data to upload. The stream must be readable and positioned at the start of the data
-    /// to upload. Cannot be null.</param>
-    /// <param name="contentType">The MIME type of the file being uploaded. Cannot be null or empty.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the URI of the uploaded object as a
-    /// string.</returns>
-    Task<string> UploadFileAsync(string objectName, Stream data, string contentType);
+    /// <param name="data">The stream containing the file data to upload. The stream must be readable and positioned at the start of the
+    /// file content.</param>
+    /// <param name="originalFileName">The original name of the file, including the file extension. Used to preserve file metadata and determine
+    /// storage naming.</param>
+    /// <param name="contentType">The MIME type of the file (for example, "image/png" or "application/pdf"). Determines how the file will be
+    /// handled and served.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a string with the unique identifier
+    /// or URL of the uploaded file.</returns>
+    Task<string> UploadFileAsync(Stream data, string originalFileName, string contentType);
 
     /// <summary>
     /// Downloads a file from the storage bucket.
