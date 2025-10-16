@@ -13,19 +13,19 @@ using PetCare.Domain.ValueObjects;
 /// </summary>
 public sealed class CreateAnimalCommandHandler : IRequestHandler<CreateAnimalCommand, AnimalDto>
 {
-    private readonly IAnimalRepository animalRepository;
+    private readonly IAnimalService animalService;
     private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CreateAnimalCommandHandler"/> class.
     /// </summary>
-    /// <param name="animalRepository">The animal repository.</param>
+    /// <param name="animalService">The animal service instance.</param>
     /// <param name="mapper">The mapper instance.</param>
     public CreateAnimalCommandHandler(
-        IAnimalRepository animalRepository,
+        IAnimalService animalService,
         IMapper mapper)
     {
-        this.animalRepository = animalRepository ?? throw new ArgumentNullException(nameof(animalRepository));
+        this.animalService = animalService ?? throw new ArgumentNullException(nameof(animalService));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
@@ -36,7 +36,7 @@ public sealed class CreateAnimalCommandHandler : IRequestHandler<CreateAnimalCom
             ? Birthday.Create(request.Birthday.Value)
             : null;
 
-        var addedAnimal = await this.animalRepository.CreateAsync(
+        var addedAnimal = await this.animalService.CreateAsync(
              userId: request.UserId,
              name: request.Name,
              breedId: request.BreedId,

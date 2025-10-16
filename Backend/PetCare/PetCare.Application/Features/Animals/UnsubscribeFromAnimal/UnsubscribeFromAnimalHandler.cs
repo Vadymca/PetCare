@@ -11,21 +11,21 @@ using PetCare.Application.Interfaces;
 /// </summary>
 public class UnsubscribeFromAnimalHandler : IRequestHandler<UnsubscribeFromAnimalCommand, UnsubscribeResultDto>
 {
-    private readonly IAnimalRepository animalRepository;
+    private readonly IAnimalService animalService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UnsubscribeFromAnimalHandler"/> class.
     /// </summary>
-    /// <param name="animalRepository">The animal repository.</param>
-    public UnsubscribeFromAnimalHandler(IAnimalRepository animalRepository)
+    /// <param name="animalService">The animal service.</param>
+    public UnsubscribeFromAnimalHandler(IAnimalService animalService)
     {
-        this.animalRepository = animalRepository ?? throw new ArgumentNullException(nameof(animalRepository));
+        this.animalService = animalService ?? throw new ArgumentNullException(nameof(animalService));
     }
 
     /// <inheritdoc/>
     public async Task<UnsubscribeResultDto> Handle(UnsubscribeFromAnimalCommand request, CancellationToken cancellationToken)
     {
-        await this.animalRepository.UnsubscribeUserAsync(request.AnimalId, request.UserId, cancellationToken);
+        await this.animalService.UnsubscribeUserAsync(request.AnimalId, request.UserId, cancellationToken);
 
         return new UnsubscribeResultDto("Ви успішно відписані від тварини.");
     }

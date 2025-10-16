@@ -13,7 +13,7 @@ using PetCare.Application.Interfaces;
 public sealed class GetAnimalsCommandHandler
     : IRequestHandler<GetAnimalsCommand, GetAnimalsResponseDto>
 {
-    private readonly IAnimalRepository repository;
+    private readonly IAnimalService animalService;
     private readonly IMapper mapper;
 
     /// <summary>
@@ -23,12 +23,12 @@ public sealed class GetAnimalsCommandHandler
     /// <remarks>This class is responsible for coordinating the retrieval of animal data from the repository
     /// and mapping it to the appropriate output format. Ensure that both <paramref name="repository"/> and <paramref
     /// name="mapper"/> are properly initialized before using this handler.</remarks>
-    /// <param name="repository">The repository used to access animal data.</param>
+    /// <param name="animalService">The service used to interact with animal data.</param>
     /// <param name="mapper">The mapper used to transform data between domain models and DTOs.</param>
-    public GetAnimalsCommandHandler(IAnimalRepository repository, IMapper mapper)
+    public GetAnimalsCommandHandler(IAnimalService animalService, IMapper mapper)
     {
-        this.repository = repository;
-        this.mapper = mapper;
+        this.animalService = animalService ?? throw new ArgumentNullException(nameof(animalService));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc/>
@@ -36,7 +36,7 @@ public sealed class GetAnimalsCommandHandler
         GetAnimalsCommand request,
         CancellationToken cancellationToken)
     {
-        var (animals, total) = await this.repository.GetAnimalsAsync(
+        var (animals, total) = await this.animalService.GetAnimalsAsync(
              request.Page,
              request.PageSize,
              request.Sizes,

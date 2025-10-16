@@ -217,139 +217,32 @@ public class AnimalRepository : GenericRepository<Animal>, IAnimalRepository
     }
 
     /// <summary>
-    /// Creates a new animal with the specified parameters.
+    /// Asynchronously adds a new animal to the data store and retrieves the fully populated animal entity, including
+    /// related breed, species, and shelter information.
     /// </summary>
-    /// <param name="userId">The unique identifier of the user creating the animal.</
-    /// <param name="name">The name of the animal.</param>
-    /// <param name="breedId">The unique identifier of the breed of the animal.</param>
-    /// <param name="birthday">The birthday of the animal (optional).</param>
-    /// <param name="gender">The gender of the animal.</param>
-    /// <param name="description">The description of the animal (optional).</param>
-    /// <param name="healthConditions">A list of health conditions of the animal (optional).</param>
-    /// <param name="specialNeeds">A list of special needs of the animal (optional).</param>
-    /// <param name="temperaments">A list of temperaments of the animal (optional).</param>
-    /// <param name="size">The size of the animal.</param>
-    /// <param name="photos">A list of photo URLs of the animal (optional).</param>
-    /// <param name="videos">A list of video URLs of the animal (optional).</param>
-    /// <param name="shelterId">The unique identifier of the shelter where the animal is located.</param>
-    /// <param name="status">The adoption status of the animal.</param>
-    /// <param name="careCost">The expected care cost of the animal.</param>
-    /// <param name="adoptionRequirements">The adoption requirements for the animal (optional).</param>
-    /// <param name="microchipId">The microchip ID of the animal (optional).</param>
-    /// <param name="weight">The weight of the animal in kilograms (optional).</param>
-    /// <param name="height">The height of the animal in centimeters (optional).</param>
-    /// <param name="color">The color of the animal, if any. Can be null.</param>
-    /// <param name="isSterilized">Indicates whether the animal is sterilized.</param>
-    /// <param name="isUnderCare">Indicates whether the animal is under care.</param>
-    /// <param name="haveDocuments">Indicates whether the animal has documents.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>The created animal.</returns>
-    public async Task<Animal> CreateAsync(
-    Guid userId,
-    string name,
-    Guid breedId,
-    Birthday? birthday,
-    AnimalGender gender,
-    string? description,
-    List<string>? healthConditions,
-    List<string>? specialNeeds,
-    List<AnimalTemperament>? temperaments,
-    AnimalSize size,
-    List<string>? photos,
-    List<string>? videos,
-    Guid shelterId,
-    AnimalStatus status,
-    AnimalCareCost careCost,
-    string? adoptionRequirements,
-    string? microchipId,
-    float? weight,
-    float? height,
-    string? color,
-    bool isSterilized,
-    bool isUnderCare,
-    bool haveDocuments,
-    CancellationToken cancellationToken = default)
+    /// <param name="animal">The animal to add. Cannot be null.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the added animal entity with related
+    /// breed, species, and shelter data populated.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if the animal parameter is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the animal cannot be found in the data store after being added.</exception>
+    public async Task<Animal> AddAnimalAsync(Animal animal, CancellationToken cancellationToken = default)
     {
-        var animal = Animal.Create(
-            userId,
-            name,
-            breedId,
-            birthday,
-            gender,
-            description,
-            healthConditions,
-            specialNeeds,
-            temperaments,
-            size,
-            photos,
-            videos,
-            shelterId,
-            status,
-            careCost,
-            adoptionRequirements,
-            microchipId,
-            weight,
-            height,
-            color,
-            isSterilized,
-            isUnderCare,
-            haveDocuments);
+        if (animal == null)
+        {
+            throw new ArgumentNullException(nameof(animal), "Тварина не може бути null.");
+        }
 
         await this.AddAsync(animal, cancellationToken);
 
         var fullAnimal = await this.Context.Animals
-        .Include(a => a.Breed)
-            .ThenInclude(b => b!.Specie)
-        .Include(a => a.Shelter)
-        .FirstAsync(a => a.Id == animal.Id, cancellationToken);
+            .Include(a => a.Breed)
+                .ThenInclude(b => b!.Specie)
+            .Include(a => a.Shelter)
+            .FirstOrDefaultAsync(a => a.Id == animal.Id, cancellationToken)
+            ?? throw new InvalidOperationException($"Тварину з Id '{animal.Id}' не знайдено після додавання.");
 
         return fullAnimal;
-    }
-
-    /// <summary>
-    /// Adds a photo URL to the specified animal.
-    /// </summary>
-    /// <param name="animalId">The unique identifier of the animal.</param>
-    /// <param name="photoUrl">The URL of the photo to add.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    public async Task AddPhotoAsync(Guid animalId, string photoUrl, CancellationToken cancellationToken = default)
-    {
-        var animal = await this.GetByIdAsync(animalId, cancellationToken)
-            ?? throw new InvalidOperationException($"Тварину з Id '{animalId}' не знайдено.");
-
-        animal.AddPhoto(photoUrl);
-
-        await this.UpdateAsync(animal, cancellationToken);
-    }
-
-    /// <summary>
-    /// Removes a photo URL from the specified animal.
-    /// </summary>
-    /// <param name="animalId">The unique identifier of the animal.</param>
-    /// <param name="photoUrl">The URL of the photo to remove.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation,
-    /// containing <c>true</c> if the photo was removed; otherwise, <c>false</c>.</returns>
-    public async Task<bool> RemovePhotoAsync(Guid animalId, string photoUrl, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrWhiteSpace(photoUrl))
-        {
-            return false;
-        }
-
-        var animal = await this.GetByIdAsync(animalId, cancellationToken)
-            ?? throw new InvalidOperationException($"Тварину з Id '{animalId}' не знайдено.");
-
-        var removed = animal.RemovePhoto(photoUrl);
-
-        if (removed)
-        {
-            await this.UpdateAsync(animal, cancellationToken);
-            await this.fileStorageService.DeleteAsync(photoUrl);
-        }
-
-        return removed;
     }
 
     /// <summary>

@@ -160,7 +160,9 @@ public class Program
                         npgsql.MapEnum<VolunteerTaskStatus>("volunteer_task_status");
                     })
                     .EnableSensitiveDataLogging()
-                    .EnableDetailedErrors();
+                    .EnableDetailedErrors()
+                    .ConfigureWarnings(warnings =>
+                        warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
             });
 
             // -------------------- Application & Infrastructure --------------------

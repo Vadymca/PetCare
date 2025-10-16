@@ -12,24 +12,24 @@ using PetCare.Application.Interfaces;
 /// </summary>
 public sealed class GetAnimalBySlugCommandHandler : IRequestHandler<GetAnimalBySlugCommand, AnimalDto>
 {
-    private readonly IAnimalRepository animalRepository;
+    private readonly IAnimalService animalService;
     private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GetAnimalBySlugCommandHandler"/> class.
     /// </summary>
     /// <param name="mapper">The mapper instance.</param>
-    /// <param name="animalRepository">The animal repository.</param>
-    public GetAnimalBySlugCommandHandler(IAnimalRepository animalRepository, IMapper mapper)
+    /// <param name="animalService">The animal service instance.</param>
+    public GetAnimalBySlugCommandHandler(IAnimalService animalService, IMapper mapper)
     {
-        this.animalRepository = animalRepository;
-        this.mapper = mapper;
+        this.animalService = animalService ?? throw new ArgumentNullException(nameof(animalService));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc />
     public async Task<AnimalDto> Handle(GetAnimalBySlugCommand request, CancellationToken cancellationToken)
     {
-        var animal = await this.animalRepository.GetBySlugAsync(request.Slug, cancellationToken)
+        var animal = await this.animalService.GetBySlugAsync(request.Slug, cancellationToken)
                      ?? throw new InvalidOperationException($"Тварину зі slug '{request.Slug}' не знайдено.");
 
         return this.mapper.Map<AnimalDto>(animal);

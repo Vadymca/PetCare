@@ -13,24 +13,24 @@ using PetCare.Domain.ValueObjects;
 /// </summary>
 public sealed class UpdateAnimalCommandHandler : IRequestHandler<UpdateAnimalCommand, AnimalDto>
 {
-    private readonly IAnimalRepository repository;
+    private readonly IAnimalService animalService;
     private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UpdateAnimalCommandHandler"/> class.
     /// </summary>
-    /// <param name="repository">The animal repository.</param>
+    /// <param name="animalService">The animal service instance.</param>
     /// <param name="mapper">The mapper instance.</param>
-    public UpdateAnimalCommandHandler(IAnimalRepository repository, IMapper mapper)
+    public UpdateAnimalCommandHandler(IAnimalService animalService, IMapper mapper)
     {
-        this.repository = repository;
-        this.mapper = mapper;
+        this.animalService = animalService ?? throw new ArgumentNullException(nameof(animalService));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc />
     public async Task<AnimalDto> Handle(UpdateAnimalCommand request, CancellationToken cancellationToken)
     {
-        var animal = await this.repository.GetByIdAsync(request.Id, cancellationToken)
+        var animal = await this.animalService.GetByIdAsync(request.Id, cancellationToken)
             ?? throw new InvalidOperationException($"Тварину з Id '{request.Id}' не знайдено.");
 
         // 🔹 Основні поля
@@ -75,7 +75,7 @@ public sealed class UpdateAnimalCommandHandler : IRequestHandler<UpdateAnimalCom
             animal.UpdateCareCost(request.CareCost.Value);
         }
 
-        await this.repository.UpdateAsync(animal, cancellationToken);
+        await this.animalService.UpdateAsync(animal, cancellationToken);
 
         return this.mapper.Map<AnimalDto>(animal);
     }

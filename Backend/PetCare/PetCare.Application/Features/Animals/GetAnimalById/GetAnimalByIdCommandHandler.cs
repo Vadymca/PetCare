@@ -10,17 +10,17 @@ using PetCare.Application.Interfaces;
 /// </summary>
 public sealed class GetAnimalByIdCommandHandler : IRequestHandler<GetAnimalByIdCommand, AnimalDto?>
 {
-    private readonly IAnimalRepository animalRepository;
+    private readonly IAnimalService animalService;
     private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GetAnimalByIdCommandHandler"/> class.
     /// </summary>
-    /// <param name="animalRepository">The animal repository.</param>
+    /// <param name="animalService">The animal service instance.</param>
     /// <param name="mapper">The mapper instance.</param>
-    public GetAnimalByIdCommandHandler(IAnimalRepository animalRepository, IMapper mapper)
+    public GetAnimalByIdCommandHandler(IAnimalService animalService, IMapper mapper)
     {
-        this.animalRepository = animalRepository ?? throw new ArgumentNullException(nameof(animalRepository));
+        this.animalService = animalService ?? throw new ArgumentNullException(nameof(animalService));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
@@ -32,7 +32,7 @@ public sealed class GetAnimalByIdCommandHandler : IRequestHandler<GetAnimalByIdC
             throw new ArgumentException("Id не може бути порожнім.", nameof(request.Id));
         }
 
-        var animal = await this.animalRepository.GetByIdAsync(request.Id, cancellationToken)
+        var animal = await this.animalService.GetByIdAsync(request.Id, cancellationToken)
      ?? throw new InvalidOperationException("Тварину не знайдено.");
 
         return this.mapper.Map<AnimalDto>(animal);

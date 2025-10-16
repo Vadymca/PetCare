@@ -11,21 +11,21 @@ using PetCare.Application.Interfaces;
 /// </summary>
 public class SubscribeToAnimalHandler : IRequestHandler<SubscribeToAnimalCommand, AnimalSubscriptionDto>
 {
-    private readonly IAnimalRepository animalRepository;
+    private readonly IAnimalService animalService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SubscribeToAnimalHandler"/> class.
     /// </summary>
-    /// <param name="animalRepository">The animal repository.</param>
-    public SubscribeToAnimalHandler(IAnimalRepository animalRepository)
+    /// <param name="animalService">The animal service.</param>
+    public SubscribeToAnimalHandler(IAnimalService animalService)
     {
-        this.animalRepository = animalRepository ?? throw new ArgumentNullException(nameof(animalRepository));
+        this.animalService = animalService ?? throw new ArgumentNullException(nameof(animalService));
     }
 
     /// <inheritdoc/>
     public async Task<AnimalSubscriptionDto> Handle(SubscribeToAnimalCommand request, CancellationToken cancellationToken)
     {
-        await this.animalRepository.SubscribeUserAsync(request.AnimalId, request.UserId, cancellationToken);
+        await this.animalService.SubscribeUserAsync(request.AnimalId, request.UserId, cancellationToken);
         return new AnimalSubscriptionDto(Guid.Empty, request.UserId, request.AnimalId, DateTime.UtcNow);
     }
 }

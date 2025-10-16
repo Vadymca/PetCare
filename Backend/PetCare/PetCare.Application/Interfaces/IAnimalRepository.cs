@@ -84,76 +84,13 @@ public interface IAnimalRepository : IRepository<Animal>
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Creates a new animal with the specified parameters.
+    /// Asynchronously adds a new animal to the data store.
     /// </summary>
-    /// <param name="userId">The unique identifier of the user creating the animal.</
-    /// <param name="name">The name of the animal.</param>
-    /// <param name="breedId">The unique identifier of the breed of the animal.</param>
-    /// <param name="birthday">The birthday of the animal (optional).</param>
-    /// <param name="gender">The gender of the animal.</param>
-    /// <param name="description">The description of the animal (optional).</param>
-    /// <param name="healthConditions">A list of health conditions of the animal (optional).</param>
-    /// <param name="specialNeeds">A list of special needs of the animal (optional).</param>
-    /// <param name="temperaments">A list of temperaments of the animal (optional).</param>
-    /// <param name="size">The size of the animal.</param>
-    /// <param name="photos">A list of photo URLs of the animal (optional).</param>
-    /// <param name="videos">A list of video URLs of the animal (optional).</param>
-    /// <param name="shelterId">The unique identifier of the shelter where the animal is located.</param>
-    /// <param name="status">The adoption status of the animal.</param>
-    /// <param name="careCost">The expected care cost of the animal.</param>
-    /// <param name="adoptionRequirements">The adoption requirements for the animal (optional).</param>
-    /// <param name="microchipId">The microchip ID of the animal (optional).</param>
-    /// <param name="weight">The weight of the animal in kilograms (optional).</param>
-    /// <param name="height">The height of the animal in centimeters (optional).</param>
-    /// <param name="color">The color of the animal, if any. Can be null.</param>
-    /// <param name="isSterilized">Indicates whether the animal is sterilized.</param>
-    /// <param name="isUnderCare">Indicates whether the animal is under care.</param>
-    /// <param name="haveDocuments">Indicates whether the animal has documents.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>The created animal.</returns>
-    Task<Animal> CreateAsync(
-    Guid userId,
-    string name,
-    Guid breedId,
-    Birthday? birthday,
-    AnimalGender gender,
-    string? description,
-    List<string>? healthConditions,
-    List<string>? specialNeeds,
-    List<AnimalTemperament>? temperaments,
-    AnimalSize size,
-    List<string>? photos,
-    List<string>? videos,
-    Guid shelterId,
-    AnimalStatus status,
-    AnimalCareCost careCost,
-    string? adoptionRequirements,
-    string? microchipId,
-    float? weight,
-    float? height,
-    string? color,
-    bool isSterilized,
-    bool isUnderCare,
-    bool haveDocuments,
-    CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Adds a photo URL to the specified animal.
-    /// </summary>
-    /// <param name="animalId">The unique identifier of the animal.</param>
-    /// <param name="photoUrl">The URL of the photo to add.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    Task AddPhotoAsync(Guid animalId, string photoUrl, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Removes a photo URL from the specified animal.
-    /// </summary>
-    /// <param name="animalId">The unique identifier of the animal.</param>
-    /// <param name="photoUrl">The URL of the photo to remove.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>True if the photo was successfully removed; otherwise, false.</returns>
-    Task<bool> RemovePhotoAsync(Guid animalId, string photoUrl, CancellationToken cancellationToken = default);
+    /// <param name="animal">The animal to add. Cannot be null.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the added animal, including any
+    /// updated properties such as its assigned identifier.</returns>
+    Task<Animal> AddAnimalAsync(Animal animal, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Subscribes a user to an animal by ID.

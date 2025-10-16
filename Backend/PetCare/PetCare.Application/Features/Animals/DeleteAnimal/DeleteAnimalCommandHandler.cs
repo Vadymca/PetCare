@@ -11,24 +11,21 @@ using PetCare.Application.Interfaces;
 /// </summary>
 public sealed class DeleteAnimalCommandHandler : IRequestHandler<DeleteAnimalCommand, DeleteAnimalResponseDto>
 {
-    private readonly IAnimalRepository animalRepository;
+    private readonly IAnimalService animalService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DeleteAnimalCommandHandler"/> class.
     /// </summary>
-    /// <param name="animalRepository">The animal repository.</param>
-    public DeleteAnimalCommandHandler(IAnimalRepository animalRepository)
+    /// <param name="animalService">The animal service.</param>
+    public DeleteAnimalCommandHandler(IAnimalService animalService)
     {
-        this.animalRepository = animalRepository;
+        this.animalService = animalService ?? throw new ArgumentNullException(nameof(animalService));
     }
 
     /// <inheritdoc />
     public async Task<DeleteAnimalResponseDto> Handle(DeleteAnimalCommand request, CancellationToken cancellationToken)
     {
-        var animal = await this.animalRepository.GetByIdAsync(request.Id, cancellationToken)
-                    ?? throw new InvalidOperationException($"Тварину з Id '{request.Id}' не знайдено.");
-
-        await this.animalRepository.DeleteAsync(animal, cancellationToken);
+        await this.animalService.DeleteAsync(request.Id, cancellationToken);
         return new DeleteAnimalResponseDto(true, $"Тварина з Id '{request.Id}' успішно видалена.");
     }
 }
