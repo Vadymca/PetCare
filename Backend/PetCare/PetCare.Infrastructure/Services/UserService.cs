@@ -1,9 +1,5 @@
 ﻿namespace PetCare.Infrastructure.Services;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -13,9 +9,15 @@ using OtpNet;
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Aggregates;
+using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
 using PetCare.Infrastructure.Persistence;
+using PetCare.Infrastructure.Persistence.Repositories;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 /// <summary>
 /// Service for user management operations using ASP.NET Core Identity.
@@ -37,24 +39,32 @@ public sealed class UserService : IUserService
     private readonly IZipcodebaseService zipcodebaseService;
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly IMemoryCache memoryCache;
+    private readonly IUserRepository userRepository;
+    private readonly IFileStorageService fileStorage;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="UserService"/> class.
+    /// Initializes a new instance of the <see cref="UserService"/> class with the specified dependencies required for user.
+    /// management, data access, logging, HTTP context, caching, user repository operations, and file storage.
     /// </summary>
-    /// <param name="userManager">The user manager used to perform user-related operations.</param>
-    /// <param name="dbContext">The database context used to save domain events and persist changes.</param>
-    /// <param name="zipcodebaseService">Service to resolve postal codes into full addresses.</param>
-    /// <param name="logger">The logger instance used to record diagnostic and operational messages.</param>
-    /// <param name="httpContextAccessor">Provides access to the current HTTP context for retrieving the current user.</param>
-    /// <param name="memoryCache">In-memory cache used to store temporary 2FA tokens.</param>
-    /// <exception cref="ArgumentNullException">Thrown if any of the required dependencies are <c>null</c>.</exception>
+    /// <param name="userManager">The user manager used to perform identity-related operations such as user creation, authentication, and role
+    /// management.</param>
+    /// <param name="dbContext">The application database context used for accessing and managing persistent data.</param>
+    /// <param name="zipcodebaseService">The service used to perform zipcode-based operations, such as location lookups or distance calculations.</param>
+    /// <param name="logger">The logger used to record diagnostic and operational information for the UserService.</param>
+    /// <param name="httpContextAccessor">The accessor for the current HTTP context, enabling access to request-specific information.</param>
+    /// <param name="memoryCache">The memory cache used for storing and retrieving frequently accessed data to improve performance.</param>
+    /// <param name="userRepository">The user repository used for custom user data operations beyond standard identity management.</param>
+    /// <param name="fileStorage">The file storage service used to manage user-related files and documents.</param>
+    /// <exception cref="ArgumentNullException">Thrown if any of the parameters are null.</exception>
     public UserService(
         UserManager<User> userManager,
         AppDbContext dbContext,
         IZipcodebaseService zipcodebaseService,
         ILogger<UserService> logger,
         IHttpContextAccessor httpContextAccessor,
-        IMemoryCache memoryCache)
+        IMemoryCache memoryCache,
+        IUserRepository userRepository,
+        IFileStorageService fileStorage)
     {
         this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         this.dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
@@ -62,6 +72,8 @@ public sealed class UserService : IUserService
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         this.memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
+        this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        this.fileStorage = fileStorage ?? throw new ArgumentNullException(nameof(fileStorage));
     }
 
     /// <summary>
@@ -236,6 +248,133 @@ public sealed class UserService : IUserService
 
         this.logger.LogInformation("Користувач через Google створений успішно: {UserId}", user.Id);
         return user;
+    }
+
+    /// <summary>
+    /// Updates the specified user's profile information asynchronously, including personal details, contact
+    /// information, preferences, points, and password.
+    /// </summary>
+    /// <remarks>Only non-null parameters will update the corresponding fields in the user's profile. Changing
+    /// the phone number will reset its confirmation status. If the postal code is provided, the user's address will be
+    /// resolved and updated. Deleting the previous profile photo is handled automatically if a new photo is set. The
+    /// operation is performed asynchronously and supports cancellation via the provided token.</remarks>
+    /// <param name="userId">The unique identifier of the user whose profile is to be updated.</param>
+    /// <param name="firstName">The new first name for the user. If null, the first name is not changed.</param>
+    /// <param name="lastName">The new last name for the user. If null, the last name is not changed.</param>
+    /// <param name="phone">The new phone number for the user. If null, the phone number is not changed. If changed, the phone number
+    /// confirmation status will be reset.</param>
+    /// <param name="profilePhoto">The URL of the new profile photo for the user. If null, the profile photo is not changed.</param>
+    /// <param name="language">The preferred language for the user. If null, the language preference is not changed.</param>
+    /// <param name="postalCode">The postal code to update the user's address. If null, the address is not changed.</param>
+    /// <param name="email">The new email address for the user. If null, the email address is not changed.</param>
+    /// <param name="preferences">A dictionary of user preferences to update. If null, preferences are not changed.</param>
+    /// <param name="points">The new points value for the user. Only users with the 'Admin' role can modify points. If null, points are not
+    /// changed.</param>
+    /// <param name="password">The new password for the user. If null, the password is not changed.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the updated user profile.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown if a user with the specified <paramref name="userId"/> does not exist.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if an attempt is made to change the user's points and the current user does not have the 'Admin' role.</exception>
+    public async Task<User> UpdateUserProfileAsync(
+    Guid userId,
+    string? firstName = null,
+    string? lastName = null,
+    string? phone = null,
+    string? profilePhoto = null,
+    string? language = null,
+    string? postalCode = null,
+    string? email = null,
+    Dictionary<string, string>? preferences = null,
+    int? points = null,
+    string? password = null,
+    CancellationToken cancellationToken = default)
+    {
+        var user = await this.userRepository.GetByIdAsync(userId, cancellationToken)
+            ?? throw new KeyNotFoundException($"Користувача з Id '{userId}' не знайдено.");
+
+        string? oldAvatarUrl = user.ProfilePhoto;
+        string? oldPhone = user.Phone;
+
+        user.UpdateProfile(firstName, lastName, phone, profilePhoto, language, postalCode);
+
+        if (!string.IsNullOrWhiteSpace(phone) && phone != oldPhone)
+        {
+            user.PhoneNumberConfirmed = false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(email) && email != user.Email)
+        {
+            user.Email = email;
+        }
+
+        if (preferences != null)
+        {
+            user.UpdatePreferences(preferences);
+        }
+
+        if (points.HasValue && points.Value != user.Points)
+        {
+            var roles = await this.GetRolesAsync(user);
+            if (roles.Contains("Admin"))
+            {
+                var diff = points.Value - user.Points;
+                if (diff > 0)
+                {
+                    user.AddPoints(diff, userId);
+                }
+                else
+                {
+                    user.DeductPoints(-diff, userId);
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Ви не можете змінювати бали без Admin ролі.");
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(postalCode))
+        {
+            try
+            {
+                var address = await this.zipcodebaseService.ResolveAddressAsync(postalCode, cancellationToken)
+                    ?? Address.Unknown();
+                user.UpdateAddress(address);
+            }
+            catch
+            {
+                user.UpdateAddress(Address.Unknown());
+            }
+        }
+
+        await this.userRepository.UpdateAsync(user, cancellationToken);
+
+        if (!string.IsNullOrWhiteSpace(oldAvatarUrl))
+        {
+            await this.fileStorage.DeleteAsync(oldAvatarUrl);
+        }
+
+        if (!string.IsNullOrWhiteSpace(password))
+        {
+            await this.ChangePasswordAsync(user.Id, password, cancellationToken);
+        }
+
+        return user;
+    }
+
+    /// <summary>
+    /// Asynchronously deletes the user with the specified identifier from the data store.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user to delete.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
+    /// <returns>A task that represents the asynchronous delete operation.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown if a user with the specified <paramref name="userId"/> does not exist.</exception>
+    public async Task DeleteUserAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var user = await this.userRepository.GetByIdAsync(userId, cancellationToken)
+            ?? throw new KeyNotFoundException($"Користувача з ідентифікатором '{userId}' не знайдено.");
+
+        await this.userRepository.DeleteAsync(user, cancellationToken);
     }
 
     /// <summary>
@@ -880,4 +1019,59 @@ public sealed class UserService : IUserService
 
         return null;
     }
+
+    /// <summary>
+    /// Asynchronously retrieves all adoption applications submitted by the specified user.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user whose adoption applications are to be retrieved.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A read-only list of <see cref="AdoptionApplication"/> objects representing the user's adoption applications. The
+    /// list will be empty if the user has not submitted any applications.</returns>
+    public async Task<IReadOnlyList<AdoptionApplication>> GetUserAdoptionApplicationsAsync(Guid userId, CancellationToken cancellationToken = default)
+        => await this.userRepository.GetUserAdoptionApplicationsAsync(userId, cancellationToken);
+
+    /// <summary>
+    /// Asynchronously retrieves the list of events associated with the specified user.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user whose events are to be retrieved.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A read-only list of <see cref="Event"/> objects representing the user's events. The list will be empty if the
+    /// user has no events.</returns>
+    public async Task<IReadOnlyList<Event>> GetUserEventsAsync(Guid userId, CancellationToken cancellationToken = default)
+        => await this.userRepository.GetUserEventsAsync(userId, cancellationToken);
+
+    /// <summary>
+    /// Asynchronously retrieves a paginated list of users, optionally filtered by search term and role.
+    /// </summary>
+    /// <param name="page">The zero-based page index indicating which page of results to retrieve. Must be greater than or equal to 0.</param>
+    /// <param name="pageSize">The maximum number of users to include in the returned page. Must be greater than 0.</param>
+    /// <param name="search">An optional search term used to filter users by name or other criteria. If null or empty, no search filtering is
+    /// applied.</param>
+    /// <param name="role">An optional role name used to filter users by their assigned role. If null or empty, users of all roles are
+    /// included.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A tuple containing a read-only list of users for the specified page and the total count of users matching the
+    /// filter criteria.</returns>
+    public async Task<(IReadOnlyList<User> Users, int TotalCount)> GetUsersAsync(int page, int pageSize, string? search, string? role, CancellationToken cancellationToken = default)
+        => await this.userRepository.GetUsersAsync(page, pageSize, search, role, cancellationToken);
+
+    /// <summary>
+    /// Asynchronously retrieves the list of shelter subscriptions associated with the specified user.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user whose shelter subscriptions are to be retrieved.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A read-only list of <see cref="ShelterSubscription"/> objects representing the user's shelter subscriptions.
+    /// Returns an empty list if the user has no subscriptions.</returns>
+    public async Task<IReadOnlyList<ShelterSubscription>> GetUserShelterSubscriptionsAsync(Guid userId, CancellationToken cancellationToken = default)
+       => await this.userRepository.GetUserShelterSubscriptionsAsync(userId, cancellationToken);
+
+    /// <summary>
+    /// Asynchronously retrieves the list of animal subscriptions associated with the specified user.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user whose animal subscriptions are to be retrieved.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A read-only list of <see cref="AnimalSubscription"/> objects representing the user's animal subscriptions. The
+    /// list will be empty if the user has no subscriptions.</returns>
+    public async Task<IReadOnlyList<AnimalSubscription>> GetUserAnimalSubscriptionsAsync(Guid userId, CancellationToken cancellationToken = default)
+        => await this.userRepository.GetUserAnimalSubscriptionsAsync(userId, cancellationToken);
 }

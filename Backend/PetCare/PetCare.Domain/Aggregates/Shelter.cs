@@ -188,7 +188,6 @@ public sealed class Shelter : AggregateRoot
     /// <summary>
     /// Creates a new <see cref="Shelter"/> instance with the specified parameters.
     /// </summary>
-    /// <param name="slug">The unique slug identifier for the shelter.</param>
     /// <param name="name">The name of the shelter.</param>
     /// <param name="address">The address of the shelter.</param>
     /// <param name="coordinates">The geographic coordinates of the shelter.</param>
@@ -205,7 +204,6 @@ public sealed class Shelter : AggregateRoot
     /// <returns>A new instance of <see cref="Shelter"/> with the specified parameters.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="slug"/>, <paramref name="name"/>, <paramref name="address"/>, <paramref name="contactPhone"/>, or <paramref name="contactEmail"/> is invalid according to their respective <see cref="ValueObject"/> creation methods.</exception>
     public static Shelter Create(
-        string slug,
         string name,
         string address,
         ValueObjects.Coordinates coordinates,
@@ -221,7 +219,7 @@ public sealed class Shelter : AggregateRoot
         Guid? managerId)
     {
         var shelter = new Shelter(
-            Slug.Create(slug),
+            Slug.Create(name),
             Name.Create(name),
             Address.Create(address),
             coordinates,
@@ -273,6 +271,7 @@ public sealed class Shelter : AggregateRoot
         if (!string.IsNullOrWhiteSpace(name))
         {
             this.Name = Name.Create(name);
+            this.Slug = Slug.Create(name);
         }
 
         if (!string.IsNullOrWhiteSpace(address))
@@ -355,11 +354,6 @@ public sealed class Shelter : AggregateRoot
             throw new ArgumentNullException(nameof(animal), "Тварина не може бути null.");
         }
 
-        if (!this.IsManager(userId) && !this.IsAdminOrModerator())
-        {
-            throw new InvalidOperationException("Ви не маєте права додавати тварин до цього притулку.");
-        }
-
         if (this.animals.Any(a => a.Id == animal.Id))
         {
             throw new InvalidOperationException("Ця тварина вже є у притулку.");
@@ -384,10 +378,6 @@ public sealed class Shelter : AggregateRoot
     /// <param name="userId">The ID of the user performing the action.</param>
     public void RemoveAnimal(Guid animalId, Guid userId)
     {
-        if (!this.IsManager(userId) && !this.IsAdminOrModerator())
-        {
-            throw new InvalidOperationException("Ви не маєте права видаляти тварин з цього притулку.");
-        }
 
         var animal = this.animals.FirstOrDefault(a => a.Id == animalId);
         if (animal is null)
@@ -417,11 +407,6 @@ public sealed class Shelter : AggregateRoot
             throw new ArgumentNullException(nameof(request), "Запит допомоги тварині не може бути null.");
         }
 
-        if (!this.IsManager(requestingUserId) && !this.IsAdminOrModerator())
-        {
-            throw new UnauthorizedAccessException("Тільки менеджер притулку або адміністратор/модератор може додавати запит.");
-        }
-
         this.animalAidRequests.Add(request);
         this.UpdatedAt = DateTime.UtcNow;
         this.AddDomainEvent(new AnimalAidRequestAddedEvent(this.Id, request.Id));
@@ -440,11 +425,6 @@ public sealed class Shelter : AggregateRoot
         if (request == null)
         {
             throw new InvalidOperationException("Запит допомоги тварині не знайдено.");
-        }
-
-        if (!this.IsManager(requestingUserId) && !this.IsAdminOrModerator())
-        {
-            throw new UnauthorizedAccessException("Тільки менеджер притулку або адміністратор/модератор може видаляти запит.");
         }
 
         this.animalAidRequests.Remove(request);
@@ -550,11 +530,6 @@ public sealed class Shelter : AggregateRoot
             throw new ArgumentNullException(nameof(donation), "Пожертва не може бути null.");
         }
 
-        if (!this.IsManager(requestingUserId))
-        {
-            throw new UnauthorizedAccessException("Тільки менеджер може додавати пожертву.");
-        }
-
         this.donations.Add(donation);
         this.UpdatedAt = DateTime.UtcNow;
         this.AddDomainEvent(new DonationAddedToShelterEvent(this.Id, donation.Id));
@@ -573,11 +548,6 @@ public sealed class Shelter : AggregateRoot
         if (donation == null)
         {
             throw new InvalidOperationException("Пожертва не знайдена.");
-        }
-
-        if (!this.IsManager(requestingUserId))
-        {
-            throw new UnauthorizedAccessException("Недостатньо прав для видалення чужої пожертви.");
         }
 
         this.donations.Remove(donation);
@@ -601,11 +571,6 @@ public sealed class Shelter : AggregateRoot
             throw new ArgumentNullException(nameof(task), "Завдання волонтера не може бути null.");
         }
 
-        if (!this.IsManager(requestingUserId))
-        {
-            throw new UnauthorizedAccessException("Тільки менеджер може додавати завдання волонтера.");
-        }
-
         this.volunteerTasks.Add(task);
         this.UpdatedAt = DateTime.UtcNow;
         this.AddDomainEvent(new VolunteerTaskAddedToShelterEvent(this.Id, task.Id));
@@ -624,11 +589,6 @@ public sealed class Shelter : AggregateRoot
         if (task == null)
         {
             throw new InvalidOperationException("Завдання волонтера не знайдено.");
-        }
-
-        if (!this.IsManager(requestingUserId))
-        {
-            throw new UnauthorizedAccessException("Недостатньо прав для видалення чужого завдання волонтера.");
         }
 
         this.volunteerTasks.Remove(task);
@@ -658,11 +618,6 @@ public sealed class Shelter : AggregateRoot
             throw new InvalidOperationException("Цей IoT-пристрій вже доданий до притулку.");
         }
 
-        if (!this.IsManager(requestingUserId) && !this.IsAdminOrModerator())
-        {
-            throw new UnauthorizedAccessException("Недостатньо прав для додавання IoT-пристрою.");
-        }
-
         this.ioTDevices.Add(device);
         this.UpdatedAt = DateTime.UtcNow;
 
@@ -682,11 +637,6 @@ public sealed class Shelter : AggregateRoot
         if (device == null)
         {
             throw new InvalidOperationException("IoT-пристрій не знайдено у притулку.");
-        }
-
-        if (!this.IsManager(requestingUserId) && !this.IsAdminOrModerator())
-        {
-            throw new UnauthorizedAccessException("Недостатньо прав для видалення IoT-пристрою.");
         }
 
         this.ioTDevices.Remove(device);
@@ -711,11 +661,6 @@ public sealed class Shelter : AggregateRoot
             throw new ArgumentNullException(nameof(@event), "Подія не може бути null.");
         }
 
-        if (!this.IsManager(userId) && !this.IsAdminOrModerator())
-        {
-            throw new UnauthorizedAccessException("У вас немає прав для додавання події до притулку.");
-        }
-
         this.events.Add(@event);
         this.UpdatedAt = DateTime.UtcNow;
 
@@ -731,11 +676,6 @@ public sealed class Shelter : AggregateRoot
     /// <exception cref="UnauthorizedAccessException">Thrown when the user does not have permission to remove the event.</exception>
     public bool RemoveEvent(Guid eventId, Guid userId)
     {
-        if (!this.IsManager(userId) && !this.IsAdminOrModerator())
-        {
-            throw new UnauthorizedAccessException("У вас немає прав для видалення події з притулку.");
-        }
-
         var existingEvent = this.events.FirstOrDefault(e => e.Id == eventId);
         if (existingEvent is null)
         {
@@ -767,9 +707,4 @@ public sealed class Shelter : AggregateRoot
     public bool CanManageBy(Guid userId) =>
         (this.ManagerId.HasValue && this.ManagerId.Value == userId)
         || (this.Manager != null && (this.Manager.Role == UserRole.Admin || this.Manager.Role == UserRole.Moderator));
-
-    private bool IsManager(Guid userId) => this.ManagerId.HasValue && this.ManagerId.Value == userId;
-
-    private bool IsAdminOrModerator() =>
-        this.Manager != null && (this.Manager.Role == UserRole.Admin || this.Manager.Role == UserRole.Moderator);
 }

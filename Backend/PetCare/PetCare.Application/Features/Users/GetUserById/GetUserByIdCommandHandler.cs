@@ -13,22 +13,18 @@ using PetCare.Application.Interfaces;
 /// </summary>
 public sealed class GetUserByIdCommandHandler : IRequestHandler<GetUserByIdCommand, UserDto>
 {
-    private readonly IUserRepository userRepository;
     private readonly IUserService userService;
     private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GetUserByIdCommandHandler"/> class.
     /// </summary>
-    /// <param name="userRepository">The user repository for data access.</param>
     /// <param name="userService">The user service for retrieving user roles.</param>
     /// <param name="mapper">The AutoMapper instance for mapping entities to DTOs.</param>
     public GetUserByIdCommandHandler(
-        IUserRepository userRepository,
         IUserService userService,
         IMapper mapper)
     {
-        this.userRepository = userRepository;
         this.userService = userService;
         this.mapper = mapper;
     }
@@ -42,7 +38,7 @@ public sealed class GetUserByIdCommandHandler : IRequestHandler<GetUserByIdComma
     /// <exception cref="InvalidOperationException">Thrown when the user is not found.</exception>
     public async Task<UserDto> Handle(GetUserByIdCommand request, CancellationToken cancellationToken)
     {
-        var user = await this.userRepository.GetByIdAsync(request.Id, cancellationToken)
+        var user = await this.userService.FindByIdAsync(request.Id)
        ?? throw new InvalidOperationException("Користувача не знайдено.");
 
         var roles = await this.userService.GetRolesAsync(user);

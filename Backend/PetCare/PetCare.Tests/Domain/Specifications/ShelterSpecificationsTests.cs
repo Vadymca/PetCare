@@ -119,7 +119,6 @@ public class ShelterSpecificationsTests
      Guid? requestingUserId = null)
     {
         var shelter = Shelter.Create(
-            slug: Guid.NewGuid().ToString(),
             name: "Test Shelter",
             address: "Test Address",
             coordinates: Coordinates.Origin,

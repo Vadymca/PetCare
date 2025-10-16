@@ -103,7 +103,6 @@ public sealed class ShelterRepositoryTests : IAsyncLifetime
         var slug = "shelter-" + Guid.NewGuid().ToString("N");
 
         var shelter = Shelter.Create(
-            slug: slug,
             name: "Shelter Test",
             address: "Street 1, City",
             coordinates: Coordinates.From(50.45, 30.52),
@@ -200,7 +199,6 @@ public sealed class ShelterRepositoryTests : IAsyncLifetime
     {
         // Arrange
         var shelter1 = Shelter.Create(
-            slug: "shelter1-" + Guid.NewGuid().ToString("N"),
             name: "Shelter1",
             address: "Address1",
             coordinates: Coordinates.From(50.45, 30.52),
@@ -216,7 +214,6 @@ public sealed class ShelterRepositoryTests : IAsyncLifetime
             managerId: this.testUser.Id);
 
         var shelter2 = Shelter.Create(
-            slug: "shelter2-" + Guid.NewGuid().ToString("N"),
             name: "Shelter2",
             address: "Address2",
             coordinates: Coordinates.From(50.46, 30.53),
@@ -255,7 +252,6 @@ public sealed class ShelterRepositoryTests : IAsyncLifetime
     {
         // Arrange
         var fullShelter = Shelter.Create(
-            slug: "full-" + Guid.NewGuid().ToString("N"),
             name: "Full Shelter",
             address: "Addr1",
             coordinates: Coordinates.From(50.45, 30.52),
@@ -271,7 +267,6 @@ public sealed class ShelterRepositoryTests : IAsyncLifetime
             managerId: this.testUser.Id);
 
         var freeShelter = Shelter.Create(
-            slug: "free-" + Guid.NewGuid().ToString("N"),
             name: "Free Shelter",
             address: "Addr2",
             coordinates: Coordinates.From(50.46, 30.53),
@@ -311,7 +306,6 @@ public sealed class ShelterRepositoryTests : IAsyncLifetime
     {
         // Arrange
         var shelter = Shelter.Create(
-            slug: "device-shelter-" + Guid.NewGuid().ToString("N"),
             name: "Device Shelter",
             address: "Addr",
             coordinates: Coordinates.From(50.45, 30.52),

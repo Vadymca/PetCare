@@ -17,7 +17,7 @@ using PetCare.Application.Interfaces;
 public sealed class GetUserActivityCommandHandler
 : IRequestHandler<GetUserActivityCommand, GetUserActivityResponseDto>
 {
-    private readonly IUserRepository repository;
+    private readonly IUserService userService;
     private readonly IMapper mapper;
     private readonly ILogger<GetUserActivityCommandHandler> logger;
 
@@ -26,13 +26,13 @@ public sealed class GetUserActivityCommandHandler
     /// </summary>
     /// <param name="logger">Logger instance for structured logging.</param>
     /// <param name="mapper">Mapper for converting domain entities to DTOs.</param>
-    /// <param name="repository">User repository for accessing user data.</param>
+    /// <param name="userService">Service for user-related operations.</param>
     public GetUserActivityCommandHandler(
-        IUserRepository repository,
+        IUserService userService,
         IMapper mapper,
         ILogger<GetUserActivityCommandHandler> logger)
     {
-        this.repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -48,8 +48,8 @@ public sealed class GetUserActivityCommandHandler
         GetUserActivityCommand request,
         CancellationToken cancellationToken)
     {
-        var applications = await this.repository.GetUserAdoptionApplicationsAsync(request.UserId, cancellationToken);
-        var events = await this.repository.GetUserEventsAsync(request.UserId, cancellationToken);
+        var applications = await this.userService.GetUserAdoptionApplicationsAsync(request.UserId, cancellationToken);
+        var events = await this.userService.GetUserEventsAsync(request.UserId, cancellationToken);
 
         var applicationDtos = applications.Select(a => this.mapper.Map<AdoptionApplicationDto>(a)).ToList();
         var eventDtos = events.Select(e => this.mapper.Map<EventDto>(e)).ToList();

@@ -17,23 +17,24 @@ using PetCare.Application.Interfaces;
 public sealed class GetUserSubscriptionsCommandHandler
     : IRequestHandler<GetUserSubscriptionsCommand, GetUserSubscriptionsResponseDto>
 {
-    private readonly IUserRepository userRepository;
+    private readonly IUserService userService;
     private readonly IMapper mapper;
     private readonly ILogger<GetUserSubscriptionsCommandHandler> logger;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="GetUserSubscriptionsCommandHandler"/> class.
+    /// Initializes a new instance of the <see cref="GetUserSubscriptionsCommandHandler"/> class with the specified user service,.
+    /// mapper, and logger.
     /// </summary>
-    /// <param name="userRepository">User repository for accessing user data.</param>
-    /// <param name="mapper">Mapper for converting domain entities to DTOs.</param>
-    /// <param name="logger">Logger instance for structured logging.</param>
-    /// <exception cref="ArgumentNullException">Thrown if any dependency is null.</exception>
+    /// <param name="userService">The service used to retrieve user information and subscriptions.</param>
+    /// <param name="mapper">The mapper used to convert user and subscription data between domain and DTO representations.</param>
+    /// <param name="logger">The logger used to record diagnostic and operational information for this handler.</param>
+    /// <exception cref="ArgumentNullException">Thrown if any of the parameters are null.</exception>
     public GetUserSubscriptionsCommandHandler(
-        IUserRepository userRepository,
+        IUserService userService,
         IMapper mapper,
         ILogger<GetUserSubscriptionsCommandHandler> logger)
     {
-        this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -49,11 +50,11 @@ public sealed class GetUserSubscriptionsCommandHandler
         GetUserSubscriptionsCommand request,
         CancellationToken cancellationToken)
     {
-        var shelters = await this.userRepository.GetUsersByShelterSubscriptionAsync(request.UserId, cancellationToken);
-        var animals = await this.userRepository.GetUserAnimalSubscriptionsAsync(request.UserId, cancellationToken);
+        var shelters = await this.userService.GetUserShelterSubscriptionsAsync(request.UserId, cancellationToken);
+        var animals = await this.userService.GetUserAnimalSubscriptionsAsync(request.UserId, cancellationToken);
 
         // Map to DTOs in application layer (AutoMapper or manual projection)
-        var shelterDtos = shelters.Select(s => this.mapper.Map<ShelterDto>(s)).ToList();
+        var shelterDtos = shelters.Select(s => this.mapper.Map<ShelterListDto>(s)).ToList();
         var animalDtos = animals.Select(a => this.mapper.Map<AnimalListDto>(a.Animal)).ToList();
 
         this.logger.LogInformation(

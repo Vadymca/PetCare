@@ -384,7 +384,6 @@ public class ShelterTests
      Dictionary<string, string>? socialMedia = null)
     {
         var shelter = Shelter.Create(
-            slug,
             name,
             address,
             this.validCoordinates,

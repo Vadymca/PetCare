@@ -10,5 +10,5 @@ using PetCare.Application.Dtos.ShelterDtos;
 /// <param name="Shelters">The collection of shelters to which the user is currently subscribed. Cannot be null.</param>
 /// <param name="Animals">The collection of animals to which the user is currently subscribed. Cannot be null.</param>
 public sealed record GetUserSubscriptionsResponseDto(
- IReadOnlyList<ShelterDto> Shelters,
+ IReadOnlyList<ShelterListDto> Shelters,
  IReadOnlyList<AnimalListDto> Animals);

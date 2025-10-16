@@ -109,7 +109,6 @@ public sealed class UserRepositoryTests : IAsyncLifetime
     {
         // Arrange: створюємо Shelter
         var shelter = Shelter.Create(
-            slug: "shelter-" + Guid.NewGuid().ToString("N"),
             name: "Test Shelter",
             address: "123 Test Street",
             coordinates: Coordinates.From(50.45, 30.52),

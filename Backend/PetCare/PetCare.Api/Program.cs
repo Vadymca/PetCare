@@ -18,6 +18,7 @@ using PetCare.Api.Endpoints.Auth.Google;
 using PetCare.Api.Endpoints.Auth.TwoFactor;
 using PetCare.Api.Endpoints.Auth.TwoFactor.Sms;
 using PetCare.Api.Endpoints.Media;
+using PetCare.Api.Endpoints.Shelters;
 using PetCare.Api.Endpoints.Users;
 using PetCare.Api.Middleware;
 using PetCare.Api.Swagger;
@@ -113,6 +114,9 @@ public class Program
 
                 // Політика для ShelterManager або Admin
                 options.AddPolicy("CanManageAnimals", policy =>
+                    policy.RequireRole("Admin", "ShelterManager"));
+
+                options.AddPolicy("CanManageShelter", policy =>
                     policy.RequireRole("Admin", "ShelterManager"));
 
                 options.DefaultPolicy = new AuthorizationPolicyBuilder()
@@ -409,6 +413,14 @@ public class Program
             app.MapSubscribeToAnimalEndpoint(); // /api/animals/{id}/subscribe
             app.MapUnsubscribeFromAnimalEndpoint(); // /api/animals/{id:guid}/subscribe
             app.MapGetFavoriteAnimalsEndpoint(); // /api/animals/favorites
+
+            // ----------------------Shelters-----------------------
+            app.MapGetSheltersEndpoint(); // /api/shelters
+            app.MapGetShelterByIdEndpoint(); // /api/shelters/{id}
+            app.MapGetShelterBySlugEndpoint(); // /api/shelters/{slug}
+            app.MapCreateShelterEndpoint(); // /api/shelters
+            app.MapUpdateShelterEndpoint(); // /api/shelters/{id}
+            app.MapDeleteShelterEndpoint(); // /api/shelters/{id}
 
             app.MapGet("/", () => Results.Ok("✅ PetCare.Api is running successfully!"));
 

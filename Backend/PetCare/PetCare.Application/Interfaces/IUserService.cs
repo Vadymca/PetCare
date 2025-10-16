@@ -2,6 +2,7 @@
 
 using PetCare.Application.Dtos.AuthDtos;
 using PetCare.Domain.Aggregates;
+using PetCare.Domain.Entities;
 
 /// <summary>
 /// Service for user management operations.
@@ -42,6 +43,50 @@ public interface IUserService
     /// <param name="date">The date and time of the last login.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task SetLastLoginAsync(User user, DateTime date);
+
+    /// <summary>
+    /// Asynchronously updates the profile information for the specified user. Only the provided parameters will be
+    /// updated; parameters left as null will retain their existing values.
+    /// </summary>
+    /// <remarks>If the specified user does not exist, the method may throw an exception. Only the fields
+    /// corresponding to non-null parameters will be updated; all other fields will remain unchanged. This method is
+    /// thread-safe and can be called concurrently for different users.</remarks>
+    /// <param name="userId">The unique identifier of the user whose profile is to be updated.</param>
+    /// <param name="firstName">The new first name for the user. If null, the first name will not be changed.</param>
+    /// <param name="lastName">The new last name for the user. If null, the last name will not be changed.</param>
+    /// <param name="phone">The new phone number for the user. If null, the phone number will not be changed.</param>
+    /// <param name="profilePhoto">The URL or identifier of the new profile photo for the user. If null, the profile photo will not be changed.</param>
+    /// <param name="language">The preferred language code for the user (for example, "en" or "fr"). If null, the language preference will not
+    /// be changed.</param>
+    /// <param name="postalCode">The new postal code for the user. If null, the postal code will not be changed.</param>
+    /// <param name="email">The new email address for the user. If null, the email address will not be changed.</param>
+    /// <param name="preferences">A dictionary of custom preference key-value pairs to update for the user. If null, preferences will not be
+    /// changed.</param>
+    /// <param name="points">The new points value for the user. If null, the points will not be changed.</param>
+    /// <param name="password">The new password for the user. If null, the password will not be changed.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The operation will be canceled if the token is triggered.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the updated user profile.</returns>
+    Task<User> UpdateUserProfileAsync(
+        Guid userId,
+        string? firstName = null,
+        string? lastName = null,
+        string? phone = null,
+        string? profilePhoto = null,
+        string? language = null,
+        string? postalCode = null,
+        string? email = null,
+        Dictionary<string, string>? preferences = null,
+        int? points = null,
+        string? password = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously deletes the user identified by the specified unique identifier.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user to delete.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
+    /// <returns>A task that represents the asynchronous delete operation.</returns>
+    Task DeleteUserAsync(Guid userId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Finds a user by email.
@@ -282,4 +327,66 @@ public interface IUserService
     /// <param name="twoFaToken">The temporary 2FA token.</param>
     /// <returns>The <see cref="User"/> or null.</returns>
     Task<User?> GetUserByTwoFaTokenAsync(string twoFaToken);
+
+    /// <summary>
+    /// Asynchronously retrieves all adoption applications submitted by the specified user.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user whose adoption applications are to be retrieved.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a read-only list of adoption
+    /// applications submitted by the user. If the user has not submitted any applications, the list will be empty.</returns>
+    Task<IReadOnlyList<AdoptionApplication>> GetUserAdoptionApplicationsAsync(Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously retrieves a read-only list of events associated with the specified user.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user whose events are to be retrieved.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a read-only list of events for the
+    /// specified user. If the user has no events, the list will be empty.</returns>
+    Task<IReadOnlyList<Event>> GetUserEventsAsync(Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously retrieves a paginated list of users, optionally filtered by search term and role.
+    /// </summary>
+    /// <remarks>The returned list may contain fewer users than the specified page size if there are not
+    /// enough matching users. This method does not guarantee thread safety for the returned user objects.</remarks>
+    /// <param name="page">The zero-based page index indicating which page of results to retrieve. Must be greater than or equal to 0.</param>
+    /// <param name="pageSize">The maximum number of users to include in the returned page. Must be greater than 0.</param>
+    /// <param name="search">An optional search term used to filter users by name or other criteria. If null or empty, no search filtering is
+    /// applied.</param>
+    /// <param name="role">An optional role name used to filter users by their assigned role. If null or empty, users of all roles are
+    /// included.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The result contains a tuple with a read-only list of users
+    /// for the requested page and the total number of users matching the filter criteria.</returns>
+    Task<(IReadOnlyList<User> Users, int TotalCount)> GetUsersAsync(
+        int page,
+        int pageSize,
+        string? search,
+        string?
+        role,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously retrieves the list of shelter subscriptions associated with the specified user.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user whose shelter subscriptions are to be retrieved.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a read-only list of shelter
+    /// subscriptions for the specified user. If the user has no subscriptions, the list will be empty.</returns>
+    Task<IReadOnlyList<ShelterSubscription>> GetUserShelterSubscriptionsAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously retrieves the list of animal subscriptions associated with the specified user.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user whose animal subscriptions are to be retrieved.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a read-only list of animal
+    /// subscriptions for the specified user. If the user has no subscriptions, the list will be empty.</returns>
+    Task<IReadOnlyList<AnimalSubscription>> GetUserAnimalSubscriptionsAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
 }

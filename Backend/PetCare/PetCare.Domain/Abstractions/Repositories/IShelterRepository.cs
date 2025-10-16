@@ -42,4 +42,30 @@ public interface IShelterRepository : IRepository<Shelter>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A read-only list of shelters with free capacity.</returns>
     Task<IReadOnlyList<Shelter>> GetWithFreeCapacityAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously retrieves a paginated list of shelters along with the total number of shelters available.
+    /// </summary>
+    /// <remarks>The returned list may contain fewer items than the specified page size if there are not
+    /// enough shelters remaining. This method does not guarantee thread safety; callers should ensure appropriate
+    /// synchronization if accessing from multiple threads.</remarks>
+    /// <param name="page">The zero-based page index indicating which page of results to retrieve. Must be greater than or equal to 0.</param>
+    /// <param name="pageSize">The maximum number of shelters to include in the returned page. Must be greater than 0.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The result contains a read-only list of shelters for the
+    /// specified page and the total count of shelters available.</returns>
+    Task<(IReadOnlyList<Shelter> Shelters, int TotalCount)> GetSheltersAsync(
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously adds a new shelter to the system.
+    /// </summary>
+    /// <param name="shelter">The shelter entity to add. Cannot be null. All required properties of the shelter must be set before calling
+    /// this method.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the added shelter entity, including
+    /// any system-assigned properties such as its unique identifier.</returns>
+    Task<Shelter> AddShelterAsync(Shelter shelter, CancellationToken cancellationToken = default);
 }

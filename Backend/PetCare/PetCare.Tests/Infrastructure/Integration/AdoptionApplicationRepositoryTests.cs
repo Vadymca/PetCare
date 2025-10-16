@@ -227,7 +227,6 @@ public sealed class AdoptionApplicationRepositoryTests : IAsyncLifetime
 
         // 2. Shelter
         var shelter = Shelter.Create(
-            slug: "shelter-name",
             name: "ShelterName",
             address: "Street, City, Country, 12345",
             coordinates: Coordinates.From(50.45, 30.52),

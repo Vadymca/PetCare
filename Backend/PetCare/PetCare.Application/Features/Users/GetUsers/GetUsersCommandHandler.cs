@@ -14,22 +14,18 @@ using PetCare.Application.Interfaces;
 /// </summary>
 public sealed class GetUsersCommandHandler : IRequestHandler<GetUsersCommand, GetUsersResponseDto>
 {
-    private readonly IUserRepository userRepository;
     private readonly IMapper mapper;
     private readonly IUserService userService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GetUsersCommandHandler"/> class.
     /// </summary>
-    /// <param name="userRepository">The repository for accessing user data.</param>
     /// <param name="mapper">The AutoMapper instance for mapping entities to DTOs.</param>
     /// <param name="userService">The user service for retrieving user roles.</param>
     public GetUsersCommandHandler(
-        IUserRepository userRepository,
         IMapper mapper,
         IUserService userService)
     {
-        this.userRepository = userRepository;
         this.mapper = mapper;
         this.userService = userService;
     }
@@ -43,7 +39,7 @@ public sealed class GetUsersCommandHandler : IRequestHandler<GetUsersCommand, Ge
     public async Task<GetUsersResponseDto> Handle(GetUsersCommand request, CancellationToken cancellationToken)
     {
         // Отримуємо користувачів із репозиторію з пагінацією та фільтрами
-        var (users, totalCount) = await this.userRepository.GetUsersAsync(
+        var (users, totalCount) = await this.userService.GetUsersAsync(
             request.Page,
             request.PageSize,
             request.Search,
@@ -59,7 +55,7 @@ public sealed class GetUsersCommandHandler : IRequestHandler<GetUsersCommand, Ge
 
             var userDto = this.mapper.Map<UserDto>(user) with
             {
-                Role = userRole
+                Role = userRole,
             };
 
             userDtos.Add(userDto);

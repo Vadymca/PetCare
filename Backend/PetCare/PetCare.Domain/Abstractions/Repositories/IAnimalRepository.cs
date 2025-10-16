@@ -3,7 +3,6 @@
 using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Enums;
-using PetCare.Domain.ValueObjects;
 
 /// <summary>
 /// Represents a repository interface for accessing animal entities.

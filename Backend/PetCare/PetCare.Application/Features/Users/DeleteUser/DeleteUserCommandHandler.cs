@@ -14,18 +14,18 @@ using PetCare.Application.Interfaces;
 /// </summary>
 public sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, DeleteUserResponseDto>
 {
-    private readonly IUserRepository userRepository;
+    private readonly IUserService userService;
     private readonly ILogger<DeleteUserCommandHandler> logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DeleteUserCommandHandler"/> class.
     /// </summary>
-    /// <param name="userRepository">Repository for accessing user data.</param>
+    /// <param name="userService">The user service for managing user operations.</param>
     /// <param name="logger">Logger instance for recording actions and events.</param>
     /// <exception cref="ArgumentNullException">Thrown if any of the parameters are null.</exception>
-    public DeleteUserCommandHandler(IUserRepository userRepository, ILogger<DeleteUserCommandHandler> logger)
+    public DeleteUserCommandHandler(IUserService userService, ILogger<DeleteUserCommandHandler> logger)
     {
-        this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -38,10 +38,7 @@ public sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand
     /// <exception cref="KeyNotFoundException">Thrown if the user with the specified ID does not exist.</exception>
     public async Task<DeleteUserResponseDto> Handle(DeleteUserCommand request, CancellationToken cancellationToken)
     {
-        var user = await this.userRepository.GetByIdAsync(request.Id, cancellationToken)
-            ?? throw new KeyNotFoundException($"Користувача з ідентифікатором '{request.Id}' не знайдено.");
-
-        await this.userRepository.DeleteAsync(user, cancellationToken);
+        await this.userService.DeleteUserAsync(request.Id, cancellationToken);
 
         this.logger.LogInformation("User {UserId} has been deleted by admin", request.Id);
 

@@ -27,5 +27,9 @@ public sealed record ShelterDto(
  string? Description,
  int Capacity,
  int CurrentOccupancy,
+ bool HasFreeCapacity,
  string? VirtualTourUrl,
- string? WorkingHours);
+ string? WorkingHours,
+ IReadOnlyList<string> Photos,
+ IReadOnlyDictionary<string, string> SocialMedia,
+ DateTime CreatedAt);
