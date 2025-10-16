@@ -103,7 +103,7 @@ public class UploadMediaHandler : IRequestHandler<UploadMediaCommand, string>
         }
 
         await using var stream = request.File.OpenReadStream();
-        var url = await this.storageService.UploadFileAsync(stream, request.File.FileName, request.File.ContentType);
+        var url = await this.storageService.UploadFileAsync(request.File.FileName, stream, request.File.ContentType);
         return url;
     }
 }
