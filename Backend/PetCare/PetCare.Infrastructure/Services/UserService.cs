@@ -107,7 +107,7 @@ public sealed class UserService : IUserService
             firstName: firstName,
             lastName: lastName,
             phone: phone,
-            role: UserRole.Admin,
+            role: UserRole.User,
             postalCode: postalCode);
 
         // Якщо заданий postalCode, отримуємо адресу через ZipcodebaseService
