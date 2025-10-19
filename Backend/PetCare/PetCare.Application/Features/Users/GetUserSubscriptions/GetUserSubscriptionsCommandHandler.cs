@@ -54,7 +54,7 @@ public sealed class GetUserSubscriptionsCommandHandler
         var animals = await this.userService.GetUserAnimalSubscriptionsAsync(request.UserId, cancellationToken);
 
         // Map to DTOs in application layer (AutoMapper or manual projection)
-        var shelterDtos = shelters.Select(s => this.mapper.Map<ShelterListDto>(s)).ToList();
+        var shelterDtos = shelters.Select(s => this.mapper.Map<ShelterListDto>(s.Shelter)).ToList();
         var animalDtos = animals.Select(a => this.mapper.Map<AnimalListDto>(a.Animal)).ToList();
 
         this.logger.LogInformation(

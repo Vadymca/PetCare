@@ -2,6 +2,7 @@
 
 using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Aggregates;
+using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
 
 /// <summary>
@@ -92,13 +93,14 @@ public interface IAnimalRepository : IRepository<Animal>
     Task<Animal> AddAnimalAsync(Animal animal, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Subscribes a user to an animal by ID.
+    /// Subscribes the specified user to updates for the given animal asynchronously.
     /// </summary>
-    /// <param name="animalId">The unique identifier of the animal.</param>
-    /// <param name="userId">The unique identifier of the user.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    Task SubscribeUserAsync(Guid animalId, Guid userId, CancellationToken cancellationToken = default);
+    /// <param name="animalId">The unique identifier of the animal to which the user will be subscribed.</param>
+    /// <param name="userId">The unique identifier of the user to subscribe to the animal updates.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains an AnimalSubscription object
+    /// representing the user's subscription to the animal.</returns>
+    Task<AnimalSubscription> SubscribeUserAsync(Guid animalId, Guid userId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Unsubscribes a user from an animal by ID.

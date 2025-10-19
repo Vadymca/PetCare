@@ -378,7 +378,6 @@ public sealed class Shelter : AggregateRoot
     /// <param name="userId">The ID of the user performing the action.</param>
     public void RemoveAnimal(Guid animalId, Guid userId)
     {
-
         var animal = this.animals.FirstOrDefault(a => a.Id == animalId);
         if (animal is null)
         {
@@ -687,6 +686,61 @@ public sealed class Shelter : AggregateRoot
 
         this.AddDomainEvent(new ShelterEventRemovedEvent(this.Id, eventId));
         return true;
+    }
+
+    /// <summary>
+    /// Subscribes a user to the shelter if not already subscribed.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user subscribing to the shelter.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the user is already subscribed.</exception>
+    /// <returns>The created <see cref="ShelterSubscription"/> instance.</returns>
+    public ShelterSubscription SubscribeUser(Guid userId)
+    {
+        if (userId == Guid.Empty)
+        {
+            throw new ArgumentException("Ідентифікатор користувача не може бути порожнім.", nameof(userId));
+        }
+
+        if (this.subscribers.Any(s => s.UserId == userId))
+        {
+            throw new InvalidOperationException("Користувач вже підписаний на цей притулок.");
+        }
+
+        var subscription = ShelterSubscription.Create(userId, this.Id);
+        this.subscribers.Add(subscription);
+        this.UpdatedAt = DateTime.UtcNow;
+
+        this.AddDomainEvent(new UserSubscribedToShelterEvent(this.Id, userId));
+
+        return subscription;
+    }
+
+    /// <summary>
+    /// Unsubscribes a user from the shelter if subscribed.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user unsubscribing from the shelter.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the user is not subscribed.</exception>
+    /// <returns>The removed <see cref="ShelterSubscription"/> instance.</returns>
+    public ShelterSubscription UnsubscribeUser(Guid userId)
+    {
+        if (userId == Guid.Empty)
+        {
+            throw new ArgumentException("Ідентифікатор користувача не може бути порожнім.", nameof(userId));
+        }
+
+        var subscription = this.subscribers.FirstOrDefault(s => s.UserId == userId);
+
+        if (subscription is null)
+        {
+            throw new InvalidOperationException("Користувач не підписаний на цей притулок.");
+        }
+
+        this.subscribers.Remove(subscription);
+        this.UpdatedAt = DateTime.UtcNow;
+
+        this.AddDomainEvent(new UserUnsubscribedFromShelterEvent(this.Id, userId));
+
+        return subscription;
     }
 
     /// <summary>

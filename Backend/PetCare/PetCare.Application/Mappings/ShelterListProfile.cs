@@ -1,6 +1,7 @@
 ﻿namespace PetCare.Application.Mappings;
 
 using AutoMapper;
+using PetCare.Application.Dtos.AnimalDtos;
 using PetCare.Application.Dtos.ShelterDtos;
 using PetCare.Domain.Aggregates;
 
@@ -10,7 +11,7 @@ using PetCare.Domain.Aggregates;
 /// <remarks>This profile defines mapping rules used by AutoMapper to transform shelter-related entities for list
 /// operations. Register this profile with the AutoMapper configuration to enable shelter list mappings throughout the
 /// application.</remarks>
-public sealed class ShelterListProfile: Profile
+public sealed class ShelterListProfile : Profile
 {
     public ShelterListProfile()
     {
@@ -29,5 +30,6 @@ public sealed class ShelterListProfile: Profile
             .ForMember(dest => dest.SocialMedia, opt => opt.MapFrom(src => src.SocialMedia))
             .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
             .ReverseMap();
+
     }
 }

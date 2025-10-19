@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Aggregates;
+using PetCare.Domain.Entities;
 using PetCare.Domain.ValueObjects;
 
 /// <summary>
@@ -15,19 +16,23 @@ public sealed class ShelterService : IShelterService
 {
     private readonly IShelterRepository shelterRepository;
     private readonly IUserService userService;
+    private readonly IFileStorageService fileStorageService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ShelterService"/> class using the specified shelter repository.
     /// </summary>
     /// <param name="shelterRepository">The repository implementation used to access and manage shelter data. Cannot be null.</param>
     /// <param name="userService">The user service used to manage user roles. Cannot be null.</param>
+    /// <param name="fileStorageService">The file storage service used to manage shelter photos. Cannot be null.</param>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="shelterRepository"/> is null.</exception>
     public ShelterService(
         IShelterRepository shelterRepository,
-        IUserService userService)
+        IUserService userService,
+        IFileStorageService fileStorageService)
     {
         this.shelterRepository = shelterRepository ?? throw new ArgumentNullException(nameof(shelterRepository));
-        this.userService = userService;
+        this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
+        this.fileStorageService = fileStorageService ?? throw new ArgumentNullException(nameof(fileStorageService));
     }
 
     /// <summary>
@@ -158,5 +163,73 @@ public sealed class ShelterService : IShelterService
                       ?? throw new InvalidOperationException($"Притулок з Ід '{id}' не знайдено.");
 
         await this.shelterRepository.DeleteAsync(shelter, cancellationToken);
+    }
+
+    /// <summary>
+    /// Asynchronously adds a photo to the specified shelter.
+    /// </summary>
+    /// <param name="shelterId">The unique identifier of the shelter to which the photo will be added.</param>
+    /// <param name="photoUrl">The URL of the photo to add to the shelter. Cannot be null or empty.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is None.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if a shelter with the specified shelterId does not exist.</exception>
+    public async Task AddPhotoAsync(Guid shelterId, string photoUrl, CancellationToken cancellationToken = default)
+    {
+        var shelter = await this.shelterRepository.GetByIdAsync(shelterId, cancellationToken)
+            ?? throw new InvalidOperationException($"Притулок з Id '{shelterId}' не знайдено.");
+
+        shelter.AddPhoto(photoUrl);
+
+        await this.shelterRepository.UpdateAsync(shelter, cancellationToken);
+    }
+
+    /// <summary>
+    /// Asynchronously removes a photo from the specified shelter by its URL.
+    /// </summary>
+    /// <param name="shelterId">The unique identifier of the shelter from which the photo will be removed.</param>
+    /// <param name="photoUrl">The URL of the photo to remove from the shelter.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if the photo was
+    /// successfully removed; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if a shelter with the specified <paramref name="shelterId"/> does not exist.</exception>
+    public async Task<bool> RemovePhotoAsync(Guid shelterId, string photoUrl, CancellationToken cancellationToken = default)
+    {
+        var shelter = await this.shelterRepository.GetByIdAsync(shelterId, cancellationToken)
+            ?? throw new InvalidOperationException($"Притулок з Id '{shelterId}' не знайдено.");
+
+        var removed = shelter.RemovePhoto(photoUrl);
+
+        if (removed)
+        {
+            await this.shelterRepository.UpdateAsync(shelter, cancellationToken);
+            await this.fileStorageService.DeleteAsync(photoUrl);
+        }
+
+        return removed;
+    }
+
+    /// <summary>
+    /// Subscribes a user to the specified shelter asynchronously.
+    /// </summary>
+    /// <param name="shelterId">The unique identifier of the shelter to which the user will be subscribed.</param>
+    /// <param name="userId">The unique identifier of the user to subscribe.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a ShelterSubscription object
+    /// representing the user's subscription to the shelter.</returns>
+    public async Task<ShelterSubscription> SubscribeUserAsync(Guid shelterId, Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await this.shelterRepository.SubscribeUserAsync(shelterId, userId, cancellationToken);
+    }
+
+    /// <summary>
+    /// Asynchronously unsubscribes a user from notifications or updates for the specified shelter.
+    /// </summary>
+    /// <param name="shelterId">The unique identifier of the shelter from which the user will be unsubscribed.</param>
+    /// <param name="userId">The unique identifier of the user to unsubscribe.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the unsubscribe operation.</param>
+    /// <returns>A task that represents the asynchronous unsubscribe operation.</returns>
+    public async Task UnsubscribeUserAsync(Guid shelterId, Guid userId, CancellationToken cancellationToken = default)
+    {
+        await this.shelterRepository.UnsubscribeUserAsync(shelterId, userId, cancellationToken);
     }
 }

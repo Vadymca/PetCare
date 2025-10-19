@@ -778,6 +778,9 @@ public sealed class Animal : AggregateRoot
 
         var subscription = AnimalSubscription.Create(userId, this.Id);
         this.subscribers.Add(subscription);
+
+        this.AddDomainEvent(new UserSubscribedToAnimalEvent(this.Id, userId));
+
         return subscription;
     }
 
@@ -803,6 +806,8 @@ public sealed class Animal : AggregateRoot
 
         this.subscribers.Remove(subscription);
         this.UpdatedAt = DateTime.UtcNow;
+
+        this.AddDomainEvent(new UserUnsubscribedFromAnimalEvent(this.Id, userId));
 
         return subscription;
     }

@@ -1,4 +1,4 @@
-﻿namespace PetCare.Application.EventHandlers.Animals;
+﻿namespace PetCare.Application.Features.Animals.EventHandlers;
 
 using MediatR;
 using PetCare.Domain.Events;

@@ -3,6 +3,7 @@
 using Microsoft.EntityFrameworkCore;
 using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Aggregates;
+using PetCare.Domain.Entities;
 using PetCare.Domain.Specifications.Shelter;
 using PetCare.Domain.ValueObjects;
 using PetCare.Infrastructure.Persistence;
@@ -130,5 +131,53 @@ public class ShelterRepository : GenericRepository<Shelter>, IShelterRepository
             ?? throw new InvalidOperationException($"Притулок з Id '{shelter.Id}' не знайдено після додавання.");
 
         return fullShelter;
+    }
+
+   /// <summary>
+   /// Subscribes a user to the specified shelter asynchronously.
+   /// </summary>
+   /// <param name="shelterId">The unique identifier of the shelter to which the user will be subscribed.</param>
+   /// <param name="userId">The unique identifier of the user to subscribe to the shelter.</param>
+   /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+   /// <returns>A task that represents the asynchronous operation. The task result contains the created shelter subscription.</returns>
+   /// <exception cref="InvalidOperationException">Thrown if a shelter with the specified shelterId does not exist.</exception>
+    public async Task<ShelterSubscription> SubscribeUserAsync(Guid shelterId, Guid userId, CancellationToken cancellationToken = default)
+    {
+        var shelter = await this.Context.Shelters
+            .Include(s => s.Subscribers)
+            .FirstOrDefaultAsync(s => s.Id == shelterId, cancellationToken)
+            ?? throw new InvalidOperationException($"Притулок з Id '{shelterId}' не знайдено.");
+
+        var subscription = shelter.SubscribeUser(userId);
+
+        this.Context.Set<ShelterSubscription>().Add(subscription);
+        await this.Context.SaveChangesAsync(cancellationToken);
+
+        return subscription;
+    }
+
+    /// <summary>
+    /// Asynchronously removes a user's subscription from the specified shelter.
+    /// </summary>
+    /// <param name="shelterId">The unique identifier of the shelter from which the user will be unsubscribed.</param>
+    /// <param name="userId">The unique identifier of the user to unsubscribe from the shelter.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the unsubscribe operation.</param>
+    /// <returns>A task that represents the asynchronous unsubscribe operation.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if a shelter with the specified <paramref name="shelterId"/> does not exist.</exception>
+    public async Task UnsubscribeUserAsync(Guid shelterId, Guid userId, CancellationToken cancellationToken = default)
+    {
+        var shelter = await this.Context.Shelters
+            .Include(s => s.Subscribers)
+            .FirstOrDefaultAsync(s => s.Id == shelterId, cancellationToken)
+            ?? throw new InvalidOperationException($"Притулок з Id '{shelterId}' не знайдено.");
+
+        var subscription = shelter.UnsubscribeUser(userId);
+
+        if (subscription != null)
+        {
+            this.Context.Set<ShelterSubscription>().Remove(subscription);
+        }
+
+        await this.Context.SaveChangesAsync(cancellationToken);
     }
 }

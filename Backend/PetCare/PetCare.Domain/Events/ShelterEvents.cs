@@ -128,3 +128,19 @@ public sealed record ShelterEventAddedEvent(Guid ShelterId, Guid EventId)
 /// <param name="EventId">The unique identifier of the event that was removed.</param>
 public sealed record ShelterEventRemovedEvent(Guid ShelterId, Guid EventId)
     : DomainEvent;
+
+/// <summary>
+/// Represents a domain event indicating that a user has subscribed to notifications or updates from a specific shelter.
+/// </summary>
+/// <param name="ShelterId">The unique identifier of the shelter to which the user has subscribed.</param>
+/// <param name="UserId">The unique identifier of the user who has subscribed to the shelter event.</param>
+public sealed record UserSubscribedToShelterEvent(Guid ShelterId, Guid UserId)
+    : DomainEvent;
+
+/// <summary>
+/// Represents an event indicating that a user has unsubscribed from notifications or updates for a specific shelter.
+/// </summary>
+/// <param name="ShelterId">The unique identifier of the shelter from which the user has unsubscribed.</param>
+/// <param name="UserId">The unique identifier of the user who has unsubscribed from the shelter.</param>
+public sealed record UserUnsubscribedFromShelterEvent(Guid ShelterId, Guid UserId)
+    : DomainEvent;

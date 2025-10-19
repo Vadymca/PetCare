@@ -1,6 +1,7 @@
 ﻿namespace PetCare.Domain.Abstractions.Repositories;
 
 using PetCare.Domain.Aggregates;
+using PetCare.Domain.Entities;
 
 /// <summary>
 /// Repository interface for accessing shelter entities.
@@ -68,4 +69,23 @@ public interface IShelterRepository : IRepository<Shelter>
     /// <returns>A task that represents the asynchronous operation. The task result contains the added shelter entity, including
     /// any system-assigned properties such as its unique identifier.</returns>
     Task<Shelter> AddShelterAsync(Shelter shelter, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Subscribes a user to notifications or updates for the specified shelter asynchronously.
+    /// </summary>
+    /// <param name="shelterId">The unique identifier of the shelter to which the user will be subscribed.</param>
+    /// <param name="userId">The unique identifier of the user to subscribe.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a ShelterSubscription object
+    /// representing the user's subscription to the shelter.</returns>
+    Task<ShelterSubscription> SubscribeUserAsync(Guid shelterId, Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously unsubscribes the specified user from notifications or updates related to the given shelter.
+    /// </summary>
+    /// <param name="shelterId">The unique identifier of the shelter from which the user will be unsubscribed.</param>
+    /// <param name="userId">The unique identifier of the user to unsubscribe.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the unsubscribe operation.</param>
+    /// <returns>A task that represents the asynchronous unsubscribe operation.</returns>
+    Task UnsubscribeUserAsync(Guid shelterId, Guid userId, CancellationToken cancellationToken = default);
 }

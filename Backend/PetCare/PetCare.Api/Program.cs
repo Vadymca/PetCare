@@ -421,6 +421,11 @@ public class Program
             app.MapCreateShelterEndpoint(); // /api/shelters
             app.MapUpdateShelterEndpoint(); // /api/shelters/{id}
             app.MapDeleteShelterEndpoint(); // /api/shelters/{id}
+            app.MapAddShelterPhotoEndpoint(); // /api/shelters/{id}/photos
+            app.MapRemoveShelterPhotoEndpoint(); // /api/shelters/{id:guid}/photos
+            app.MapSubscribeToShelterEndpoint(); // /api/shelters/{id}/subscribe
+            app.MapUnsubscribeFromShelterEndpoint(); // /api/shelters/{id:guid}/subscribe
+            app.MapGetFavoriteSheltersEndpoint(); // /api/shelters/favorites
 
             app.MapGet("/", () => Results.Ok("✅ PetCare.Api is running successfully!"));
 

@@ -25,7 +25,12 @@ public class SubscribeToAnimalHandler : IRequestHandler<SubscribeToAnimalCommand
     /// <inheritdoc/>
     public async Task<AnimalSubscriptionDto> Handle(SubscribeToAnimalCommand request, CancellationToken cancellationToken)
     {
-        await this.animalService.SubscribeUserAsync(request.AnimalId, request.UserId, cancellationToken);
-        return new AnimalSubscriptionDto(Guid.Empty, request.UserId, request.AnimalId, DateTime.UtcNow);
+       var subscription = await this.animalService.SubscribeUserAsync(request.AnimalId, request.UserId, cancellationToken);
+
+       return new AnimalSubscriptionDto(
+            subscription.Id,
+            subscription.UserId,
+            subscription.AnimalId,
+            DateTime.UtcNow);
     }
 }

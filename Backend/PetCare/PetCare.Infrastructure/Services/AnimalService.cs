@@ -3,6 +3,7 @@
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Aggregates;
+using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
 
@@ -262,15 +263,16 @@ public class AnimalService : IAnimalService
     }
 
     /// <summary>
-    /// Subscribes a user to receive updates or notifications related to the specified animal asynchronously.
+    /// Subscribes a user to updates for the specified animal asynchronously.
     /// </summary>
     /// <param name="animalId">The unique identifier of the animal to which the user will be subscribed.</param>
-    /// <param name="userId">The unique identifier of the user to subscribe to the animal.</param>
+    /// <param name="userId">The unique identifier of the user to subscribe.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>A task that represents the asynchronous subscription operation.</returns>
-    public async Task SubscribeUserAsync(Guid animalId, Guid userId, CancellationToken cancellationToken = default)
+    /// <returns>A task that represents the asynchronous operation. The task result contains an AnimalSubscription object
+    /// representing the user's subscription to the animal.</returns>
+    public async Task<AnimalSubscription> SubscribeUserAsync(Guid animalId, Guid userId, CancellationToken cancellationToken = default)
     {
-        await this.animalRepository.SubscribeUserAsync(animalId, userId, cancellationToken);
+        return await this.animalRepository.SubscribeUserAsync(animalId, userId, cancellationToken);
     }
 
     /// <summary>

@@ -246,13 +246,15 @@ public class AnimalRepository : GenericRepository<Animal>, IAnimalRepository
     }
 
     /// <summary>
-    /// Subscribes a user to an animal by ID.
+    /// Subscribes the specified user to the animal with the given identifier asynchronously.
     /// </summary>
-    /// <param name="animalId">The unique identifier of the animal.</param>
-    /// <param name="userId">The unique identifier of the user.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    public async Task SubscribeUserAsync(Guid animalId, Guid userId, CancellationToken cancellationToken = default)
+    /// <param name="animalId">The unique identifier of the animal to which the user will be subscribed.</param>
+    /// <param name="userId">The unique identifier of the user to subscribe to the animal.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the created AnimalSubscription
+    /// representing the user's subscription to the animal.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if an animal with the specified animalId does not exist.</exception>
+    public async Task<AnimalSubscription> SubscribeUserAsync(Guid animalId, Guid userId, CancellationToken cancellationToken = default)
     {
         var animal = await this.Context.Animals
             .Include(a => a.Subscribers)
@@ -262,8 +264,9 @@ public class AnimalRepository : GenericRepository<Animal>, IAnimalRepository
         var subscription = animal.SubscribeUser(userId);
 
         this.Context.Set<AnimalSubscription>().Add(subscription);
-
         await this.Context.SaveChangesAsync(cancellationToken);
+
+        return subscription;
     }
 
     /// <summary>

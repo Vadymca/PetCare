@@ -1,9 +1,10 @@
 ﻿namespace PetCare.Application.Interfaces;
 
+using PetCare.Domain.Aggregates;
+using PetCare.Domain.Entities;
+using PetCare.Domain.ValueObjects;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using PetCare.Domain.Aggregates;
-using PetCare.Domain.ValueObjects;
 
 /// <summary>
 /// Provides methods for retrieving shelter information with support for pagination.
@@ -96,4 +97,42 @@ public interface IShelterService
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
     /// <returns>A task that represents the asynchronous delete operation.</returns>
     Task DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously adds a photo to the specified shelter.
+    /// </summary>
+    /// <param name="shelterId">The unique identifier of the shelter to which the photo will be added.</param>
+    /// <param name="photoUrl">The URL of the photo to add. Must be a valid, accessible URL.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is None.</param>
+    /// <returns>A task that represents the asynchronous add operation.</returns>
+    Task AddPhotoAsync(Guid shelterId, string photoUrl, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously removes a photo from the specified shelter by its URL.
+    /// </summary>
+    /// <param name="shelterId">The unique identifier of the shelter from which the photo will be removed.</param>
+    /// <param name="photoUrl">The URL of the photo to remove. Cannot be null or empty.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if the photo was
+    /// successfully removed; otherwise, <see langword="false"/>.</returns>
+    Task<bool> RemovePhotoAsync(Guid shelterId, string photoUrl, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Subscribes a user to notifications or updates from the specified shelter asynchronously.
+    /// </summary>
+    /// <param name="shelterId">The unique identifier of the shelter to which the user will be subscribed.</param>
+    /// <param name="userId">The unique identifier of the user to subscribe.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a ShelterSubscription object
+    /// representing the user's subscription to the shelter.</returns>
+    Task<ShelterSubscription> SubscribeUserAsync(Guid shelterId, Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously unsubscribes the specified user from notifications or updates related to the given shelter.
+    /// </summary>
+    /// <param name="shelterId">The unique identifier of the shelter from which the user will be unsubscribed.</param>
+    /// <param name="userId">The unique identifier of the user to unsubscribe.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the unsubscribe operation.</param>
+    /// <returns>A task that represents the asynchronous unsubscribe operation.</returns>
+    Task UnsubscribeUserAsync(Guid shelterId, Guid userId, CancellationToken cancellationToken = default);
 }

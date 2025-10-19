@@ -105,16 +105,25 @@ public class UserRepository : GenericRepository<User>, IUserRepository
     /// <returns>A read-only list of <see cref="ShelterSubscription"/>.</returns>
     /// <exception cref="KeyNotFoundException">Thrown if the user with the given ID does not exist.</exception>
     public async Task<IReadOnlyList<ShelterSubscription>> GetUserShelterSubscriptionsAsync(
-        Guid userId,
-        CancellationToken cancellationToken = default)
+    Guid userId,
+    CancellationToken cancellationToken = default)
     {
         await this.EnsureUserExistsAsync(userId, cancellationToken);
 
-        return await this.Context.Set<User>()
+        var user = await this.Context.Users
             .AsNoTracking()
-            .Where(u => u.Id == userId)
-            .SelectMany(u => u.ShelterSubscriptions)
-            .ToListAsync(cancellationToken);
+            .Include(u => u.ShelterSubscriptions)
+                .ThenInclude(s => s.Shelter) // <- обов'язково Include
+            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken)
+            ?? throw new KeyNotFoundException($"Користувача з Id '{userId}' не знайдено.");
+
+        var sortedSubscriptions = user.ShelterSubscriptions
+            .OrderByDescending(s => s.Shelter!.CurrentOccupancy < s.Shelter.Capacity) // приклад сортування по вільних місцях
+            .ThenByDescending(s => s.Shelter!.CreatedAt)
+            .ToList()
+            .AsReadOnly();
+
+        return sortedSubscriptions;
     }
 
     /// <summary>

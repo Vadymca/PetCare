@@ -1,6 +1,7 @@
 ﻿namespace PetCare.Application.Interfaces;
 
 using PetCare.Domain.Aggregates;
+using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
 
@@ -156,13 +157,14 @@ public interface IAnimalService
     Task<bool> RemovePhotoAsync(Guid animalId, string photoUrl, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Subscribes the specified user to notifications or updates related to the given animal asynchronously.
+    /// Subscribes the specified user to updates for the given animal asynchronously.
     /// </summary>
     /// <param name="animalId">The unique identifier of the animal to which the user will be subscribed.</param>
-    /// <param name="userId">The unique identifier of the user to subscribe.</param>
+    /// <param name="userId">The unique identifier of the user who will be subscribed to the animal.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>A task that represents the asynchronous subscription operation.</returns>
-    Task SubscribeUserAsync(Guid animalId, Guid userId, CancellationToken cancellationToken = default);
+    /// <returns>A task that represents the asynchronous operation. The task result contains an AnimalSubscription object
+    /// representing the user's subscription to the animal.</returns>
+    Task<AnimalSubscription> SubscribeUserAsync(Guid animalId, Guid userId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously removes a user's subscription to notifications for the specified animal.
