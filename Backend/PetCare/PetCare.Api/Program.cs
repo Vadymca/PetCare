@@ -281,7 +281,7 @@ public class Program
             {
                 options.AddPolicy("PetCarePolicy", policy =>
                 {
-                    policy.WithOrigins("http://localhost:4200", "http://192.168.1.104:4200")
+                    policy.WithOrigins("http://localhost:4200")
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .AllowCredentials();
@@ -309,31 +309,46 @@ public class Program
 
             var app = builder.Build();
 
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseHsts();
+            }
+
+
             app.UseExceptionHandling();
+            app.UseHttpsRedirection();
+
             app.UseStaticFiles();
 
-            // app.UseHttpsRedirection();
+            app.UseRouting();
             app.UseCors("PetCarePolicy");
             app.UseRateLimiter();
-
-           // app.MapGet("/api/csrf-token", (IAntiforgery antiforgery, HttpContext context) =>
-           // {
-               // var tokens = antiforgery.GetAndStoreTokens(context);
-               // return Results.Ok(new { token = tokens.RequestToken });
-           // });
-           // app.Use(async (context, next) =>
-           // {
-               // var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
-               // if (HttpMethods.IsPost(context.Request.Method) ||
-                  //  HttpMethods.IsPut(context.Request.Method) ||
-                  //  HttpMethods.IsDelete(context.Request.Method))
-               // {
-                   // await antiforgery.ValidateRequestAsync(context);
-               // }
-               // await next();
-           // });
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseAntiforgery();
+
+            // 👇 Явно відповідаємо на всі OPTIONS-запити (preflight)
+            app.MapMethods("{*path}", new[] { "OPTIONS" }, () => Results.Ok())
+               .RequireCors("PetCarePolicy");
+
+
+            // app.MapGet("/api/csrf-token", (IAntiforgery antiforgery, HttpContext context) =>
+            // {
+            // var tokens = antiforgery.GetAndStoreTokens(context);
+            // return Results.Ok(new { token = tokens.RequestToken });
+            // });
+            // app.Use(async (context, next) =>
+            // {
+            // var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
+            // if (HttpMethods.IsPost(context.Request.Method) ||
+            //  HttpMethods.IsPut(context.Request.Method) ||
+            //  HttpMethods.IsDelete(context.Request.Method))
+            // {
+            // await antiforgery.ValidateRequestAsync(context);
+            // }
+            // await next();
+            // });
 
             // -------------------- Logging & Swagger --------------------
             app.UseSerilogRequestLogging();
