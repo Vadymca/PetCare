@@ -96,4 +96,30 @@ public class SpeciesRepository : GenericRepository<Specie>, ISpeciesRepository
             .Include(s => s.Breeds)
             .FirstOrDefaultAsync(s => s.Breeds.Any(b => b.Id == breedId), cancellationToken);
     }
+
+    /// <summary>
+    /// Asynchronously adds a new breed to the specified species.
+    /// </summary>
+    /// <param name="specieId">The unique identifier of the species to which the breed will be added.</param>
+    /// <param name="name">The name of the breed to add. Cannot be null or empty.</param>
+    /// <param name="description">An optional description of the breed. Can be null if no description is provided.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the newly created breed.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown if a species with the specified <paramref name="specieId"/> does not exist.</exception>
+    public async Task<Breed> AddBreedAsync(Guid specieId, string name, string? description, CancellationToken cancellationToken)
+    {
+        // Завантажуємо Specie разом з колекцією Breeds
+        var specie = await this.Context.Set<Specie>()
+     .Include(s => s.Breeds)
+     .FirstOrDefaultAsync(s => s.Id == specieId, cancellationToken)
+     ?? throw new KeyNotFoundException($"Вид з Id '{specieId}' не знайдено.");
+
+        var breed = Breed.Create(specieId, name, description);
+
+        // Додаємо безпосередньо у контекст EF
+        this.Context.Set<Breed>().Add(breed);
+
+        await this.Context.SaveChangesAsync(cancellationToken);
+        return breed;
+    }
 }

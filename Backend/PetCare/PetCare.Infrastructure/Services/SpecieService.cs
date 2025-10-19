@@ -152,15 +152,7 @@ public sealed class SpecieService : ISpecieService
     /// <exception cref="KeyNotFoundException">Thrown if a species with the specified specieId does not exist.</exception>
     public async Task<Breed> AddBreedAsync(Guid specieId, string name, string? description, CancellationToken cancellationToken)
     {
-        var specie = await this.specieRepository.GetByIdAsync(specieId, cancellationToken)
-            ?? throw new KeyNotFoundException($"Вид з Id '{specieId}' не знайдено.");
-
-        var breed = Breed.Create(specieId, name, description);
-        specie.AddBreed(breed);
-
-        await this.specieRepository.UpdateAsync(specie, cancellationToken);
-
-        return breed;
+        return await this.specieRepository.AddBreedAsync(specieId, name, description, cancellationToken);
     }
 
     /// <summary>

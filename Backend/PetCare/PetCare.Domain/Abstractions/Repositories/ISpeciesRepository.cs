@@ -51,4 +51,14 @@ public interface ISpeciesRepository : IRepository<Specie>
     /// <returns>A task that represents the asynchronous operation. The task result contains the species associated with the
     /// specified breed, or <c>null</c> if no matching species is found.</returns>
     Task<Specie?> GetSpecieWithBreedAsync(Guid breedId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously adds a new breed to the specified species.
+    /// </summary>
+    /// <param name="specieId">The unique identifier of the species to which the breed will be added.</param>
+    /// <param name="name">The name of the breed to add. Cannot be null or empty.</param>
+    /// <param name="description">An optional description of the breed. Can be null if no description is provided.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the newly created breed.</returns>
+    Task<Breed> AddBreedAsync(Guid specieId, string name, string? description, CancellationToken cancellationToken);
 }
