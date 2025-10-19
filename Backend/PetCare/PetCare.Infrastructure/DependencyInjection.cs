@@ -45,6 +45,7 @@ public static class DependencyInjection
         services.AddScoped<IQrCodeGenerator, QrCodeGeneratorService>();
         services.AddScoped<IAnimalService, AnimalService>();
         services.AddScoped<IShelterService, ShelterService>();
+        services.AddScoped<ISpecieService, SpecieService>();
 
         // Email services
         services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));

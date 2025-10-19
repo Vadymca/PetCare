@@ -17,8 +17,10 @@ using PetCare.Api.Endpoints.Auth.Facebook;
 using PetCare.Api.Endpoints.Auth.Google;
 using PetCare.Api.Endpoints.Auth.TwoFactor;
 using PetCare.Api.Endpoints.Auth.TwoFactor.Sms;
+using PetCare.Api.Endpoints.Breeds;
 using PetCare.Api.Endpoints.Media;
 using PetCare.Api.Endpoints.Shelters;
+using PetCare.Api.Endpoints.Species;
 using PetCare.Api.Endpoints.Users;
 using PetCare.Api.Middleware;
 using PetCare.Api.Swagger;
@@ -426,6 +428,22 @@ public class Program
             app.MapSubscribeToShelterEndpoint(); // /api/shelters/{id}/subscribe
             app.MapUnsubscribeFromShelterEndpoint(); // /api/shelters/{id:guid}/subscribe
             app.MapGetFavoriteSheltersEndpoint(); // /api/shelters/favorites
+
+            // --------------------- Species ---------------------
+            app.MapGetSpeciesEndpoint(); // /api/species
+            app.MapGetSpecieByIdEndpoint(); // /api/species/{id}
+            app.MapGetBreedsEndpoint(); // /api/species/{speciesId}/breeds
+            app.MapCreateSpecieEndpoint(); // /api/species
+            app.MapUpdateSpecieEndpoint(); // /api/species/{id}
+            app.MapDeleteSpecieEndpoint(); // /api/species/{id}
+
+            // ---------------------- Breeds ----------------------
+            app.MapGetAllBreedsEndpoint(); // /api/breeds
+            app.MapGetBreedByIdEndpoint(); // /api/breeds/{id}
+            app.MapGetBreedsBySpecieEndpoint(); // /api/breeds/species/{speciesId}
+            app.MapCreateBreedEndpoint(); // /api/breeds
+            app.MapUpdateBreedEndpoint(); // /api/breeds/{id}
+            app.MapDeleteBreedEndpoint(); // /api/breeds/{id}
 
             app.MapGet("/", () => Results.Ok("✅ PetCare.Api is running successfully!"));
 
