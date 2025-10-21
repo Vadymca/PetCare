@@ -81,6 +81,18 @@ public class Program
             // -------------------- Enable Dynamic JSON for Npgsql --------------------
             NpgsqlConnection.GlobalTypeMapper.EnableDynamicJson();
 
+            // -------------------- CORS --------------------
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("PetCarePolicy", policy =>
+                {
+                    policy.WithOrigins("http://localhost:4200", "https://localhost:4200", "https://api-dobrodiy.kn314-uz.keenetic.pro")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
+                });
+            });
+
             // -------------------- Authentication & Authorization --------------------
             builder.Services.AddAuthentication(options =>
             {
@@ -273,18 +285,6 @@ public class Program
                         },
                         Array.Empty<string>()
                     },
-                });
-            });
-
-            // -------------------- CORS --------------------
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("PetCarePolicy", policy =>
-                {
-                    policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
-                          .AllowAnyMethod()
-                          .AllowAnyHeader()
-                          .AllowCredentials();
                 });
             });
 
