@@ -89,7 +89,6 @@ public static class DependencyInjection
         });
 
         // File storage (local)
-        services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         services.AddScoped<IFileStorageService, FileStorageService>();
 
         // Facebook OAuth settings
