@@ -17,6 +17,7 @@ public sealed class MinioStorageService : IStorageService
     private readonly ILogger<MinioStorageService> logger;
     private readonly string bucketName;
     private readonly string endpoint;
+    private readonly string publicUrl;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MinioStorageService"/> class.
@@ -41,13 +42,15 @@ public sealed class MinioStorageService : IStorageService
             ?? throw new InvalidOperationException("MINIO_ROOT_PASSWORD не налаштований.");
         this.bucketName = configuration["MINIO_BUCKET_NAME"]
             ?? throw new InvalidOperationException("MINIO_BUCKET_NAME не налаштований.");
+        this.publicUrl = configuration["MINIO_PUBLIC_URL"]
+           ?? this.endpoint; // fallback на внутрішній endpoint
 
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger), "Логер не може бути null.");
 
         this.minioClient = new MinioClient()
-            .WithEndpoint(this.endpoint.Replace("http://", string.Empty)) // e.g. minio:9000
+            .WithEndpoint(this.endpoint.Replace("http://", string.Empty).Replace("https://", string.Empty))
             .WithCredentials(accessKey, secretKey)
-            .WithSSL(false)
+            .WithSSL(this.endpoint.StartsWith("https", StringComparison.OrdinalIgnoreCase))
             .Build();
     }
 
@@ -58,10 +61,7 @@ public sealed class MinioStorageService : IStorageService
         {
             await this.EnsureBucketExistsAsync();
 
-            // Витягуємо розширення з оригінальної назви файлу
             var extension = Path.GetExtension(originalFileName)?.ToLowerInvariant() ?? ".dat";
-
-            // Генеруємо унікальне ім'я файлу
             var objectName = $"{Guid.NewGuid()}{extension}";
 
             var putObjectArgs = new PutObjectArgs()
@@ -73,7 +73,8 @@ public sealed class MinioStorageService : IStorageService
 
             await this.minioClient.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
 
-            var fileUrl = $"{this.endpoint}/{this.bucketName}/{objectName}";
+            // ❗ формуємо правильне публічне посилання
+            var fileUrl = $"{this.publicUrl}/{this.bucketName}/{objectName}";
             this.logger.LogInformation("Uploaded file '{Object}' to MinIO bucket '{Bucket}'", objectName, this.bucketName);
 
             return fileUrl;
