@@ -143,7 +143,7 @@ public sealed class JwtService : IJwtService
         {
             HttpOnly = true,
             Secure = true,
-            SameSite = SameSiteMode.Strict,
+            SameSite = SameSiteMode.None,
             Expires = DateTime.UtcNow.AddMinutes(this.expirationMinutes),
             Path = "/",
         };
@@ -163,7 +163,7 @@ public sealed class JwtService : IJwtService
         {
             HttpOnly = true,
             Secure = true,
-            SameSite = SameSiteMode.Strict,
+            SameSite = SameSiteMode.None,
             Expires = DateTime.UtcNow.AddDays(this.refreshExpirationDays),
             Path = "/",
         };

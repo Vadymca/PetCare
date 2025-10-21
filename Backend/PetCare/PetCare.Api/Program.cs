@@ -281,7 +281,7 @@ public class Program
             {
                 options.AddPolicy("PetCarePolicy", policy =>
                 {
-                    policy.WithOrigins("http://localhost:4200")
+                    policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .AllowCredentials();
@@ -316,9 +316,9 @@ public class Program
 
 
             app.UseExceptionHandling();
+            app.UseStaticFiles();
             app.UseHttpsRedirection();
 
-            app.UseStaticFiles();
 
             app.UseRouting();
             app.UseCors("PetCarePolicy");
