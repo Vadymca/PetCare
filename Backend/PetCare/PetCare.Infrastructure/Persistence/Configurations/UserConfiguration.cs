@@ -79,5 +79,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.UpdatedAt)
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        builder.Property(u => u.ConcurrencyStamp).IsConcurrencyToken(false);
     }
 }

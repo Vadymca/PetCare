@@ -144,7 +144,6 @@ public class GenericRepository<T> : IRepository<T>
     public async Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await this.Context.Set<T>()
-            .AsNoTracking()
             .FirstOrDefaultAsync(e => EF.Property<Guid>(e, "Id") == id, cancellationToken);
     }
 

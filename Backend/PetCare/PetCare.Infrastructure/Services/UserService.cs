@@ -251,115 +251,15 @@ public sealed class UserService : IUserService
     }
 
     /// <summary>
-    /// Updates the specified user's profile information asynchronously, including personal details, contact
-    /// information, preferences, points, and password.
+    /// Asynchronously updates the specified user in the data store.
     /// </summary>
-    /// <remarks>Only non-null parameters will update the corresponding fields in the user's profile. Changing
-    /// the phone number will reset its confirmation status. If the postal code is provided, the user's address will be
-    /// resolved and updated. Deleting the previous profile photo is handled automatically if a new photo is set. The
-    /// operation is performed asynchronously and supports cancellation via the provided token.</remarks>
-    /// <param name="userId">The unique identifier of the user whose profile is to be updated.</param>
-    /// <param name="firstName">The new first name for the user. If null, the first name is not changed.</param>
-    /// <param name="lastName">The new last name for the user. If null, the last name is not changed.</param>
-    /// <param name="phone">The new phone number for the user. If null, the phone number is not changed. If changed, the phone number
-    /// confirmation status will be reset.</param>
-    /// <param name="profilePhoto">The URL of the new profile photo for the user. If null, the profile photo is not changed.</param>
-    /// <param name="language">The preferred language for the user. If null, the language preference is not changed.</param>
-    /// <param name="postalCode">The postal code to update the user's address. If null, the address is not changed.</param>
-    /// <param name="email">The new email address for the user. If null, the email address is not changed.</param>
-    /// <param name="preferences">A dictionary of user preferences to update. If null, preferences are not changed.</param>
-    /// <param name="points">The new points value for the user. Only users with the 'Admin' role can modify points. If null, points are not
-    /// changed.</param>
-    /// <param name="password">The new password for the user. If null, the password is not changed.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the updated user profile.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown if a user with the specified <paramref name="userId"/> does not exist.</exception>
-    /// <exception cref="InvalidOperationException">Thrown if an attempt is made to change the user's points and the current user does not have the 'Admin' role.</exception>
-    public async Task<User> UpdateUserProfileAsync(
-    Guid userId,
-    string? firstName = null,
-    string? lastName = null,
-    string? phone = null,
-    string? profilePhoto = null,
-    string? language = null,
-    string? postalCode = null,
-    string? email = null,
-    Dictionary<string, string>? preferences = null,
-    int? points = null,
-    string? password = null,
-    CancellationToken cancellationToken = default)
+    /// <param name="user">The user entity containing updated information to be saved. Cannot be null.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the update operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the updated user entity.</returns>
+    public async Task<User> UpdateUserAsync(User user, CancellationToken cancellationToken = default)
     {
-        var user = await this.userRepository.GetByIdAsync(userId, cancellationToken)
-            ?? throw new KeyNotFoundException($"Користувача з Id '{userId}' не знайдено.");
-
-        string? oldAvatarUrl = user.ProfilePhoto;
-        string? oldPhone = user.Phone;
-
-        user.UpdateProfile(firstName, lastName, phone, profilePhoto, language, postalCode);
-
-        if (!string.IsNullOrWhiteSpace(phone) && phone != oldPhone)
-        {
-            user.PhoneNumberConfirmed = false;
-        }
-
-        if (!string.IsNullOrWhiteSpace(email) && email != user.Email)
-        {
-            user.Email = email;
-        }
-
-        if (preferences != null)
-        {
-            user.UpdatePreferences(preferences);
-        }
-
-        if (points.HasValue && points.Value != user.Points)
-        {
-            var roles = await this.GetRolesAsync(user);
-            if (roles.Contains("Admin"))
-            {
-                var diff = points.Value - user.Points;
-                if (diff > 0)
-                {
-                    user.AddPoints(diff, userId);
-                }
-                else
-                {
-                    user.DeductPoints(-diff, userId);
-                }
-            }
-            else
-            {
-                throw new InvalidOperationException("Ви не можете змінювати бали без Admin ролі.");
-            }
-        }
-
-        if (!string.IsNullOrWhiteSpace(postalCode))
-        {
-            try
-            {
-                var address = await this.zipcodebaseService.ResolveAddressAsync(postalCode, cancellationToken)
-                    ?? Address.Unknown();
-                user.UpdateAddress(address);
-            }
-            catch
-            {
-                user.UpdateAddress(Address.Unknown());
-            }
-        }
-
-        await this.userRepository.UpdateAsync(user, cancellationToken);
-
-        if (!string.IsNullOrWhiteSpace(oldAvatarUrl))
-        {
-            await this.fileStorage.DeleteAsync(oldAvatarUrl);
-        }
-
-        if (!string.IsNullOrWhiteSpace(password))
-        {
-            await this.ChangePasswordAsync(user.Id, password, cancellationToken);
-        }
-
-        return user;
+        var updatedUser = await this.userRepository.UpdateAsync(user, cancellationToken);
+        return updatedUser;
     }
 
     /// <summary>

@@ -45,40 +45,12 @@ public interface IUserService
     Task SetLastLoginAsync(User user, DateTime date);
 
     /// <summary>
-    /// Asynchronously updates the profile information for the specified user. Only the provided parameters will be
-    /// updated; parameters left as null will retain their existing values.
+    /// Asynchronously updates the specified user with new information.
     /// </summary>
-    /// <remarks>If the specified user does not exist, the method may throw an exception. Only the fields
-    /// corresponding to non-null parameters will be updated; all other fields will remain unchanged. This method is
-    /// thread-safe and can be called concurrently for different users.</remarks>
-    /// <param name="userId">The unique identifier of the user whose profile is to be updated.</param>
-    /// <param name="firstName">The new first name for the user. If null, the first name will not be changed.</param>
-    /// <param name="lastName">The new last name for the user. If null, the last name will not be changed.</param>
-    /// <param name="phone">The new phone number for the user. If null, the phone number will not be changed.</param>
-    /// <param name="profilePhoto">The URL or identifier of the new profile photo for the user. If null, the profile photo will not be changed.</param>
-    /// <param name="language">The preferred language code for the user (for example, "en" or "fr"). If null, the language preference will not
-    /// be changed.</param>
-    /// <param name="postalCode">The new postal code for the user. If null, the postal code will not be changed.</param>
-    /// <param name="email">The new email address for the user. If null, the email address will not be changed.</param>
-    /// <param name="preferences">A dictionary of custom preference key-value pairs to update for the user. If null, preferences will not be
-    /// changed.</param>
-    /// <param name="points">The new points value for the user. If null, the points will not be changed.</param>
-    /// <param name="password">The new password for the user. If null, the password will not be changed.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests. The operation will be canceled if the token is triggered.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the updated user profile.</returns>
-    Task<User> UpdateUserProfileAsync(
-        Guid userId,
-        string? firstName = null,
-        string? lastName = null,
-        string? phone = null,
-        string? profilePhoto = null,
-        string? language = null,
-        string? postalCode = null,
-        string? email = null,
-        Dictionary<string, string>? preferences = null,
-        int? points = null,
-        string? password = null,
-        CancellationToken cancellationToken = default);
+    /// <param name="user">The user entity containing updated information. Cannot be null. All required fields must be populated.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the update operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the updated user entity.</returns>
+    Task<User> UpdateUserAsync(User user, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asynchronously deletes the user identified by the specified unique identifier.
