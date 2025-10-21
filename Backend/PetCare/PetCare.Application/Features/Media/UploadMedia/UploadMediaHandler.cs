@@ -41,13 +41,13 @@ public class UploadMediaHandler : IRequestHandler<UploadMediaCommand, string>
         ".mp4", ".avi", ".mov", ".mkv", ".wmv", ".flv", ".webm", ".mpeg",
     };
 
-    private readonly IStorageService storageService;
+    private readonly IFileStorageService storageService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UploadMediaHandler"/> class.
     /// </summary>
     /// <param name="storageService">The file storage service used to save uploaded files.</param>
-    public UploadMediaHandler(IStorageService storageService)
+    public UploadMediaHandler(IFileStorageService storageService)
     {
         this.storageService = storageService ?? throw new ArgumentNullException(nameof(storageService), "Сервіс збереження файлів не може бути null.");
     }
@@ -103,7 +103,7 @@ public class UploadMediaHandler : IRequestHandler<UploadMediaCommand, string>
         }
 
         await using var stream = request.File.OpenReadStream();
-        var url = await this.storageService.UploadFileAsync(stream, request.File.FileName, request.File.ContentType);
+        var url = await this.storageService.UploadAsync(stream, request.File.FileName, request.File.ContentType);
         return url;
     }
 }

@@ -8,14 +8,17 @@ using System.Threading.Tasks;
 public interface IFileStorageService
 {
     /// <summary>
-    /// Uploads a file to the storage.
+    /// Asynchronously uploads a file to the storage provider and returns a unique identifier or URL for the uploaded
+    /// file.
     /// </summary>
-    /// <param name="fileStream">The file content stream.</param>
-    /// <param name="fileName">The name of the file.</param>
-    /// <param name="maxSizeBytes">The maximum allowed file size in bytes.</param>
-    /// <param name="allowedExtensions">An array of allowed file extensions.</param>
-    /// <returns>The URL of the uploaded file.</returns>
-    Task<string> UploadAsync(Stream fileStream, string fileName, long maxSizeBytes, string[] allowedExtensions);
+    /// <param name="fileStream">The stream containing the file data to upload. Must be readable and positioned at the start of the file content.</param>
+    /// <param name="originalFileName">The original name of the file, including extension. Used to preserve file metadata and may affect how the file
+    /// is stored or accessed.</param>
+    /// <param name="contentType">The MIME type of the file, such as "image/png" or "application/pdf". Determines how the file is handled and
+    /// served by the storage provider.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a string with the unique identifier
+    /// or URL of the uploaded file.</returns>
+    Task<string> UploadAsync(Stream fileStream, string originalFileName, string contentType);
 
     /// <summary>
     /// Deletes a file from the storage by its URL.

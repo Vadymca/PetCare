@@ -2,26 +2,37 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using PetCare.Application.Interfaces;
 
 /// <summary>
 /// Implementation of IFileStorageService that stores files in wwwroot/uploads.
 /// Handles large files efficiently using streaming.
 /// </summary>
-public class FileStorageService : IFileStorageService
+public sealed class FileStorageService : IFileStorageService
 {
     private readonly string uploadsFolder;
+    private readonly IHttpContextAccessor httpContextAccessor;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FileStorageService"/> class.
     /// Ensures that the uploads folder exists.
     /// </summary>
-    /// <param name="webRootPath">The web root path (wwwroot) of the application.</param>
-    public FileStorageService(string webRootPath)
+    /// <param name="environment">The hosting environment to resolve wwwroot path.</param>
+    /// <param name="httpContextAccessor">Used to build absolute file URLs.</param>
+    public FileStorageService(IWebHostEnvironment environment, IHttpContextAccessor httpContextAccessor)
     {
-        this.uploadsFolder = Path.Combine(webRootPath, "uploads");
+        if (environment == null)
+        {
+            throw new ArgumentNullException(nameof(environment), "Середовище хостингу не може бути null.");
+        }
+
+        this.httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor), "Доступ до HttpContext не може бути null.");
+
+        this.uploadsFolder = Path.Combine(environment.WebRootPath, "uploads");
+
         if (!Directory.Exists(this.uploadsFolder))
         {
             Directory.CreateDirectory(this.uploadsFolder);
@@ -29,37 +40,33 @@ public class FileStorageService : IFileStorageService
     }
 
     /// <summary>
-    /// Uploads a file to the storage after validating its size and extension.
-    /// Uses streaming to prevent memory overload with large files.
+    /// Asynchronously uploads a file to the server and returns the public URL for accessing the uploaded file.
     /// </summary>
-    /// <param name="fileStream">The stream containing the file content.</param>
-    /// <param name="fileName">The original file name (used for extension validation).</param>
-    /// <param name="maxSizeBytes">Maximum allowed file size in bytes.</param>
-    /// <param name="allowedExtensions">Array of allowed file extensions (e.g., ".jpg", ".png").</param>
-    /// <returns>The URL of the uploaded file to be used on the frontend.</returns>
-    /// <exception cref="ArgumentException">Thrown when file size or extension is invalid.</exception>
-    public async Task<string> UploadAsync(Stream fileStream, string fileName, long maxSizeBytes, string[] allowedExtensions)
+    /// <remarks>The returned URL is constructed based on the current HTTP request's scheme and host. If the
+    /// request context is unavailable, a default base URL is used. The uploaded file is saved with a unique name to
+    /// prevent collisions.</remarks>
+    /// <param name="fileStream">The stream containing the file data to upload. Must not be null or empty.</param>
+    /// <param name="originalFileName">The original name of the file, including its extension. Used to determine the file type and extension.</param>
+    /// <param name="contentType">The MIME type of the file being uploaded. Used to identify the content type of the file.</param>
+    /// <returns>A string containing the public URL where the uploaded file can be accessed.</returns>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="fileStream"/> is null or empty, or if <paramref name="originalFileName"/> does not
+    /// contain a file extension.</exception>
+    public async Task<string> UploadAsync(Stream fileStream, string originalFileName, string contentType)
     {
         if (fileStream == null || fileStream.Length == 0)
         {
             throw new ArgumentException("Файл не може бути порожнім.");
         }
 
-        if (fileStream.Length > maxSizeBytes)
+        var extension = Path.GetExtension(originalFileName)?.ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(extension))
         {
-            throw new ArgumentException($"Файл перевищує максимальний розмір {maxSizeBytes} байт.");
-        }
-
-        var extension = Path.GetExtension(fileName)?.ToLowerInvariant();
-        if (string.IsNullOrEmpty(extension) || !allowedExtensions.Contains(extension))
-        {
-            throw new ArgumentException($"Недопустиме розширення файлу. Дозволені: {string.Join(", ", allowedExtensions)}");
+            throw new ArgumentException("Файл має містити розширення.");
         }
 
         var uniqueFileName = $"{Guid.NewGuid()}{extension}";
         var filePath = Path.Combine(this.uploadsFolder, uniqueFileName);
 
-        // Асинхронне збереження файлу через стрім
         await using var outputStream = new FileStream(
             filePath,
             FileMode.Create,
@@ -70,14 +77,20 @@ public class FileStorageService : IFileStorageService
 
         await fileStream.CopyToAsync(outputStream);
 
-        return $"http://localhost:5000/uploads/{uniqueFileName}";
+        var request = this.httpContextAccessor.HttpContext?.Request;
+        var baseUrl = request != null ? $"{request.Scheme}://{request.Host}" : "http://localhost:5000";
+
+        return $"{baseUrl}/uploads/{uniqueFileName}";
     }
 
     /// <summary>
-    /// Deletes a file from storage by its URL.
+    /// Deletes the file at the specified URL from the uploads folder asynchronously, if it exists.
     /// </summary>
-    /// <param name="fileUrl">The URL of the file to delete.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <remarks>If the file specified by <paramref name="fileUrl"/> does not exist in the uploads folder, the
+    /// method completes without error. No exception is thrown if the file is missing or if <paramref name="fileUrl"/>
+    /// is invalid.</remarks>
+    /// <param name="fileUrl">The URL of the file to delete. If null, empty, or whitespace, no action is taken.</param>
+    /// <returns>A task that represents the asynchronous delete operation. The task is completed when the operation finishes.</returns>
     public Task DeleteAsync(string fileUrl)
     {
         if (string.IsNullOrWhiteSpace(fileUrl))

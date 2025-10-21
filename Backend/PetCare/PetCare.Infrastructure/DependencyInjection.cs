@@ -1,6 +1,7 @@
 ﻿namespace PetCare.Infrastructure;
 
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -87,12 +88,9 @@ public static class DependencyInjection
             MaxConnectionsPerServer = 10,
         });
 
-        // FileStorage service
-        services.AddSingleton<IFileStorageService>(sp =>
-        {
-            var env = sp.GetRequiredService<IWebHostEnvironment>();
-            return new FileStorageService(env.WebRootPath);
-        });
+        // File storage (local)
+        services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+        services.AddScoped<IFileStorageService, FileStorageService>();
 
         // Facebook OAuth settings
         services.Configure<FacebookSettings>(
