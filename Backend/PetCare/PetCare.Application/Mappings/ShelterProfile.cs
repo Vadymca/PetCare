@@ -3,6 +3,7 @@
 using AutoMapper;
 using PetCare.Application.Dtos.ShelterDtos;
 using PetCare.Domain.Aggregates;
+using PetCare.Domain.ValueObjects;
 
 /// <summary>
 /// AutoMapper profile for mapping <see cref="Shelter"/> entities to <see cref="ShelterDto"/> objects.
@@ -15,6 +16,10 @@ public sealed class ShelterProfile : Profile
     /// </summary>
     public ShelterProfile()
     {
+        // Мапінг для Coordinates
+        this.CreateMap<Coordinates, CoordinatesDto>()
+            .ConstructUsing(src => new CoordinatesDto(src.Latitude, src.Longitude));
+
         this.CreateMap<Shelter, ShelterDto>()
             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.Slug, opt => opt.MapFrom(src => src.Slug.Value))
@@ -30,6 +35,7 @@ public sealed class ShelterProfile : Profile
             .ForMember(dest => dest.WorkingHours, opt => opt.MapFrom(src => src.WorkingHours))
             .ForMember(dest => dest.Photos, opt => opt.MapFrom(src => src.Photos))
             .ForMember(dest => dest.SocialMedia, opt => opt.MapFrom(src => src.SocialMedia))
-            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt));
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+            .ForMember(dest => dest.Coordinates, opt => opt.MapFrom(src => src.Coordinates));
     }
 }

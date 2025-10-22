@@ -84,8 +84,17 @@ public sealed class SpecieService : ISpecieService
     /// <returns>A task that represents the asynchronous operation. The task result contains the newly created species.</returns>
     public async Task<Specie> CreateSpeciesAsync(string name, CancellationToken cancellationToken = default)
     {
+        var exists = await this.specieRepository.ExistsByNameAsync(name, cancellationToken);
+
+        if (exists)
+        {
+            throw new InvalidOperationException($"Вид з назвою '{name}' вже існує.");
+        }
+
         var specie = Specie.Create(name);
+
         await this.specieRepository.AddAsync(specie, cancellationToken);
+
         return specie;
     }
 

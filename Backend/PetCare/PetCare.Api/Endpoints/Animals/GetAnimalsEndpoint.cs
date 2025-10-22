@@ -28,7 +28,9 @@ public static class GetAnimalsEndpoint
             [FromQuery(Name = "statuses")] string[]? statusesStr = null,
             [FromQuery] int? minAge = null,
             [FromQuery] int? maxAge = null,
+            [FromQuery(Name = "careCosts")] string[]? careCostsStr = null,
             [FromQuery] bool? isSterilized = null,
+            [FromQuery] bool? isUndercare = null,
             [FromQuery] Guid? shelterId = null,
             [FromQuery] Guid? specieId = null,
             [FromQuery] Guid? breedId = null,
@@ -44,6 +46,9 @@ public static class GetAnimalsEndpoint
             AnimalStatus[]? statuses = statusesStr?.Select(s =>
                 Enum.Parse<AnimalStatus>(s, ignoreCase: true)).ToArray();
 
+            AnimalCareCost[]? careCosts = careCostsStr?.Select(s =>
+                Enum.Parse<AnimalCareCost>(s, ignoreCase: true)).ToArray();
+
             var command = new GetAnimalsCommand(
                 Page: page,
                 PageSize: pageSize,
@@ -52,7 +57,9 @@ public static class GetAnimalsEndpoint
                 Statuses: statuses,
                 MinAge: minAge,
                 MaxAge: maxAge,
+                CareCosts: careCosts,
                 IsSterilized: isSterilized,
+                IsUndercare: isUndercare,
                 ShelterId: shelterId,
                 SpecieId: specieId,
                 BreedId: breedId,

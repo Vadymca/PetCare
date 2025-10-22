@@ -32,4 +32,5 @@ public sealed record ShelterDto(
  string? WorkingHours,
  IReadOnlyList<string> Photos,
  IReadOnlyDictionary<string, string> SocialMedia,
- DateTime CreatedAt);
+ DateTime CreatedAt,
+ CoordinatesDto Coordinates);

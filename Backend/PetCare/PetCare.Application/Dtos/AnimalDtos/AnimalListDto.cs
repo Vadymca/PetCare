@@ -25,6 +25,6 @@ string Status,
 string? Birthday,
 string Gender,
 bool IsUnderCare,
-SpecieDto? Specie,
+SpecieDto? Species,
 ShelterInfoDto Shelter,
 BreedDto? Breed);

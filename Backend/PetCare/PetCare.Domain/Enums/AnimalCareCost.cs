@@ -28,5 +28,5 @@ public enum AnimalCareCost
     /// <summary>
     /// Represents a cost of two thousand for animal care.
     /// </summary>
-    TwoThousand = 2000
+    TwoThousand = 2000,
 }

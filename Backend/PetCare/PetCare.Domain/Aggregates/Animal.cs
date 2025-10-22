@@ -312,10 +312,16 @@ public sealed class Animal : AggregateRoot
         float? weight,
         float? height,
         string? color,
-        bool isSterilized,
-        bool isUnderCare,
-        bool haveDocuments)
+        bool isSterilized = false,
+        bool isUnderCare = false,
+        bool haveDocuments = false)
     {
+        if (isUnderCare && status is not (AnimalStatus.Available or AnimalStatus.Reserved or AnimalStatus.InTreatment))
+        {
+            throw new InvalidOperationException(
+                "Тварину можна створити під опікою лише якщо вона перебуває в притулку або на лікуванні.");
+        }
+
         var animal = new Animal(
             Slug.Create(name),
             userId,
@@ -401,6 +407,13 @@ public sealed class Animal : AggregateRoot
         if (status is not null)
         {
             this.Status = status.Value;
+
+            if (this.IsUnderCare &&
+                this.Status is not (AnimalStatus.Available or AnimalStatus.Reserved or AnimalStatus.InTreatment))
+            {
+                throw new InvalidOperationException(
+                    "Тварина не може залишатися під опікою, якщо вона не перебуває в притулку або на лікуванні.");
+            }
         }
 
         if (adoptionRequirements is not null)
@@ -435,6 +448,13 @@ public sealed class Animal : AggregateRoot
 
         if (isUnderCare is not null)
         {
+            if (isUnderCare.Value &&
+                this.Status is not (AnimalStatus.Available or AnimalStatus.Reserved or AnimalStatus.InTreatment))
+            {
+                throw new InvalidOperationException(
+                    "Тварину можна позначити як під опікою лише якщо вона перебуває в притулку або на лікуванні.");
+            }
+
             this.IsUnderCare = isUnderCare.Value;
         }
 

@@ -110,10 +110,20 @@ public class SpeciesRepository : GenericRepository<Specie>, ISpeciesRepository
     {
         // Завантажуємо Specie разом з колекцією Breeds
         var specie = await this.Context.Set<Specie>()
-     .Include(s => s.Breeds)
-     .FirstOrDefaultAsync(s => s.Id == specieId, cancellationToken)
-     ?? throw new KeyNotFoundException($"Вид з Id '{specieId}' не знайдено.");
+            .Include(s => s.Breeds)
+            .FirstOrDefaultAsync(s => s.Id == specieId, cancellationToken)
+            ?? throw new KeyNotFoundException($"Вид з Id '{specieId}' не знайдено.");
 
+        // Перевірка, чи існує вже така порода (без урахування регістру)
+        var isDuplicate = specie.Breeds
+            .Any(b => string.Equals(b.Name.Value, name, StringComparison.OrdinalIgnoreCase));
+
+        if (isDuplicate)
+        {
+            throw new InvalidOperationException($"Порода з назвою '{name}' вже існує для цього виду.");
+        }
+
+        // Створюємо нову породу
         var breed = Breed.Create(specieId, name, description);
 
         // Додаємо безпосередньо у контекст EF
@@ -121,5 +131,18 @@ public class SpeciesRepository : GenericRepository<Specie>, ISpeciesRepository
 
         await this.Context.SaveChangesAsync(cancellationToken);
         return breed;
+    }
+
+    /// <summary>
+    /// Determines whether a species with the specified name exists in the data store.
+    /// </summary>
+    /// <param name="name">The name of the species to search for. Comparison is case-insensitive.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if a species with
+    /// the specified name exists; otherwise, <see langword="false"/>.</returns>
+    public async Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken)
+    {
+        return await this.Context.Set<Specie>()
+            .AnyAsync(s => s.Name.Value.ToLower() == name.ToLower(), cancellationToken);
     }
 }

@@ -69,6 +69,6 @@ public sealed class GoogleLoginCallbackCommandHandler
         this.logger.LogInformation("User {Email} successfully logged in via Google.", user.Email);
 
         // Редірект на фронтенд
-        return "http://localhost:4200";
+        return "https://localhost:4200";
     }
 }

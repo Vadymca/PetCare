@@ -61,4 +61,13 @@ public interface ISpeciesRepository : IRepository<Specie>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the newly created breed.</returns>
     Task<Breed> AddBreedAsync(Guid specieId, string name, string? description, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Asynchronously determines whether an entity with the specified name exists.
+    /// </summary>
+    /// <param name="name">The name of the entity to check for existence. Cannot be null or empty.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is <see langword="true"/> if an entity with
+    /// the specified name exists; otherwise, <see langword="false"/>.</returns>
+    Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken);
 }

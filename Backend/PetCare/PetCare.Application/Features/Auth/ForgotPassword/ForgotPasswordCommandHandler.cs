@@ -67,7 +67,7 @@ public sealed class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswor
         // Генеруємо токен для скидання пароля
         var token = await this.userService.GeneratePasswordResetTokenAsync(user);
         var encodedToken = HttpUtility.UrlEncode(token);
-        var resetUrl = $"http://localhost:4200/reset-password?token={encodedToken}&email={user.Email}";
+        var resetUrl = $"https://localhost:4200/reset-password?token={encodedToken}&email={user.Email}";
 
         // Відправка мок листа
         var subject = "Скидання пароля для Добродій";

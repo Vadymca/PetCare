@@ -31,7 +31,7 @@ public class AnimalListProfile : Profile
              .ForCtorParam("Birthday", opt => opt.MapFrom(src => src.Birthday != null ? src.Birthday.ToString() : null))
              .ForCtorParam("Gender", opt => opt.MapFrom(src => src.Gender.ToString()))
              .ForCtorParam("IsUnderCare", opt => opt.MapFrom(src => src.IsUnderCare))
-             .ForCtorParam("Specie", opt => opt.MapFrom(src => src.Breed!.Specie))
+             .ForCtorParam("Species", opt => opt.MapFrom(src => src.Breed!.Specie))
              .ForCtorParam("Breed", opt => opt.MapFrom(src => src.Breed))
              .ForCtorParam("Shelter", opt => opt.MapFrom(src => src.Shelter));
     }

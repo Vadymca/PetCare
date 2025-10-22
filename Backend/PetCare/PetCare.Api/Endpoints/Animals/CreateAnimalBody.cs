@@ -48,6 +48,6 @@ public sealed record CreateAnimalBody(
     float? Weight,
     float? Height,
     string? Color,
-    bool IsSterilized,
-    bool IsUnderCare,
-    bool HaveDocuments);
+    bool IsSterilized = false,
+    bool IsUnderCare = false,
+    bool HaveDocuments = false);

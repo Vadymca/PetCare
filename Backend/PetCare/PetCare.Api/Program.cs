@@ -430,6 +430,7 @@ public class Program
             app.MapSubscribeToAnimalEndpoint(); // /api/animals/{id}/subscribe
             app.MapUnsubscribeFromAnimalEndpoint(); // /api/animals/{id:guid}/subscribe
             app.MapGetFavoriteAnimalsEndpoint(); // /api/animals/favorites
+            app.MapGetAnimalSubscriptionsByUserIdEndpoint(); // /api/animals/subscriptions/{userId}
 
             // ----------------------Shelters-----------------------
             app.MapGetSheltersEndpoint(); // /api/shelters
