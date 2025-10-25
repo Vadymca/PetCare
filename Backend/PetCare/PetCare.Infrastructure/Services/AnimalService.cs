@@ -13,6 +13,7 @@ using PetCare.Domain.ValueObjects;
 public class AnimalService : IAnimalService
 {
     private readonly IAnimalRepository animalRepository;
+    private readonly IShelterRepository shelterRepository;
     private readonly IFileStorageService fileStorageService;
 
     /// <summary>
@@ -22,9 +23,13 @@ public class AnimalService : IAnimalService
     /// <param name="animalRepository">The repository used to manage animal data. Cannot be null.</param>
     /// <param name="fileStorageService">The service used for file storage operations related to animals. Cannot be null.</param>
     /// <exception cref="ArgumentNullException">Thrown if animalRepository or fileStorageService is null.</exception>
-    public AnimalService(IAnimalRepository animalRepository, IFileStorageService fileStorageService)
+    public AnimalService(
+        IAnimalRepository animalRepository,
+        IShelterRepository shelterRepository,
+        IFileStorageService fileStorageService)
     {
         this.animalRepository = animalRepository ?? throw new ArgumentNullException(nameof(animalRepository));
+        this.shelterRepository = shelterRepository ?? throw new ArgumentNullException(nameof(shelterRepository));
         this.fileStorageService = fileStorageService ?? throw new ArgumentNullException(nameof(fileStorageService));
     }
 
@@ -167,6 +172,14 @@ public class AnimalService : IAnimalService
     bool haveDocuments,
     CancellationToken cancellationToken = default)
     {
+        var shelter = await this.shelterRepository.GetByIdAsync(shelterId, cancellationToken)
+            ?? throw new KeyNotFoundException($"Притулок з Id '{shelterId}' не знайдено.");
+
+        if (!shelter.HasFreeCapacity())
+        {
+            throw new InvalidOperationException($"Притулок '{shelter.Name.Value}' переповнений — додавання тварини неможливе.");
+        }
+
         var animal = Animal.Create(
             userId,
             name,
@@ -192,9 +205,13 @@ public class AnimalService : IAnimalService
             isUnderCare,
             haveDocuments);
 
-        var fullAnimal = await this.animalRepository.AddAnimalAsync(animal, cancellationToken);
+        var addedAnimal = await this.animalRepository.AddAnimalAsync(animal, cancellationToken);
 
-        return fullAnimal;
+        shelter.AddAnimal(addedAnimal, userId);
+
+        await this.shelterRepository.UpdateAsync(shelter, cancellationToken);
+
+        return addedAnimal;
     }
 
     /// <summary>
