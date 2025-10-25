@@ -9,4 +9,5 @@ using System;
 /// <param name="Name">The name of the shelter.</param>
 public sealed record ShelterInfoDto(
    Guid Id,
-   string Name);
+   string Name,
+   string Slug);

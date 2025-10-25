@@ -62,6 +62,7 @@ public interface IAnimalRepository : IRepository<Animal>
     /// <param name="specieId">The unique identifier of the specie to filter by (optional).</param>
     /// <param name="breedId">The unique identifier of the breed to filter by (optional).</param>
     /// <param name="search">The search term to filter by name or description (optional).</param>
+    /// <param name="animalTypeFilter">The type of animal to filter by (optional).</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>
     /// A tuple containing a read-only list of animals and the total count of animals matching the criteria.
@@ -81,6 +82,7 @@ public interface IAnimalRepository : IRepository<Animal>
         Guid? specieId = null,
         Guid? breedId = null,
         string? search = null,
+        string? animalTypeFilter = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>

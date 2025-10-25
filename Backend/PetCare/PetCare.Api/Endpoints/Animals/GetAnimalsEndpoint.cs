@@ -34,7 +34,8 @@ public static class GetAnimalsEndpoint
             [FromQuery] Guid? shelterId = null,
             [FromQuery] Guid? specieId = null,
             [FromQuery] Guid? breedId = null,
-            [FromQuery] string? search = null) =>
+            [FromQuery] string? search = null,
+            [FromQuery] string? animalTypeFilter = null) =>
         {
             // Конвертуємо рядки у enum, регістронезалежно
             AnimalGender[]? genders = gendersStr?.Select(s =>
@@ -63,7 +64,8 @@ public static class GetAnimalsEndpoint
                 ShelterId: shelterId,
                 SpecieId: specieId,
                 BreedId: breedId,
-                Search: search);
+                Search: search,
+                AnimalTypeFilter: animalTypeFilter);
 
             var result = await mediator.Send(command);
             return Results.Ok(result);

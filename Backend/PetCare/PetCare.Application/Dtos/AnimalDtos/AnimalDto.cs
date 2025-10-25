@@ -59,6 +59,6 @@ public sealed record AnimalDto(
  bool HaveDocuments,
  DateTime CreatedAt,
  DateTime UpdatedAt,
- SpecieDto Specie,
+ SpecieDto Species,
  ShelterInfoDto Shelter,
  BreedDto Breed);

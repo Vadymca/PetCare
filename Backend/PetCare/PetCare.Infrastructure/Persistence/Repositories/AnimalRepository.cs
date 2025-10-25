@@ -82,6 +82,7 @@ public class AnimalRepository : GenericRepository<Animal>, IAnimalRepository
     /// <param name="specieId">The unique identifier of the specie to filter by (optional).</param>
     /// <param name="breedId">The unique identifier of the breed to filter by (optional).</param>
     /// <param name="search">The search term to filter by name or description (optional).</param>
+    /// <param name="animalTypeFilter">The type of animal to filter by (optional).</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task<(IReadOnlyList<Animal> Animals, int TotalCount)> GetAnimalsAsync(
@@ -99,6 +100,7 @@ public class AnimalRepository : GenericRepository<Animal>, IAnimalRepository
     Guid? specieId = null,
     Guid? breedId = null,
     string? search = null,
+    string? animalTypeFilter = null,
     CancellationToken cancellationToken = default)
     {
         var query = this.Context.Set<Animal>()
@@ -156,6 +158,27 @@ public class AnimalRepository : GenericRepository<Animal>, IAnimalRepository
 
         // Завантажуємо із бази
         var animalsList = await query.ToListAsync(cancellationToken);
+
+        // Client-side фільтрація по типу виду
+        if (!string.IsNullOrWhiteSpace(animalTypeFilter))
+        {
+            var normalized = animalTypeFilter.Trim().ToLower();
+
+            animalsList = normalized switch
+            {
+                "cats" => animalsList.Where(a =>
+                    a.Breed?.Specie?.Name.Value.Equals("Кішка", StringComparison.OrdinalIgnoreCase) ?? false).ToList(),
+
+                "dogs" => animalsList.Where(a =>
+                    a.Breed?.Specie?.Name.Value.Equals("Собака", StringComparison.OrdinalIgnoreCase) ?? false).ToList(),
+
+                "others" => animalsList.Where(a =>
+                    !(a.Breed?.Specie?.Name.Value.Equals("Кішка", StringComparison.OrdinalIgnoreCase) ?? false) &&
+                    !(a.Breed?.Specie?.Name.Value.Equals("Собака", StringComparison.OrdinalIgnoreCase) ?? false)).ToList(),
+
+                _ => animalsList,
+            };
+        }
 
         // Client-side фільтрація Birthday (Value Object)
         if (minAge.HasValue)

@@ -49,7 +49,7 @@ public sealed class AnimalProfile : Profile
             .ForMember(dest => dest.HaveDocuments, opt => opt.MapFrom(src => src.HaveDocuments))
             .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
             .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
-            .ForCtorParam("Specie", opt => opt.MapFrom(src => src.Breed!.Specie))
+            .ForCtorParam("Species", opt => opt.MapFrom(src => src.Breed!.Specie))
             .ForMember(dest => dest.Breed, opt => opt.MapFrom(src => src.Breed!))
             .ForMember(dest => dest.Shelter, opt => opt.MapFrom(src => src.Shelter!));
     }

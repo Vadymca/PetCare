@@ -72,6 +72,7 @@ public class AnimalService : IAnimalService
     /// <param name="breedId">The optional unique identifier of a breed to filter the results. If null, animals of all breeds are included.</param>
     /// <param name="search">An optional search string to filter animals by name or other searchable fields. If null or empty, no search
     /// filter is applied.</param>
+    /// <param name="animalTypeFilter">An optional string to filter animals by type (e.g., "Dog", "Cat"). If null or empty, no type filter is applied.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a tuple with a read-only list of
     /// animals matching the filter criteria and the total count of animals that match the filters.</returns>
@@ -90,6 +91,7 @@ public class AnimalService : IAnimalService
         Guid? specieId = null,
         Guid? breedId = null,
         string? search = null,
+        string? animalTypeFilter = null,
         CancellationToken cancellationToken = default)
     {
         return await this.animalRepository.GetAnimalsAsync(
@@ -107,6 +109,7 @@ public class AnimalService : IAnimalService
             specieId,
             breedId,
             search,
+            animalTypeFilter,
             cancellationToken);
     }
 

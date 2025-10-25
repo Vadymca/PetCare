@@ -51,6 +51,7 @@ public sealed class GetAnimalsCommandHandler
              request.SpecieId,
              request.BreedId,
              request.Search,
+             request.AnimalTypeFilter,
              cancellationToken);
 
         var animalDtos = this.mapper.Map<IReadOnlyList<AnimalListDto>>(animals);

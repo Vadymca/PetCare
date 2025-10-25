@@ -142,7 +142,10 @@ public class SpeciesRepository : GenericRepository<Specie>, ISpeciesRepository
     /// the specified name exists; otherwise, <see langword="false"/>.</returns>
     public async Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken)
     {
-        return await this.Context.Set<Specie>()
-            .AnyAsync(s => s.Name.Value.ToLower() == name.ToLower(), cancellationToken);
+        var allNames = await this.Context.Species
+            .Select(s => s.Name.Value)
+            .ToListAsync(cancellationToken);
+
+        return allNames.Any(n => string.Equals(n, name, StringComparison.OrdinalIgnoreCase));
     }
 }

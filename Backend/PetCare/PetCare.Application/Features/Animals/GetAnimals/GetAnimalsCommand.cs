@@ -41,5 +41,6 @@ public sealed record GetAnimalsCommand(
     IEnumerable<AnimalStatus>? Statuses = null,
     Guid? SpecieId = null,
     Guid? BreedId = null,
-    string? Search = null)
+    string? Search = null,
+    string? AnimalTypeFilter = null)
     : IRequest<GetAnimalsResponseDto>;
