@@ -21,6 +21,7 @@ public class AnimalService : IAnimalService
     /// service.
     /// </summary>
     /// <param name="animalRepository">The repository used to manage animal data. Cannot be null.</param>
+    /// <param name="shelterRepository">The repository used to manage shelter data. Cannot be null.</param>
     /// <param name="fileStorageService">The service used for file storage operations related to animals. Cannot be null.</param>
     /// <exception cref="ArgumentNullException">Thrown if animalRepository or fileStorageService is null.</exception>
     public AnimalService(
@@ -207,9 +208,8 @@ public class AnimalService : IAnimalService
 
         var addedAnimal = await this.animalRepository.AddAnimalAsync(animal, cancellationToken);
 
-        shelter.AddAnimal(addedAnimal, userId);
-
-        await this.shelterRepository.UpdateAsync(shelter, cancellationToken);
+        // Збільшуємо кількість тварин у притулку без дубль-трекінгу
+        await this.shelterRepository.IncrementOccupancyAsync(shelterId, cancellationToken);
 
         return addedAnimal;
     }

@@ -180,4 +180,29 @@ public class ShelterRepository : GenericRepository<Shelter>, IShelterRepository
 
         await this.Context.SaveChangesAsync(cancellationToken);
     }
+
+    /// <summary>
+    /// Attempts to increment the current occupancy count for the specified shelter if capacity allows.
+    /// </summary>
+    /// <remarks>If the shelter's current occupancy is equal to or greater than its capacity, the operation
+    /// will not succeed and an exception will be thrown. The shelter's last updated timestamp is also set to the
+    /// current UTC time upon a successful increment.</remarks>
+    /// <param name="shelterId">The unique identifier of the shelter whose occupancy is to be incremented.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the shelter is full or does not exist.</exception>
+    public async Task IncrementOccupancyAsync(Guid shelterId, CancellationToken cancellationToken = default)
+    {
+        var updated = await this.Context.Shelters
+            .Where(s => s.Id == shelterId && s.CurrentOccupancy < s.Capacity)
+            .ExecuteUpdateAsync(
+            s => s
+                .SetProperty(x => x.CurrentOccupancy, x => x.CurrentOccupancy + 1)
+                .SetProperty(x => x.UpdatedAt, x => DateTime.UtcNow), cancellationToken);
+
+        if (updated == 0)
+        {
+            throw new InvalidOperationException("Притулок заповнений або не знайдено.");
+        }
+    }
 }

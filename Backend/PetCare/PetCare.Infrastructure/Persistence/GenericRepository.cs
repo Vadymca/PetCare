@@ -189,4 +189,21 @@ public class GenericRepository<T> : IRepository<T>
             .Where(specification.ToExpression())
             .ToListAsync(cancellationToken);
     }
+
+    /// <summary>
+    /// Detaches the specified entity from the context, so that changes to the entity are not tracked or persisted.
+    /// </summary>
+    /// <remarks>Use this method to stop tracking changes for an entity, typically when you want to prevent
+    /// updates or deletes from being applied to the database. After detachment, the entity will not be included in save
+    /// operations. This method is commonly used in scenarios where entities are reused or when explicit control over
+    /// tracking is required.</remarks>
+    /// <param name="entity">The entity to detach from the context. Must not be null.</param>
+    public void Detach(T entity)
+    {
+        var entry = this.Context.Entry(entity);
+        if (entry != null)
+        {
+            entry.State = EntityState.Detached;
+        }
+    }
 }

@@ -64,4 +64,12 @@ public interface IRepository<T>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A read-only list of entities satisfying the specification.</returns>
     Task<IReadOnlyList<T>> FindAsync(Specification<T> specification, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Detaches the specified entity from the current context, so that changes to the entity are no longer tracked.
+    /// </summary>
+    /// <remarks>After detaching, modifications to the entity will not be persisted by the context. Use this
+    /// method when you want to stop tracking changes for an entity instance.</remarks>
+    /// <param name="entity">The entity to detach from the context. Cannot be null.</param>
+    void Detach(T entity);
 }
