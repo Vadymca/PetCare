@@ -198,11 +198,35 @@ public class ShelterRepository : GenericRepository<Shelter>, IShelterRepository
             .ExecuteUpdateAsync(
             s => s
                 .SetProperty(x => x.CurrentOccupancy, x => x.CurrentOccupancy + 1)
-                .SetProperty(x => x.UpdatedAt, x => DateTime.UtcNow), cancellationToken);
+                .SetProperty(x => x.UpdatedAt, x => DateTime.UtcNow),
+            cancellationToken);
 
         if (updated == 0)
         {
             throw new InvalidOperationException("Притулок заповнений або не знайдено.");
+        }
+    }
+
+    /// <summary>
+    /// Decrements the current occupancy count for the specified shelter if it is greater than zero.
+    /// </summary>
+    /// <param name="shelterId">The unique identifier of the shelter whose occupancy is to be decremented.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the specified shelter does not exist or its current occupancy is already zero.</exception>
+    public async Task DecrementOccupancyAsync(Guid shelterId, CancellationToken cancellationToken = default)
+    {
+        var updated = await this.Context.Shelters
+            .Where(s => s.Id == shelterId && s.CurrentOccupancy > 0)
+            .ExecuteUpdateAsync(
+            s => s
+                .SetProperty(x => x.CurrentOccupancy, x => x.CurrentOccupancy - 1)
+                .SetProperty(x => x.UpdatedAt, x => DateTime.UtcNow),
+            cancellationToken);
+
+        if (updated == 0)
+        {
+            throw new InvalidOperationException("Притулок не знайдено або зайнятість вже дорівнює нулю.");
         }
     }
 }

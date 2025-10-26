@@ -239,6 +239,7 @@ public class AnimalService : IAnimalService
         }
 
         await this.animalRepository.DeleteAsync(animal, cancellationToken);
+        await this.shelterRepository.DecrementOccupancyAsync(animal.ShelterId, cancellationToken);
     }
 
     /// <summary>

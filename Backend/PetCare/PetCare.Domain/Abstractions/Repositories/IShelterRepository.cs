@@ -96,4 +96,12 @@ public interface IShelterRepository : IRepository<Shelter>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task IncrementOccupancyAsync(Guid shelterId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Decrements the recorded occupancy count for the specified shelter asynchronously.
+    /// </summary>
+    /// <param name="shelterId">The unique identifier of the shelter whose occupancy count will be decremented.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task DecrementOccupancyAsync(Guid shelterId, CancellationToken cancellationToken = default);
 }
