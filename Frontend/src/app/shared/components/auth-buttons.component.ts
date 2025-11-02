@@ -11,7 +11,7 @@ import { PrimarySmallOrangeButtonComponent } from './buttons/orange/primary-smal
   template: `
     <app-primary-small-orange-button
       [iconName]="'userRound'"
-      [buttonTitle]="'LOGIN_OR_REGISTER'"
+      [buttonTitle]="'LOGIN'"
       (click)="goToLogin()"
     ></app-primary-small-orange-button>
   `,

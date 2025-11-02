@@ -53,8 +53,8 @@ export class HomePartnersComponent {
   next() {
     if (this.animating) return;
     this.animating = true;
-
     // плавний рух вліво на 1 картку
+
     this.offset.set(-100 / this.visibleCount());
   }
 

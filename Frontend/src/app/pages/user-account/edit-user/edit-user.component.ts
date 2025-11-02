@@ -8,6 +8,7 @@ import { filter, map, Observable, of } from 'rxjs';
 import { User } from '../../../core/models/user';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ModalService } from '../../../core/services/modal.service';
 import { PrimaryLargeButtonComponent } from '../../../shared/components/buttons/blue/primary-large-button.component';
 import { PrimaryLargeOrangeButtonComponent } from '../../../shared/components/buttons/orange/primary-large-orange-button.component';
 import { IconComponent } from '../../../shared/components/icon.component';
@@ -27,9 +28,13 @@ import { IconComponent } from '../../../shared/components/icon.component';
   styleUrl: './edit-user.component.css',
 })
 export class EditUserComponent {
+toChangeNotifications() {
+throw new Error('Method not implemented.');
+}
   private authService = inject(AuthService);
   private api = inject(ApiService);
   public user = signal(this.authService._currentUser());
+  modalService = inject(ModalService);
 
   profilePhoto = signal<string | ArrayBuffer | null>(null);
   router = inject(Router);
@@ -177,13 +182,13 @@ export class EditUserComponent {
   }
 
   toChangePassword() {
-    this.router.navigate(['/profile/change-password']);
+    this.modalService.openModal('change-password');
   }
   toProfile() {
     this.router.navigate(['/profile']);
   }
   toSetTwoFA() {
-    this.router.navigate(['/profile/set-two-fa']);
+    this.router.navigate(['/profile/security']);
   }
   onPhotoSelected(event: Event): void {
     const input = event.target as HTMLInputElement;

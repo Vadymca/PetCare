@@ -41,6 +41,6 @@ export class HomeNewsComponent {
     },
   ];
   onSeeAllNewsClick() {
-    throw new Error('Method not implemented.');
+    this.router.navigate(['news']);
   }
 }

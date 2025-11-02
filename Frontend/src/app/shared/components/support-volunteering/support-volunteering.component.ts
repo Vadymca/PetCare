@@ -34,8 +34,7 @@ export class SupportVolunteeringComponent {
   router = inject(Router);
   onVolunteeringClick() {
     console.log(this.isAuthenticated());
-    if (this.isAuthenticated()) {
-      //доставити тут знак оклику після тестування
+    if (!this.isAuthenticated()) {
       this.modalService.openModal('welcome');
     } else {
       this.router.navigate(['/support-volunteering-form']);

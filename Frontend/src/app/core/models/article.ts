@@ -6,6 +6,7 @@ export interface Article {
   id: string;
   title: string;
   content: string;
+  shortContent?: string;
   categoryId: string;
   category?: Category;
   authorId: string;
@@ -14,4 +15,6 @@ export interface Article {
   slug?: string;
   createdAt: string;
   updatedAt: string;
+  images?: string[];
+  image?: string;
 }

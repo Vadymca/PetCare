@@ -380,7 +380,18 @@
 <!-- Сторінка №8 проекти -->
 <app-home-projects></app-home-projects>
 <!-- Сторінка №9 новини -->
-<app-home-news> </app-home-news>
+<div
+  class="w-full flex flex-col text-center items-center text-secondary-neutral-mineShaft bg-primary-beige px-[50px]"
+>
+  <h2
+    class="w-full text-center font-fixel font-bold mt-[100px] text-secondary-neutral-mineShaft relative z-10"
+    style="font-size: clamp(16px, 12.5vw, 40px)"
+  >
+    {{ 'NEWS_TITLE' | translate }}
+  </h2>
+  <app-home-news> </app-home-news>
+</div>
+
 <!-- Сторінка №10 партнери -->
 <app-home-partners></app-home-partners>
 

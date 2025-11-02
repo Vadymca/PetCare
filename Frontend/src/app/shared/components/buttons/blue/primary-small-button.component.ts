@@ -19,7 +19,7 @@ import { IconComponent } from '../../icon.component';
   template: `
     <button
       type="button"
-      class="flex items-center justify-center gap-2 
+      class="flex flex-col w-full items-center justify-center gap-2 
 			h-10 rounded-40 p-4 uppercase pr-10 pl-10 
 			font-inter font-bold text-base 
 			bg-primary-blue text-primary-beige 

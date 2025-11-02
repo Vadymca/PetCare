@@ -9,7 +9,7 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { catchError, of } from 'rxjs'; // 🛠️ Додано import
+import { catchError, map, of } from 'rxjs'; // 🛠️ Додано import
 import { Shelter } from '../../../core/models/shelter';
 import { ShelterService } from '../../../core/services/shelter.service';
 import { SecondaryLargeButtonComponent } from '../../../shared/components/buttons/blue/secondary-large-button.component';
@@ -36,6 +36,7 @@ export class ShelterListComponent {
   error = signal<string | null>(null);
   shelters = toSignal(
     this.shelterService.getShelters().pipe(
+      map(response => response.shelters),
       catchError(err => {
         this.error.set('FAILED_TO_LOAD_SHELTERS');
         console.error('Error loading shelters:', err);

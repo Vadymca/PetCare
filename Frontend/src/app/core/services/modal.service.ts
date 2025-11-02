@@ -21,6 +21,13 @@ export interface ModalState {
     | 'forgot-password-confirmation'
     | 'reset-password-error'
     | 'live-donation-collection'
+    | 'change-password'
+    | 'change-password-confirmation'
+    | 'change-password-error'
+    | 'setup-totp'
+    | 'setup-sms'
+    | 'backup-codes'
+    | 'backup-code-login'
     | null;
 }
 
@@ -28,10 +35,24 @@ export interface ModalState {
   providedIn: 'root',
 })
 export class ModalService {
-
   private modalState = signal<ModalState>({ isOpen: false, component: null });
   private tokenForResettingPassword = signal<string | null>(null);
   private resettingPasswordEmail = signal<string | null>(null);
+  private qrCodeImage = signal<string | null>(null);
+  private manualKey = signal<string | null>(null);
+
+  getQrCodeImage() {
+    return this.qrCodeImage();
+  }
+  setQrCodeImage(qrCodeImage: string | null) {
+    this.qrCodeImage.set(qrCodeImage);
+  }
+  getManualKey() {
+    return this.manualKey();
+  }
+  setManualKey(manualKey: string | null) {
+    this.manualKey.set(manualKey);
+  }
   setEmailForResettingPassword(email: string | null) {
     this.resettingPasswordEmail.set(email);
   }

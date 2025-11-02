@@ -1,42 +1,212 @@
-<div class="gap-4 p-4 font-fixel">
-  <h1 class="text-3xl font-bold mb-4">{{ 'ANIMALS' | translate }}</h1>
-</div>
-
-@if (error()) {
-  <div class="p-4 text-red-600 font-medium">
-    {{ error() ?? '' | translate }}
-  </div>
-} @else {
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-    @for (animal of animals(); track animal.id) {
-      <a
-        [routerLink]="['/animals', animal.slug]"
-        class="block p-4 bg-white rounded-2xl shadow hover:shadow-lg transition"
+<div
+  class="flex flex-col items-center bg-secondary-jordyBlue-2 p-5 sm:px-[50px] pt-[150px]"
+>
+  <div class="flex flex-col gap-4 p-4 font-fixel">
+    <h2
+      class="font-fixel text-40 font-bold text-center"
+      style="font-size: clamp(16px, 6.5vw, 40px)"
+    >
+      {{ 'THEY_SEARCH_FOR_LOVE' | translate }}
+    </h2>
+    <!-- види тварин-- -->
+    <div
+      class="flex flex-row flex-wrap justify-center gap-3 lg:gap-[60px] mt-10 xl:mt-[96px]"
+    >
+      <div class="flex flex-col justify-start items-center">
+        <app-icon [name]="'allAnimalsFilter'"></app-icon>
+        <button
+          class="min-w-[260px] rounded-40 px-[18px] text-center h-[52px] font-bold font-inter text-base mt-4"
+          [ngClass]="{
+            'bg-secondary-chileanFire-1 text-primary-orange ':
+              selectedSpeciesOptions() === 'ALL_SPECIES',
+            'bg-primary-orange text-secondary-chileanFire-1 ':
+              selectedSpeciesOptions() !== 'ALL_SPECIES',
+          }"
+          (click)="onAllAnimalsFilterClick()"
+        >
+          {{ 'ALL_SPECIES' | translate | uppercase }}
+        </button>
+      </div>
+      <div class="flex flex-col justify-start items-center">
+        <app-icon [name]="'dogsFilter'"></app-icon>
+        <button
+          class="min-w-[128px] rounded-40 px-[18px] text-center h-[52px] font-bold font-inter text-base mt-4"
+          [ngClass]="{
+            'bg-secondary-chileanFire-1 text-primary-orange ':
+              selectedSpeciesOptions() === 'DOG',
+            'bg-primary-orange text-secondary-chileanFire-1 ':
+              selectedSpeciesOptions() !== 'DOG',
+          }"
+          (click)="onDogsFilterClick()"
+        >
+          {{ 'DOG' | translate | uppercase }}
+        </button>
+      </div>
+      <div class="flex flex-col justify-start items-center">
+        <app-icon [name]="'catsFilter'"></app-icon>
+        <button
+          class="min-w-[128px] rounded-40 px-[18px] text-center h-[52px] font-bold font-inter text-base mt-4"
+          [ngClass]="{
+            'bg-secondary-chileanFire-1 text-primary-orange ':
+              selectedSpeciesOptions() === 'CAT',
+            'bg-primary-orange text-secondary-chileanFire-1 ':
+              selectedSpeciesOptions() !== 'CAT',
+          }"
+          (click)="onCatsFilterClick()"
+        >
+          {{ 'CAT' | translate | uppercase }}
+        </button>
+      </div>
+      <div class="flex flex-col justify-start items-center">
+        <app-icon [name]="'otherAnimalsFilter'"></app-icon>
+        <button
+          class="min-w-[128px] rounded-40 px-[18px] text-center h-[52px] font-bold font-inter text-base mt-4"
+          [ngClass]="{
+            'bg-secondary-chileanFire-1 text-primary-orange ':
+              selectedSpeciesOptions() === 'OTHER_SPECIES',
+            'bg-primary-orange text-secondary-chileanFire-1 ':
+              selectedSpeciesOptions() !== 'OTHER_SPECIES',
+          }"
+          (click)="onOtherSpeciesFilterClick()"
+        >
+          {{ 'OTHER_SPECIES' | translate | uppercase }}
+        </button>
+      </div>
+    </div>
+    <!-- toggle filters-- -->
+    <div
+      class="flex justify-center xl:justify-end items-center cursor-pointer w-full xl:mr-[30px]"
+    >
+      <span class="mr-3 font-bold">
+        {{ 'FILTERS' | translate | uppercase }}</span
       >
-        <h2 class="text-xl font-semibold">{{ animal.name }}</h2>
-        <p class="text-gray-600">
-          {{ animal.species?.name || ('UNKNOWN' | translate) }} —
-          {{ animal.breed?.name || ('UNKNOWN' | translate) }}
-        </p>
-        <p class="text-gray-600">
-          {{ 'AGE' | translate }}:
-          <ng-container *ngIf="animal.age?.length === 2; else noAge">
-            {{ animal.age[0] }}
-            {{
-              animal.age[0] === 1
-                ? ('YEAR_SINGULAR' | translate)
-                : ('YEAR_PLURAL' | translate)
-            }},
-            {{ animal.age[1] }}
-            {{
-              animal.age[1] === 1
-                ? ('MONTH_SINGULAR' | translate)
-                : ('MONTH_PLURAL' | translate)
-            }}
-          </ng-container>
-          <ng-template #noAge>{{ 'UNKNOWN' | translate }}</ng-template>
-        </p>
-      </a>
+      <button
+        type="button"
+        (click)="toggleFilters()"
+        class="relative w-16 h-16"
+      >
+        <div [class.rotate-180]="!filtersOpen()">
+          <app-icon [name]="'togleFilters'"></app-icon>
+        </div>
+      </button>
+    </div>
+    @if (filtersOpen()) {
+      <div class="w-full flex gap-2 flex-col xl:flex-row mt-2 xl:mt-[20px]">
+        <div
+          class="flex flex-col items-center xl:items-start xl:flex-row xl:justify-start gap-3 xl:gap-8 w-full mt-3"
+        >
+          <!-- Розмір -->
+          <div class="flex">
+            <app-multi-select-dropdown
+              [options]="sizeOptions"
+              label="SIZE"
+              (selectionChange)="onSelectionSizeChange($event)"
+            ></app-multi-select-dropdown>
+          </div>
+          <!-- Стать -->
+          <div class="flex">
+            <app-multi-select-dropdown
+              [options]="sexOptions"
+              label="SEX"
+              (selectionChange)="onSelectionSexChange($event)"
+            ></app-multi-select-dropdown>
+          </div>
+          <!-- Вік -->
+          <div class="flex">
+            <app-multi-select-dropdown
+              [options]="ageOptions"
+              label="AGE"
+              (selectionChange)="onSelectionAgeChange($event)"
+            ></app-multi-select-dropdown>
+          </div>
+          <!-- Вартість -->
+          <div class="flex">
+            <app-multi-select-dropdown
+              [options]="costOptions"
+              label="CARE_PRICE"
+              (selectionChange)="onSelectionCostChange($event)"
+            ></app-multi-select-dropdown>
+          </div>
+        </div>
+        <div
+          class="relative flex justify-center xl:justify-end w-full mt-3 xl:mt-0"
+        >
+          <div class="flex flex-col justify-start gap-2 xl:mr-6">
+            <label
+              class="flex items-center justify-start xl:justify-start text-left gap-2 cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                [checked]="sterelisationOptions()"
+                (change)="toggleSterilisationOption()"
+                class="mr-2 hidden peer"
+              />
+              <!-- unchecked -->
+              <app-icon
+                [name]="'unchecked'"
+                class="peer-checked:hidden"
+              ></app-icon>
+              <!-- checked -->
+              <app-icon
+                [name]="'checked'"
+                class="hidden peer-checked:block"
+              ></app-icon>
+              <span class="ml-3 font-bold">
+                {{ 'STERILISATION' | translate | uppercase }}
+              </span>
+            </label>
+            <label
+              class="flex items-center justify-start xl:justify-start text-left gap-2 cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                [checked]="availableForCareOptions()"
+                (change)="toggleAvailableForCareOption()"
+                class="mr-2 hidden peer"
+              />
+              <!-- unchecked -->
+              <app-icon
+                [name]="'unchecked'"
+                class="peer-checked:hidden"
+              ></app-icon>
+              <!-- checked -->
+              <app-icon
+                [name]="'checked'"
+                class="hidden peer-checked:block"
+              ></app-icon>
+              <span class="ml-3 font-bold">
+                {{ 'AVAILABLE_FOR_CARE' | translate | uppercase }}
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-2 xl:mt-[20px] flex flex-col justify-center items-center">
+        <app-pagination
+          [currentPage]="currentPage()"
+          [totalPages]="totalPages()"
+          (pageChange)="setPage($event)"
+        ></app-pagination>
+      </div>
+    }
+
+    @if (animals().length === 0) {
+      <div class="flex flex-col items-center p-4 text-red-600 font-medium">
+        {{ 'FAILED_TO_LOAD_ANIMALS' | translate }}
+      </div>
+    } @else {
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-[68px] items-center w-full px-4 justify-center justify-items-center mt-10 mx-[50px]"
+      >
+        @for (animal of animals(); track animal.id) {
+          <app-animal-card
+            [animal]="animal"
+            (animalDetailClick)="onAnimalDetailClick(animal)"
+            (heartClick)="onHeartClick(animal)"
+          ></app-animal-card>
+        }
+      </div>
     }
   </div>
-}
+</div>
