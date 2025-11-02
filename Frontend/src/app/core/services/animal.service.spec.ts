@@ -73,7 +73,7 @@ describe('AnimalService', () => {
         expect(result?.shelter).toEqual(shelter);
         expect(result?.user).toEqual(user);
         expect(result?.species).toEqual(species);
-        expect(result?.age[0]).toBeGreaterThanOrEqual(3); // since birthday 2020-01-01 and now 2025
+        expect(result?.age![0]).toBeGreaterThanOrEqual(3); // since birthday 2020-01-01 and now 2025
         done();
       });
     });

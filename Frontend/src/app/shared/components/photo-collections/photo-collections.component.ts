@@ -103,22 +103,22 @@ export class PhotoCollectionsComponent implements OnInit {
   prev() {
     if (this.animating()) return;
 
-    this.items.update(arr => {
-      const newArr = [...arr];
-      const last = newArr.pop();
-      return last ? [last, ...newArr] : newArr;
-    });
+    // переміщаємо останню картку на початок масиву
+    const arr = [...this.items()];
+    const last = arr.pop();
+    if (last) arr.unshift(last);
+    this.items.set(arr);
 
     this.offset.set(-100 / this.visibleCount());
 
-    if (isPlatformBrowser(this.platformId)) {
-      setTimeout(() => {
-        this.offset.set(0);
-      }, 10);
-    } else {
-      this.animating.set(false);
-      this.offset.set(0);
-    }
+    // одразу зсуваємо на -1 картку
+    this.offset.set(-100 / this.visibleCount());
+
+    // невелика затримка, щоб анімація спрацювала
+    setTimeout(() => {
+      this.animating.set(true);
+      this.offset.set(0); // плавний рух вправо на 1 картку
+    }, 10);
   }
 
   onTransitionEnd() {

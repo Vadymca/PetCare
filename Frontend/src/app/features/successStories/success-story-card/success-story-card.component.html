@@ -1,0 +1,22 @@
+<div
+  class="flex flex-col bg-primary-light-orange w-full h-full p-10 rounded-40 items-start justify-between text-secondary-neutral-mineShaft"
+>
+  <h3 class="font-inter font-bold text-base">
+    {{ successStory?.title || '' | translate | uppercase }}
+  </h3>
+  <p class="mt-6 w-full">
+    {{ successStory?.shortDescription || '' | translate }}
+  </p>
+  @if (successStory!.photos && successStory!.photos[0]) {
+    <div
+      class="mt-[44px] rounded-[12px] overflow-hidden w-full max-h-[600px] aspect-square"
+    >
+      <!-- Фото -->
+      <img
+        [src]="successStory!.photos[0]"
+        [alt]="successStory?.title"
+        class="w-full object-cover center"
+      />
+    </div>
+  }
+</div>

@@ -1,0 +1,54 @@
+<div class="flex flex-col items-center justify-center h-full">
+  <h2 class="text-2xl font-bold mb-6 text-center">
+    {{ 'SETUP_AUTHENTICATOR_APP' | translate }}
+  </h2>
+
+  <!-- QR або секрет -->
+  @if (qrCodeImage() && qrCodeImage().startsWith('data:image')) {
+    <img [src]="qrCodeImage()" alt="QR code" class="mb-4 w-48 h-48" />
+  }
+  @if (manualKey()) {
+    <p class="mb-4 text-center">
+      {{ 'ENTER_THIS_KEY_IN_APP' | translate }}: {{ manualKey() }}
+    </p>
+  }
+  <!-- Поле для коду TOTP -->
+  <form
+    [formGroup]="totpForm"
+    (ngSubmit)="onSubmit()"
+    class="flex flex-col w-[360px]"
+  >
+    <label for="code">{{ 'ENTER_TOTP_CODE' | translate }}</label>
+    <input
+      id="code"
+      type="text"
+      formControlName="code"
+      class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none"
+      [class.ring-2]="
+        totpForm.controls.code.invalid && totpForm.controls.code.touched
+      "
+      [class.ring-secondary-semantic-error]="
+        totpForm.controls.code.invalid && totpForm.controls.code.touched
+      "
+      aria-label="TOTP code"
+      [attr.aria-invalid]="totpForm.controls.code.invalid"
+      placeholder="{{ 'CODE_FROM_APP' | translate }}"
+      autocomplete="one-time-code"
+    />
+
+    @if (errorMessage()) {
+      <div class="text-secondary-semantic-error mt-2 text-sm">
+        {{ errorMessage() | translate }}
+      </div>
+    }
+
+    <div class="mt-6">
+      <app-primary-large-orange-button
+        [disabled]="isDisabled"
+        [loading]="loading"
+        buttonTitle="CONTINUE"
+        (pressButton)="onSubmit()"
+      ></app-primary-large-orange-button>
+    </div>
+  </form>
+</div>

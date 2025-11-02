@@ -1,0 +1,63 @@
+<div class="flex flex-col">
+  <!-- Перший екран з оранжевими напівмісяцями -->
+  <div
+    class="flex flex-col items-center bg-primary-blue text-primary-beige w-full px-5 pt-[100px] sm:pt-[150px]"
+  >
+    <h1
+      class="font-display text-[40px] font-bold leading-none text-center w-full sm:px-[50px]"
+      style="font-size: clamp(16px, 6.5vw, 64px)"
+    >
+      {{ 'SHELTER_NEWS' | translate }}
+    </h1>
+    <p class="max-w-[700px] mt-6">
+      {{ 'SHELTER_NEWS_DESCRIPTION' | translate }}
+    </p>
+    <app-home-news> </app-home-news>
+    <app-icon
+      [name]="'pawPrintBorder1'"
+      class="block bottom-0 left-0 w-full mt-3"
+    ></app-icon>
+  </div>
+
+  <!-- Організація подій і заходів -->
+  <div
+    class="flex flex-col xl:flex-row justify-between w-full bg-primary-beige my-6 xl:my-[100px]"
+  >
+    <div
+      class="flex flex-col w-full items-center text-start px-5 xl:pl-[50px] justify-between"
+    >
+      <h2 class="text-center leading-[1.2] font-fixel font-bold text-[40px]">
+        {{ 'SUPPORT_LINE_DESCRIPTION' | translate }}
+      </h2>
+      <p class="mt-6">
+        {{ 'SUPPORT_LINE_DESCRIPTION2' | translate | uppercase }}
+      </p>
+      <p class="mt-6 text-start">
+        {{ 'SUPPORT_LINE_PARAGRAPH1' | translate }}
+      </p>
+      <p class="mt-6 text-start flex flex-1">
+        {{ 'SUPPORT_LINE_PARAGRAPH2' | translate }}
+      </p>
+      <p class="mt-6 text-start">
+        {{ 'SUPPORT_LINE_PARAGRAPH3' | translate | uppercase }}
+      </p>
+      <div class="flex"></div>
+      <app-secondary-large-button
+        class="mt-[23px]"
+        buttonTitle="SUPPORT_LINE"
+        (pressButton)="callSupportLine()"
+      >
+      </app-secondary-large-button>
+    </div>
+    <div
+      class="mt-5 xl:mt-0 aspect-square max-w-1/2 max-h-[600px] w-full h-full overflow-hidden px-5 xl:pl-0 xl:pr-[50px]"
+    >
+      <img
+        class="w-full h-full object-cover rounded-40"
+        src="../../../assets/images/news/news-learning.jpg"
+        alt="cat and human hand"
+      />
+    </div>
+  </div>
+  <app-home-partners></app-home-partners>
+</div>

@@ -5,7 +5,7 @@
     class="relative rounded-tl-40 rounded-tr-40 rounded-bl-[136px] rounded-br-[136px] overflow-hidden bg-primary-beige h-[256px] w-full"
   >
     <div
-      class="m-y-[3px] absolute top-4 left-0 w-[112px] h-auto rounded-tr-[12px] rounded-br-[12px] bg-primary-blue font-bold text-sm"
+      class="m-y-[3px] absolute top-4 left-0 w-[112px] h-auto rounded-tr-[12px] rounded-br-[12px] bg-primary-blue font-bold text-sm text-center pl-1"
     >
       {{ animal.status | lowercase }}
     </div>
@@ -23,7 +23,7 @@
       </div>
     }
     <img
-      src="{{ animal.photos[0] }}"
+      src="{{ animal.photo }}"
       alt="{{ animal.name }}"
       class="w-full h-full object-cover"
     />
@@ -31,19 +31,20 @@
   <div class="mt-[18px] flex-col">
     <h5 class="font-bold">{{ animal.name }}</h5>
     <p class="mt-2">
-      {{ animal.species?.name }}, {{ animal.age[0] }}
+      {{ animal.species?.name || ('WITHOUT_SPECIES' | translate) }},
+      {{ animal.age![0] }}
       {{
-        animal.age[0] === 1
+        animal.age![0] === 1
           ? ('YEAR_SINGULAR' | translate)
           : ('YEAR_PLURAL' | translate)
       }},
-      {{ animal.age[1] }}
+      {{ animal.age![1] }}
       {{
-        animal.age[1] === 1
+        animal.age![1] === 1
           ? ('MONTH_SINGULAR' | translate)
           : ('MONTH_PLURAL' | translate)
       }},
-      {{ animal.gender }}
+      {{ animal.gender | translate }}
     </p>
   </div>
   <div class="mt-[14px] flex-col">

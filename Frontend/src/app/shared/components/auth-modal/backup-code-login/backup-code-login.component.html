@@ -1,0 +1,70 @@
+<div class="flex flex-col items-center justify-start h-full w-full">
+  <div class="inline-flex items-center w-full">
+    <div
+      class="hover:text-primary-orange inline-flex items-center cursor-pointer -translate-y-1/2 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-50"
+      (click)="toTwoFactor()"
+      (keyup.enter)="toTwoFactor()"
+      (keyup.space)="toTwoFactor()"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'BACK' | translate"
+    >
+      <app-icon [name]="'arrowLeft'" class=""></app-icon>
+      <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
+    </div>
+  </div>
+  <h2 class="mt-5 text-2xl font-bold mb-6 text-center">
+    {{ 'ENTER_BACKUP_CODE' | translate }}
+  </h2>
+  <div
+    class="flex flex-col h-full flex-1 items-center justify-center text-secondary-neutral-mineShaft"
+  >
+    <app-icon [name]="'logoCool'" class="flex"></app-icon>
+  </div>
+  <form
+    #formRef
+    [formGroup]="backupForm"
+    class="group flex flex-col justify-center items-center mt-10 w-[360px]"
+  >
+    <!-- code number -->
+    <div class="flex flex-col w-full mt-8">
+      <label for="code" class="text-left">
+        {{ 'BACKUP_CODE' | translate }}
+      </label>
+      <input
+        id="code"
+        type="tel"
+        formControlName="code"
+        [placeholder]="'ENTER_YOUR_BACKUP_CODE' | translate"
+        class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none pr-10"
+        [class.ring-2]="codeInvalid"
+        [class.ring-secondary-semantic-error]="codeInvalid"
+        aria-label="code"
+        [attr.aria-invalid]="codeInvalid"
+        autocomplete=""
+      />
+      @if (
+        backupForm.controls.code.touched && backupForm.controls.code.invalid
+      ) {
+        <div class="text-red-600 text-sm mt-3">
+          @if (backupForm.controls.code.errors?.['required']) {
+            {{ 'BACKUP_CODE_REQUIRED' | translate }}
+          } @else {
+            {{ 'BACKUP_CODE_INVALID' | translate }}
+          }
+        </div>
+      }
+    </div>
+  </form>
+
+  <app-primary-large-button
+    buttonTitle="CONTINUE"
+    class="w-[260px] mt-6 mb-6"
+    [loading]="loading"
+    (pressButton)="submitCode()"
+    [disabled]="isDisabled"
+  ></app-primary-large-button>
+  @if (errorMessage()) {
+    <p class="text-red-600 mt-4">{{ 'BACKUP_CODE_INVALID' | translate }}</p>
+  }
+</div>

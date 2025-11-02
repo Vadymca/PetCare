@@ -42,7 +42,7 @@ import { IconComponent } from '../../icon.component';
         }
       }
 
-      <span>{{ buttonTitle ?? '' | translate }}</span>
+      <span>{{ buttonTitle ?? '' | translate | uppercase }}</span>
     </button>
   `,
 })

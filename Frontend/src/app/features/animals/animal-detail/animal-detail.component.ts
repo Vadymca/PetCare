@@ -10,21 +10,25 @@ import {
 } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Observable, of } from 'rxjs';
-import { catchError, filter, map, switchMap } from 'rxjs/operators';
+import { filter, switchMap } from 'rxjs/operators';
 import { Animal } from '../../../core/models/animal';
-import { AnimalSubscription } from '../../../core/models/animalSubscription';
-import { User } from '../../../core/models/user';
 import { AnimalSubscriptionService } from '../../../core/services/animal-subscription.service';
 import { AnimalService } from '../../../core/services/animal.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ModalService } from '../../../core/services/modal.service';
 import { PrimaryLargeButtonComponent } from '../../../shared/components/buttons/blue/primary-large-button.component';
+import { PrimaryLargeOrangeButtonComponent } from '../../../shared/components/buttons/orange/primary-large-orange-button.component';
+import { RoundFilledWhiteBlueButtonWithIconComponent } from '../../../shared/components/buttons/round-filled-white-blue-button-with-icon.component';
+import { RoundWhiteBlueButtonWithIconComponent } from '../../../shared/components/buttons/round-white-blue-button-with-icon.component';
+import { SmallShareButtonComponent } from '../../../shared/components/buttons/small-share-button/small-share-button.component';
+import { IconComponent } from '../../../shared/components/icon.component';
+import { PhotoCollectionsComponent } from '../../../shared/components/photo-collections/photo-collections.component';
 import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
+type IconName = 'shareInsta' | 'shareFacebook';
 @Component({
   selector: 'app-animal-detail',
   standalone: true,
@@ -34,38 +38,80 @@ import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading
     TranslateModule,
     LoadingSpinnerComponent,
     PrimaryLargeButtonComponent,
+    PhotoCollectionsComponent,
+    IconComponent,
+    PrimaryLargeOrangeButtonComponent,
+    RoundFilledWhiteBlueButtonWithIconComponent,
+    RoundWhiteBlueButtonWithIconComponent,
+    SmallShareButtonComponent,
   ],
   templateUrl: './animal-detail.component.html',
   styleUrls: ['./animal-detail.component.css'], // зверни увагу на styleUrls (замість styleUrl)
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AnimalDetailComponent {
+  onShareFacebookClick() {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    const currentAnimal = this.animal();
+    if (!currentAnimal) return;
+
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(
+      `Check out ${currentAnimal.name} on PetCare!`
+    );
+    const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`;
+
+    window.open(shareUrl, '_blank', 'width=600,height=400');
+  }
+
+  onShareInstaClick() {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    const currentAnimal = this.animal();
+    if (!currentAnimal) return;
+
+    const url = encodeURIComponent(window.location.href);
+    navigator.clipboard.writeText(url).then(() => {
+      alert(this.translate.instant('LINK_COPIED'));
+    });
+  }
+
+  onTakeCare() {
+    throw new Error('Method not implemented.');
+  }
+  onTakeHome() {
+    throw new Error('Method not implemented.');
+  }
   private route = inject(ActivatedRoute);
-  public router = inject(Router);
-  private cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
   private animalService = inject(AnimalService);
-  public translate = inject(TranslateService);
+  private animalSubscriptionService = inject(AnimalSubscriptionService);
+  private authModalService = inject(ModalService);
+  private authService = inject(AuthService);
+  private translate = inject(TranslateService);
   private title = inject(Title);
   private meta = inject(Meta);
-  private authService = inject(AuthService);
-  private animalSubscriptionService = inject(AnimalSubscriptionService);
-  private animalSubscriptionId = '';
+
+  shareInsta = signal<IconName>('shareInsta');
+  shareFacebook = signal<IconName>('shareFacebook');
+  platformId = inject(PLATFORM_ID);
+  isAuthenticated: Signal<boolean> = this.authService.isLoggedIn;
   slug = toSignal(
     this.route.paramMap.pipe(
       switchMap(params => [params.get('slug')]),
-      filter((slug): slug is string => slug !== null && slug !== undefined)
+      filter((slug): slug is string => slug !== null)
     )
   );
-  platformId = inject(PLATFORM_ID);
 
   animal = signal<Animal | undefined>(undefined);
-  public isAuthenticated: Signal<boolean> = this.authService.isLoggedIn;
-  user: Signal<User | null> = signal(this.authService._currentUser());
-  isSubscribed = false; // Поточна підписка на тварину, по замовчуванню false;
-  isSubscriptionChecked = false;
-
+  favoriteAnimals = signal<Animal[]>([]);
+  isSubscribed = signal(false);
+  round(value: number | undefined | null): string {
+    return value != null ? value.toFixed(2) : this.translate.instant('UNKNOWN');
+  }
   constructor() {
-    // Ефект завантаження тварини за slug
+    // Завантаження тварини
     effect(() => {
       const slugValue = this.slug();
       if (!slugValue) return;
@@ -75,140 +121,105 @@ export class AnimalDetailComponent {
           this.router.navigate(['/not-found']);
           return;
         }
-
         this.animal.set(animal);
-        this.addJsonLd(animal);
-        const translatedName = this.translate.instant('animal.name', {
-          value: animal.name,
-        });
-        const translatedDescription = this.translate.instant(
-          'animal.description',
-          {
-            value: animal.description,
-          }
-        );
-        this.isSubscriptionChecked = false;
-
-        this.isSubscribedToAnimal().subscribe(isSubscribed => {
-          this.isSubscribed = isSubscribed;
-          this.isSubscriptionChecked = true;
-          this.cdr.detectChanges();
-        });
-
-        this.title.setTitle(`${translatedName} - PetCare`);
-        this.meta.updateTag({
-          name: 'description',
-          content: translatedDescription || '',
-        });
-        this.meta.updateTag({ property: 'og:title', content: translatedName });
-        this.meta.updateTag({
-          property: 'og:description',
-          content: translatedDescription,
-        });
-        this.meta.updateTag({ property: 'og:type', content: 'article' });
-        this.meta.updateTag({
-          property: 'og:url',
-          content: window.location.href,
-        });
-        // Якщо є фото:
-        if (animal.photos?.length) {
-          this.meta.updateTag({
-            property: 'og:image',
-            content: animal.photos[0],
-          });
-        }
-        if (!isPlatformBrowser(this.platformId)) return;
-        this.meta.updateTag({
-          name: 'twitter:card',
-          content: 'summary_large_image',
-        });
-        this.meta.updateTag({ name: 'twitter:title', content: translatedName });
-        this.meta.updateTag({
-          name: 'twitter:description',
-          content: translatedDescription,
-        });
-        this.meta.updateTag({
-          name: 'keywords',
-          content: `petcare, ${animal.name}, ${animal.breed?.name}, ${animal.species?.name}`,
-        });
+        this.loadFavorites();
+        this.updateSubscriptionStatus();
+        this.setMetaTags(animal);
       });
     });
   }
-  addJsonLd(animal: Animal) {
-    if (!isPlatformBrowser(this.platformId)) return;
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.text = JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'Pet',
-      name: animal.name,
-      description: animal.description,
-      additionalType: animal.species?.name,
-      breed: animal.breed?.name,
-      image: animal.photos?.[0] || '',
-    });
-    document.head.appendChild(script);
-  }
-  isSubscribedToAnimal(): Observable<boolean> {
-    const animalValue = this.animal();
-    const userValue = this.user();
-    if (!userValue) return of(false);
-    if (animalValue === undefined) return of(false);
 
-    return this.animalSubscriptionService
-      .getAnimalSubscriptionsByUserId(userValue.id)
-      .pipe(
-        map(subscriptions => {
-          const found = subscriptions.find(s => s.animalId === animalValue.id);
-          this.animalSubscriptionId = found?.id ?? '';
-          this.isSubscribed = !!found;
-          return !!found;
-        }),
-        catchError(() => {
-          return of(false);
-        })
-      );
+  private loadFavorites() {
+    if (this.isAuthenticated()) {
+      this.animalSubscriptionService.getFavoriteAnimals().subscribe(animals => {
+        this.favoriteAnimals.set(animals);
+        this.updateSubscriptionStatus();
+      });
+    }
   }
-  round(value: number | undefined | null): string {
-    return value != null ? value.toFixed(2) : this.translate.instant('UNKNOWN');
+
+  private updateSubscriptionStatus() {
+    if (!this.isAuthenticated()) return;
+    const currentAnimal = this.animal();
+    if (!currentAnimal) return;
+    const isFav = this.favoriteAnimals().some(a => a.id === currentAnimal.id);
+    this.isSubscribed.set(isFav);
   }
-  unsubscribe() {
-    if (!this.isSubscribed) return;
-    if (this.animalSubscriptionId === '') return;
+
+  onHeartClick() {
+    if (!this.authService.isLoggedIn()) {
+      this.authModalService.openModal('welcome');
+      return;
+    }
+
+    const currentAnimal = this.animal();
+    if (!currentAnimal) return;
+
+    if (this.isSubscribed()) {
+      this.unsubscribe(currentAnimal);
+    } else {
+      this.subscribe(currentAnimal);
+    }
+  }
+
+  private subscribe(animal: Animal) {
     this.animalSubscriptionService
-      .deleteAnimalSubscription(this.animalSubscriptionId)
+      .createAnimalSubscription(animal.id)
       .subscribe({
         next: () => {
-          this.isSubscribed = false;
-          this.animalSubscriptionId = '';
-          this.cdr.detectChanges();
+          this.loadFavorites(); // оновлюємо список фейворітів
         },
-        error: err => {
-          console.error('Error deleting animal subscription:', err);
-        },
+        error: err => console.error('Error subscribing:', err),
       });
   }
-  subscribe() {
-    if (this.isSubscribed) return;
-    const animalValue = this.animal();
-    const userValue = this.user();
-    if (!animalValue || !userValue) return;
-    const animalSubscription: Partial<AnimalSubscription> = {
-      animalId: animalValue.id,
-      userId: userValue.id,
-    };
 
+  private unsubscribe(animal: Animal) {
     this.animalSubscriptionService
-      .createAnimalSubscription(animalSubscription)
+      .deleteAnimalSubscription(animal.id)
       .subscribe({
-        next: subscription => {
-          this.isSubscribed = true;
-          this.animalSubscriptionId = subscription.id;
-          this.cdr.detectChanges();
+        next: () => {
+          this.loadFavorites(); // оновлюємо список фейворітів
         },
-        error: err => {
-          console.error('Error craeting animal subscription:', err);
-        },
+        error: err => console.error('Error unsubscribing:', err),
       });
+  }
+
+  private setMetaTags(animal: Animal) {
+    const translatedName = this.translate.instant('animal.name', {
+      value: animal.name,
+    });
+    const translatedDescription = this.translate.instant('animal.description', {
+      value: animal.description,
+    });
+
+    this.title.setTitle(`${translatedName} - PetCare`);
+    this.meta.updateTag({
+      name: 'description',
+      content: translatedDescription || '',
+    });
+    this.meta.updateTag({ property: 'og:title', content: translatedName });
+    this.meta.updateTag({
+      property: 'og:description',
+      content: translatedDescription,
+    });
+    this.meta.updateTag({ property: 'og:type', content: 'article' });
+    this.meta.updateTag({ property: 'og:url', content: window.location.href });
+    if (animal.photos?.length) {
+      this.meta.updateTag({ property: 'og:image', content: animal.photos[0] });
+    }
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.meta.updateTag({
+      name: 'twitter:card',
+      content: 'summary_large_image',
+    });
+    this.meta.updateTag({ name: 'twitter:title', content: translatedName });
+    this.meta.updateTag({
+      name: 'twitter:description',
+      content: translatedDescription,
+    });
+    this.meta.updateTag({
+      name: 'keywords',
+      content: `petcare, ${animal.name}, ${animal.breed?.name}, ${animal.species?.name}`,
+    });
   }
 }

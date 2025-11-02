@@ -296,12 +296,12 @@ export class HomeComponent implements AfterViewInit, OnDestroy, OnInit {
     }, 300);
   }
   onFindPetClick() {
-    this.router.navigate(['/animals']);
+    this.router.navigate(['/adoption']);
   }
   onCharityButtonClick() {
     this.modalService.openModal('live-donation-collection');
   }
   onAboutUsClick() {
-    throw new Error('Method not implemented.');
+    this.router.navigate(['/about']);
   }
 }

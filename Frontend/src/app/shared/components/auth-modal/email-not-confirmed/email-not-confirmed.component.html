@@ -17,9 +17,16 @@
           (keyup.enter)="emitResendVerificationEmail()"
           (keyup.space)="emitResendVerificationEmail()"
           tabindex="0"
+          [attr.aria-disabled]="resendTimer() > 0"
+          [class.opacity-50]="resendTimer() > 0"
           role="button"
           class="hover:text-primary-orange underline cursor-pointer font-semibold font-inter"
         >
+          @if (resendTimer() > 0) {
+            {{ 'RESEND_VERIFICATION_EMAIL_IN' | translate }} {{ resendTimer() }}s
+          } @else {
+            {{ 'RESEND_VERIFICATION_EMAIL' | translate }}
+          }
           {{ 'RESEND_VERIFICATION_EMAIL' | translate }}
         </a>
       </div>

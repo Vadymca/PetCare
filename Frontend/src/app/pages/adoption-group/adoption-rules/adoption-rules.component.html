@@ -1,0 +1,305 @@
+<div
+  class="flex flex-col bg-secondary-dodgerBlue-2 w-full pt-[150px] items-center"
+>
+  <div class="p-2 lg:px-[50px] inline-flex items-center mt-3 w-full">
+    <div
+      class="hover:text-primary-orange inline-flex items-center cursor-pointer -translate-y-1/2 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-50"
+      (click)="backBottomClick()"
+      (keyup.enter)="backBottomClick()"
+      (keyup.space)="backBottomClick()"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'BACK' | translate"
+    >
+      <app-icon [name]="'arrowLeft'" class=""></app-icon>
+      <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
+    </div>
+  </div>
+  <h1
+    class="font-bold font-fixel w-full text-center"
+    style="font-size: clamp(16px, 6.5vw, 64px)"
+  >
+    {{ 'ADOPTION_RULES' | translate }}
+  </h1>
+  <p class="flex flex-col w-full text-center font-bold mt-6">
+    {{ 'ADOPTION_TITLE_DESCRIPTION' | translate | uppercase }}
+  </p>
+  <div
+    class="p-2 lg:px-[50px] flex flex-col xl:flex-row justify-start xl:justify-between gap-[37px] pt-10 items-center"
+  >
+    <!--правило 1 і 2  -->
+    <div
+      class="flex flex-col lg:flex-row justify-start lg:justify-between gap-[37px] items-center"
+    >
+      <!--правило 1 -->
+      <div class="relative">
+        <img
+          src="../../../assets/images/adoption-rules/1.png"
+          alt="cat"
+          class="w-full h-full"
+        />
+        <div
+          class="absolute bottom-[12px] left-[12px] max-w-[196px] text-primary-beige"
+        >
+          <p class="font-bold">{{ 'ADOPTION_RULE1_TITLE' | translate }}</p>
+          {{ 'ADOPTION_RULE1' | translate }}
+        </div>
+      </div>
+      <!--роздільник 1-->
+      <div class="hidden lg:flex">
+        <app-icon [name]="'adoptionRulesBrain'"></app-icon>
+      </div>
+      <!--правило 2 -->
+      <div class="relative">
+        <img
+          src="../../../assets/images/adoption-rules/2.png"
+          alt="cat"
+          class="w-full h-full"
+        />
+        <div
+          class="absolute bottom-[12px] left-[12px] max-w-[196px] text-primary-beige"
+        >
+          <p class="font-bold">{{ 'ADOPTION_RULE2_TITLE' | translate }}</p>
+          {{ 'ADOPTION_RULE2' | translate }}
+        </div>
+      </div>
+      <!--роздільник 2-->
+      <div class="hidden xl:flex">
+        <app-icon [name]="'adoptionRulesClock'"></app-icon>
+      </div>
+    </div>
+    <!--правило 3 і 4  -->
+    <div
+      class="flex flex-col lg:flex-row justify-start lg:justify-between gap-[37px] items-center"
+    >
+      <!--правило 3 -->
+      <div class="relative">
+        <img
+          src="../../../assets/images/adoption-rules/3.png"
+          alt="cat"
+          class="w-full h-full"
+        />
+        <div
+          class="absolute bottom-[12px] left-[12px] max-w-[196px] text-primary-beige"
+        >
+          <p class="font-bold">{{ 'ADOPTION_RULE3_TITLE' | translate }}</p>
+          {{ 'ADOPTION_RULE3' | translate }}
+        </div>
+      </div>
+      <!--роздільник 3-->
+      <div class="hidden lg:flex">
+        <app-icon [name]="'adoptionRulesStar'"></app-icon>
+      </div>
+      <!--правило 4 -->
+      <div class="relative">
+        <img
+          src="../../../assets/images/adoption-rules/4.png"
+          alt="cat"
+          class="w-full h-full"
+        />
+        <div
+          class="absolute bottom-[12px] left-[12px] max-w-[196px] text-primary-beige"
+        >
+          <p class="font-bold">{{ 'ADOPTION_RULE4_TITLE' | translate }}</p>
+          {{ 'ADOPTION_RULE4' | translate }}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="p-2 lg:px-[50px] flex flex-col xl:flex-row justify-start xl:justify-between gap-[37px] pt-10 lg:pt-[69px] items-center"
+  >
+    <!--правило 5 і 6  -->
+    <div
+      class="flex flex-col lg:flex-row justify-start lg:justify-between gap-[37px] items-center"
+    >
+      <!--правило 5 -->
+      <div class="relative">
+        <img
+          src="../../../assets/images/adoption-rules/5.png"
+          alt="cat"
+          class="w-full h-full"
+        />
+        <div
+          class="absolute bottom-[12px] left-[12px] max-w-[196px] text-primary-beige"
+        >
+          <p class="font-bold">{{ 'ADOPTION_RULE5_TITLE' | translate }}</p>
+          {{ 'ADOPTION_RULE5' | translate }}
+        </div>
+      </div>
+      <!--роздільник 5-->
+      <div class="hidden lg:flex">
+        <app-icon [name]="'adoptionRulesSteps'"></app-icon>
+      </div>
+      <!--правило 6 -->
+      <div class="relative">
+        <img
+          src="../../../assets/images/adoption-rules/6.png"
+          alt="cat"
+          class="w-full h-full"
+        />
+        <div
+          class="absolute bottom-[12px] left-[12px] max-w-[196px] text-primary-beige"
+        >
+          <p class="font-bold">{{ 'ADOPTION_RULE6_TITLE' | translate }}</p>
+          {{ 'ADOPTION_RULE6' | translate }}
+        </div>
+      </div>
+      <!--роздільник 6-->
+      <div class="hidden xl:flex">
+        <app-icon [name]="'adoptionRulesFoil'"></app-icon>
+      </div>
+    </div>
+    <!--правило 7 і 8  -->
+    <div
+      class="flex flex-col lg:flex-row justify-start lg:justify-between gap-[37px] items-center"
+    >
+      <!--правило 7 -->
+      <div class="relative">
+        <img
+          src="../../../assets/images/adoption-rules/7.png"
+          alt="cat"
+          class="w-full h-full"
+        />
+        <div
+          class="absolute bottom-[12px] left-[12px] max-w-[196px] text-primary-beige"
+        >
+          <p class="font-bold">{{ 'ADOPTION_RULE7_TITLE' | translate }}</p>
+          {{ 'ADOPTION_RULE7' | translate }}
+        </div>
+      </div>
+      <!--роздільник 7-->
+      <div class="hidden lg:flex">
+        <app-icon [name]="'adoptionRulesHand'"></app-icon>
+      </div>
+      <!--правило 8 -->
+      <div class="relative">
+        <img
+          src="../../../assets/images/adoption-rules/8.png"
+          alt="cat"
+          class="w-full h-full"
+        />
+        <div
+          class="absolute bottom-[12px] left-[12px] max-w-[196px] text-primary-beige"
+        >
+          <p class="font-bold">{{ 'ADOPTION_RULE8_TITLE' | translate }}</p>
+          {{ 'ADOPTION_RULE8' | translate }}
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Що важливо знати перед усиновленням -->
+  <div class="flex flex-col xl:flex-row justify-between w-full mt-[100px]">
+    <div
+      class="flex flex-col w-full xl:pt-[80px] items-center text-start p-5 xl:px-[50px] bg-primary-light-orange"
+    >
+      <h2
+        class="font-bold font-fixel w-full text-center leading-[1.2]"
+        style="font-size: clamp(16px, 6.5vw, 40px)"
+      >
+        {{ 'ADOPTION_CONCLUSIONS' | translate }}
+      </h2>
+      <div class="flex flex-col justify-center h-full">
+        <!-- 1 висновок -->
+        <div class="flex mt-11 w-full items-start">
+          <div class="flex flex-col lg:max-w-[50%] text-start">
+            <p class="font-bold">
+              {{ 'ADOPION_CONCLUSION1_TITLE' | translate }}
+            </p>
+            <p>{{ 'ADOPION_CONCLUSION1' | translate }}</p>
+          </div>
+        </div>
+        <!-- 2 висновок -->
+        <div class="flex mt-11 w-full justify-end pt-5">
+          <div class="flex flex-col lg:max-w-[50%] text-start">
+            <p class="font-bold">
+              {{ 'ADOPION_CONCLUSION2_TITLE' | translate }}
+            </p>
+            <p>{{ 'ADOPION_CONCLUSION2' | translate }}</p>
+          </div>
+        </div>
+        <!-- 3 висновок -->
+        <div class="flex mt-11 w-full items-start pt-5">
+          <div class="flex flex-col lg:max-w-[50%] text-start">
+            <p class="font-bold">
+              {{ 'ADOPION_CONCLUSION3_TITLE' | translate }}
+            </p>
+            <p>{{ 'ADOPION_CONCLUSION3' | translate }}</p>
+          </div>
+        </div>
+        <!-- 4 висновок -->
+        <div class="flex mt-11 w-full justify-end pt-5">
+          <div class="flex flex-col lg:max-w-[50%] text-start">
+            <p class="font-bold">
+              {{ 'ADOPION_CONCLUSION4_TITLE' | translate }}
+            </p>
+            <p>{{ 'ADOPION_CONCLUSION4' | translate }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="aspect-square max-w-1/2 max-h-[100vh] w-full h-full overflow-hidden"
+    >
+      <img
+        class="w-full h-full object-cover"
+        src="../../../assets/images/adoption-rules/hugs.png"
+        alt="cat and human hand"
+      />
+    </div>
+  </div>
+  <!-- У яких випадках ми можемо відмовити в усиновленні тварини -->
+  <div class="flex flex-col items-center w-full py-[100px] bg-primary-beige">
+    <h2
+      class="font-bold font-fixel w-full text-center leading-[1.2]"
+      style="font-size: clamp(16px, 6.5vw, 40px)"
+    >
+      {{ 'ADOPION_REJECTION_TITLE' | translate }}
+    </h2>
+    <p class="flex flex-col mt-6 text-center w-full">
+      {{ 'ADOPION_REJECTION_DESCRIPTION' | translate }}
+    </p>
+    <div class="flex flex-col max-w-[700px] mt-10 p-5 gap-5 leading-[1.2]">
+      <div class="flex items-start justify-start gap-5">
+        <app-icon [name]="'ban'"></app-icon>
+        <p>{{ 'ADOPION_REJECTION_CAUSE1' | translate }}</p>
+      </div>
+      <div class="flex items-start justify-start gap-5">
+        <app-icon [name]="'ban'"></app-icon>
+        <p>{{ 'ADOPION_REJECTION_CAUSE2' | translate }}</p>
+      </div>
+      <div class="flex items-start justify-start gap-5">
+        <app-icon [name]="'ban'"></app-icon>
+        <p>{{ 'ADOPION_REJECTION_CAUSE3' | translate }}</p>
+      </div>
+      <div class="flex items-start justify-start gap-5">
+        <app-icon [name]="'ban'"></app-icon>
+        <p>{{ 'ADOPION_REJECTION_CAUSE4' | translate }}</p>
+      </div>
+      <div class="flex items-start justify-start gap-5">
+        <app-icon [name]="'ban'"></app-icon>
+        <p>{{ 'ADOPION_REJECTION_CAUSE5' | translate }}</p>
+      </div>
+      <div class="flex items-start justify-start gap-5">
+        <app-icon [name]="'ban'"></app-icon>
+        <p>{{ 'ADOPION_REJECTION_CAUSE6' | translate }}</p>
+      </div>
+      <div class="flex items-start justify-start gap-5">
+        <app-icon [name]="'ban'"></app-icon>
+        <p>{{ 'ADOPION_REJECTION_CAUSE7' | translate }}</p>
+      </div>
+    </div>
+    <div class="flex mt-11">
+      <img
+        src="../../../assets/images/adoption-rules/reject.png"
+        alt="angry man"
+      />
+    </div>
+    <div class="flex flex-col mt-10">
+      <app-secondary-large-button
+        [buttonTitle]="'BACK_TO_SELECTION' | translate"
+        (click)="backBottomClick()"
+      ></app-secondary-large-button>
+    </div>
+  </div>
+</div>

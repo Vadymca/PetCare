@@ -1,33 +1,51 @@
-<div class="gap-4 p-4">
-  <h1 class="text-3xl font-bold mb-4">{{ 'ARTICLES' | translate }}</h1>
-</div>
+<div
+  class="flex flex-col items-center w-full bg-primary-blue text-primary-beige gap-4 p-4 pt-[150px] px-5 sm:px-[50px] pb-[100px]"
+>
+  <div class="inline-flex items-center mt-3 w-full">
+    <div
+      class="hover:text-primary-orange inline-flex items-center cursor-pointer -translate-y-1/2 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-50"
+      (click)="backBottomClick()"
+      (keyup.enter)="backBottomClick()"
+      (keyup.space)="backBottomClick()"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'BACK' | translate"
+    >
+      <app-icon [name]="'arrowLeft'" class=""></app-icon>
+      <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
+    </div>
+  </div>
+  <h1
+    class="font-display text-[40px] font-bold leading-none text-center w-full sm:px-[50px]"
+    style="font-size: clamp(16px, 6.5vw, 64px)"
+  >
+    {{ 'ARTICLES' | translate }}
+  </h1>
+  <div class="flex items-center gap-2 justify-center">
+    <app-icon [name]="'smallHearts'"></app-icon>
+    <p class="mt-6">{{ 'ARTICLES_DESCRIPTION' | translate }}</p>
+    <app-icon [name]="'smallHearts'" class="scale-x-[-1]"></app-icon>
+  </div>
+  @if (error()) {
+    <div class="p-4 text-secondary-semantic-error font-medium">
+      {{ error() ?? '' | translate }}
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-7">
+      @for (article of articles(); track article.id) {
+        <a [routerLink]="['/articles', article.slug]" class="sm:w-[611px]">
+          <app-article-card [article]="article"></app-article-card>
+        </a>
+      }
+    </div>
+  }
 
-@if (error()) {
-  <div class="p-4 text-red-600 font-medium">
-    {{ error() ?? '' | translate }}
+  <div class="text-primary-beige mt-5">
+    <app-pagination
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      (pageChange)="setPage($event)"
+    ></app-pagination>
   </div>
-} @else {
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-    @for (article of articles(); track article.id) {
-      <a
-        [routerLink]="['/articles', article.slug]"
-        class="block p-4 bg-white rounded-2xl shadow hover:shadow-lg transition"
-      >
-        <h2 class="text-xl font-semibold">{{ article.title }}</h2>
-        <p class="text-gray-600">
-          {{ 'CATEGORY' | translate }} —
-          {{ article.category?.name || ('UNKNOWN' | translate) }}
-        </p>
-        <p class="text-gray-600">
-          {{ 'AUTHOR' | translate }} —
-          {{ article.author?.firstName || ('UNKNOWN' | translate) }}
-          {{ article.author?.lastName || ('UNKNOWN' | translate) }}
-        </p>
-        <p class="text-gray-600">
-          {{ 'CREATED_DATE' | translate }}:
-          {{ article.createdAt | date: 'medium' }}
-        </p>
-      </a>
-    }
-  </div>
-}
+</div>
+<app-home-partners></app-home-partners>

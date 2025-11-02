@@ -1,0 +1,86 @@
+<div
+  class="flex flex-col items-center justify-between w-full h-[100vh] px-6 sm:px-[50px] py-[100px] sm:pt-[150px] bg-primary-lightBlue text-secondary-neutral-mineShaft"
+>
+  <div class="inline-flex items-center w-full">
+    <div
+      class="hover:text-primary-orange inline-flex items-center cursor-pointer -translate-y-1/2 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-50"
+      (click)="toEditProfile()"
+      (keyup.enter)="toEditProfile()"
+      (keyup.space)="toEditProfile()"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'BACK' | translate"
+    >
+      <app-icon [name]="'arrowLeft'" class=""></app-icon>
+      <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
+    </div>
+  </div>
+  <h1
+    class="max-w-[800px] font-fixel text-center text-40 font-bold leading-none"
+    style="font-size: clamp(16px, 6.5vw, 40px)"
+  >
+    {{ 'TWO_FACTOR_AUTH' | translate }}
+  </h1>
+  <div
+    class="flex flex-col h-full flex-1 items-center justify-center text-primary-beige"
+  >
+    <app-icon [name]="'logoCool'" class="flex"></app-icon>
+  </div>
+
+  <div class="flex flex-col mt-10 max-w-[600px] w-full space-y-6">
+    <!-- TOTP -->
+    <div class="flex justify-between items-center w-full">
+      <p class="text-lg">{{ 'AUTHENTICATOR_APP' | translate }}:</p>
+      <button
+        type="button"
+        class="relative inline-flex h-6 w-12 items-center rounded-full transition-colors"
+        [class.bg-primary-orange]="status()?.isTwoFactorEnabled"
+        [class.bg-secondary-neutral-silverChalice]="
+          !status()?.isTwoFactorEnabled
+        "
+        (click)="toggleTotp()"
+        aria-label="Toggle TOTP"
+      >
+        <span
+          class="inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition-transform"
+          [class.translate-x-6]="status()?.isTwoFactorEnabled"
+          [class.translate-x-0]="!status()?.isTwoFactorEnabled"
+        ></span>
+      </button>
+    </div>
+
+    <!-- SMS -->
+    <div class="flex justify-between items-center w-full">
+      <p class="text-lg">{{ 'SMS_2FA' | translate }}:</p>
+      <button
+        type="button"
+        class="relative inline-flex h-6 w-12 items-center rounded-full transition-colors"
+        [class.bg-primary-orange]="status()?.isSms2FaEnabled"
+        [class.bg-secondary-neutral-silverChalice]="!status()?.isSms2FaEnabled"
+        (click)="toggleSms()"
+        aria-label="Toggle SMS 2FA"
+      >
+        <span
+          class="inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition-transform"
+          [class.translate-x-6]="status()?.isSms2FaEnabled"
+          [class.translate-x-0]="!status()?.isSms2FaEnabled"
+        ></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Додаткові дії -->
+  <div class="flex flex-col sm:flex-row gap-4 mt-10 max-w-[340px] w-full">
+    <!-- TOTP backup & disable -->
+    @if (status()?.isTwoFactorEnabled) {
+      <app-primary-large-orange-button
+        class="flex-1"
+        buttonTitle="VIEW_BACKUP_CODES"
+        (pressButton)="openBackupCodes()"
+      ></app-primary-large-orange-button>
+    }
+    @if (errorMessage()) {
+      <p class="text-red-600 mt-4">{{ errorMessage() | translate }}</p>
+    }
+  </div>
+</div>

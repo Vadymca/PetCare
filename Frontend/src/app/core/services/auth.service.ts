@@ -1,15 +1,28 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, Observable, tap, throwError } from 'rxjs';
+import {
+  catchError,
+  map,
+  Observable,
+  of,
+  switchMap,
+  tap,
+  throwError,
+} from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { User } from '../models/user';
 
 export type AuthStep = 'login' | 'emailConfirmation' | '2fa' | 'authenticated';
-
+export interface TwoFaStatus {
+  isTwoFactorEnabled: boolean;
+  isSms2FaEnabled: boolean;
+}
 interface LoginResponse {
   status: string;
   message?: string;
   method?: string;
+  twoFaToken?: string;
   success?: boolean;
 
   //без двофакторки
@@ -20,7 +33,7 @@ interface LoginResponse {
   // twoFactorRequired?: boolean;
   // isTwoFactorEnabled?: boolean;
   // isSms2FaEnabled?: boolean;
-  maskedPhoneNumber?: string;
+  hiddenPhoneNumber?: string;
 }
 interface AuthRequest {
   email: string;
@@ -36,51 +49,26 @@ export interface SomeResponse {
   providedIn: 'root',
 })
 export class AuthService {
-  // [x: string]: any;
   private http = inject(HttpClient);
   private router = inject(Router);
-  private readonly baseUrl = `http://localhost:5000/api/auth`;
-  private readonly baseUrl2 = `http://localhost:5000/api`;
-  //private readonly baseUrl = `${API_BASE_URL}/auth`;
 
-  //мок поки бекенд не працює
-  // private mockUser: User = {
-  //   id: 'fb682961-29df-46ca-92df-b0bf80495a55',
-  //   email: 'user1@example.com',
-  //   firstName: 'Yulia',
-  //   lastName: 'Kovalenko',
-  //   role: 'Admin',
-  //   phone: '+380671704664',
-  //   points: 53,
-  //   postalCode: '58029',
-  //   lastLogin: '2023-01-01T00:00:00.000Z',
-  //   profilePhoto:
-  //     'https://i.pinimg.com/1200x/d2/d4/56/d2d4565a95f82ab36f7ba590b51c7acd.jpg',
-  //   createdAt: '2023-01-01T00:00:00.000Z',
-  //   updatedAt: '2023-01-01T00:00:00.000Z',
-  // };
+  private readonly baseUrl = environment.apiUrl;
+  //private readonly baseUrl = `${API_BASE_URL}`;
 
   readonly _currentUser = signal<User | null>(null);
   readonly accessToken = signal<string | null>(null);
+  readonly twoFaToken = signal<string | null>(null);
   readonly authStep = signal<AuthStep>('login');
   readonly isAuthReady = signal(false);
   readonly isLoggedIn = computed(() => !!this.accessToken());
-  //readonly emailConfirmed = computed(() => this._currentUser()?.emailConfirmed);
 
-  //private tempSession: { email: string; password: string } | null = null;
-
-  //2fa
   //qrCodeUrl = signal<string | null>(null);
-  backupCodes = signal<string[] | null>(null);
-  //errorMessage = signal<string | null>(null);
-  twoFaStatus = signal<{
-    isTwoFactorEnabled: boolean;
-    isSms2FaEnabled: boolean;
-  } | null>(null);
+  readonly backupCodes = signal<string[] | null>(null);
+  readonly twoFaStatus = signal<TwoFaStatus | null>(null);
   //логін--------------------------------------------------,????? Що поверне коли треба 2ф???????доробити
   login(payload: AuthRequest): Observable<LoginResponse> {
     return this.http
-      .post<LoginResponse>(`${this.baseUrl}/login`, payload, {
+      .post<LoginResponse>(`${this.baseUrl}/auth/login`, payload, {
         withCredentials: true,
       })
       .pipe(
@@ -94,10 +82,19 @@ export class AuthService {
               isTwoFactorEnabled: response.method === 'totp' ? true : false,
               isSms2FaEnabled: response.method === 'sms' ? true : false,
             });
+            if (response.twoFaToken) this.twoFaToken.set(response.twoFaToken);
           } else if (response.accessToken && response.user) {
             // Успішний логін без 2FA
             this.accessToken.set(response.accessToken);
             this._currentUser.set(response.user);
+            this.twoFaToken.set(null);
+            //удалити, коли бекенд поправить код
+            if (response.user?.profilePhoto?.startsWith('/uploads')) {
+              this._currentUser.set({
+                ...response.user,
+                profilePhoto: `${this.baseUrl}${response.user.profilePhoto}`,
+              });
+            }
 
             this.authStep.set('authenticated');
             this.twoFaStatus.set({
@@ -110,42 +107,16 @@ export class AuthService {
       );
   }
 
-  verify2fa(code: string): Observable<LoginResponse> {
-    return this.http
-      .post<LoginResponse>(
-        `${this.baseUrl}/verify-2fa`,
-        { code },
-        { withCredentials: true }
-      )
-      .pipe(
-        tap(res => {
-          if (res.accessToken && res.user) {
-            this.accessToken.set(res.accessToken);
-            this._currentUser.set(res.user);
-            this.get2faStatus().subscribe({
-              next: response => {
-                this.twoFaStatus.set(response);
-                console.log('Get 2FA status success:', response);
-              },
-              error: err => {
-                console.error('Get 2FA status error:', err);
-              },
-            });
-            this.authStep.set('authenticated');
-          }
-          this.isAuthReady.set(true);
-        })
-      );
-  }
   //вилогінитися
   logout(): void {
     this.http
-      .post(`${this.baseUrl}/logout`, {}, { withCredentials: true })
+      .post(`${this.baseUrl}/auth/logout`, {}, { withCredentials: true })
       .subscribe({
         next: () => {
           this.accessToken.set(null);
           this._currentUser.set(null);
           this.twoFaStatus.set(null);
+          this.twoFaToken.set(null);
           this.authStep.set('login');
           this.router.navigate(['/']);
         },
@@ -154,6 +125,7 @@ export class AuthService {
           this.accessToken.set(null);
           this._currentUser.set(null);
           this.twoFaStatus.set(null);
+          this.twoFaToken.set(null);
           this.authStep.set('login');
           this.router.navigate(['/']);
         },
@@ -164,7 +136,7 @@ export class AuthService {
   refreshToken(): Observable<LoginResponse> {
     return this.http
       .post<LoginResponse>(
-        `${this.baseUrl}/refresh`,
+        `${this.baseUrl}/auth/refresh`,
         {},
         {
           withCredentials: true,
@@ -175,6 +147,12 @@ export class AuthService {
           if (response.accessToken && response.user) {
             this.accessToken.set(response.accessToken);
             this._currentUser.set(response.user);
+            if (response.user?.profilePhoto?.startsWith('/uploads')) {
+              this._currentUser.set({
+                ...response.user,
+                profilePhoto: `${this.baseUrl}${response.user.profilePhoto}`,
+              });
+            }
             this.get2faStatus().subscribe({
               next: response => {
                 this.twoFaStatus.set(response);
@@ -185,15 +163,6 @@ export class AuthService {
               },
             });
             this.authStep.set('authenticated');
-            // this.get2faStatus().subscribe({
-            //   next: response => {
-            //     this.twoFaStatus.set(response);
-            //     console.log('Get 2FA status success:', response);
-            //   },
-            //   error: err => {
-            //     console.error('Get 2FA status error:', err);
-            //   },
-            // });
           }
           this.isAuthReady.set(true);
         })
@@ -202,13 +171,16 @@ export class AuthService {
 
   //реєстрація нового користувача+++++++++++++++++++++++++++++++++++++++++++++++++
   register(user: Partial<User>): Observable<User> {
-    return this.http.post<User>(`${this.baseUrl}/register`, user);
+    return this.http.post<User>(`${this.baseUrl}/auth/register`, user);
   }
   //збити пароль+++++++++++++++++++++++++++++++++++++++++++++++++
   forgotPassword(email: string): Observable<SomeResponse> {
-    return this.http.post<SomeResponse>(`${this.baseUrl}/forgot-password`, {
-      email,
-    });
+    return this.http.post<SomeResponse>(
+      `${this.baseUrl}/auth/forgot-password`,
+      {
+        email,
+      }
+    );
   }
   //встановлення нового паролю+++++++++++++++++++++++++++++++++++++++++++++++++?????чи додати мейл
   resetPassword(
@@ -216,80 +188,25 @@ export class AuthService {
     token: string,
     newPassword: string
   ): Observable<SomeResponse> {
-    return this.http.post<SomeResponse>(`${this.baseUrl}/reset-password`, {
+    return this.http.post<SomeResponse>(`${this.baseUrl}/auth/reset-password`, {
       email,
       token,
       newPassword,
     });
   }
   changePassword(newPassword: string): Observable<SomeResponse> {
-    return this.http.post<SomeResponse>(`${this.baseUrl}/change-password`, {
-      newPassword,
-    });
+    return this.http.post<SomeResponse>(
+      `${this.baseUrl}/auth/change-password`,
+      {
+        newPassword,
+      }
+    );
   }
-
-  //Приклад роботи на мок-датабазі
-
-  // login(email: string, password: string): Observable<LoginResponse> {
-  //   // Заміна запиту на мок
-  //   if (email === this.mockUser.email && password === 'password)<>?”!@1Q') {
-  //     this.tempSession = { email, password };
-
-  //     this.authStep.set('2fa');
-  //     return of<LoginResponse>({
-  //       success: true,
-  //       twoFactorRequired: true,
-  //       isTwoFactorEnabled: false,
-  //       isSms2FaEnabled: true,
-  //       maskedPhoneNumber: '+380*******25',
-  //     }).pipe(delay(500));
-  //   }
-  //   return throwError(() => new Error('INVALID_CREDENTIALS'));
-  // }
-
-  // verify2fa(code: string): Observable<User> {
-  //   if (!this.tempSession)
-  //     return throwError(() => new Error('NO_LOGIN_SESSION'));
-
-  //   if (code === '123456') {
-  //     // зберігаємо токен
-  //     const fakeToken = 'mock-jwt-token';
-  //     this.accessToken.set(fakeToken);
-
-  //     this._currentUser.set(this.mockUser);
-  //     this.authStep.set('authenticated');
-
-  //     // у реальному випадку тут би був refresh токен у cookie
-  //     return of(this.mockUser).pipe(delay(500));
-  //   }
-
-  //   return throwError(() => new Error('INVALID_2FA_CODE'));
-  // }
-  // logout(): void {
-  //   this.accessToken.set(null);
-  //   this._currentUser.set(null);
-  //   this.authStep.set('login');
-  //   this.tempSession = null;
-  //   this.router.navigate(['/']);
-  // }
-  // refreshToken(): Observable<{ accessToken: string }> {
-  //   // Імітація затримки відповіді, наприклад 500ms
-  //   const fakeAccessToken = 'mocked-access-token-12345';
-
-  //   return of({ accessToken: fakeAccessToken }).pipe(
-  //     delay(500), // імітуємо мережеву затримку
-  //     tap(response => {
-  //       console.log('AUTH SERVICE:Refresh token:', response.accessToken);
-  //       //this.accessToken.set(response.accessToken);
-  //       //this.currentUser.set(this.mockUser);
-  //     })
-  //   );
-  // }
 
   //повторна відправка токена для верифікації електронки+++++++++++++++++++++++++++++++++++++++++++++
   resendVerification(email: string): Observable<SomeResponse> {
     return this.http
-      .post<SomeResponse>(`${this.baseUrl}/resend-verification`, { email })
+      .post<SomeResponse>(`${this.baseUrl}/auth/resend-verification`, { email })
       .pipe(
         tap({
           next: response => {
@@ -303,10 +220,11 @@ export class AuthService {
   }
   //підтвердження електронки++++++++++++++++++++++++++++++++++++?????чи додати мейл
   verifyEmail(email: string, token: string): Observable<SomeResponse> {
-    //const payload = { email, token };
-    // console.log('Payload before sending:', payload);
     return this.http
-      .post<SomeResponse>(`${this.baseUrl}/confirm-email`, { email, token })
+      .post<SomeResponse>(`${this.baseUrl}/auth/confirm-email`, {
+        email,
+        token,
+      })
       .pipe(
         tap({
           next: response => {
@@ -323,26 +241,13 @@ export class AuthService {
   setupTotp(): Observable<{
     qrCodeImage: string;
     manualKey: string;
-    recoveryCodes: string[];
   }> {
     return this.http.post<{
       qrCodeImage: string;
       manualKey: string;
-      recoveryCodes: string[];
-    }>(`${this.baseUrl}/2fa/totp/setup`, null);
+    }>(`${this.baseUrl}/auth/2fa/totp/setup`, null);
   }
-  // Виклик у компоненті
-  // initiateTotpSetup() {
-  //   this.setupTotp().subscribe({
-  //     next: response => {
-  //       this.qrCodeUrl.set(response.qrCodeImage);
-  //       console.log('Setup TOTP success:', response);
-  //     },
-  //     error: err => {
-  //       console.error('Setup TOTP error:', err);
-  //     },
-  //   });
-  // }
+
   //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++поки не дає кодів
   //verifyTotpSetup(code: string): POST /api/auth/2fa/totp/verify-setup
   verifyTotpSetup(code: string): Observable<{
@@ -350,30 +255,35 @@ export class AuthService {
     message: string;
     recoveryCodes: string[];
   }> {
-    return this.http.post<{
-      success: boolean;
-      message: string;
-      recoveryCodes: string[];
-    }>(`${this.baseUrl}/2fa/totp/verify-setup`, { code });
+    return this.http
+      .post<{
+        success: boolean;
+        message: string;
+        recoveryCodes: string[];
+      }>(`${this.baseUrl}/auth/2fa/totp/verify-setup`, { code })
+      .pipe(
+        // якщо успіх, підвантажуємо актуальний статус 2FA
+        switchMap(res => {
+          if (res.success) {
+            return this.get2faStatus().pipe(
+              tap(status => {
+                this.twoFaStatus.set(status);
+              }),
+              map(() => res) // передаємо оригінальний результат verifyTotpSetup далі
+            );
+          } else {
+            return of(res);
+          }
+        })
+      );
   }
-  // Виклик у компоненті
-  // confirmTotpSetup(code: string) {
-  //   this.verifyTotpSetup(code).subscribe({
-  //     next: response => {
-  //       this.backupCodes.set(response.backupCodes);
-  //       console.log('Verify TOTP setup success:', response);
-  //     },
-  //     error: err => {
-  //       console.error('Verify TOTP setup error:', err);
-  //     },
-  //   });
-  // }
+
   // // verifyTotp(code: string): POST /api/auth/2fa/totp/verify
   verifyTotp(code: string): Observable<LoginResponse> {
     return this.http
       .post<LoginResponse>(
-        `${this.baseUrl}/2fa/totp/verify`,
-        { code },
+        `${this.baseUrl}/auth/2fa/totp/verify`,
+        { code, twoFaToken: this.twoFaToken() },
         { withCredentials: true }
       )
       .pipe(
@@ -381,6 +291,13 @@ export class AuthService {
           if (response && response.accessToken && response.user) {
             this.accessToken.set(response.accessToken);
             this._currentUser.set(response.user);
+            if (response.user?.profilePhoto?.startsWith('/uploads')) {
+              this._currentUser.set({
+                ...response.user,
+                profilePhoto: `${this.baseUrl}${response.user.profilePhoto}`,
+              });
+            }
+
             this.get2faStatus().subscribe({
               next: response => {
                 this.twoFaStatus.set(response);
@@ -391,49 +308,26 @@ export class AuthService {
               },
             });
             this.authStep.set('authenticated');
-            this.authStep.set('authenticated');
+            this.twoFaToken.set(null);
           }
         })
       );
   }
 
-  // Виклик у компоненті
-  // confirmTotpLogin(code: string) {
-  //   this.verifyTotp(code).subscribe({
-  //     next: response => {
-  //       console.log('Verify TOTP success:', response);
-  //       if (response && response.accessToken) {
-  //         //this.router.navigate(['/dashboard']);
-  //         //this.modalService.closeModal();
-  //       }
-  //     },
-  //     error: err => {
-  //       console.error('Verify TOTP error:', err);
-  //     },
-  //   });
-  // }
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //disableTotp(): POST /api/auth/2fa/totp/disable.
-  disableTotp(): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(
-      `${this.baseUrl}/2fa/totp/disable`,
-      null
-    );
+  disableTotp(): Observable<{
+    isTwoFactorEnabled: boolean;
+    isSms2FaEnabled: boolean;
+  }> {
+    return this.http
+      .post<{ message: string }>(`${this.baseUrl}/auth/2fa/totp/disable`, null)
+      .pipe(
+        switchMap(() => this.get2faStatus()),
+        tap(status => this.twoFaStatus.set(status))
+      );
   }
-  // Виклик у компоненті
-  disableTotpAuth() {
-    this.disableTotp().subscribe({
-      next: response => {
-        this.twoFaStatus.update(status =>
-          status ? { ...status, isTwoFactorEnabled: false } : null
-        );
-        console.log('Disable TOTP success:', response);
-      },
-      error: err => {
-        console.error('Disable TOTP error:', err);
-      },
-    });
-  }
+
   //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //getTotpBackupCodes(): GET /api/auth/2fa/totp/backup-codes
   getTotpBackupCodes(): Observable<{
@@ -445,20 +339,9 @@ export class AuthService {
       success: boolean;
       message: string;
       backupCodes: string[];
-    }>(`${this.baseUrl}/2fa/totp/backup-codes`);
+    }>(`${this.baseUrl}/auth/2fa/totp/backup-codes`);
   }
-  // Виклик у компоненті
-  fetchTotpBackupCodes() {
-    this.getTotpBackupCodes().subscribe({
-      next: response => {
-        this.backupCodes.set(response.backupCodes);
-        console.log('Get TOTP backup codes success:', response);
-      },
-      error: err => {
-        console.error('Get TOTP backup codes error:', err);
-      },
-    });
-  }
+
   //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //regenerateTotpBackupCodes(): POST /api/auth/2fa/totp/regenerate-backup-codes
   regenerateTotpBackupCodes(): Observable<{
@@ -470,110 +353,16 @@ export class AuthService {
       success: boolean;
       message: string;
       backupCodes: string[];
-    }>(`${this.baseUrl}/2fa/totp/regenerate-backup-codes`, null);
+    }>(`${this.baseUrl}/auth/2fa/totp/regenerate-backup-codes`, null);
   }
-  // Виклик у компоненті
-  // regenerateBackupCodes() {
-  //   this.regenerateTotpBackupCodes().subscribe({
-  //     next: response => {
-  //       this.backupCodes.set(response.backupCodes);
-  //       console.log('Regenerate TOTP backup codes success:', response);
-  //     },
-  //     error: err => {
-  //       console.error('Regenerate TOTP backup codes error:', err);
-  //     },
-  //   });
-  // }
+
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++мало би вернути все як при логіні
   //verifyTotpBackupCode(code: string): POST /api/auth/2fa/totp/verify-backup-code.
   verifyTotpBackupCode(code: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(
-      `${this.baseUrl}/2fa/totp/verify-backup-code`,
-      { code }
-    );
-  }
-
-  // Виклик у компоненті
-  confirmTotpBackupCode(code: string) {
-    this.verifyTotpBackupCode(code).subscribe({
-      next: response => {
-        console.log('Verify TOTP backup code success:', response);
-      },
-      error: err => {
-        console.error('Verify TOTP backup code error:', err);
-      },
-    });
-  }
-  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++відправиться смс
-  //setupSms2fa(phone: string): POST /api/auth/2fa/sms/setup
-  setupSms2fa(phone: string): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(
-      `${this.baseUrl}/2fa/sms/setup`,
-      { phone }
-    );
-  }
-
-  // Виклик у компоненті
-  initiateSms2fa(phone: string) {
-    this.setupSms2fa(phone).subscribe({
-      next: response => {
-        console.log('Setup SMS 2FA success:', response);
-      },
-      error: err => {
-        console.error('Setup SMS 2FA error:', err);
-      },
-    });
-  }
-  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++?????????????????не зрозумілий формат відповіді
-  //verifySmsSetup(code: string): POST /api/auth/2fa/sms/verify-setup.
-  verifySmsSetup(code: string): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(
-      `${this.baseUrl}/2fa/sms/verify-setup`,
-      { code }
-    );
-  }
-
-  // Виклик у компоненті
-  confirmSmsSetup(code: string) {
-    this.verifySmsSetup(code).subscribe({
-      next: response => {
-        this.twoFaStatus.update(status =>
-          status ? { ...status, isSms2FaEnabled: true } : null
-        );
-        console.log('Verify SMS setup success:', response);
-      },
-      error: err => {
-        console.error('Verify SMS setup error:', err);
-      },
-    });
-  }
-  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  //sendSms2fa(): POST /api/auth/2fa/sms/send
-  sendSms2fa(): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(
-      `${this.baseUrl}/2fa/sms/send`,
-      null
-    );
-  }
-
-  // Виклик у компоненті
-  // initiateSms2faLogin() {
-  //   this.sendSms2fa().subscribe({
-  //     next: response => {
-  //       console.log('Send SMS 2FA success:', response);
-  //     },
-  //     error: err => {
-  //       console.error('Send SMS 2FA error:', err);
-  //     },
-  //   });
-  // }
-  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++!!!!!!!!!!!!!!!!!!! поки не вертає юзера
-  //verifySms2fa(code: string): POST /api/auth/2fa/sms/verify.
-  verifySms2fa(code: string): Observable<LoginResponse> {
     return this.http
       .post<LoginResponse>(
-        `${this.baseUrl}/2fa/sms/verify`,
-        { code },
+        `${this.baseUrl}/auth/2fa/totp/verify-backup-code`,
+        { code, twoFaToken: this.twoFaToken() },
         { withCredentials: true }
       )
       .pipe(
@@ -581,6 +370,87 @@ export class AuthService {
           if (response && response.accessToken && response.user) {
             this.accessToken.set(response.accessToken);
             this._currentUser.set(response.user);
+            if (response.user?.profilePhoto?.startsWith('/uploads')) {
+              this._currentUser.set({
+                ...response.user,
+                profilePhoto: `${this.baseUrl}${response.user.profilePhoto}`,
+              });
+            }
+
+            this.get2faStatus().subscribe({
+              next: status => {
+                this.twoFaStatus.set(status);
+                console.log('Get 2FA status success:', status);
+              },
+              error: err => {
+                console.error('Get 2FA status error:', err);
+              },
+            });
+
+            this.authStep.set('authenticated');
+            this.twoFaToken.set(null);
+          }
+        })
+      );
+  }
+
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++відправиться смс
+  //setupSms2fa(phone: string): POST /api/auth/2fa/sms/setup
+  setupSms2fa(): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.baseUrl}/auth/2fa/sms/setup`,
+      {}
+    );
+  }
+
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++?????????????????не зрозумілий формат відповіді
+  //verifySmsSetup(code: string): POST /api/auth/2fa/sms/verify-setup.
+  verifySmsSetup(code: string): Observable<{ message: string }> {
+    return this.http
+      .post<{
+        message: string;
+      }>(`${this.baseUrl}/auth/2fa/sms/verify-setup`, { code })
+      .pipe(
+        switchMap(res =>
+          this.get2faStatus().pipe(
+            tap(status => {
+              this.twoFaStatus.set(status);
+            }),
+            map(() => res) // передаємо оригінальний результат далі
+          )
+        )
+      );
+  }
+
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  //sendSms2fa(): POST /api/auth/2fa/sms/send
+  sendSms2fa(): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.baseUrl}/auth/2fa/sms/send`,
+      { twoFaToken: this.twoFaToken() }
+    );
+  }
+
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++!!!!!!!!!!!!!!!!!!! поки не вертає юзера
+  //verifySms2fa(code: string): POST /api/auth/2fa/sms/verify.
+  verifySms2fa(code: string): Observable<LoginResponse> {
+    return this.http
+      .post<LoginResponse>(
+        `${this.baseUrl}/auth/2fa/sms/verify`,
+        { code, twoFaToken: this.twoFaToken() },
+        { withCredentials: true }
+      )
+      .pipe(
+        tap(response => {
+          if (response && response.accessToken && response.user) {
+            this.accessToken.set(response.accessToken);
+            this._currentUser.set(response.user);
+            if (response.user?.profilePhoto?.startsWith('/uploads')) {
+              this._currentUser.set({
+                ...response.user,
+                profilePhoto: `${this.baseUrl}${response.user.profilePhoto}`,
+              });
+            }
             this.get2faStatus().subscribe({
               next: response => {
                 this.twoFaStatus.set(response);
@@ -591,49 +461,26 @@ export class AuthService {
               },
             });
             this.authStep.set('authenticated');
-            this.authStep.set('authenticated');
+            this.twoFaToken.set(null);
           }
         })
       );
   }
-  // confirmSms2fa(code: string) {
-  //   this.verifySms2fa(code).subscribe({
-  //     next: response => {
-  //       console.log('Verify SMS 2FA success:', response);
-  //       if (response && response.accessToken) {
-  //         this.router.navigate(['/dashboard']);
-  //         this.modalService.closeModal();
-  //       }
-  //     },
-  //     error: err => {
 
-  //       console.error('Verify SMS 2FA error:', err);
-  //     },
-  //   });
-  // }
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //disableSms2fa(): POST /api/auth/2fa/sms/disable
-  disableSms2fa(): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(
-      `${this.baseUrl}/2fa/sms/disable`,
-      null
-    );
+  disableSms2fa(): Observable<{
+    isTwoFactorEnabled: boolean;
+    isSms2FaEnabled: boolean;
+  }> {
+    return this.http
+      .post<{ message: string }>(`${this.baseUrl}/auth/2fa/sms/disable`, null)
+      .pipe(
+        switchMap(() => this.get2faStatus()), // отримуємо актуальний статус
+        tap(status => this.twoFaStatus.set(status))
+      );
   }
 
-  // Виклик у компоненті
-  // disableSms2faAuth() {
-  //   this.disableSms2fa().subscribe({
-  //     next: response => {
-  //       this.twoFaStatus.update(status =>
-  //         status ? { ...status, isSms2FaEnabled: false } : null
-  //       );
-  //       console.log('Disable SMS 2FA success:', response);
-  //     },
-  //     error: err => {
-  //       console.error('Disable SMS 2FA error:', err);
-  //     },
-  //   });
-  // }
   //отримання статусу 2ф++++++++++++++++++++++++++++++++++++++++++++++++????чи не поміняються назви
   get2faStatus(): Observable<{
     isTwoFactorEnabled: boolean;
@@ -642,7 +489,7 @@ export class AuthService {
     return this.http.get<{
       isTwoFactorEnabled: boolean;
       isSms2FaEnabled: boolean;
-    }>(`${this.baseUrl}/2fa/status`);
+    }>(`${this.baseUrl}/auth/2fa/status`);
   }
   refresh2faStatus(): void {
     this.get2faStatus().subscribe({
@@ -655,82 +502,66 @@ export class AuthService {
       },
     });
   }
-  // Виклик у компоненті
-  // fetch2faStatus() {
-  //   this.get2faStatus().subscribe({
-  //     next: response => {
-  //       this.twoFaStatus.set(response);
-  //       console.log('Get 2FA status success:', response);
-  //     },
-  //     error: err => {
 
-  //       console.error('Get 2FA status error:', err);
-  //     },
-  //   });
-  // }
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++але відповідь сервера не однозначна
   //disableAll2fa(): POST /api/auth/2fa/disable-all
-  disableAll2fa(): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(
-      `${this.baseUrl}/2fa/disable-all`,
-      null
-    );
+  disableAll2fa(): Observable<{
+    isTwoFactorEnabled: boolean;
+    isSms2FaEnabled: boolean;
+  }> {
+    return this.http
+      .post<{ message: string }>(`${this.baseUrl}/auth/2fa/disable-all`, null)
+      .pipe(
+        switchMap(() => this.get2faStatus()),
+        tap(status => this.twoFaStatus.set(status))
+      );
   }
 
-  // Виклик у компоненті
-  // disableAll2faAuth() {
-  //   this.disableAll2fa().subscribe({
-  //     next: response => {
-  //       this.twoFaStatus.set({
-  //         isTwoFactorEnabled: false,
-  //         isSms2FaEnabled: false,
-  //       });
-  //       console.log('Disable all 2FA success:', response);
-  //     },
-  //     error: err => {
-  //       console.error('Disable all 2FA error:', err);
-  //     },
-  //   });
-  // }
   //getRecoveryCodes(): GET /api/auth/2fa/recovery-codes
   getRecoveryCodes(): Observable<{ recoveryCodes: string[] }> {
     return this.http.get<{ recoveryCodes: string[] }>(
-      `${this.baseUrl}/2fa/recovery-codes`
+      `${this.baseUrl}/auth/2fa/recovery-codes`
     );
   }
 
-  // Виклик у компоненті
-  fetchRecoveryCodes() {
-    this.getRecoveryCodes().subscribe({
-      next: response => {
-        this.backupCodes.set(response.recoveryCodes);
-        console.log('Get recovery codes success:', response);
-      },
-      error: err => {
-        console.error('Get recovery codes error:', err);
-      },
-    });
-  }
   //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++АЛЕ БЕКЕНД НЕ ВЕРТАЄ МЕНІ ЮЗЕРА ПОКИ, А ПИШЕ ВСЕ ОК ТИ МОЛОДЕЦЬ
   //useRecoveryCode(code: string): POST /api/auth/2fa/use-recovery-code
   useRecoveryCode(code: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(
-      `${this.baseUrl}/2fa/use-recovery-code`,
-      { code }
-    );
+    return this.http
+      .post<LoginResponse>(
+        `${this.baseUrl}/auth/2fa/use-recovery-code`,
+        { code, twoFaToken: this.twoFaToken() },
+        { withCredentials: true }
+      )
+      .pipe(
+        tap(response => {
+          if (response && response.accessToken && response.user) {
+            this.accessToken.set(response.accessToken);
+            this._currentUser.set(response.user);
+            if (response.user?.profilePhoto?.startsWith('/uploads')) {
+              this._currentUser.set({
+                ...response.user,
+                profilePhoto: `${this.baseUrl}${response.user.profilePhoto}`,
+              });
+            }
+
+            this.get2faStatus().subscribe({
+              next: status => {
+                this.twoFaStatus.set(status);
+                console.log('Get 2FA status success:', status);
+              },
+              error: err => {
+                console.error('Get 2FA status error:', err);
+              },
+            });
+
+            this.authStep.set('authenticated');
+            this.twoFaToken.set(null);
+          }
+        })
+      );
   }
 
-  // Виклик у компоненті
-  // confirmRecoveryCode(code: string) {
-  //   this.useRecoveryCode(code).subscribe({
-  //     next: response => {
-  //       console.log('Use recovery code success:', response);
-  //     },
-  //     error: err => {
-  //       console.error('Use recovery code error:', err);
-  //     },
-  //   });
-  // }
   getAccessToken(): string | null {
     return this.accessToken();
   }
@@ -752,10 +583,16 @@ export class AuthService {
     if (!this._currentUser()) {
       throw new Error('No current user');
     }
-
-    return this.http.put<User>(`${this.baseUrl2}/users/me`, { ...user }).pipe(
+    //перевірити адресу потім
+    return this.http.put<User>(`${this.baseUrl}/users/me`, { ...user }).pipe(
       tap(response => {
         this._currentUser.set(response);
+        if (response?.profilePhoto?.startsWith('/uploads')) {
+          this._currentUser.set({
+            ...response,
+            profilePhoto: `${this.baseUrl}${response.profilePhoto}`,
+          });
+        }
         console.log('Update user success:', response);
       }),
       catchError(err => {
