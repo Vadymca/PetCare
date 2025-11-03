@@ -186,7 +186,7 @@ public class Program
                     .EnableSensitiveDataLogging()
                     .EnableDetailedErrors()
                     .ConfigureWarnings(warnings =>
-                        warnings.Default(WarningBehavior.Log));
+                        warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
             });
 
             // -------------------- Application & Infrastructure --------------------
