@@ -315,16 +315,48 @@ public class Program
 
             var app = builder.Build();
 
+            // -------------------- Migrations & Seeding --------------------
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var conn = db.Database.GetDbConnection();
+
+                try
+                {
+                    await conn.OpenAsync();
+                    using var cmd = conn.CreateCommand();
+                    var path = Path.Combine(app.Environment.ContentRootPath, "Migrations", "_sql", "upgrade.sql");
+                    if (File.Exists(path))
+                    {
+                        var sql = await File.ReadAllTextAsync(path);
+                        cmd.CommandText = sql;
+                        await cmd.ExecuteNonQueryAsync();
+                        Log.Information("✅ Idempotent migration script executed successfully.");
+                    }
+                    else
+                    {
+                        Log.Warning("⚠️ Idempotent migration script not found: {Path}", path);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "❌ Failed to execute idempotent migration script.");
+                    throw; // блокуємо старт щоб не впали фон-джоби без таблиць
+                }
+                finally
+                {
+                    await conn.CloseAsync();
+                }
+            }
+
             if (!app.Environment.IsDevelopment())
             {
                 app.UseHsts();
             }
 
-
             app.UseExceptionHandling();
             app.UseStaticFiles();
             app.UseHttpsRedirection();
-
 
             app.UseRouting();
             app.UseCors("PetCarePolicy");
@@ -488,40 +520,6 @@ public class Program
             app.MapDeletePaymentMethodEndpoint(); // /api/payment-methods/{id:guid}
 
             app.MapGet("/", () => Results.Ok("✅ PetCare.Api is running successfully!"));
-
-            // -------------------- Migrations & Seeding --------------------
-            using (var scope = app.Services.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                var conn = db.Database.GetDbConnection();
-
-                try
-                {
-                    await conn.OpenAsync();
-                    using var cmd = conn.CreateCommand();
-                    var path = Path.Combine(app.Environment.ContentRootPath, "Migrations", "_sql", "upgrade.sql");
-                    if (File.Exists(path))
-                    {
-                        var sql = await File.ReadAllTextAsync(path);
-                        cmd.CommandText = sql;
-                        await cmd.ExecuteNonQueryAsync();
-                        Log.Information("✅ Idempotent migration script executed successfully.");
-                    }
-                    else
-                    {
-                        Log.Warning("⚠️ Idempotent migration script not found: {Path}", path);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "❌ Failed to execute idempotent migration script.");
-                    throw; // блокуємо старт щоб не впали фон-джоби без таблиць
-                }
-                finally
-                {
-                    await conn.CloseAsync();
-                }
-            }
 
             app.Run();
         }
