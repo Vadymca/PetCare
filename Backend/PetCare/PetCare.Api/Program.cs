@@ -492,16 +492,35 @@ public class Program
             // -------------------- Migrations & Seeding --------------------
             using (var scope = app.Services.CreateScope())
             {
-                var services = scope.ServiceProvider;
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var conn = db.Database.GetDbConnection();
 
-                // Отримуємо DbContext
-                var dbContext = services.GetRequiredService<AppDbContext>();
-
-                // Застосовуємо міграції з правильною збіркою
-                await dbContext.Database.MigrateAsync(); // Міграції беруться з MigrationsAssembly, що задано у UseNpgsql
-
-                // Виконуємо seed ролей та інших даних
-                await DataSeeder.SeedAsync(services);
+                try
+                {
+                    await conn.OpenAsync();
+                    using var cmd = conn.CreateCommand();
+                    var path = Path.Combine(app.Environment.ContentRootPath, "Migrations", "_sql", "upgrade.sql");
+                    if (File.Exists(path))
+                    {
+                        var sql = await File.ReadAllTextAsync(path);
+                        cmd.CommandText = sql;
+                        await cmd.ExecuteNonQueryAsync();
+                        Log.Information("✅ Idempotent migration script executed successfully.");
+                    }
+                    else
+                    {
+                        Log.Warning("⚠️ Idempotent migration script not found: {Path}", path);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "❌ Failed to execute idempotent migration script.");
+                    throw; // блокуємо старт щоб не впали фон-джоби без таблиць
+                }
+                finally
+                {
+                    await conn.CloseAsync();
+                }
             }
 
             app.Run();
