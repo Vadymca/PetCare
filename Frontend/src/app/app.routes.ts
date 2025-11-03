@@ -48,6 +48,15 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'adoption-rules',
+    loadComponent: () =>
+      import(
+        './pages/adoption-group/adoption-rules/adoption-rules.component'
+      ).then(
+        c => c.AdoptionRulesComponent // c.AdoptionRul
+      ),
+  },
+  {
     path: 'volunteer-application-confirmation',
     loadComponent: () =>
       import(
@@ -94,6 +103,27 @@ export const routes: Routes = [
       ).then(c => c.ArticleDetailComponent),
   },
   {
+    path: 'success-stories',
+    loadComponent: () =>
+      import(
+        './features/successStories/succes-story-list/success-story-list.component'
+      ).then(c => c.SuccessStoryListComponent),
+  },
+  {
+    path: 'success-stories/:slug',
+    loadComponent: () =>
+      import(
+        './features/successStories/succes-story-detail/succes-story-detail.component'
+      ).then(c => c.SuccesStoryDetailComponent),
+  },
+  {
+    path: `adoption`,
+    loadComponent: () =>
+      import('./pages/adoption-group/adoption/adoption.component').then(
+        c => c.AdoptionComponent
+      ),
+  },
+  {
     path: 'lost-pets',
     loadComponent: () =>
       import(
@@ -122,16 +152,16 @@ export const routes: Routes = [
       ).then(c => c.AnimalAidRequestDetailComponent),
   },
 
-  {
-    path: 'user-profile',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./pages/user-account/user-profile/user-profile.component').then(
-        c => c.UserProfileComponent
-      ),
+  // {
+  //   path: 'user-profile',
+  //   canActivate: [authGuard],
+  //   loadComponent: () =>
+  //     import('./pages/user-account/user-profile/user-profile.component').then(
+  //       c => c.UserProfileComponent
+  //     ),
 
-    data: { roles: ['Admin'] }, // хто може, крім власника
-  },
+  //   data: { roles: ['Admin'] }, // хто може, крім власника
+  // },
   {
     path: 'profile',
     canActivate: [authGuard],
@@ -146,6 +176,26 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/user-account/edit-user/edit-user.component').then(
         c => c.EditUserComponent
+      ),
+  },
+  {
+    path: 'profile/security',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import(
+        './pages/user-account/security-settings/security-settings.component'
+      ).then(c => c.SecuritySettingsComponent),
+  },
+  {
+    path: 'about',
+    loadComponent: () =>
+      import('./pages/about/about.component').then(c => c.AboutComponent),
+  },
+  {
+    path: 'news',
+    loadComponent: () =>
+      import('./pages/news-group/news/news.component').then(
+        c => c.NewsComponent
       ),
   },
 

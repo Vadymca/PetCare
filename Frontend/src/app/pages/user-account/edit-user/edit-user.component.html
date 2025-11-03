@@ -23,7 +23,9 @@
     {{ 'EDIT_PROFILE' | translate }}
   </h1>
   <div class="flex flex-col max-w-[660px] items-start w-full mt-[50px]">
-    <div class="flex justify-start items-center gap-[100px]">
+    <div
+      class="flex flex-col sm:flex-row justify-start items-center w-full sm:items-center gap-4 sm:gap-[100px]"
+    >
       <div
         class="rounded-[50px] w-[100px] h-[100px] overflow-hidden bg-secondary-neutral-silverChalice"
       >
@@ -150,7 +152,7 @@
       }
 
       <div
-        class="flex justify-center items-center mt-10 gap-[80px] text-secondary-neutral-mineShaft"
+        class="flex flex-col sm:flex-row justify-center items-center mt-10 gap-4 sm:gap-[80px] text-secondary-neutral-mineShaft"
       >
         <div class="flex justify-center">
           <app-primary-large-button
@@ -177,25 +179,42 @@
     >
       <button
         type="button"
-        class="flex space-x-4 justify-center cursor-pointer hover:text-primary-orange focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-offset-2 bg-transparent border-none"
+        class="flex space-x-4 justify-startcursor-pointer hover:text-primary-orange focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-offset-2 bg-transparent border-none"
         (click)="toChangePassword()"
         (keyup.enter)="toChangePassword()"
         (keyup.space)="toChangePassword()"
         tabindex="0"
       >
         <app-icon [name]="'keyLarge'"></app-icon>
-        <p class="self-end">{{ 'CHANGE_PASSWORD' | translate | uppercase }}</p>
+        <p class="self-center text-left">
+          {{ 'CHANGE_PASSWORD' | translate | uppercase }}
+        </p>
       </button>
       <button
         type="button"
-        class="flex mt-3 space-x-4 justify-center cursor-pointer hover:text-primary-orange focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-offset-2 bg-transparent border-none"
+        class="flex mt-3 space-x-4 justify-start cursor-pointer hover:text-primary-orange focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-offset-2 bg-transparent border-none"
         (click)="toSetTwoFA()"
         (keyup.enter)="toSetTwoFA()"
         (keyup.space)="toSetTwoFA()"
         tabindex="0"
       >
         <app-icon [name]="'lockLarge'"></app-icon>
-        <p class="self-end">{{ 'CHANGE_TWOFACTOR' | translate | uppercase }}</p>
+        <p class="self-center text-left">
+          {{ 'CHANGE_TWOFACTOR' | translate | uppercase }}
+        </p>
+      </button>
+      <button
+        type="button"
+        class="flex mt-3 space-x-4 justify-start cursor-pointer hover:text-primary-orange focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-offset-2 bg-transparent border-none"
+        (click)="toChangeNotifications()"
+        (keyup.enter)="toChangeNotifications()"
+        (keyup.space)="toChangeNotifications()"
+        tabindex="0"
+      >
+        <app-icon [name]="'sound'"></app-icon>
+        <p class="self-center text-left">
+          {{ 'CHANGE_NOTIFICATIONS' | translate | uppercase }}
+        </p>
       </button>
     </div>
   </div>

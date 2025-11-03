@@ -15,7 +15,16 @@
     >
       <app-icon [name]="'logoUkr'"></app-icon>
     </div>
+
     <div class="flex flex-row justify-items-start gap-4">
+      <div class="hidden sm:flex sm:flex-row gap-3">
+        <!-- Search -->
+        <app-round-button-with-icon
+          class="text-secondary-neutral-white"
+          [iconName]="'search'"
+          (click)="openSearch()"
+        ></app-round-button-with-icon>
+      </div>
       <!-- Desktop Nav -->
       <nav
         class="hidden xl:flex gap-6 text-secondary-neutral-white self-center"
@@ -30,14 +39,7 @@
           </a>
         }
       </nav>
-      <div class="hidden sm:flex sm:flex-row gap-3">
-        <!-- Search -->
-        <app-round-button-with-icon
-          class="text-secondary-neutral-white"
-          [iconName]="'search'"
-          (click)="openSearch()"
-        ></app-round-button-with-icon>
-      </div>
+
       <!-- Language Switcher & Burger -->
       @if (currentLang === 'uk') {
         <app-round-button-with-icon

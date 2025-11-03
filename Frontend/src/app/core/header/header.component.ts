@@ -51,11 +51,14 @@ export class HeaderComponent {
   private el = inject(ElementRef);
 
   menuItems: Record<string, string> = {
-    '/animals': 'ANIMALS',
-    '/articles': 'ARTICLES',
-    '/lost-pets': 'LOST_PETS',
-    '/animal-aid-requests': 'ANIMAL_AID_REQUEST',
+    // '/animals': 'ANIMALS',
+    // '/articles': 'ARTICLES',
+    // '/lost-pets': 'LOST_PETS',
+    // '/animal-aid-requests': 'ANIMAL_AID_REQUEST',
+
+    '/about': 'ABOUT',
     '/support': 'SUPPORT',
+    '/news': 'NEWS',
     '/reports': 'REPORTS',
     '/contacts': 'CONTACTS',
   };

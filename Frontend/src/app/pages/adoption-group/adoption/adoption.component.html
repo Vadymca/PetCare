@@ -1,0 +1,139 @@
+<div class="flex flex-col">
+  <!-- Перший екран з очками -->
+  <div
+    class="flex flex-col items-center bg-primary-blue text-primary-beige w-full"
+  >
+    <div class="flex flex-col w-full px-[50px] pt-[155px]">
+      <h1
+        class="font-fixel font-bold leading-[1.2] text-center"
+        style="font-size: clamp(16px, 6.5vw, 64px)"
+      >
+        {{ 'ADOPTION_TITLE' | translate }}
+      </h1>
+      <p class="flex flex-col text-center mt-6">
+        {{ 'ADOPTION_DESCRIPTION' | translate | uppercase }}
+      </p>
+      <div
+        class="flex flex-col xl:flex-row justify-center items-center gap-0 xl:gap-10 mt-6 xl:mt-[104px]"
+      >
+        <div class="flex flex-col">
+          <img src="../../../assets/images/adoption/eyes1.png" alt="eye" />
+        </div>
+        <div class="flex flex-col mt-[-10px] xl:mt-0">
+          <img src="../../../assets/images/adoption/eyes2.png" alt="eye" />
+          <app-primary-large-orange-button
+            class="w-[260px] mt-10"
+            buttonTitle="FIND_PET"
+            (pressButton)="goToPets()"
+          ></app-primary-large-orange-button>
+        </div>
+        <div class="xl:flex-col hidden xl:flex">
+          <img src="../../../assets/images/adoption/eyes3.png" alt="eye" />
+        </div>
+      </div>
+    </div>
+
+    <app-icon
+      [name]="'pawPrintBorder1'"
+      class="block bottom-0 left-0 w-full px-[19px] mt-[59px]"
+    ></app-icon>
+  </div>
+  <!-- Другий екран з умовами -->
+  <div
+    class="leading-[1.2] flex flex-col items-center justify-start text-secondary-neutral-mineShaft bg-cover bg-center px-5 pb-[80px]"
+    style="background-image: url('../../../assets/images/background2.png')"
+  >
+    <div class="flex flex-col">
+      <img
+        src="../../../assets/images/adoption/laptop_human_cat.png"
+        alt="laptop"
+      />
+    </div>
+    <h2
+      class="font-fixel font-bold mt-10"
+      style="font-size: clamp(16px, 6.5vw, 40px)"
+    >
+      {{ 'BEFORE_ADOPTION' | translate }}
+    </h2>
+    <p class="flex font-bold mt-10 max-w-[699px] text-start">
+      {{ 'CHECKLIST' | translate }}
+    </p>
+    <div
+      class="flex flex-col w-full h-full md:w-[700px] mt-[52px] z-10 items-center justify-center"
+    >
+      @for (item of menuItems; track item.id) {
+        <div
+          class="group flex justify-between w-full h-[80px] items-center p-5 cursor-pointer rounded-[12px]"
+          ngClass="{{ item.class }}"
+          id="{{ item.id }}"
+          (mouseenter)="onMouseEnter(item.id)"
+          (mouseleave)="onMouseLeave()"
+          tabindex="0"
+          role="button"
+          [attr.aria-label]="'To section ' + item.id | translate"
+          role="button"
+        >
+          <div
+            class="flex gap-2 lg:gap-10 justify-start h-full text-secondary-neutral-mineShaft"
+          >
+            @if (item.id % 2 !== 0) {
+              <app-icon
+                [name]="hovered() === item.id ? 'grabHandBold' : 'grabHand'"
+                class="w-[50px] h-[50px]"
+              ></app-icon>
+            } @else {
+              <app-icon
+                [name]="hovered() === item.id ? 'grabPawBold' : 'grabPaw'"
+                class="w-[50px] h-[50px]"
+              ></app-icon>
+            }
+            <div
+              class="flex h-full text-left items-center group-hover:font-bold"
+            >
+              {{ item.title | translate | uppercase }}
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+    <div class="flex flex-col mt-[60px]">
+      <app-secondary-large-button
+        class="w-[260px] flex flex-col"
+        buttonTitle="ADOPTION_RULES"
+        (pressButton)="goToAdoptionRules()"
+      ></app-secondary-large-button>
+    </div>
+  </div>
+  <!-- Третій екран з тваринками -->
+  <app-animals-for-adoption></app-animals-for-adoption>
+  <!-- Четвертий екран задонатити -->
+  <div class="lg:grid lg:grid-cols-2 flex flex-col">
+    <div
+      class="flex flex-col items-center justify-center text-secondary-neutral-mineShaft bg-primary-light-orange bg-center px-5 pb-[80px]"
+    >
+      <h2
+        class="font-fixel font-bold mt-10 mx-3 lg:mx-[30px] text-center leading-[1.2]"
+        style="font-size: clamp(16px, 6.5vw, 40px)"
+      >
+        {{ 'SUPPORT_LINE_DESCRIPTION3' | translate }}
+      </h2>
+      <p class="flex mt-6 max-w-[699px] text-start">
+        {{ 'SUPPORT_LINE_DESCRIPTION4' | translate }}
+      </p>
+      <div class="flex flex-col mt-6">
+        <app-primary-large-button
+          class="w-[260px] flex flex-col"
+          buttonTitle="DONATE"
+          (pressButton)="goToDonation()"
+        ></app-primary-large-button>
+      </div>
+    </div>
+    <div class="overflow-hidden w-full">
+      <img
+        src="../../../assets/images/adoption/dog_with_girl_in_orange_jumper.png"
+        alt="dog"
+        class="w-full h-auto object-cover"
+      />
+    </div>
+  </div>
+</div>

@@ -15,7 +15,8 @@
     "serve:ssr": "node dist/petcare-frontend/server/server.mjs",
     "start:ssr": "node server.mjs",
     "cy:open": "cypress open",
-    "cy:run": "cypress run"
+    "cy:run": "cypress run",
+		"start:proxy": "ng serve --proxy-config proxy.conf.json"
   },
   "private": true,
   "dependencies": {

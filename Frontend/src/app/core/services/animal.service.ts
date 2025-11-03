@@ -1,9 +1,10 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, forkJoin, map, of, switchMap } from 'rxjs';
-import { Animal } from '../models/animal';
+import { Observable, map, tap } from 'rxjs';
+import { Animal, AnimalListResult } from '../models/animal';
 
 import { ApiService } from './api.service'; // оновлена адреса
 
+import { HttpParams } from '@angular/common/http';
 import { BreedService } from './breed.service';
 import { ShelterService } from './shelter.service';
 import { SpeciesService } from './species.service';
@@ -19,140 +20,76 @@ export class AnimalService {
 
   private readonly endpoint = 'animals';
 
-
   getAnimalById(id: string): Observable<Animal | undefined> {
     return this.api.getById<Animal>(this.endpoint, id).pipe(
-      switchMap(animal => {
-        if (!animal) return of(undefined);
+      map(animal => {
+        if (!animal) return undefined;
 
-        const breed$ = animal.breedId
-          ? this.breedService.getBreedById(animal.breedId)
-          : of(undefined);
-        const shelter$ = animal.shelterId
-          ? this.shelterService.getShelterById(animal.shelterId)
-          : of(undefined);
-        const user$ = animal.userId
-          ? this.userService.getUserById(animal.userId)
-          : of(undefined);
+        const age = this.calculateAgeParts(animal.birthday);
 
-        return forkJoin({
-          breed: breed$,
-          shelter: shelter$,
-          user: user$,
-        }).pipe(
-          switchMap(({ breed, shelter, user }) => {
-            if (!breed) return of(undefined);
-            return this.speciesService.getSpeciesById(breed.speciesId).pipe(
-              map(species => {
-                const age = this.calculateAgeParts(animal.birthday);
-                return {
-                  ...animal,
-                  breed,
-                  species,
-                  shelter,
-                  user,
-                  age,
-                } as Animal;
-              })
-            );
-          })
-        );
+        return { ...animal, age } as Animal;
       })
     );
   }
 
   getAnimalBySlug(slug: string): Observable<Animal | undefined> {
-    return this.api
-      .getBySlug<Animal>(this.endpoint, slug)
-      .pipe(map(animals => animals[0]))
-      .pipe(
-        switchMap(animal => {
-          if (!animal) return of(undefined);
+    return this.api.getBySlug<Animal>(this.endpoint, slug).pipe(
+      map(animal => {
+        if (!animal) return undefined;
 
-          const breed$ = animal.breedId
-            ? this.breedService.getBreedById(animal.breedId)
-            : of(undefined);
-          const shelter$ = animal.shelterId
-            ? this.shelterService.getShelterById(animal.shelterId)
-            : of(undefined);
-          const user$ = animal.userId
-            ? this.userService.getUserById(animal.userId)
-            : of(undefined);
+        const age = this.calculateAgeParts(animal.birthday);
 
-          return forkJoin({
-            breed: breed$,
-            shelter: shelter$,
-            user: user$,
-          }).pipe(
-            switchMap(({ breed, shelter, user }) => {
-              if (!breed) return of(undefined);
-              return this.speciesService.getSpeciesById(breed.speciesId).pipe(
-                map(species => {
-                  const age = this.calculateAgeParts(animal.birthday);
-                  return {
-                    ...animal,
-                    breed,
-                    species,
-                    shelter,
-                    user,
-                    age,
-                  } as Animal;
-                })
-              );
-            })
-          );
-        })
-      );
-  }
-
-  getAnimals(): Observable<Animal[]> {
-    return this.api.get<Animal[]>(this.endpoint).pipe(
-      switchMap(animals => {
-        if (animals.length === 0) return of([]);
-
-        const detailedAnimals$ = animals.map(animal => {
-          const breed$ = animal.breedId
-            ? this.breedService.getBreedById(animal.breedId)
-            : of(undefined);
-          const shelter$ = animal.shelterId
-            ? this.shelterService.getShelterById(animal.shelterId)
-            : of(undefined);
-          const user$ = animal.userId
-            ? this.userService.getUserById(animal.userId)
-            : of(undefined);
-          const isChecked$ = of(false);
-
-          return forkJoin({
-            breed: breed$,
-            shelter: shelter$,
-            user: user$,
-            isChecked: isChecked$,
-          }).pipe(
-            switchMap(({ breed, shelter, user, isChecked }) => {
-              if (!breed) return of(undefined);
-              return this.speciesService.getSpeciesById(breed.speciesId).pipe(
-                map(species => {
-                  const age = this.calculateAgeParts(animal.birthday);
-                  return {
-                    ...animal,
-                    breed,
-                    species,
-                    shelter,
-                    user,
-                    isChecked,
-                    age,
-                  } as Animal;
-                })
-              );
-            })
-          );
-        });
-
-        return forkJoin(detailedAnimals$).pipe(
-          map(details => details.filter((d): d is Animal => !!d))
-        );
+        return { ...animal, age } as Animal;
       })
     );
+  }
+
+  getAnimals(filters?: {
+    page?: number;
+    pageSize?: number;
+    genders?: string[];
+    sizes?: string[];
+    statuses?: string[];
+    isSterilized?: boolean;
+    shelterId?: string;
+    specieId?: string;
+  }): Observable<AnimalListResult> {
+    let params = new HttpParams();
+
+    if (filters?.page) params = params.set('page', filters.page.toString());
+    if (filters?.pageSize)
+      params = params.set('pageSize', filters.pageSize.toString());
+    if (filters?.genders?.length)
+      params = params.set('genders', filters.genders.join(','));
+    if (filters?.sizes?.length)
+      params = params.set('sizes', filters.sizes.join(','));
+    if (filters?.statuses?.length)
+      params = params.set('statuses', filters.statuses.join(','));
+    if (filters?.isSterilized !== undefined)
+      params = params.set('isSterilized', filters.isSterilized.toString());
+    if (filters?.shelterId) params = params.set('shelterId', filters.shelterId);
+    if (filters?.specieId) params = params.set('specieId', filters.specieId);
+
+    return this.api
+      .get<{ animals: Animal[]; totalCount: number }>(this.endpoint, params)
+      .pipe(
+        map(response => {
+          const animals = Array.isArray(response.animals)
+            ? response.animals
+            : [];
+          return {
+            animals: animals.map(animal => ({
+              ...animal,
+              age: this.calculateAgeParts(animal.birthday),
+              isChecked: false,
+            })),
+            totalCount: response.totalCount ?? animals.length,
+          } as AnimalListResult;
+        }),
+        tap(result =>
+          console.log('Animals after processing in service:', result)
+        )
+      );
   }
 
   create(animal: Partial<Animal>): Observable<Animal> {

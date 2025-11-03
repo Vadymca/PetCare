@@ -67,34 +67,31 @@ export class ArticleService {
     );
   }
   getArticleBySlug(slug: string): Observable<Article | undefined> {
-    return this.api
-      .getBySlug<Article>(this.endpoint, slug)
-      .pipe(map(articles => articles[0]))
-      .pipe(
-        switchMap(article => {
-          if (!article) return of(undefined);
+    return this.api.getBySlug<Article>(this.endpoint, slug).pipe(
+      switchMap(article => {
+        if (!article) return of(undefined);
 
-          const category$ = article.categoryId
-            ? this.categoryService.getCategoryById(article.categoryId)
-            : of(undefined);
+        const category$ = article.categoryId
+          ? this.categoryService.getCategoryById(article.categoryId)
+          : of(undefined);
 
-          const author$ = article.authorId
-            ? this.userService.getUserById(article.authorId)
-            : of(undefined);
+        const author$ = article.authorId
+          ? this.userService.getUserById(article.authorId)
+          : of(undefined);
 
-          return forkJoin({ category: category$, author: author$ }).pipe(
-            map(({ category, author }) => {
-              if (!category || !author) return undefined;
+        return forkJoin({ category: category$, author: author$ }).pipe(
+          map(({ category, author }) => {
+            if (!category || !author) return undefined;
 
-              return {
-                ...article,
-                category,
-                author,
-              } as Article;
-            })
-          );
-        })
-      );
+            return {
+              ...article,
+              category,
+              author,
+            } as Article;
+          })
+        );
+      })
+    );
   }
   getArticlesByAuthorId(authorId: string): Observable<Article[]> {
     return this.getArticles().pipe(

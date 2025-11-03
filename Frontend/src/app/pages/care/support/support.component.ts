@@ -2,6 +2,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, inject, PLATFORM_ID, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { filter } from 'rxjs';
 import { AnimalsForCareComponent } from '../../../shared/components/animals-for-care/animals-for-care.component';
 import { PrimaryLargeButtonComponent } from '../../../shared/components/buttons/blue/primary-large-button.component';
 import { PrimarySmallButtonComponent } from '../../../shared/components/buttons/blue/primary-small-button.component';
@@ -9,7 +10,6 @@ import { EventOrganizationComponent } from '../../../shared/components/event-org
 import { FinancialSupportComponent } from '../../../shared/components/financial-support/financial-support.component';
 import { IconComponent } from '../../../shared/components/icon.component';
 import { SupportVolunteeringComponent } from '../../../shared/components/support-volunteering/support-volunteering.component';
-import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-support',
@@ -41,8 +41,8 @@ export class SupportComponent {
     window.location.href = 'tel:+380503334455';
   }
   router = inject(Router);
-  goToAnimals() {
-    this.router.navigate(['animals']);
+  goToAdoption() {
+    this.router.navigate(['/adoption']);
   }
   menuItems = [
     {

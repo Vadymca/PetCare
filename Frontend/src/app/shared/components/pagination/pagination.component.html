@@ -1,0 +1,37 @@
+<div class="flex items-center justify-between space-x-2">
+  <!-- Ліва стрілка -->
+  <button
+    class="w-10 h-10 flex items-center justify-center disabled:text-secondary-neutral-silverChalice disabled:cursor-auto hover:text-primary-orange disabled:hover:text-secondary-neutral-silverChalice"
+    [disabled]="currentPage === 1"
+    (click)="leftArrowClick()"
+  >
+    <app-icon [name]="'leftArrow'"></app-icon>
+  </button>
+
+  @for (page of visiblePages(); track page) {
+    <div>
+      @if (page === null) {
+        <span class="px-2">…</span>
+      } @else {
+        <button
+          class="px-3 py-1 border transition border-transparent hover:text-primary-orange"
+          [class.underline]="page === currentPage"
+          [class.text-primary-orange]="page === currentPage"
+          (click)="goToPage(page)"
+        >
+          {{ page }}
+        </button>
+      }
+    </div>
+  }
+  <!-- Pages -->
+
+  <!-- Права стрілка -->
+  <button
+    class="w-10 h-10 flex items-center justify-center disabled:text-secondary-neutral-silverChalice disabled:cursor-auto hover:text-primary-orange disabled:hover:text-secondary-neutral-silverChalice"
+    [disabled]="currentPage === totalPages"
+    (click)="rightArrowClick()"
+  >
+    <app-icon [name]="'rightArrow'"></app-icon>
+  </button>
+</div>

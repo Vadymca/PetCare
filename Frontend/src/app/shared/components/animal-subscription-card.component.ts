@@ -33,15 +33,15 @@ import { AnimalSubscription } from '../../core/models/animalSubscription';
           <ng-container
             *ngIf="animalSubscription.animal!.age?.length === 2; else noAge"
           >
-            {{ animalSubscription.animal!.age[0] }}
+            {{ animalSubscription.animal!.age![0] }}
             {{
-              animalSubscription.animal!.age[0] === 1
+              animalSubscription.animal!.age![0] === 1
                 ? ('YEAR_SINGULAR' | translate)
                 : ('YEAR_PLURAL' | translate)
             }},
-            {{ animalSubscription.animal!.age[1] }}
+            {{ animalSubscription.animal!.age![1] }}
             {{
-              animalSubscription.animal!.age[1] === 1
+              animalSubscription.animal!.age![1] === 1
                 ? ('MONTH_SINGULAR' | translate)
                 : ('MONTH_PLURAL' | translate)
             }}

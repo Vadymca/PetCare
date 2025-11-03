@@ -6,6 +6,11 @@ import {
   ModalState,
 } from '../../../../core/services/modal.service';
 import { IconComponent } from '../../icon.component';
+import { BackupCodeLoginComponent } from '../backup-code-login/backup-code-login.component';
+import { BackupCodesComponent } from '../backup-codes/backup-codes.component';
+import { ChangePasswordConfirmationComponent } from '../change-password-confirmation/change-password-confirmation.component';
+import { ChangePasswordErrorComponent } from '../change-password-error/change-password-error.component';
+import { ChangePasswordComponent } from '../change-password/change-password.component';
 import { EmailConfirmedComponent } from '../email-confirmed/email-confirmed.component';
 import { EmailNotConfirmedComponent } from '../email-not-confirmed/email-not-confirmed.component';
 import { ExistingEmailErrorComponent } from '../existing-email-error/existing-email-error.component';
@@ -22,6 +27,8 @@ import { ResetPasswordConfirmationComponent } from '../reset-password-confirmati
 import { ResetPasswordErrorComponent } from '../reset-password-error/reset-password-error.component';
 import { ResetPasswordComponent } from '../reset-password/reset-password.component';
 import { SendEmailErrorComponent } from '../send-email-error/send-email-error.component';
+import { SetupSmsComponent } from '../setup-sms/setup-sms.component';
+import { SetupTotpComponent } from '../setup-totp/setup-totp.component';
 import { TwoFactorComponent } from '../two-factor/two-factor.component';
 import { WelcomeComponent } from '../welcome/welcome.component';
 @Component({
@@ -47,6 +54,13 @@ import { WelcomeComponent } from '../welcome/welcome.component';
     ResetPasswordConfirmationComponent,
     ResetPasswordErrorComponent,
     LiveDonationCollectionComponent,
+    ChangePasswordComponent,
+    ChangePasswordConfirmationComponent,
+    ChangePasswordErrorComponent,
+    SetupTotpComponent,
+    SetupSmsComponent,
+    BackupCodesComponent,
+    BackupCodeLoginComponent,
   ],
   template: `
     @if (modalState().isOpen) {
@@ -135,15 +149,14 @@ import { WelcomeComponent } from '../welcome/welcome.component';
                   (resendVerificationEmail)="handleResendVerificationEmail()"
                 ></app-email-not-confirmed>
               }
+
               @case ('two-factor') {
                 <app-two-factor
                   [errorMessage]="errorMessage"
                   [loading]="isLoading"
-                  [isTwoFactorEnabled]="isTwoFactorEnabled"
-                  [isSms2FaEnabled]="isSms2FaEnabled"
-                  [maskedPhoneNumber]="maskedPhoneNumber"
+                  [twoFaStatus]="twoFaStatus"
+                  [hiddenPhoneNumber]="hiddenPhoneNumber"
                   (submitButton)="handleSubmitTwoFaForm($event)"
-                  (backupCode)="handleSubmitBackupCode($event)"
                   (selectOption)="handleOption($event)"
                   (resendCode)="handleResendCode()"
                 ></app-two-factor>
@@ -176,6 +189,51 @@ import { WelcomeComponent } from '../welcome/welcome.component';
               @case ('live-donation-collection') {
                 <app-live-donation-collection></app-live-donation-collection>
               }
+              @case ('change-password') {
+                <app-change-password
+                  (submitForm)="handleSubmitChangePasswordForm($event)"
+                ></app-change-password>
+              }
+              @case ('change-password-confirmation') {
+                <app-change-password-confirmation></app-change-password-confirmation>
+              }
+              @case ('change-password-error') {
+                <app-change-password-error></app-change-password-error>
+              }
+              @case ('backup-code-login') {
+                <app-backup-code-login
+                  [errorMessage]="errorMessage"
+                  [loading]="isLoading"
+                  (submitForm)="handleUseRecoveryCode($event)"
+                ></app-backup-code-login>
+              }
+              @case ('setup-totp') {
+                <app-setup-totp
+                  [loading]="isLoading"
+                  [qrCodeImage]="qrCodeImage"
+                  [manualKey]="manualKey"
+                  [errorMessage]="errorMessage"
+                  (submitForm)="handleSubmitSetupTotp($event)"
+                ></app-setup-totp>
+              }
+              @case ('setup-sms') {
+                <app-setup-sms
+                  [loading]="isLoading"
+                  [errorMessage]="errorMessage"
+                  (submitCode)="handleSubmitSetupSms($event)"
+                  (resendCode)="handleResendSetupSms()"
+                ></app-setup-sms>
+              }
+
+              @case ('backup-codes') {
+                <app-backup-codes
+                  [codes]="backupCodes"
+                  [loading]="isLoading"
+                  [message]="errorMessage"
+                  (regenerateCodes)="handleRegenerateBackupCodes()"
+                  [errorMessage]="errorMessage"
+                ></app-backup-codes>
+              }
             }
           </div>
         </div>
@@ -196,25 +254,52 @@ export class AuthModalComponent {
   resetPasswordToken = signal<string | null>(null);
   resetPasswordEmail = signal<string | null>(null);
   authStep = signal<AuthStep>('login');
-
+  qrCodeImage = signal('');
+  manualKey = signal('');
   authService = inject(AuthService);
 
   errorMessage = signal<string>('');
   isLoading = signal(false);
-  isTwoFactorEnabled = signal(false);
-  isSms2FaEnabled = signal(false);
-  maskedPhoneNumber = signal('');
+  twoFaStatus = this.authService.twoFaStatus;
+  hiddenPhoneNumber = signal('');
+  backupCodes = signal<string[]>([]);
 
   constructor() {
+    effect(() => {
+      if (this.modalState().component === 'backup-codes') {
+        this.loadBackupCodes();
+      }
+    });
     effect(() => {
       this.resetPasswordToken.set(this.modalService.getToken());
       this.resetPasswordEmail.set(
         this.modalService.getResettingPasswordEmail()
       );
       this.authStep.set(this.authService.getAuthStep());
+      this.qrCodeImage.set(this.modalService.getQrCodeImage() || '');
+      this.manualKey.set(this.modalService.getManualKey() || '');
     });
   }
   handleOption(option: ModalState['component']) {
+    console.log('handleOption - ', option);
+    if (option === 'backup-codes') {
+      this.loadBackupCodes(); // завантажуємо коди перед відображенням
+    }
+    if (option === 'setup-totp') {
+      this.authService.setupTotp().subscribe({
+        next: response => {
+          this.qrCodeImage.set(response.qrCodeImage);
+          this.manualKey.set(response.manualKey);
+          this.modalService.openModal('setup-totp');
+          console.log('Setup TOTP success!!!!!:', response.manualKey);
+        },
+        error: err => {
+          console.error('Setup TOTP error:', err);
+          //відобразити модалку помилки
+        },
+      });
+    }
+
     // Скидаємо дані при переході до welcome, login або register-email
     if (
       option &&
@@ -299,17 +384,30 @@ export class AuthModalComponent {
             this.isLoading.set(false);
             this.handleResendVerificationEmail();
           } else if (response.status === '2fa_required') {
-            this.isTwoFactorEnabled.set(true);
-            if (response.method === 'totp') {
-              this.isTwoFactorEnabled.set(true);
+            if (
+              response.hiddenPhoneNumber !== null &&
+              response.hiddenPhoneNumber !== undefined &&
+              response.hiddenPhoneNumber !== ''
+            ) {
+              this.hiddenPhoneNumber.set(response.hiddenPhoneNumber); //для прикладу
             }
             if (response.method === 'sms') {
-              this.isSms2FaEnabled.set(true);
-              this.maskedPhoneNumber.set(`+380*******25`); //поправити потім
-              this.maskedPhoneNumber.set(response.maskedPhoneNumber || ''); //для прикладу
+              this.authService.sendSms2fa().subscribe({
+                next: () => {
+                  this.isLoading.set(false);
+                  this.modalService.openModal('two-factor');
+                },
+                error: err => {
+                  this.errorMessage.set('SEND_SMS_ERROR');
+                  this.isLoading.set(false);
+                  console.error('Send SMS error:', err);
+                },
+              });
             }
-
-            this.modalService.openModal('two-factor');
+            if (response.method === 'totp') {
+              this.isLoading.set(false);
+              this.modalService.openModal('two-factor');
+            }
           } else if (response.status === 'error') {
             this.isLoading.set(false);
             this.errorMessage.set('AUTH_ERROR');
@@ -324,11 +422,23 @@ export class AuthModalComponent {
         },
       });
   }
-  handleSubmitTwoFaForm($event: string) {
+  handleSubmitTwoFaForm(code: string) {
     this.isLoading.set(true);
     this.errorMessage.set('');
+    const status = this.twoFaStatus();
 
-    this.authService.verify2fa($event).subscribe({
+    let request$;
+    if (status?.isTwoFactorEnabled) {
+      request$ = this.authService.verifyTotp(code);
+    } else if (status?.isSms2FaEnabled) {
+      request$ = this.authService.verifySms2fa(code);
+    } else {
+      this.errorMessage.set('NO_2FA_METHOD_ENABLED');
+      this.isLoading.set(false);
+      return;
+    }
+
+    request$.subscribe({
       next: () => {
         this.isLoading.set(false);
         this.modalService.closeModal();
@@ -353,20 +463,7 @@ export class AuthModalComponent {
       },
     });
   }
-  handleSubmitBackupCode($event: string) {
-    this.isLoading.set(true);
-    this.authService.verifyTotpBackupCode($event).subscribe({
-      next: () => {
-        this.isLoading.set(false);
-        this.modalService.closeModal();
-      },
-      error: err => {
-        this.errorMessage.set('INVALID_BACKUP_CODE');
-        this.isLoading.set(false);
-        console.error('Backup code error:', err);
-      },
-    });
-  }
+
   handleResendVerificationEmail() {
     this.authService.resendVerification(this.email).subscribe({
       next: () => {
@@ -379,6 +476,7 @@ export class AuthModalComponent {
       },
     });
   }
+
   handleSubmitForgotPassword($event: string) {
     this.isLoading.set(true);
     this.authService.forgotPassword($event).subscribe({
@@ -418,16 +516,124 @@ export class AuthModalComponent {
         },
       });
   }
+  handleSubmitChangePasswordForm($newPassword: string) {
+    this.authService.updateUser({ password: $newPassword }).subscribe({
+      next: () => {
+        this.modalService.openModal('change-password-confirmation');
+        this.isLoading.set(false);
+      },
+      error: err => {
+        console.error('Reset password error:', err);
+
+        this.modalService.openModal('change-password-error');
+        this.isLoading.set(false);
+      },
+    });
+  }
   private resetFormData() {
     this.isLoading.set(false);
     this.errorMessage.set('');
-    this.isTwoFactorEnabled.set(false);
-    this.isSms2FaEnabled.set(false);
-    this.maskedPhoneNumber.set('');
+    this.hiddenPhoneNumber.set('');
     this.email = '';
     this.firstName = '';
     this.lastName = '';
     this.postalCode = '';
     this.password = '';
+  }
+  handleSubmitSetupTotp(code: string) {
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    this.authService.verifyTotpSetup(code).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+        this.modalService.closeModal();
+      },
+      error: err => {
+        this.errorMessage.set('INVALID_TOTP_CODE');
+        this.isLoading.set(false);
+        console.error('TOTP error:', err.message);
+      },
+    });
+  }
+
+  handleSubmitSetupSms(code: string) {
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    this.authService.verifySmsSetup(code).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+        this.modalService.closeModal();
+      },
+      error: err => {
+        this.errorMessage.set('INVALID_SMS_CODE');
+        this.isLoading.set(false);
+        console.error('SMS 2FA error:', err.message);
+      },
+    });
+  }
+
+  handleResendSetupSms() {
+    this.isLoading.set(true);
+    this.authService.setupSms2fa().subscribe({
+      next: response => {
+        console.log('Setup SMS 2FA success:', response);
+        this.errorMessage.set('');
+        this.isLoading.set(false);
+      },
+      error: err => {
+        console.error('Setup SMS 2FA error:', err);
+        //відобразити модалку помилки
+      },
+    });
+  }
+
+  handleRegenerateBackupCodes() {
+    this.errorMessage.set('');
+    this.isLoading.set(true);
+    this.authService.regenerateTotpBackupCodes().subscribe({
+      next: response => {
+        this.isLoading.set(false);
+        this.backupCodes.set(response.backupCodes); // оновлюємо коди для компонента
+      },
+      error: err => {
+        this.isLoading.set(false);
+        this.errorMessage.set('FAILED_TO_REGENERATE_CODES');
+        console.error('Backup codes regeneration error:', err);
+      },
+    });
+  }
+
+  loadBackupCodes() {
+    this.isLoading.set(true);
+    this.authService.getTotpBackupCodes().subscribe({
+      next: response => {
+        this.backupCodes.set(response.backupCodes);
+        this.errorMessage.set('');
+        this.isLoading.set(false);
+      },
+      error: err => {
+        this.errorMessage.set('FAILED_TO_LOAD_CODES');
+        this.isLoading.set(false);
+        console.error('Failed to load backup codes:', err);
+      },
+    });
+  }
+
+  handleUseRecoveryCode($event: string) {
+    this.isLoading.set(true);
+    this.authService.verifyTotpBackupCode($event).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+        this.errorMessage.set('');
+        this.modalService.closeModal();
+      },
+      error: err => {
+        console.error('Recovery code error', err.message);
+        this.isLoading.set(false);
+        this.errorMessage.set('BACKAP_CODE_INVALID');
+      },
+    });
   }
 }

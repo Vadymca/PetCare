@@ -1,0 +1,14 @@
+<button
+  type="button"
+  class="flex items-center justify-center gap-2 h-[40px] w-[40px] rounded-40 p-4 uppercase font-inter font-bold text-base bg-primary-beige text-secondary-neutral-doveGray hover:bg-primary-beige hover:text-primary-orange active:bg-secondary-chileanFire-1 active:text-primary-orange disabled:bg-secondary-neutral-alto disabled:text-secondary-neutral-doveGray"
+  (click)="confirm()"
+  (mouseenter)="hovered.set(true)"
+  (mouseleave)="hovered.set(false); active.set(false)"
+  (mousedown)="active.set(true)"
+  (mouseup)="active.set(false)"
+  [disabled]="disabled()"
+>
+  <app-icon [name]="iconName()"></app-icon>
+
+  <ng-content select="[icon]"></ng-content>
+</button>

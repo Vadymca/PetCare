@@ -12,7 +12,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root', // standalone (не потребує модуля)
 })
 export class ApiService {
-  private readonly BASE_URL = environment.apiUrl; // json-server
+  private readonly BASE_URL = environment.apiUrl;
 
   private readonly http = inject(HttpClient); // замість конструктора
 
@@ -27,9 +27,9 @@ export class ApiService {
       .pipe(catchError(this.handleError));
   }
 
-  getBySlug<T>(endpoint: string, slug: string): Observable<T[]> {
+  getBySlug<T>(endpoint: string, slug: string): Observable<T> {
     return this.http
-      .get<T[]>(`${this.BASE_URL}/${endpoint}?slug=${slug}`)
+      .get<T>(`${this.BASE_URL}/${endpoint}/${slug}`)
       .pipe(catchError(this.handleError));
   }
   post<T>(
@@ -67,7 +67,7 @@ export class ApiService {
     //   .post<T>(`${this.BASE_URL}/${endpoint}`, formData)
     //   .pipe(catchError(this.handleError));
     return this.http
-      .post<T>('http://localhost:5000/api/media/upload', formData)
+      .post<T>(`${this.BASE_URL}/media/upload`, formData)
       .pipe(catchError(this.handleError));
   }
 

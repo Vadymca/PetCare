@@ -1,6 +1,7 @@
 import { UpperCasePipe } from '@angular/common';
 import { Component, EventEmitter, Output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
+import { environment } from '../../../../../environments/environment';
 import { ModalState } from '../../../../core/services/modal.service';
 import { PrimaryLargeButtonComponent } from '../../buttons/blue/primary-large-button.component';
 import { SecondaryLargeButtonComponent } from '../../buttons/blue/secondary-large-button.component';
@@ -21,8 +22,13 @@ import { IconComponent } from '../../icon.component';
 })
 export class WelcomeComponent {
   @Output() selectOption = new EventEmitter<ModalState['component']>();
+  private readonly baseUrl = environment.apiUrl;
+  facebookUri = `${this.baseUrl}/auth/facebook`;
 
   emitOption(option: ModalState['component']) {
     this.selectOption.emit(option);
+  }
+  facebookLogin() {
+    window.location.href = this.facebookUri;
   }
 }

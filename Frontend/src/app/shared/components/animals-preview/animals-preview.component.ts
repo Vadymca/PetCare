@@ -3,9 +3,8 @@ import { Component, effect, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { catchError, map, Observable, of } from 'rxjs';
+import { catchError, of } from 'rxjs';
 import { Animal } from '../../../core/models/animal';
-import { AnimalSubscription } from '../../../core/models/animalSubscription';
 import { AnimalSubscriptionService } from '../../../core/services/animal-subscription.service';
 import { AnimalService } from '../../../core/services/animal.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -31,54 +30,55 @@ export class AnimalsPreviewComponent {
   private animalSubscriptionService = inject(AnimalSubscriptionService);
   private animalService = inject(AnimalService);
   private authService = inject(AuthService);
-  private user = this.authService._currentUser;
   private authModalService = inject(ModalService);
-  animals: Animal[] = [];
-  private userSubscriptions = signal<AnimalSubscription[]>([]);
+  private user = this.authService._currentUser;
+
+  animals = signal<Animal[]>([]);
 
   constructor() {
-    this.animalService.getAnimals().subscribe(animals => {
-      this.animals = animals.slice(0, 8).map(animal => ({
+    // Завантажуємо тварин
+    this.animalService.getAnimals().subscribe(result => {
+      const animals = result.animals.slice(0, 8).map(animal => ({
         ...animal,
-        isChecked: false, // Гарантуємо ініціалізацію
-        isFavorite: false, // Додаємо для безпеки
-        animalSubscriptionId: '', // Додаємо для безпеки
+        isChecked: true,
+        isFavorite: false,
       }));
+      this.animals.set(animals);
+
+      // Завантажуємо фаворити і оновлюємо стани
       this.updateFavorites();
     });
 
+    // Ефект оновлення фаворитів
     effect(() => {
       const currentUser = this.user();
+      if (!currentUser) return;
 
-      if (currentUser) {
-        this.animalSubscriptionService
-          .getAnimalSubscriptionsByUserId(currentUser.id)
-          .pipe(
-            catchError(err => {
-              console.error('Error fetching user subscriptions:', err);
-              return of([]);
-            })
-          )
-          .subscribe(subscriptions => {
-            this.userSubscriptions.set(subscriptions);
-            this.updateFavorites();
-          });
-      } else {
-        this.userSubscriptions.set([]);
-        this.updateFavorites();
-      }
+      this.updateFavorites();
     });
   }
 
   private updateFavorites() {
-    const subscriptions = this.userSubscriptions();
-    this.animals.forEach(animal => {
-      animal.isChecked = false;
-      const found = subscriptions.find(s => s.animalId === animal.id);
-      animal.isFavorite = !!found;
-      animal.animalSubscriptionId = found?.id ?? '';
-      animal.isChecked = true;
-    });
+    if (!this.user()) return;
+
+    this.animalSubscriptionService
+      .getFavoriteAnimals()
+      .pipe(
+        catchError(err => {
+          console.error('Error fetching favorite animals:', err);
+          return of([]);
+        })
+      )
+      .subscribe(favorites => {
+        const favoriteIds = new Set(favorites.map(a => a.id));
+        this.animals.update(all =>
+          all.map(animal => ({
+            ...animal,
+            isFavorite: favoriteIds.has(animal.id),
+            isChecked: true,
+          }))
+        );
+      });
   }
 
   onHeartClick(animal: Animal) {
@@ -99,16 +99,21 @@ export class AnimalsPreviewComponent {
     animal.isChecked = false;
 
     this.animalSubscriptionService
-      .createAnimalSubscription({
-        animalId: animal.id,
-        userId: this.user()!.id,
-      })
+      .createAnimalSubscription(animal.id)
       .subscribe({
-        next: response => {
-          animal.isFavorite = true;
-          animal.animalSubscriptionId = response.id;
-          animal.isChecked = true;
-          this.userSubscriptions.update(subs => [...subs, response]);
+        next: subscription => {
+          this.animals.update(all =>
+            all.map(a =>
+              a.id === animal.id
+                ? {
+                    ...a,
+                    isFavorite: true,
+                    animalSubscriptionId: subscription.id,
+                    isChecked: true,
+                  }
+                : a
+            )
+          );
         },
         error: err => {
           console.error('Error creating animal subscription:', err);
@@ -118,21 +123,24 @@ export class AnimalsPreviewComponent {
   }
 
   unsubscribeFromAnimal(animal: Animal) {
-    if (!animal.isFavorite || !animal.animalSubscriptionId) {
-      console.warn('Cannot unsubscribe: invalid state', animal);
-      return;
-    }
+    if (!animal.isFavorite || !animal.animalSubscriptionId) return;
     animal.isChecked = false;
 
     this.animalSubscriptionService
       .deleteAnimalSubscription(animal.animalSubscriptionId)
       .subscribe({
         next: () => {
-          animal.isFavorite = false;
-          animal.animalSubscriptionId = '';
-          animal.isChecked = true;
-          this.userSubscriptions.update(subs =>
-            subs.filter(s => s.id !== animal.animalSubscriptionId)
+          this.animals.update(all =>
+            all.map(a =>
+              a.id === animal.id
+                ? {
+                    ...a,
+                    isFavorite: false,
+                    animalSubscriptionId: '',
+                    isChecked: true,
+                  }
+                : a
+            )
           );
         },
         error: err => {
@@ -140,24 +148,6 @@ export class AnimalsPreviewComponent {
           animal.isChecked = true;
         },
       });
-  }
-
-  isSubscribedToAnimal(animalValue: Animal): Observable<string> {
-    const userValue = this.user();
-    if (!userValue || !animalValue) return of('');
-
-    return this.animalSubscriptionService
-      .getAnimalSubscriptionsByUserId(userValue.id)
-      .pipe(
-        map(subscriptions => {
-          const found = subscriptions.find(s => s.animalId === animalValue.id);
-          return found?.id ?? '';
-        }),
-        catchError(err => {
-          console.error('Error fetching animal subscriptions:', err);
-          return of('');
-        })
-      );
   }
 
   onSeeAllAnimalsClick() {

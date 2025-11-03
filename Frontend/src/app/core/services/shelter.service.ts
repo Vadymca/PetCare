@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable } from 'rxjs';
 
 import { Shelter } from '../models/shelter';
 import { ApiService } from './api.service';
@@ -11,14 +11,14 @@ export class ShelterService {
   private api = inject(ApiService);
   private endpoint = `shelters`;
 
-  getShelters(): Observable<Shelter[]> {
-    return this.api.get<Shelter[]>(this.endpoint);
+  getShelters(): Observable<{ shelters: Shelter[]; totalCount: number }> {
+    return this.api.get<{ shelters: Shelter[]; totalCount: number }>(
+      this.endpoint
+    );
   }
 
   getShelterBySlug(slug: string): Observable<Shelter | undefined> {
-    return this.api
-      .getBySlug<Shelter>(this.endpoint, slug)
-      .pipe(map(shelters => shelters[0]));
+    return this.api.getBySlug<Shelter>(this.endpoint, slug);
   }
 
   getShelterById(id: string): Observable<Shelter> {
