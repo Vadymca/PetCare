@@ -503,30 +503,34 @@ public class Program
                 try
                 {
                     await connection.OpenAsync();
-                    Log.Information("✅ Database connection successful.");
+                    Log.Information("✅ Connected to database.");
 
-                    var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
-                    if (pendingMigrations.Any())
+                    var pending = await dbContext.Database.GetPendingMigrationsAsync();
+                    var applied = await dbContext.Database.GetAppliedMigrationsAsync();
+
+                    Log.Information("✅ Applied migrations: {Applied}", string.Join(", ", applied));
+                    Log.Information("🕓 Pending migrations: {Pending}", string.Join(", ", pending));
+
+                    if (pending.Any())
                     {
-                        Log.Information("🔄 Applying pending migrations: {Migrations}", string.Join(", ", pendingMigrations));
+                        Log.Information("🔄 Applying pending migrations...");
                         await dbContext.Database.MigrateAsync();
-                        Log.Information("✅ All migrations applied successfully.");
+                        Log.Information("✅ Migrations applied successfully.");
                     }
                     else
                     {
-                        Log.Information("✅ No pending migrations. Database is up to date.");
+                        Log.Information("✅ No pending migrations.");
                     }
                 }
-                catch (Exception dbEx)
+                catch (Exception ex)
                 {
-                    Log.Error(dbEx, "❌ Failed to apply migrations or connect to database.");
+                    Log.Error(ex, "❌ Migration check or apply failed.");
                 }
                 finally
                 {
                     await connection.CloseAsync();
                 }
 
-                // Виконуємо seed ролей та інших даних
                 await DataSeeder.SeedAsync(services);
             }
 
