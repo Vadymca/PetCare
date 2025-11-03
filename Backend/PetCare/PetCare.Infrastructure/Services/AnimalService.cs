@@ -14,7 +14,7 @@ public class AnimalService : IAnimalService
 {
     private readonly IAnimalRepository animalRepository;
     private readonly IShelterRepository shelterRepository;
-    private readonly IFileStorageService fileStorageService;
+    private readonly IStorageService storageService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AnimalService"/> class with the specified animal repository and file storage.
@@ -22,16 +22,16 @@ public class AnimalService : IAnimalService
     /// </summary>
     /// <param name="animalRepository">The repository used to manage animal data. Cannot be null.</param>
     /// <param name="shelterRepository">The repository used to manage shelter data. Cannot be null.</param>
-    /// <param name="fileStorageService">The service used for file storage operations related to animals. Cannot be null.</param>
+    /// <param name="storageService">The service used for file storage operations related to animals. Cannot be null.</param>
     /// <exception cref="ArgumentNullException">Thrown if animalRepository or fileStorageService is null.</exception>
     public AnimalService(
         IAnimalRepository animalRepository,
         IShelterRepository shelterRepository,
-        IFileStorageService fileStorageService)
+        IStorageService storageService)
     {
         this.animalRepository = animalRepository ?? throw new ArgumentNullException(nameof(animalRepository));
         this.shelterRepository = shelterRepository ?? throw new ArgumentNullException(nameof(shelterRepository));
-        this.fileStorageService = fileStorageService ?? throw new ArgumentNullException(nameof(fileStorageService));
+        this.storageService = storageService ?? throw new ArgumentNullException(nameof(storageService));
     }
 
         /// <summary>
@@ -277,7 +277,8 @@ public class AnimalService : IAnimalService
         if (removed)
         {
             await this.animalRepository.UpdateAsync(animal, cancellationToken);
-            await this.fileStorageService.DeleteAsync(photoUrl);
+            var objectName = Path.GetFileName(photoUrl);
+            await this.storageService.DeleteFileAsync(objectName);
         }
 
         return removed;

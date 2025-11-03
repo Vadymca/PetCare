@@ -41,6 +41,7 @@ public static class GetFavoriteAnimalsEndpoint
         .WithName("GetFavoriteAnimals")
         .WithTags("Animals")
         .Produces<IReadOnlyList<AnimalListDto>>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status401Unauthorized);
+        .Produces(StatusCodes.Status401Unauthorized)
+        .RequireRateLimiting("GlobalPolicy");
     }
 }

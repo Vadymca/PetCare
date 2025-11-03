@@ -32,6 +32,7 @@ public static class CreateSpecieEndpoint
             return Results.Created($"/api/species/{result.Id}", result);
         })
         .RequireAuthorization("AdminOnly")
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("CreateSpecie")
         .WithTags("Species")
         .Produces<SpecieListDto>(StatusCodes.Status201Created)

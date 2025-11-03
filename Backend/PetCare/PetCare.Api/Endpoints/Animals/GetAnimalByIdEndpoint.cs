@@ -32,6 +32,7 @@ public static class GetAnimalByIdEndpoint
         .WithTags("Animals")
         .Produces<AnimalDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequireRateLimiting("GlobalPolicy");
     }
 }

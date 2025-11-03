@@ -1,14 +1,14 @@
 ﻿namespace PetCare.Infrastructure;
 
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Abstractions.Services;
+using PetCare.Infrastructure.BackgroundJobs;
 using PetCare.Infrastructure.Options;
+using PetCare.Infrastructure.Payments;
 using PetCare.Infrastructure.Persistence.Repositories;
 using PetCare.Infrastructure.Services;
 using PetCare.Infrastructure.Services.Email;
@@ -38,6 +38,7 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IAdoptionApplicationRepository, AdoptionApplicationRepository>();
         services.AddScoped<IVolunteerTaskRepository, VolunteerTaskRepository>();
+        services.AddScoped<IGuardianshipRepository, GuardianshipRepository>();
 
         // Domain services
         services.AddScoped<IUserService, UserService>();
@@ -47,6 +48,9 @@ public static class DependencyInjection
         services.AddScoped<IAnimalService, AnimalService>();
         services.AddScoped<IShelterService, ShelterService>();
         services.AddScoped<ISpecieService, SpecieService>();
+        services.AddScoped<IGuardianshipService, GuardianshipService>();
+        services.AddScoped<IPaymentService, PaymentService>();
+        services.AddScoped<ISubscriptionService, SubscriptionService>();
 
         // Email services
         services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
@@ -89,7 +93,7 @@ public static class DependencyInjection
         });
 
         // File storage (local)
-        services.AddScoped<IFileStorageService, FileStorageService>();
+        //services.AddScoped<IFileStorageService, FileStorageService>();
 
         // Facebook OAuth settings
         services.Configure<FacebookSettings>(
@@ -103,6 +107,16 @@ public static class DependencyInjection
 
         // Minio Storage service
         services.AddScoped<IStorageService, MinioStorageService>();
+
+        // LiqPay Payment service
+        services.Configure<LiqPaySettings>(configuration.GetSection("LiqPay"));
+        services.AddHttpClient(nameof(LiqPayClient));
+        services.AddScoped<ILiqPayClient, LiqPayClient>();
+        services.AddScoped<ILiqPayService, LiqPayService>();
+
+        // Background jobs services
+        services.AddHostedService<GuardianshipAutoCompleteJob>();
+        services.AddHostedService<SubscriptionAutoCancelJob>();
 
         return services;
     }

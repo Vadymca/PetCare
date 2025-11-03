@@ -44,6 +44,7 @@ public static class CreateShelterEndpoint
             return Results.Created($"/api/shelters/{addedShelter.Id}", addedShelter);
         })
         .RequireAuthorization("AdminOnly")
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("CreateShelter")
         .WithTags("Shelters")
         .Produces<ShelterDto>(StatusCodes.Status201Created)

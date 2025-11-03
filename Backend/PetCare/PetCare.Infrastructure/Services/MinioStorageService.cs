@@ -156,8 +156,36 @@ public sealed class MinioStorageService : IStorageService
 
         if (!exists)
         {
+            // Створюємо бакет, якщо його ще немає
             await this.minioClient.MakeBucketAsync(new MakeBucketArgs().WithBucket(this.bucketName)).ConfigureAwait(false);
             this.logger.LogInformation("Created bucket '{Bucket}'", this.bucketName);
+
+            // Встановлюємо політику public read
+            string policyJson = $@"
+        {{
+            ""Version"": ""2012-10-17"",
+            ""Statement"": [
+                {{
+                    ""Effect"": ""Allow"",
+                    ""Principal"": {{ ""AWS"": [""*""] }},
+                    ""Action"": [""s3:GetObject""],
+                    ""Resource"": [""arn:aws:s3:::{this.bucketName}/*""]
+                }}
+            ]
+        }}";
+
+            try
+            {
+                await this.minioClient.SetPolicyAsync(new Minio.DataModel.Args.SetPolicyArgs()
+                    .WithBucket(this.bucketName)
+                    .WithPolicy(policyJson));
+
+                this.logger.LogInformation("Public read policy applied to bucket '{Bucket}'", this.bucketName);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogWarning(ex, "Failed to set public read policy for bucket '{Bucket}'", this.bucketName);
+            }
         }
     }
 }

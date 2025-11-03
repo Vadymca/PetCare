@@ -35,6 +35,7 @@ public static class DeleteAnimalEndpoint
         .Produces<DeleteAnimalResponseDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status404NotFound)
-        .Produces(StatusCodes.Status500InternalServerError);
+        .Produces(StatusCodes.Status500InternalServerError)
+        .RequireRateLimiting("GlobalPolicy");
     }
 }

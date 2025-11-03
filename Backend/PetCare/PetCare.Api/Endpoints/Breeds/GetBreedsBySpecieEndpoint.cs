@@ -40,6 +40,7 @@ public static class GetBreedsBySpecieEndpoint
         })
         .WithName("GetBreedsBySpecie")
         .WithTags("Breeds")
+        .RequireRateLimiting("GlobalPolicy")
         .Produces<GetBreedsResponseDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
     }

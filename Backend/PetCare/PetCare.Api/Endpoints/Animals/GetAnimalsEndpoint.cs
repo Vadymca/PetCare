@@ -72,6 +72,7 @@ public static class GetAnimalsEndpoint
         })
         .WithName("GetAnimals")
         .WithTags("Animals")
-        .Produces<GetAnimalsResponseDto>(StatusCodes.Status200OK);
+        .Produces<GetAnimalsResponseDto>(StatusCodes.Status200OK)
+        .RequireRateLimiting("GlobalPolicy");
     }
 }

@@ -32,6 +32,7 @@ public static class AddUserRoleEndpoint
             return Results.Ok(result);
         })
         .RequireAuthorization("AdminOnly") // політика AdminOnly
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("AddUserRole")
         .WithTags("Users")
         .Produces<AddUserRoleResponseDto>(StatusCodes.Status200OK)

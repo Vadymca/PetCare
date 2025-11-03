@@ -30,6 +30,7 @@ public static class GetShelterBySlugEndpoint
         })
         .WithName("GetShelterBySlug")
         .WithTags("Shelters")
+        .RequireRateLimiting("GlobalPolicy")
         .Produces<ShelterDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound);

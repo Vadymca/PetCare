@@ -43,6 +43,7 @@ public static class UpdateUserEndpoint
             return Results.Ok(result);
         })
         .RequireAuthorization("AdminOnly")
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("UpdateUser")
         .WithTags("Users")
         .Produces<UserDto>(StatusCodes.Status200OK)

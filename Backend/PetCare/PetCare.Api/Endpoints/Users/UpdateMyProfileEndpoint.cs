@@ -51,6 +51,7 @@ public static class UpdateMyProfileEndpoint
             return Results.Ok(result);
         })
         .RequireAuthorization()
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("UpdateMyProfile")
         .WithTags("Users")
         .Produces<UserDto>(StatusCodes.Status200OK)

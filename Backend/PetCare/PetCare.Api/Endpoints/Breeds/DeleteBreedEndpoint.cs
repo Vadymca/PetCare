@@ -30,6 +30,7 @@ public static class DeleteBreedEndpoint
             return Results.Ok(response);
         })
         .RequireAuthorization("AdminOnly") // Only admins can delete
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("DeleteBreed")
         .WithTags("Breeds")
         .Produces<DeleteBreedResponseDto>(StatusCodes.Status200OK)

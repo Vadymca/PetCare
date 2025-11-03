@@ -31,6 +31,7 @@ public static class CreateBreedEndpoint
             return Results.Created($"/api/breeds/{result.Id}", result);
         })
         .RequireAuthorization("AdminOnly")
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("CreateBreed")
         .WithTags("Breeds")
         .Produces<BreedWithSpecieDto>(StatusCodes.Status201Created)

@@ -54,6 +54,7 @@ public static class UnsubscribeFromAnimalEndpoint
         .WithTags("Animals")
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequireRateLimiting("GlobalPolicy");
     }
 }

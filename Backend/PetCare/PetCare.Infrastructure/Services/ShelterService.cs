@@ -16,23 +16,23 @@ public sealed class ShelterService : IShelterService
 {
     private readonly IShelterRepository shelterRepository;
     private readonly IUserService userService;
-    private readonly IFileStorageService fileStorageService;
+    private readonly IStorageService storageService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ShelterService"/> class using the specified shelter repository.
     /// </summary>
     /// <param name="shelterRepository">The repository implementation used to access and manage shelter data. Cannot be null.</param>
     /// <param name="userService">The user service used to manage user roles. Cannot be null.</param>
-    /// <param name="fileStorageService">The file storage service used to manage shelter photos. Cannot be null.</param>
+    /// <param name="storageService">The storage service used to manage shelter photos. Cannot be null.</param>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="shelterRepository"/> is null.</exception>
     public ShelterService(
         IShelterRepository shelterRepository,
         IUserService userService,
-        IFileStorageService fileStorageService)
+        IStorageService storageService)
     {
         this.shelterRepository = shelterRepository ?? throw new ArgumentNullException(nameof(shelterRepository));
         this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
-        this.fileStorageService = fileStorageService ?? throw new ArgumentNullException(nameof(fileStorageService));
+        this.storageService = storageService ?? throw new ArgumentNullException(nameof(storageService));
     }
 
     /// <summary>
@@ -202,7 +202,8 @@ public sealed class ShelterService : IShelterService
         if (removed)
         {
             await this.shelterRepository.UpdateAsync(shelter, cancellationToken);
-            await this.fileStorageService.DeleteAsync(photoUrl);
+            var objectName = Path.GetFileName(photoUrl);
+            await this.storageService.DeleteFileAsync(objectName);
         }
 
         return removed;

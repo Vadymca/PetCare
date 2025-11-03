@@ -18,7 +18,7 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
     private readonly IUserService userService;
     private readonly IMapper mapper;
     private readonly IZipcodebaseService zipcodebaseService;
-    private readonly IFileStorageService fileStorage;
+    private readonly IStorageService storageService;
     private readonly ILogger<UpdateUserCommandHandler> logger;
 
     /// <summary>
@@ -28,20 +28,20 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
     /// <param name="userService">The service used to perform user-related operations. Cannot be null.</param>
     /// <param name="mapper">The mapper used to convert between domain and data transfer objects. Cannot be null.</param>
     /// <param name="zipcodebaseService">Service to resolve addresses by postal code.</param>
-    /// <param name="fileStorage">File storage service for handling profile photos.</param>
+    /// <param name="storageService">File storage service for handling profile photos.</param>
     /// <param name="logger">The logger used to record diagnostic and operational information for this handler. Cannot be null.</param>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="userService"/>, <paramref name="mapper"/>, or <paramref name="logger"/> is null.</exception>
     public UpdateUserCommandHandler(
         IUserService userService,
         IMapper mapper,
         IZipcodebaseService zipcodebaseService,
-        IFileStorageService fileStorage,
+        IStorageService storageService,
         ILogger<UpdateUserCommandHandler> logger)
     {
         this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
         this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         this.zipcodebaseService = zipcodebaseService ?? throw new ArgumentNullException(nameof(zipcodebaseService));
-        this.fileStorage = fileStorage ?? throw new ArgumentNullException(nameof(fileStorage));
+        this.storageService = storageService ?? throw new ArgumentNullException(nameof(storageService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -141,7 +141,8 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
         {
             try
             {
-                await this.fileStorage.DeleteAsync(oldAvatarUrl);
+                var objectName = Path.GetFileName(oldAvatarUrl);
+                await this.storageService.DeleteFileAsync(objectName);
                 this.logger.LogInformation("Old avatar {OldAvatar} deleted successfully", oldAvatarUrl);
             }
             catch (Exception ex)

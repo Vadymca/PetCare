@@ -31,6 +31,7 @@ public static class GetSpecieByIdEndpoint
         })
         .WithName("GetSpecieById")
         .WithTags("Species")
+        .RequireRateLimiting("GlobalPolicy")
         .Produces<SpecieDetailDto>(StatusCodes.Status200OK);
     }
 }

@@ -38,6 +38,7 @@ public static class GetFavoriteSheltersEndpoint
             return Results.Ok(favoriteShelters);
         })
         .RequireAuthorization()
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("GetFavoriteShelters")
         .WithTags("Shelters")
         .Produces<IReadOnlyList<ShelterListDto>>(StatusCodes.Status200OK)

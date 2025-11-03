@@ -53,6 +53,7 @@ public static class UnsubscribeFromShelterEndpoint
             }
         })
         .RequireAuthorization()
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("UnsubscribeFromShelter")
         .WithTags("Shelters")
         .Produces(StatusCodes.Status200OK)

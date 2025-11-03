@@ -854,4 +854,24 @@ public sealed class Animal : AggregateRoot
     /// <returns>True if the user is the owner or has Admin/Moderator role; otherwise, false.</returns>
     public bool CanManageAdoptionApplications(Guid userId) =>
         this.IsOwner(userId) || (this.User != null && (this.User.Role == UserRole.Admin || this.User.Role == UserRole.Moderator));
+
+    /// <summary>Marks animal as being under guardianship.</summary>
+    public void MarkAsUnderCare()
+    {
+        if (!this.IsUnderCare)
+        {
+            this.IsUnderCare = true;
+            this.UpdatedAt = DateTime.UtcNow;
+        }
+    }
+
+    /// <summary>Removes guardianship mark from animal.</summary>
+    public void MarkAsNotUnderCare()
+    {
+        if (this.IsUnderCare)
+        {
+            this.IsUnderCare = false;
+            this.UpdatedAt = DateTime.UtcNow;
+        }
+    }
 }

@@ -30,6 +30,7 @@ public static class GetShelterByIdEndpoint
         })
         .WithName("GetShelterById")
         .WithTags("Shelters")
+        .RequireRateLimiting("GlobalPolicy")
         .Produces<ShelterDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound);

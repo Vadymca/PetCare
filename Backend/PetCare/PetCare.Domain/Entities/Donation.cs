@@ -10,6 +10,7 @@ using PetCare.Domain.Enums;
 public sealed class Donation : BaseEntity
 {
     private readonly List<AnimalAidDonation> animalAidLinks = new();
+    private readonly List<GuardianshipDonation> guardianshipLinks = new();
 
     private Donation()
     {
@@ -18,6 +19,7 @@ public sealed class Donation : BaseEntity
     private Donation(
         Guid? userId,
         decimal amount,
+        string currency,
         Guid? shelterId,
         Guid paymentMethodId,
         DonationStatus status,
@@ -33,8 +35,14 @@ public sealed class Donation : BaseEntity
             throw new ArgumentException("Сума повинна бути більшою за 0.", nameof(amount));
         }
 
+        if (string.IsNullOrWhiteSpace(currency))
+        {
+            throw new ArgumentException("Валюта не може бути порожньою.", nameof(currency));
+        }
+
         this.UserId = userId;
         this.Amount = amount;
+        this.Currency = currency;
         this.ShelterId = shelterId;
         this.PaymentMethodId = paymentMethodId;
         this.Status = status;
@@ -53,6 +61,9 @@ public sealed class Donation : BaseEntity
     /// Gets the amount of the donation.
     /// </summary>
     public decimal Amount { get; private set; }
+
+    /// <summary>Gets the currency of the donation (e.g., "UAH").</summary>
+    public string Currency { get; private set; } = "UAH";
 
     /// <summary>
     /// Gets the current status of the donation.
@@ -130,9 +141,22 @@ public sealed class Donation : BaseEntity
     public PaymentMethod? PaymentMethod { get; private set; }
 
     /// <summary>
+    /// Gets the target entity type for this donation (e.g., "Guardianship", "AnimalAidRequest", "Global").
+    /// </summary>
+    public string? TargetEntity { get; private set; }
+
+    /// <summary>
+    /// Gets the identifier of the target entity, if applicable.
+    /// </summary>
+    public Guid? TargetEntityId { get; private set; }
+
+    /// <summary>
     /// Gets the list of AnimalAidRequest links associated with this donation.
     /// </summary>
     public IReadOnlyList<AnimalAidDonation> AnimalAidLinks => this.animalAidLinks.AsReadOnly();
+
+    /// <summary>Gets the list of guardianships linked to this donation.</summary>
+    public IReadOnlyCollection<GuardianshipDonation> Guardianships => this.guardianshipLinks.AsReadOnly();
 
     /// <summary>
     /// Creates a new <see cref="Donation"/> instance with the specified parameters.
@@ -153,6 +177,7 @@ public sealed class Donation : BaseEntity
     public static Donation Create(
         Guid? userId,
         decimal amount,
+        string currency,
         Guid? shelterId,
         Guid paymentMethodId,
         DonationStatus status,
@@ -166,6 +191,7 @@ public sealed class Donation : BaseEntity
         return new Donation(
            userId,
            amount,
+           currency,
            shelterId,
            paymentMethodId,
            status,
@@ -257,6 +283,23 @@ public sealed class Donation : BaseEntity
         }
 
         this.animalAidLinks.Remove(link);
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Sets the target entity information (e.g., Guardianship, AnimalAidRequest, Global).
+    /// </summary>
+    /// <param name="entityName">The logical name of the target entity (e.g., "Guardianship").</param>
+    /// <param name="entityId">The unique identifier of the entity, or null for global donations.</param>
+    public void SetTarget(string entityName, Guid? entityId)
+    {
+        if (string.IsNullOrWhiteSpace(entityName))
+        {
+            throw new InvalidOperationException("Назва цілі платежу (TargetEntity) не може бути порожньою.");
+        }
+
+        this.TargetEntity = entityName;
+        this.TargetEntityId = entityId;
         this.UpdatedAt = DateTime.UtcNow;
     }
 }

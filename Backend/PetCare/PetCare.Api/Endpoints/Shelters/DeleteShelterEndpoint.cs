@@ -39,6 +39,7 @@ public static class DeleteShelterEndpoint
             return Results.Ok(response);
         })
         .RequireAuthorization("AdminOnly")
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("DeleteShelter")
         .WithTags("Shelters")
         .Produces<DeleteShelterResponseDto>(StatusCodes.Status200OK)

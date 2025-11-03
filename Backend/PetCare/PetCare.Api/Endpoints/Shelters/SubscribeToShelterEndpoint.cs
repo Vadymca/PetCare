@@ -51,6 +51,7 @@ public static class SubscribeToShelterEndpoint
             }
         })
         .RequireAuthorization()
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("SubscribeToShelter")
         .WithTags("Shelters")
         .Produces<ShelterSubscriptionDto>(StatusCodes.Status200OK)

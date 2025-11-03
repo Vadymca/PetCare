@@ -30,6 +30,7 @@ public static class GetUserByIdEndpoint
             return Results.Ok(result);
         })
         .RequireAuthorization("ResourceOwnerOrAdmin")
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("GetUserById")
         .WithTags("Users")
         .Produces<UserDto>(StatusCodes.Status200OK)

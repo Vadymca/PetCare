@@ -72,6 +72,7 @@ public static class CreateAnimalEndpoint
         .Produces<AnimalDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequireRateLimiting("GlobalPolicy");
     }
 }

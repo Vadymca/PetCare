@@ -31,6 +31,7 @@ public static class RemoveShelterPhotoEndpoint
             return Results.Ok(updatedShelter);
         })
         .RequireAuthorization("CanManageShelter") // ShelterManager or Admin
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("RemoveShelterPhoto")
         .WithTags("Shelters")
         .Produces<ShelterDto>(StatusCodes.Status200OK)

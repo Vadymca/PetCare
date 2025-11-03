@@ -33,6 +33,7 @@ public static class GetUserActivityEndpoint
                 return Results.Ok(result);
             })
             .RequireAuthorization("ResourceOwnerOrAdmin")
+            .RequireRateLimiting("GlobalPolicy")
             .WithName("GetUserActivity")
             .WithTags("Users")
             .Produces<GetUserActivityResponseDto>(StatusCodes.Status200OK)

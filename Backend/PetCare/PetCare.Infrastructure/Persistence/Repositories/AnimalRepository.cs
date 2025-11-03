@@ -15,19 +15,14 @@ using PetCare.Infrastructure.Persistence;
 /// </summary>
 public class AnimalRepository : GenericRepository<Animal>, IAnimalRepository
 {
-    private readonly IFileStorageService fileStorageService;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AnimalRepository"/> class.
     /// </summary>
     /// <param name="context">The database context.</param>
-    /// <param name="fileStorageService">The file storage service for handling animal photos.</param>
     public AnimalRepository(
-        AppDbContext context,
-        IFileStorageService fileStorageService)
+        AppDbContext context)
         : base(context)
     {
-        this.fileStorageService = fileStorageService ?? throw new ArgumentNullException(nameof(fileStorageService));
     }
 
     /// <inheritdoc />

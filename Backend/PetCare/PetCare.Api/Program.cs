@@ -19,6 +19,8 @@ using PetCare.Api.Endpoints.Auth.TwoFactor;
 using PetCare.Api.Endpoints.Auth.TwoFactor.Sms;
 using PetCare.Api.Endpoints.Breeds;
 using PetCare.Api.Endpoints.Media;
+using PetCare.Api.Endpoints.Payments;
+using PetCare.Api.Endpoints.Payments.LiqPay;
 using PetCare.Api.Endpoints.Shelters;
 using PetCare.Api.Endpoints.Species;
 using PetCare.Api.Endpoints.Users;
@@ -176,6 +178,9 @@ public class Program
                         npgsql.MapEnum<LostPetStatus>("lost_pet_status");
                         npgsql.MapEnum<UserRole>("user_role");
                         npgsql.MapEnum<VolunteerTaskStatus>("volunteer_task_status");
+                        npgsql.MapEnum<GuardianshipStatus>("guardianship_status");
+                        npgsql.MapEnum<SubscriptionScope>("subscription_scope");
+                        npgsql.MapEnum<SubscriptionStatus>("subscription_status");
                     })
                     .EnableSensitiveDataLogging()
                     .EnableDetailedErrors()
@@ -460,6 +465,19 @@ public class Program
             app.MapCreateBreedEndpoint(); // /api/breeds
             app.MapUpdateBreedEndpoint(); // /api/breeds/{id}
             app.MapDeleteBreedEndpoint(); // /api/breeds/{id}
+
+            // ---------------------- Payments ----------------------
+            app.MapLiqPayCheckoutEndpoint(); // /api/payments/liqpay/checkout
+            app.MapLiqPayCallbackEndpoint(); // /api/payments/liqpay/callback
+            app.MapLiqPayStatusEndpoint(); // /api/payments/liqpay/status
+            app.MapGetMyGuardianshipsEndpoint(); // /api/guardianships/me
+            app.MapGetMyPaymentHistoryEndpoint(); // /api/payments/me/history
+            app.MapGetMySubscriptionsEndpoint(); // /api/payments/me/subscriptions
+            app.MapGetMyUpcomingPaymentsEndpoint(); // /api/payments/me/upcoming
+            app.MapCancelSubscriptionEndpoint(); // /api/subscriptions/{providerSubscriptionId}/cancel
+            app.MapCreateGuardianshipEndpoint(); // /api/guardianships
+            app.MapGetAllDonationsEndpoint(); // /api/payments/all
+            app.MapGetProjectDonationsEndpoint(); // /api/payments/project/{projectId}
 
             app.MapGet("/", () => Results.Ok("✅ PetCare.Api is running successfully!"));
 

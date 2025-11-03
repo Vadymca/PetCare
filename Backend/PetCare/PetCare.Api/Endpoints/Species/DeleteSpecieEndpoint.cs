@@ -30,6 +30,7 @@ public static class DeleteSpecieEndpoint
             return Results.Ok(response);
         })
         .RequireAuthorization("AdminOnly") // Only admins can delete species
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("DeleteSpecie")
         .WithTags("Species")
         .Produces<DeleteSpecieResponseDto>(StatusCodes.Status200OK)

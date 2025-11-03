@@ -30,6 +30,7 @@ public static class GetSpeciesEndpoint
         })
         .WithName("GetSpecies")
         .WithTags("Species")
+        .RequireRateLimiting("GlobalPolicy")
         .Produces<GetSpeciesResponseDto>(StatusCodes.Status200OK);
     }
 }

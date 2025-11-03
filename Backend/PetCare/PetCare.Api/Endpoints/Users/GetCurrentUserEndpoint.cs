@@ -38,6 +38,7 @@ public static class GetCurrentUserEndpoint
             return Results.Ok(userDto);
         })
         .RequireAuthorization()
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("GetCurrentUser")
         .WithTags("Users")
         .Produces<UserDto>(StatusCodes.Status200OK)

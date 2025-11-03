@@ -30,6 +30,7 @@ public static class DeleteUserEndpoint
             return Results.Ok(result);
         })
         .RequireAuthorization("AdminOnly")
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("DeleteUser")
         .WithTags("Users")
         .Produces<DeleteUserResponseDto>(StatusCodes.Status200OK)

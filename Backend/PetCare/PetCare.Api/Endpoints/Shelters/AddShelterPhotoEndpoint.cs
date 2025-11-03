@@ -30,6 +30,7 @@ public static class AddShelterPhotoEndpoint
             return Results.Ok(result);
         })
         .RequireAuthorization("CanManageShelter")
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("AddShelterPhoto")
         .WithTags("Shelters")
         .Produces<ShelterDto>(StatusCodes.Status200OK)

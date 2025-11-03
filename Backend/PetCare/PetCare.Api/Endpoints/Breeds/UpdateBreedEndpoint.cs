@@ -38,6 +38,7 @@ public static class UpdateBreedEndpoint
                         return Results.Ok(updatedBreed);
                     })
         .RequireAuthorization("AdminOnly")
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("UpdateBreed")
         .WithTags("Breeds")
         .Produces<BreedWithSpecieDto>(StatusCodes.Status200OK)

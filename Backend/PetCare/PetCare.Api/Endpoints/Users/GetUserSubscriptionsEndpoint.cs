@@ -34,6 +34,7 @@ public static class GetUserSubscriptionsEndpoint
                 return Results.Ok(result);
             })
             .RequireAuthorization("ResourceOwnerOrAdmin")
+            .RequireRateLimiting("GlobalPolicy")
             .WithName("GetUserSubscriptions")
             .WithTags("Users")
             .Produces<GetUserSubscriptionsResponseDto>(StatusCodes.Status200OK)

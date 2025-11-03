@@ -20,6 +20,7 @@ public static class GetAllBreedsEndpoint
             var result = await mediator.Send(new GetAllBreedsCommand());
             return Results.Ok(result);
         })
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("GetAllBreeds")
         .WithTags("Breeds")
         .Produces<GetAllBreedsResponseDto>(StatusCodes.Status200OK)

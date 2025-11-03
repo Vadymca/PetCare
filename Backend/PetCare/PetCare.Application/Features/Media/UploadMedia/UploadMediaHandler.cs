@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using PetCare.Application.Interfaces;
 
 /// <summary>
@@ -41,27 +42,21 @@ public class UploadMediaHandler : IRequestHandler<UploadMediaCommand, string>
         ".mp4", ".avi", ".mov", ".mkv", ".wmv", ".flv", ".webm", ".mpeg",
     };
 
-    private readonly IFileStorageService storageService;
+    private readonly IStorageService storageService;
+    private readonly ILogger<UploadMediaHandler> logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UploadMediaHandler"/> class.
     /// </summary>
-    /// <param name="storageService">The file storage service used to save uploaded files.</param>
-    public UploadMediaHandler(IFileStorageService storageService)
+    /// <param name="storageService">The MinIO storage service used for saving files.</param>
+    /// <param name="logger">The logger used to record informational messages.</param>
+    public UploadMediaHandler(IStorageService storageService, ILogger<UploadMediaHandler> logger)
     {
         this.storageService = storageService ?? throw new ArgumentNullException(nameof(storageService), "Сервіс збереження файлів не може бути null.");
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger), "Логер не може бути null.");
     }
 
-    /// <summary>
-    /// Handles the media upload command.
-    /// Determines media type based on file extension, validates size and extension, and uploads the file.
-    /// </summary>
-    /// <param name="request">The upload media command containing the file.</param>
-    /// <param name="cancellationToken">Cancellation token for async operation.</param>
-    /// <returns>The URL of the uploaded media file.</returns>
-    /// <exception cref="ArgumentException">
-    /// Thrown when the file is empty, has an invalid extension, or exceeds the maximum allowed size.
-    /// </exception>
+    /// <inheritdoc/>
     public async Task<string> Handle(UploadMediaCommand request, CancellationToken cancellationToken)
     {
         if (request.File == null || request.File.Length == 0)
@@ -78,23 +73,21 @@ public class UploadMediaHandler : IRequestHandler<UploadMediaCommand, string>
 
         string mediaType;
         long maxSizeBytes;
-        string[] allowedExtensions;
 
         if (PhotoExtensions.Contains(extension))
         {
             mediaType = "photo";
             maxSizeBytes = MaxPhotoSize;
-            allowedExtensions = PhotoExtensions;
         }
         else if (VideoExtensions.Contains(extension))
         {
             mediaType = "video";
             maxSizeBytes = MaxVideoSize;
-            allowedExtensions = VideoExtensions;
         }
         else
         {
-            throw new ArgumentException($"Недопустимий формат файлу. Дозволені формати фото: {string.Join(", ", PhotoExtensions)}, відео: {string.Join(", ", VideoExtensions)}");
+            throw new ArgumentException(
+                $"Недопустимий формат файлу. Дозволені формати фото: {string.Join(", ", PhotoExtensions)}, відео: {string.Join(", ", VideoExtensions)}");
         }
 
         if (request.File.Length > maxSizeBytes)
@@ -103,7 +96,17 @@ public class UploadMediaHandler : IRequestHandler<UploadMediaCommand, string>
         }
 
         await using var stream = request.File.OpenReadStream();
-        var url = await this.storageService.UploadAsync(stream, request.File.FileName, request.File.ContentType);
+
+        // Викликаємо MinIO-сервіс
+        var url = await this.storageService.UploadFileAsync(stream, request.File.FileName, request.File.ContentType);
+
+        this.logger.LogInformation(
+            "Uploaded {MediaType} '{File}' ({Size} bytes) -> {Url}",
+            mediaType,
+            request.File.FileName,
+            request.File.Length,
+            url);
+
         return url;
     }
 }

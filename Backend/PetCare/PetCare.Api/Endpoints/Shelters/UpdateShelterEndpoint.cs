@@ -52,6 +52,7 @@ public static class UpdateShelterEndpoint
                     return Results.Ok(updatedShelter);
                 })
         .RequireAuthorization("CanManageShelter")
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("UpdateShelter")
         .WithTags("Shelters")
         .Produces<ShelterDto>(StatusCodes.Status200OK)

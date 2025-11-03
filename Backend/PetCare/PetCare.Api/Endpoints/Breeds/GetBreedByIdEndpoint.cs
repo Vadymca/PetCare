@@ -32,6 +32,7 @@ public static class GetBreedByIdEndpoint
         })
         .WithName("GetBreedById")
         .WithTags("Breeds")
+        .RequireRateLimiting("GlobalPolicy")
         .Produces<BreedWithSpecieDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
     }

@@ -30,6 +30,7 @@ public static class GetSheltersEndpoint
         })
         .WithName("GetShelters")
         .WithTags("Shelters")
+        .RequireRateLimiting("GlobalPolicy")
         .Produces<GetSheltersResponseDto>(StatusCodes.Status200OK);
     }
 }

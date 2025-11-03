@@ -55,6 +55,7 @@ public static class SubscribeToAnimalEndpoint
         .WithTags("Animals")
         .Produces<AnimalSubscriptionDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .RequireRateLimiting("GlobalPolicy");
     }
 }

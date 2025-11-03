@@ -1,5 +1,9 @@
 ﻿namespace PetCare.Infrastructure.Services;
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -13,11 +17,6 @@ using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
 using PetCare.Infrastructure.Persistence;
-using PetCare.Infrastructure.Persistence.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Service for user management operations using ASP.NET Core Identity.
@@ -40,7 +39,7 @@ public sealed class UserService : IUserService
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly IMemoryCache memoryCache;
     private readonly IUserRepository userRepository;
-    private readonly IFileStorageService fileStorage;
+    private readonly IStorageService storageService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserService"/> class with the specified dependencies required for user.
@@ -54,7 +53,7 @@ public sealed class UserService : IUserService
     /// <param name="httpContextAccessor">The accessor for the current HTTP context, enabling access to request-specific information.</param>
     /// <param name="memoryCache">The memory cache used for storing and retrieving frequently accessed data to improve performance.</param>
     /// <param name="userRepository">The user repository used for custom user data operations beyond standard identity management.</param>
-    /// <param name="fileStorage">The file storage service used to manage user-related files and documents.</param>
+    /// <param name="storageService">The file storage service used to manage user-related files and documents.</param>
     /// <exception cref="ArgumentNullException">Thrown if any of the parameters are null.</exception>
     public UserService(
         UserManager<User> userManager,
@@ -64,7 +63,7 @@ public sealed class UserService : IUserService
         IHttpContextAccessor httpContextAccessor,
         IMemoryCache memoryCache,
         IUserRepository userRepository,
-        IFileStorageService fileStorage)
+        IStorageService storageService)
     {
         this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         this.dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
@@ -73,7 +72,7 @@ public sealed class UserService : IUserService
         this.httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         this.memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
         this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-        this.fileStorage = fileStorage ?? throw new ArgumentNullException(nameof(fileStorage));
+        this.storageService = storageService ?? throw new ArgumentNullException(nameof(storageService));
     }
 
     /// <summary>

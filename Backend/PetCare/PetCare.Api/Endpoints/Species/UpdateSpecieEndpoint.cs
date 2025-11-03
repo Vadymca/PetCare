@@ -27,6 +27,7 @@ public static class UpdateSpecieEndpoint
             return Results.Ok(updatedSpecie);
         })
         .RequireAuthorization("AdminOnly")
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("UpdateSpecie")
         .WithTags("Species")
         .Produces<SpecieDetailDto>(StatusCodes.Status200OK)

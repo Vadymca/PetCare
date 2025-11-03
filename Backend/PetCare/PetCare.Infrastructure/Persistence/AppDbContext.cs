@@ -169,6 +169,30 @@ public class AppDbContext : IdentityDbContext<User, AppRole, Guid>
     /// </summary>
     public DbSet<VolunteerTaskAssignment> VolunteerTaskAssignments => this.Set<VolunteerTaskAssignment>();
 
+    /// <summary>
+    /// Gets the set of guardianship entities for querying and saving.
+    /// </summary>
+    /// <remarks>Use this property to access, query, and manage guardianship records in the database context.
+    /// Changes made to the returned set are tracked by the context and persisted to the database when SaveChanges is
+    /// called.</remarks>
+    public DbSet<Guardianship> Guardianships => this.Set<Guardianship>();
+
+    /// <summary>
+    /// Gets the database set for guardianship donation entities, enabling queries and updates within the context.
+    /// </summary>
+    /// <remarks>Use this property to access, query, or modify guardianship donation records in the database
+    /// through Entity Framework Core. Changes made to the returned set are tracked by the context and persisted when
+    /// SaveChanges is called.</remarks>
+    public DbSet<GuardianshipDonation> GuardianshipDonations => this.Set<GuardianshipDonation>();
+
+   /// <summary>
+   /// Gets the database set for managing payment subscription entities.
+   /// </summary>
+   /// <remarks>Use this property to query, add, update, or remove payment subscriptions within the database
+   /// context. Changes made to the returned set are tracked by the context and persisted to the database when
+   /// SaveChanges is called.</remarks>
+    public DbSet<PaymentSubscription> PaymentSubscriptions => this.Set<PaymentSubscription>();
+
     /// <inheritdoc/>
     /// <summary>
     /// Saves all changes made in this context to the database.
@@ -237,6 +261,9 @@ public class AppDbContext : IdentityDbContext<User, AppRole, Guid>
         modelBuilder.HasPostgresEnum<VolunteerTaskStatus>();
         modelBuilder.HasPostgresEnum<AnimalSize>();
         modelBuilder.HasPostgresEnum<AnimalTemperament>();
+        modelBuilder.HasPostgresEnum<GuardianshipStatus>();
+        modelBuilder.HasPostgresEnum<SubscriptionScope>();
+        modelBuilder.HasPostgresEnum<SubscriptionStatus>();
 
         base.OnModelCreating(modelBuilder);
 

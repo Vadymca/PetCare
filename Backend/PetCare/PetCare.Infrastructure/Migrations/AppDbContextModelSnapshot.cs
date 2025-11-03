@@ -37,9 +37,12 @@ namespace PetCare.Infrastructure.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "donation_status", new[] { "pending", "completed", "failed" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "event_status", new[] { "planned", "ongoing", "completed", "cancelled" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "event_type", new[] { "adoption_day", "fundraiser", "webinar", "volunteer_training" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "guardianship_status", new[] { "requires_payment", "active", "completed" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "io_t_device_status", new[] { "active", "inactive", "error" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "io_t_device_type", new[] { "feeder", "temperature", "camera" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "lost_pet_status", new[] { "lost", "found", "reunited" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "subscription_scope", new[] { "global", "aid_request", "guardianship" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "subscription_status", new[] { "active", "canceled", "paused" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "user_role", new[] { "user", "admin", "moderator", "shelter_manager", "veterinarian", "volunteer" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "volunteer_task_status", new[] { "open", "in_progress", "completed", "cancelled" });
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "postgis");
@@ -360,6 +363,52 @@ namespace PetCare.Infrastructure.Migrations
                             t.HasCheckConstraint("CK_Animals_Height", "\"Height\" > 0");
 
                             t.HasCheckConstraint("CK_Animals_Weight", "\"Weight\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("PetCare.Domain.Aggregates.Guardianship", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<Guid>("AnimalId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTime?>("GraceUntil")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<GuardianshipStatus>("Status")
+                        .HasColumnType("guardianship_status");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AnimalId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Guardianships", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Guardianships_StartDate", "\"StartDate\" <= NOW()");
                         });
                 });
 
@@ -996,7 +1045,8 @@ namespace PetCare.Infrastructure.Migrations
                         .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
 
                     b.Property<bool>("Anonymous")
                         .ValueGeneratedOnAdd()
@@ -1008,6 +1058,13 @@ namespace PetCare.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasDefaultValue("UAH");
+
                     b.Property<DateTime>("DonationDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -1017,8 +1074,8 @@ namespace PetCare.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Purpose")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<bool>("Recurring")
                         .ValueGeneratedOnAdd()
@@ -1033,6 +1090,13 @@ namespace PetCare.Infrastructure.Migrations
 
                     b.Property<DonationStatus>("Status")
                         .HasColumnType("donation_status");
+
+                    b.Property<string>("TargetEntity")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid?>("TargetEntityId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("TransactionId")
                         .HasMaxLength(255)
@@ -1057,6 +1121,8 @@ namespace PetCare.Infrastructure.Migrations
                     b.HasIndex("Status");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("TargetEntity", "TargetEntityId");
 
                     b.ToTable("Donations", null, t =>
                         {
@@ -1192,6 +1258,44 @@ namespace PetCare.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("CK_GamificationRewards_Points", "\"Points\" >= 0");
                         });
+                });
+
+            modelBuilder.Entity("PetCare.Domain.Entities.GuardianshipDonation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<Guid>("DonationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("DonationId1")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("GuardianshipId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DonationId");
+
+                    b.HasIndex("DonationId1");
+
+                    b.HasIndex("GuardianshipId", "DonationId")
+                        .IsUnique();
+
+                    b.ToTable("GuardianshipDonations", (string)null);
                 });
 
             modelBuilder.Entity("PetCare.Domain.Entities.IoTDevice", b =>
@@ -1460,6 +1564,79 @@ namespace PetCare.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("PaymentMethods", (string)null);
+                });
+
+            modelBuilder.Entity("PetCare.Domain.Entities.PaymentSubscription", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<DateTime?>("CanceledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<DateTime?>("LastChargeAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("NextChargeAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("PaymentMethodId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ProviderSubscriptionId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid?>("ScopeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<SubscriptionScope>("ScopeType")
+                        .HasColumnType("subscription_scope");
+
+                    b.Property<SubscriptionStatus>("Status")
+                        .HasColumnType("subscription_status");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PaymentMethodId");
+
+                    b.HasIndex("ProviderSubscriptionId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "ScopeType", "ScopeId")
+                        .HasDatabaseName("IX_PaymentSubscriptions_Scope");
+
+                    b.ToTable("PaymentSubscriptions", (string)null);
                 });
 
             modelBuilder.Entity("PetCare.Domain.Entities.ShelterSubscription", b =>
@@ -1758,6 +1935,25 @@ namespace PetCare.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("PetCare.Domain.Aggregates.Guardianship", b =>
+                {
+                    b.HasOne("PetCare.Domain.Aggregates.Animal", "Animal")
+                        .WithMany()
+                        .HasForeignKey("AnimalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PetCare.Domain.Aggregates.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Animal");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("PetCare.Domain.Aggregates.Shelter", b =>
                 {
                     b.HasOne("PetCare.Domain.Aggregates.User", "Manager")
@@ -1981,6 +2177,29 @@ namespace PetCare.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("PetCare.Domain.Entities.GuardianshipDonation", b =>
+                {
+                    b.HasOne("PetCare.Domain.Entities.Donation", "Donation")
+                        .WithMany()
+                        .HasForeignKey("DonationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PetCare.Domain.Entities.Donation", null)
+                        .WithMany("Guardianships")
+                        .HasForeignKey("DonationId1");
+
+                    b.HasOne("PetCare.Domain.Aggregates.Guardianship", "Guardianship")
+                        .WithMany("Donations")
+                        .HasForeignKey("GuardianshipId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Donation");
+
+                    b.Navigation("Guardianship");
+                });
+
             modelBuilder.Entity("PetCare.Domain.Entities.IoTDevice", b =>
                 {
                     b.HasOne("PetCare.Domain.Aggregates.Shelter", "Shelter")
@@ -2043,6 +2262,25 @@ namespace PetCare.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("NotificationType");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("PetCare.Domain.Entities.PaymentSubscription", b =>
+                {
+                    b.HasOne("PetCare.Domain.Entities.PaymentMethod", "PaymentMethod")
+                        .WithMany()
+                        .HasForeignKey("PaymentMethodId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("PetCare.Domain.Aggregates.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PaymentMethod");
 
                     b.Navigation("User");
                 });
@@ -2110,6 +2348,11 @@ namespace PetCare.Infrastructure.Migrations
                     b.Navigation("Subscribers");
 
                     b.Navigation("SuccessStories");
+                });
+
+            modelBuilder.Entity("PetCare.Domain.Aggregates.Guardianship", b =>
+                {
+                    b.Navigation("Donations");
                 });
 
             modelBuilder.Entity("PetCare.Domain.Aggregates.Shelter", b =>
@@ -2192,6 +2435,8 @@ namespace PetCare.Infrastructure.Migrations
             modelBuilder.Entity("PetCare.Domain.Entities.Donation", b =>
                 {
                     b.Navigation("AnimalAidLinks");
+
+                    b.Navigation("Guardianships");
                 });
 
             modelBuilder.Entity("PetCare.Domain.Entities.Event", b =>

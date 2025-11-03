@@ -36,6 +36,7 @@ public static class GetUsersEndpoint
             return Results.Ok(result);
         })
         .RequireAuthorization("AdminOnly")
+        .RequireRateLimiting("GlobalPolicy")
         .WithName("GetUsers")
         .WithTags("Users")
         .Produces<GetUsersResponseDto>(StatusCodes.Status200OK)
