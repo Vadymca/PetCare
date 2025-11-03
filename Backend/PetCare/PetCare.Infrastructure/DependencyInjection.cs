@@ -116,8 +116,8 @@ public static class DependencyInjection
         services.AddScoped<ILiqPayService, LiqPayService>();
 
         // Background jobs services
-        services.AddHostedService<GuardianshipAutoCompleteJob>();
-        services.AddHostedService<SubscriptionAutoCancelJob>();
+        //services.AddHostedService<GuardianshipAutoCompleteJob>();
+        //services.AddHostedService<SubscriptionAutoCancelJob>();
 
         return services;
     }
