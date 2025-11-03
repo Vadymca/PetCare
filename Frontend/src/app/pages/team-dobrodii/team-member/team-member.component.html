@@ -1,0 +1,45 @@
+<div
+  class="font-inter text-base text-primary-beige bg-primary-light-orange rounded-40 p-3 w-[284px] h-full"
+>
+  <div
+    class="relative rounded-tl-40 rounded-tr-40 rounded-bl-[136px] rounded-br-[136px] overflow-hidden bg-primary-beige h-[256px] w-full"
+  >
+    <div
+      class="bg-primary-blue text-white m-y-[3px] max-w-[100px] absolute top-4 left-0 h-auto rounded-tr-[12px] rounded-br-[12px] font-bold text-sm text-center p-[2px] px-[8px]"
+    >
+      {{ 'SEEKING_EMPLOYMENT' | translate | lowercase }}
+    </div>
+
+    <video
+      src="{{ member.videoUrl }}"
+      class="w-full h-full object-cover"
+      [volume]="0"
+      autoplay
+      loop
+      muted
+      playsinline
+    ></video>
+    <div class="absolute top-4 right-4 cursor-pointer">
+      @if (member.isFavorite) {
+        <app-round-filled-white-blue-button-with-icon
+          (click)="onFilledHeartClick()"
+        ></app-round-filled-white-blue-button-with-icon>
+      } @else {
+        <app-round-white-blue-button-with-icon
+          (click)="onBlankHeartClick()"
+        ></app-round-white-blue-button-with-icon>
+      }
+    </div>
+  </div>
+  <div class="mt-[18px] flex-col text-center w-full">
+    <h5 class="font-bold">{{ member.name | translate | uppercase }}</h5>
+    <p class="mt-2">{{ member.role || '' | translate }}</p>
+  </div>
+  <div class="mt-[14px] flex-col">
+    <app-primary-large-button
+      class="w-[260px]"
+      buttonTitle="EMPLOY"
+      (pressButton)="openLinkedin()"
+    ></app-primary-large-button>
+  </div>
+</div>

@@ -8,7 +8,7 @@ import { AnimalSubscriptionService } from '../../../core/services/animal-subscri
 import { AnimalService } from '../../../core/services/animal.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ModalService } from '../../../core/services/modal.service';
-import { AnimalCardComponent } from '../../../shared/components/animal-card/animal-card.component';
+import { AnimalCardComponent } from '../../../features/animals/animal-card/animal-card.component';
 import { PrimaryLargeButtonComponent } from '../../../shared/components/buttons/blue/primary-large-button.component';
 
 @Component({
@@ -61,15 +61,20 @@ export class AnimalsForAdoptionComponent {
   }
 
   getAnimals() {
-    this.animalService.getAnimals().subscribe(result => {
-      const animals = result.animals;
-      this.animals = animals.slice(0, 4).map(animal => ({
-        ...animal,
-        isChecked: false,
-        isFavorite: false,
-      }));
-      this.updateFavorites();
-    });
+    this.animalService
+      .getAnimals({
+        pageSize: 8,
+        statuses: ['Available'],
+      })
+      .subscribe(result => {
+        const animals = result.animals;
+        this.animals = animals.map(animal => ({
+          ...animal,
+          isChecked: false,
+          isFavorite: false,
+        }));
+        this.updateFavorites();
+      });
   }
 
   private updateFavorites() {

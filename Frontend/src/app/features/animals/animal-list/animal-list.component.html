@@ -98,7 +98,7 @@
           <!-- Розмір -->
           <div class="flex">
             <app-multi-select-dropdown
-              [options]="sizeOptions"
+              [options]="sizeOptionsSignal()"
               label="SIZE"
               (selectionChange)="onSelectionSizeChange($event)"
             ></app-multi-select-dropdown>
@@ -106,7 +106,8 @@
           <!-- Стать -->
           <div class="flex">
             <app-multi-select-dropdown
-              [options]="sexOptions"
+              [options]="sexOptionsSignal()"
+              [selectedOptions]="selectedSizeOptions()"
               label="SEX"
               (selectionChange)="onSelectionSexChange($event)"
             ></app-multi-select-dropdown>
@@ -114,7 +115,8 @@
           <!-- Вік -->
           <div class="flex">
             <app-multi-select-dropdown
-              [options]="ageOptions"
+              [options]="ageOptionsSignal()"
+              [selectedOptions]="selectedAgeOptions()"
               label="AGE"
               (selectionChange)="onSelectionAgeChange($event)"
             ></app-multi-select-dropdown>
@@ -122,7 +124,8 @@
           <!-- Вартість -->
           <div class="flex">
             <app-multi-select-dropdown
-              [options]="costOptions"
+              [options]="costOptionsSignal()"
+              [selectedOptions]="selectedCostOptions()"
               label="CARE_PRICE"
               (selectionChange)="onSelectionCostChange($event)"
             ></app-multi-select-dropdown>
@@ -181,14 +184,6 @@
           </div>
         </div>
       </div>
-
-      <div class="mt-2 xl:mt-[20px] flex flex-col justify-center items-center">
-        <app-pagination
-          [currentPage]="currentPage()"
-          [totalPages]="totalPages()"
-          (pageChange)="setPage($event)"
-        ></app-pagination>
-      </div>
     }
 
     @if (animals().length === 0) {
@@ -207,6 +202,17 @@
           ></app-animal-card>
         }
       </div>
+      @if (animals().length > 15) {
+        <div
+          class="mt-2 xl:mt-[20px] flex flex-col justify-center items-center"
+        >
+          <app-pagination
+            [currentPage]="currentPage()"
+            [totalPages]="totalPages()"
+            (pageChange)="setPage($event)"
+          ></app-pagination>
+        </div>
+      }
     }
   </div>
 </div>

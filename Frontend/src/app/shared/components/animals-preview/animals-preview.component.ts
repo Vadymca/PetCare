@@ -9,7 +9,7 @@ import { AnimalSubscriptionService } from '../../../core/services/animal-subscri
 import { AnimalService } from '../../../core/services/animal.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ModalService } from '../../../core/services/modal.service';
-import { AnimalCardComponent } from '../animal-card/animal-card.component';
+import { AnimalCardComponent } from '../../../features/animals/animal-card/animal-card.component';
 import { SecondaryLargeButtonComponent } from '../buttons/blue/secondary-large-button.component';
 
 @Component({
@@ -37,17 +37,22 @@ export class AnimalsPreviewComponent {
 
   constructor() {
     // Завантажуємо тварин
-    this.animalService.getAnimals().subscribe(result => {
-      const animals = result.animals.slice(0, 8).map(animal => ({
-        ...animal,
-        isChecked: true,
-        isFavorite: false,
-      }));
-      this.animals.set(animals);
+    this.animalService
+      .getAnimals({
+        pageSize: 8,
+        statuses: ['Available'],
+      })
+      .subscribe(result => {
+        const animals = result.animals.map(animal => ({
+          ...animal,
+          isChecked: true,
+          isFavorite: false,
+        }));
+        this.animals.set(animals);
 
-      // Завантажуємо фаворити і оновлюємо стани
-      this.updateFavorites();
-    });
+        // Завантажуємо фаворити і оновлюємо стани
+        this.updateFavorites();
+      });
 
     // Ефект оновлення фаворитів
     effect(() => {
