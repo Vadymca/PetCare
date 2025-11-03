@@ -11,21 +11,35 @@ RUN apt-get update && \
 RUN dotnet tool install --global dotnet-ef --version 9.0.7
 ENV PATH="$PATH:/root/.dotnet/tools"
 
-# Копіюємо csproj та робимо restore
+# -------------------------------------------------------------
+# 🔹 Копіюємо тільки csproj-файли (для кешування restore)
+# -------------------------------------------------------------
 COPY ["PetCare.Api/PetCare.Api.csproj", "PetCare.Api/"]
 COPY ["PetCare.Application/PetCare.Application.csproj", "PetCare.Application/"]
 COPY ["PetCare.Infrastructure/PetCare.Infrastructure.csproj", "PetCare.Infrastructure/"]
 COPY ["PetCare.Domain/PetCare.Domain.csproj", "PetCare.Domain/"]
+
+# Відновлюємо залежності (restore)
 RUN dotnet restore "PetCare.Api/PetCare.Api.csproj"
 
-# Копіюємо весь код
-COPY . .
+# -------------------------------------------------------------
+# 🔹 Копіюємо проекти окремо, щоб зміни у міграціях
+#     у PetCare.Infrastructure завжди ламали кеш
+# -------------------------------------------------------------
+COPY PetCare.Infrastructure/ PetCare.Infrastructure/
+COPY PetCare.Application/ PetCare.Application/
+COPY PetCare.Domain/ PetCare.Domain/
+COPY PetCare.Api/ PetCare.Api/
 
-# Build усіх проектів
+# -------------------------------------------------------------
+# 🔹 Build усіх проектів
+# -------------------------------------------------------------
 RUN dotnet build PetCare.Infrastructure/PetCare.Infrastructure.csproj -c Release
 RUN dotnet build PetCare.Api/PetCare.Api.csproj -c Release
 
-# Публікація API з усіма залежностями, щоб міграції були доступні
+# -------------------------------------------------------------
+# 🔹 Публікуємо API разом з усіма залежностями і міграціями
+# -------------------------------------------------------------
 RUN dotnet publish "PetCare.Api/PetCare.Api.csproj" \
     -c Release \
     -o /app/publish \
@@ -45,11 +59,11 @@ RUN apt-get update && \
 COPY --from=build /root/.dotnet/tools /root/.dotnet/tools
 ENV PATH="$PATH:/root/.dotnet/tools"
 
-# Копіюємо публішені файли
+# Копіюємо публішені файли (включно з усіма міграціями)
 COPY --from=build /app/publish ./
 
 # Копіюємо скрипт wait-for-db
-COPY --from=build /src/wait-for-db.sh /wait-for-db.sh
+COPY --from=build /src/PetCare.Api/wait-for-db.sh /wait-for-db.sh
 RUN chmod +x /wait-for-db.sh
 
 # Налаштування середовища
