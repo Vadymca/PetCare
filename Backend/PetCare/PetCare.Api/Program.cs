@@ -489,27 +489,52 @@ public class Program
 
             app.MapGet("/", () => Results.Ok("✅ PetCare.Api is running successfully!"));
 
+            app.MapPost("/api/admin/migrate", async (IServiceProvider serviceProvider, ILogger<Program> logger) =>
+            {
+                try
+                {
+                    using var scope = serviceProvider.CreateScope();
+                    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                    logger.LogInformation("🔄 Запуск застосування міграцій бази даних...");
+
+                    await db.Database.MigrateAsync();
+
+                    logger.LogInformation("✅ Міграції успішно застосовані.");
+
+                    return Results.Ok(new
+                    {
+                        message = "✅ Міграції успішно застосовані до бази даних.",
+                        timestamp = DateTime.UtcNow,
+                    });
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "❌ Помилка під час застосування міграцій.");
+                    return Results.Problem(
+                        title: "Помилка під час оновлення бази даних",
+                        detail: ex.Message,
+                        statusCode: 500);
+                }
+            })
+            .RequireAuthorization("AdminOnly") // можеш прибрати тимчасово, якщо треба
+            .WithName("ApplyMigrations")
+            .WithSummary("Застосовує всі невиконані міграції бази даних")
+            .WithDescription("Адміністративний ендпоїнт для оновлення схеми бази даних без доступу до терміналу.");
+
             // -------------------- Migrations & Seeding --------------------
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
-                var logger = services.GetRequiredService<ILogger<Program>>();
 
-                try
-                {
-                    var dbContext = services.GetRequiredService<AppDbContext>();
-                    logger.LogInformation("🌐 Using connection string: {ConnectionString}", dbContext.Database.GetConnectionString());
+                // Отримуємо DbContext
+                var dbContext = services.GetRequiredService<AppDbContext>();
 
-                    logger.LogInformation("🚀 Applying EF Core migrations (if any)...");
-                    await dbContext.Database.MigrateAsync();
-                    logger.LogInformation("✅ Database successfully updated.");
+                // Застосовуємо міграції з правильною збіркою
+                await dbContext.Database.MigrateAsync(); // Міграції беруться з MigrationsAssembly, що задано у UseNpgsql
 
-                    await DataSeeder.SeedAsync(services);
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "❌ Error during database migration or seeding.");
-                }
+                // Виконуємо seed ролей та інших даних
+                await DataSeeder.SeedAsync(services);
             }
 
             app.Run();
