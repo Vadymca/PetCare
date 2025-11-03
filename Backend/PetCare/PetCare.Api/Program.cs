@@ -313,6 +313,35 @@ public class Program
                     }));
             });
 
+            // -------------------- PRE-MIGRATIONS (Run before building app) --------------------
+            using (var tempProvider = builder.Services.BuildServiceProvider())
+            {
+                using var scope = tempProvider.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                try
+                {
+                    Log.Information("🔄 Checking and applying pending migrations...");
+
+                    var pendingMigrations = await db.Database.GetPendingMigrationsAsync();
+                    if (pendingMigrations.Any())
+                    {
+                        Log.Information("Found pending migrations: {Migrations}", string.Join(", ", pendingMigrations));
+                        await db.Database.MigrateAsync();
+                        Log.Information("✅ Database migrations applied successfully before app build.");
+                    }
+                    else
+                    {
+                        Log.Information("✅ Database is already up to date before app build.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "❌ Failed to apply migrations before app build.");
+                    throw; // блокуємо запуск, щоб не впали Hosted Services без таблиць
+                }
+            }
+
             var app = builder.Build();
 
             // -------------------- Migrations & Seeding --------------------
