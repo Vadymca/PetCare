@@ -493,17 +493,23 @@ public class Program
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
+                var logger = services.GetRequiredService<ILogger<Program>>();
 
-                // Отримуємо DbContext
-                var dbContext = services.GetRequiredService<AppDbContext>();
+                try
+                {
+                    var dbContext = services.GetRequiredService<AppDbContext>();
+                    logger.LogInformation("🌐 Using connection string: {ConnectionString}", dbContext.Database.GetConnectionString());
 
-                Log.Information("Using connection string: {ConnectionString}", dbContext.Database.GetConnectionString());
+                    logger.LogInformation("🚀 Applying EF Core migrations (if any)...");
+                    await dbContext.Database.MigrateAsync();
+                    logger.LogInformation("✅ Database successfully updated.");
 
-                // Застосовуємо міграції з правильною збіркою
-                await dbContext.Database.MigrateAsync(); // Міграції беруться з MigrationsAssembly, що задано у UseNpgsql
-
-                // Виконуємо seed ролей та інших даних
-                await DataSeeder.SeedAsync(services);
+                    await DataSeeder.SeedAsync(services);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "❌ Error during database migration or seeding.");
+                }
             }
 
             app.Run();
