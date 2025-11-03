@@ -186,7 +186,7 @@ public class Program
                     .EnableSensitiveDataLogging()
                     .EnableDetailedErrors()
                     .ConfigureWarnings(warnings =>
-                        warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+                        warnings.Default(WarningBehavior.Log));
             });
 
             // -------------------- Application & Infrastructure --------------------
@@ -488,39 +488,6 @@ public class Program
             app.MapDeletePaymentMethodEndpoint(); // /api/payment-methods/{id:guid}
 
             app.MapGet("/", () => Results.Ok("✅ PetCare.Api is running successfully!"));
-
-            app.MapPost("/api/admin/migrate", async (IServiceProvider serviceProvider, ILogger<Program> logger) =>
-            {
-                try
-                {
-                    using var scope = serviceProvider.CreateScope();
-                    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-                    logger.LogInformation("🔄 Запуск застосування міграцій бази даних...");
-
-                    await db.Database.MigrateAsync();
-
-                    logger.LogInformation("✅ Міграції успішно застосовані.");
-
-                    return Results.Ok(new
-                    {
-                        message = "✅ Міграції успішно застосовані до бази даних.",
-                        timestamp = DateTime.UtcNow,
-                    });
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "❌ Помилка під час застосування міграцій.");
-                    return Results.Problem(
-                        title: "Помилка під час оновлення бази даних",
-                        detail: ex.Message,
-                        statusCode: 500);
-                }
-            })
-            .RequireAuthorization("AdminOnly") // можеш прибрати тимчасово, якщо треба
-            .WithName("ApplyMigrations")
-            .WithSummary("Застосовує всі невиконані міграції бази даних")
-            .WithDescription("Адміністративний ендпоїнт для оновлення схеми бази даних без доступу до терміналу.");
 
             // -------------------- Migrations & Seeding --------------------
             using (var scope = app.Services.CreateScope())
