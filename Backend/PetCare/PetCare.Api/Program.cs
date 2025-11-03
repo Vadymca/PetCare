@@ -495,15 +495,10 @@ public class Program
                 var services = scope.ServiceProvider;
                 var dbContext = services.GetRequiredService<AppDbContext>();
 
-                var connection = dbContext.Database.GetDbConnection();
-                Log.Information("➡️ Checking database connection...");
-                Log.Information("➡️ Database: {Database}", connection.Database);
-                Log.Information("➡️ DataSource: {DataSource}", connection.DataSource);
-
                 try
                 {
-                    await connection.OpenAsync();
-                    Log.Information("✅ Connected to database.");
+                    var connection = dbContext.Database.GetDbConnection();
+                    Log.Information("➡️ Connected to database: {Database} on {DataSource}", connection.Database, connection.DataSource);
 
                     var pending = await dbContext.Database.GetPendingMigrationsAsync();
                     var applied = await dbContext.Database.GetAppliedMigrationsAsync();
@@ -515,20 +510,16 @@ public class Program
                     {
                         Log.Information("🔄 Applying pending migrations...");
                         await dbContext.Database.MigrateAsync();
-                        Log.Information("✅ Migrations applied successfully.");
+                        Log.Information("✅ All migrations applied successfully.");
                     }
                     else
                     {
-                        Log.Information("✅ No pending migrations.");
+                        Log.Information("✅ No pending migrations. Database is up to date.");
                     }
                 }
                 catch (Exception ex)
                 {
                     Log.Error(ex, "❌ Migration check or apply failed.");
-                }
-                finally
-                {
-                    await connection.CloseAsync();
                 }
 
                 await DataSeeder.SeedAsync(services);
