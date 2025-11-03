@@ -493,12 +493,38 @@ public class Program
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
-
-                // Отримуємо DbContext
                 var dbContext = services.GetRequiredService<AppDbContext>();
 
-                // Застосовуємо міграції з правильною збіркою
-                await dbContext.Database.MigrateAsync(); // Міграції беруться з MigrationsAssembly, що задано у UseNpgsql
+                var connection = dbContext.Database.GetDbConnection();
+                Log.Information("➡️ Checking database connection...");
+                Log.Information("➡️ Database: {Database}", connection.Database);
+                Log.Information("➡️ DataSource: {DataSource}", connection.DataSource);
+
+                try
+                {
+                    await connection.OpenAsync();
+                    Log.Information("✅ Database connection successful.");
+
+                    var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+                    if (pendingMigrations.Any())
+                    {
+                        Log.Information("🔄 Applying pending migrations: {Migrations}", string.Join(", ", pendingMigrations));
+                        await dbContext.Database.MigrateAsync();
+                        Log.Information("✅ All migrations applied successfully.");
+                    }
+                    else
+                    {
+                        Log.Information("✅ No pending migrations. Database is up to date.");
+                    }
+                }
+                catch (Exception dbEx)
+                {
+                    Log.Error(dbEx, "❌ Failed to apply migrations or connect to database.");
+                }
+                finally
+                {
+                    await connection.CloseAsync();
+                }
 
                 // Виконуємо seed ролей та інших даних
                 await DataSeeder.SeedAsync(services);
