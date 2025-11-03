@@ -236,4 +236,56 @@ public interface IGuardianshipRepository : IRepository<Guardianship>
     /// <returns>A task that represents the asynchronous operation. The task result contains a read-only list of donations for
     /// the specified project. If no donations exist, the list will be empty.</returns>
     Task<IReadOnlyList<Donation>> ListDonationsByProjectAsync(Guid projectId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously retrieves a read-only list of all available payment methods.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a read-only list of all payment
+    /// methods. If no payment methods are available, the list will be empty.</returns>
+    Task<IReadOnlyList<PaymentMethod>> ListAllPaymentMethodsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously retrieves the payment method associated with the specified unique identifier.
+    /// </summary>
+    /// <param name="id">The unique identifier of the payment method to retrieve.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the payment method if found;
+    /// otherwise, <see langword="null"/>.</returns>
+    Task<PaymentMethod?> GetPaymentMethodByIdAsync(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously retrieves a payment method by its name.
+    /// </summary>
+    /// <param name="name">The name of the payment method to retrieve. Cannot be null or empty.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the payment method matching the
+    /// specified name, or null if no such payment method exists.</returns>
+    Task<PaymentMethod?> GetPaymentMethodByNameAsync(string name, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously adds a new payment method to the user's account.
+    /// </summary>
+    /// <param name="method">The payment method to add. Must not be null. The details of the payment method are used to associate it with the
+    /// user's account.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous add operation.</returns>
+    Task AddPaymentMethodAsync(PaymentMethod method, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously updates the specified payment method with new information.
+    /// </summary>
+    /// <param name="method">The payment method to update. Cannot be null. The provided object must contain the updated details to be
+    /// applied.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the update operation.</param>
+    /// <returns>A task that represents the asynchronous update operation.</returns>
+    Task UpdatePaymentMethodAsync(PaymentMethod method, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes the specified payment method asynchronously from the system.
+    /// </summary>
+    /// <param name="method">The payment method to be deleted. Cannot be null.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
+    /// <returns>A task that represents the asynchronous delete operation.</returns>
+    Task DeletePaymentMethodAsync(PaymentMethod method, CancellationToken cancellationToken = default);
 }

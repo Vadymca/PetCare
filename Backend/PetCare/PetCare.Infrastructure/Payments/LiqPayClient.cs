@@ -84,6 +84,11 @@ public sealed class LiqPayClient : ILiqPayClient
             payload["subscribe_periodicity"] = "month";
         }
 
+        // Дата старту у форматі yyyy-MM-dd HH:mm:ss
+        var start = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+
+        payload["subscribe_date_start"] = start;
+
         // Опціональні поля платника
         if (!string.IsNullOrWhiteSpace(input.PayerName))
         {

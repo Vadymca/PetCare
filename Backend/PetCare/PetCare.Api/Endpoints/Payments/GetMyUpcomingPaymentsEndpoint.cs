@@ -38,7 +38,7 @@ public static class GetMyUpcomingPaymentsEndpoint
         .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("GetMyUpcomingPayments")
-        .WithTags("Me")
+        .WithTags("Payments")
         .Produces<IReadOnlyList<MyUpcomingPaymentDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized);
     }

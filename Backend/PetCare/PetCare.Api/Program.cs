@@ -1,6 +1,5 @@
 namespace PetCare.Api;
 
-using System.Threading.RateLimiting;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -19,6 +18,7 @@ using PetCare.Api.Endpoints.Auth.TwoFactor;
 using PetCare.Api.Endpoints.Auth.TwoFactor.Sms;
 using PetCare.Api.Endpoints.Breeds;
 using PetCare.Api.Endpoints.Media;
+using PetCare.Api.Endpoints.PaymentMethods;
 using PetCare.Api.Endpoints.Payments;
 using PetCare.Api.Endpoints.Payments.LiqPay;
 using PetCare.Api.Endpoints.Shelters;
@@ -35,6 +35,7 @@ using PetCare.Infrastructure.Identity;
 using PetCare.Infrastructure.Persistence;
 using Scalar.AspNetCore;
 using Serilog;
+using System.Threading.RateLimiting;
 
 /// <summary>
 /// The main entry point class for the PetCare API application.
@@ -478,6 +479,13 @@ public class Program
             app.MapCreateGuardianshipEndpoint(); // /api/guardianships
             app.MapGetAllDonationsEndpoint(); // /api/payments/all
             app.MapGetProjectDonationsEndpoint(); // /api/payments/project/{projectId}
+
+            // -------------------- PaymentMethods --------------------
+            app.MapGetAllPaymentMethodsEndpoint(); // /api/payment-methods
+            app.MapGetPaymentMethodByIdEndpoint(); // /api/payment-methods/{id:guid}
+            app.MapCreatePaymentMethodEndpoint(); // /api/payment-methods
+            app.MapUpdatePaymentMethodEndpoint(); // /api/payment-methods/{id:guid}
+            app.MapDeletePaymentMethodEndpoint(); // /api/payment-methods/{id:guid}
 
             app.MapGet("/", () => Results.Ok("✅ PetCare.Api is running successfully!"));
 

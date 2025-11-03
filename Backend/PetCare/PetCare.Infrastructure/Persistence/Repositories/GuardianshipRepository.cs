@@ -1,14 +1,15 @@
 ﻿namespace PetCare.Infrastructure.Persistence.Repositories;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
+using PetCare.Domain.ValueObjects;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 /// <summary>
 /// Provides data access and query operations for guardianship entities, including retrieval, listing, and association
@@ -456,5 +457,82 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
             .Where(d => d.TargetEntity == "AnimalAidRequest" && d.TargetEntityId == projectId)
             .OrderByDescending(d => d.DonationDate)
             .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Retrieves all payment methods ordered alphabetically by name.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A read-only list of payment methods.</returns>
+    public async Task<IReadOnlyList<PaymentMethod>> ListAllPaymentMethodsAsync(CancellationToken cancellationToken = default)
+    {
+        return await this.db.PaymentMethods
+            .AsNoTracking()
+            .OrderBy(p => p.Name)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Retrieves a payment method by its unique identifier.
+    /// </summary>
+    /// <param name="id">The unique identifier of the payment method.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>The matching payment method or null if not found.</returns>
+    public async Task<PaymentMethod?> GetPaymentMethodByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await this.db.PaymentMethods
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+    }
+
+    /// <summary>
+    /// Retrieves a payment method by its name.
+    /// </summary>
+    /// <param name="name">The name of the payment method.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>The matching payment method or null if not found.</returns>
+    public async Task<PaymentMethod?> GetPaymentMethodByNameAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var vo = Name.Create(name);
+
+        return await this.db.PaymentMethods
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Name == vo, cancellationToken);
+    }
+
+    /// <summary>
+    /// Adds a new payment method to the database.
+    /// </summary>
+    /// <param name="method">The payment method to add.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous add operation.</returns>
+    public async Task AddPaymentMethodAsync(PaymentMethod method, CancellationToken cancellationToken = default)
+    {
+        await this.db.PaymentMethods.AddAsync(method);
+        await this.db.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates an existing payment method in the database.
+    /// </summary>
+    /// <param name="method">The payment method to update.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous update operation.</returns>
+    public async Task UpdatePaymentMethodAsync(PaymentMethod method, CancellationToken cancellationToken = default)
+    {
+        this.db.PaymentMethods.Update(method);
+        await this.db.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Deletes a payment method from the database.
+    /// </summary>
+    /// <param name="method">The payment method to delete.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous delete operation.</returns>
+    public async Task DeletePaymentMethodAsync(PaymentMethod method, CancellationToken cancellationToken = default)
+    {
+        this.db.PaymentMethods.Remove(method);
+        await this.db.SaveChangesAsync(cancellationToken);
     }
 }

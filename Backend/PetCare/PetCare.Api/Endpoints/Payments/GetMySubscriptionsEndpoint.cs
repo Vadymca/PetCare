@@ -38,7 +38,7 @@ public static class GetMySubscriptionsEndpoint
         .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("GetMySubscriptions")
-        .WithTags("Me")
+        .WithTags("Payments")
         .Produces<IReadOnlyList<MySubscriptionDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized);
     }

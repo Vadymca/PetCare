@@ -39,7 +39,7 @@ public static class GetMyGuardianshipsEndpoint
         .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("GetMyGuardianships")
-        .WithTags("Me")
+        .WithTags("Payments")
         .Produces<IReadOnlyList<MyGuardianshipDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized);
     }

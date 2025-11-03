@@ -53,7 +53,7 @@ public static class CreateGuardianshipEndpoint
         .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("CreateGuardianship")
-        .WithTags("Guardianships")
+        .WithTags("Payments")
         .Produces<GuardianshipCreatedDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)

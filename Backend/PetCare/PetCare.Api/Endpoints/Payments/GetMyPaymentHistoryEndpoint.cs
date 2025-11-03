@@ -38,7 +38,7 @@ public static class GetMyPaymentHistoryEndpoint
         .RequireAuthorization()
         .RequireRateLimiting("GlobalPolicy")
         .WithName("GetMyPaymentHistory")
-        .WithTags("Me")
+        .WithTags("Payments")
         .Produces<IReadOnlyList<MyPaymentHistoryDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized);
     }

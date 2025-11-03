@@ -82,7 +82,7 @@ public class PaymentService : IPaymentService
             amount,
             currency,
             shelterId: null,
-            paymentMethodId: Guid.Empty,
+            paymentMethodId,
             DonationStatus.Completed,
             transactionId,
             purpose: BuildPurpose(targetEntity),
