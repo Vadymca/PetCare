@@ -313,79 +313,18 @@ public class Program
                     }));
             });
 
-            // -------------------- PRE-MIGRATIONS (Run before building app) --------------------
-            using (var tempProvider = builder.Services.BuildServiceProvider())
-            {
-                using var scope = tempProvider.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-                try
-                {
-                    Log.Information("🔄 Checking and applying pending migrations...");
-
-                    var pendingMigrations = await db.Database.GetPendingMigrationsAsync();
-                    if (pendingMigrations.Any())
-                    {
-                        Log.Information("Found pending migrations: {Migrations}", string.Join(", ", pendingMigrations));
-                        await db.Database.MigrateAsync();
-                        Log.Information("✅ Database migrations applied successfully before app build.");
-                    }
-                    else
-                    {
-                        Log.Information("✅ Database is already up to date before app build.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "❌ Failed to apply migrations before app build.");
-                    throw; // блокуємо запуск, щоб не впали Hosted Services без таблиць
-                }
-            }
-
             var app = builder.Build();
-
-            // -------------------- Migrations & Seeding --------------------
-            using (var scope = app.Services.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                var conn = db.Database.GetDbConnection();
-
-                try
-                {
-                    await conn.OpenAsync();
-                    using var cmd = conn.CreateCommand();
-                    var path = Path.Combine(app.Environment.ContentRootPath, "Migrations", "_sql", "upgrade.sql");
-                    if (File.Exists(path))
-                    {
-                        var sql = await File.ReadAllTextAsync(path);
-                        cmd.CommandText = sql;
-                        await cmd.ExecuteNonQueryAsync();
-                        Log.Information("✅ Idempotent migration script executed successfully.");
-                    }
-                    else
-                    {
-                        Log.Warning("⚠️ Idempotent migration script not found: {Path}", path);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "❌ Failed to execute idempotent migration script.");
-                    throw; // блокуємо старт щоб не впали фон-джоби без таблиць
-                }
-                finally
-                {
-                    await conn.CloseAsync();
-                }
-            }
 
             if (!app.Environment.IsDevelopment())
             {
                 app.UseHsts();
             }
 
+
             app.UseExceptionHandling();
             app.UseStaticFiles();
             app.UseHttpsRedirection();
+
 
             app.UseRouting();
             app.UseCors("PetCarePolicy");
@@ -549,6 +488,23 @@ public class Program
             app.MapDeletePaymentMethodEndpoint(); // /api/payment-methods/{id:guid}
 
             app.MapGet("/", () => Results.Ok("✅ PetCare.Api is running successfully!"));
+
+            // -------------------- Migrations & Seeding --------------------
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+
+                // Отримуємо DbContext
+                var dbContext = services.GetRequiredService<AppDbContext>();
+
+                Log.Information("Using connection string: {ConnectionString}", dbContext.Database.GetConnectionString());
+
+                // Застосовуємо міграції з правильною збіркою
+                await dbContext.Database.MigrateAsync(); // Міграції беруться з MigrationsAssembly, що задано у UseNpgsql
+
+                // Виконуємо seed ролей та інших даних
+                await DataSeeder.SeedAsync(services);
+            }
 
             app.Run();
         }
