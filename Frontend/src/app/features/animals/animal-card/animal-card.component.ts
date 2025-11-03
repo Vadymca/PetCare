@@ -1,4 +1,4 @@
-import { LowerCasePipe } from '@angular/common';
+import { CommonModule, LowerCasePipe } from '@angular/common';
 import {
   Component,
   EventEmitter,
@@ -8,15 +8,16 @@ import {
 } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { Animal } from '../../../core/models/animal';
-import { PrimaryLargeButtonComponent } from '../buttons/blue/primary-large-button.component';
-import { RoundFilledWhiteBlueButtonWithIconComponent } from '../buttons/round-filled-white-blue-button-with-icon.component';
-import { RoundWhiteBlueButtonWithIconComponent } from '../buttons/round-white-blue-button-with-icon.component';
+import { PrimaryLargeButtonComponent } from '../../../shared/components/buttons/blue/primary-large-button.component';
+import { RoundFilledWhiteBlueButtonWithIconComponent } from '../../../shared/components/buttons/round-filled-white-blue-button-with-icon.component';
+import { RoundWhiteBlueButtonWithIconComponent } from '../../../shared/components/buttons/round-white-blue-button-with-icon.component';
 
 @Component({
   selector: 'app-animal-card',
   standalone: true,
   imports: [
     PrimaryLargeButtonComponent,
+    CommonModule,
     TranslateModule,
     LowerCasePipe,
     RoundWhiteBlueButtonWithIconComponent,

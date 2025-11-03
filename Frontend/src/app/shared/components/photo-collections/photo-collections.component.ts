@@ -3,9 +3,10 @@ import {
   Component,
   inject,
   Input,
-  OnInit,
+  OnChanges,
   PLATFORM_ID,
   signal,
+  SimpleChanges,
 } from '@angular/core';
 import { IconComponent } from '../icon.component';
 
@@ -16,7 +17,7 @@ import { IconComponent } from '../icon.component';
   templateUrl: './photo-collections.component.html',
   styleUrl: './photo-collections.component.css',
 })
-export class PhotoCollectionsComponent implements OnInit {
+export class PhotoCollectionsComponent implements OnChanges {
   @Input({ required: true }) photos: string[] = [];
   items = signal<string[]>([]);
   visibleCount = signal(3);
@@ -25,67 +26,40 @@ export class PhotoCollectionsComponent implements OnInit {
   platformId = inject(PLATFORM_ID);
   selectedItem = signal<string>('');
   fadeIn = signal(true);
-  isVisible = signal(true); // Додаємо для керування visibility
+  isVisible = signal(true);
 
   constructor() {
-    // Ініціалізація items із photos або дефолтними значеннями
-
-    console.log(this.photos);
-
-    // Встановлюємо початкове зображення
+    this.items.set([...this.photos]);
     this.selectedItem.set(this.items()[0] || '');
   }
-  ngOnInit() {
-    // Ініціалізація items із photos або дефолтними значеннями
 
-    this.items.set([...this.photos]);
-
-    this.selectedItem.set(this.items()[0] || '');
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['photos']) {
+      this.items.set([...this.photos]);
+      this.selectedItem.set(this.items()[0] || '');
+    }
   }
 
   selectItem(img: string) {
-    if (this.animating() || img === this.selectedItem()) {
-      console.log('Blocked: animating or same image', {
-        img,
-        current: this.selectedItem(),
-      });
-      return;
-    }
-
-    console.log('SelectItem:', {
-      newImg: img,
-      current: this.selectedItem(),
-      fadeIn: this.fadeIn(),
-      isVisible: this.isVisible(),
-    });
+    if (this.animating() || img === this.selectedItem()) return;
 
     this.animating.set(true);
     this.fadeIn.set(false);
-    this.isVisible.set(false); // Приховуємо зображення
+    this.isVisible.set(false);
 
     if (isPlatformBrowser(this.platformId)) {
       setTimeout(() => {
         this.selectedItem.set(img);
         requestAnimationFrame(() => {
           setTimeout(() => {
-            this.isVisible.set(true); // Показуємо нове зображення
+            this.isVisible.set(true);
             this.fadeIn.set(true);
-            console.log('FadeIn and isVisible set to true:', {
-              selected: this.selectedItem(),
-              fadeIn: this.fadeIn(),
-              isVisible: this.isVisible(),
-            });
             setTimeout(() => {
               this.animating.set(false);
-              console.log('Cleanup:', {
-                selected: this.selectedItem(),
-                fadeIn: this.fadeIn(),
-                isVisible: this.isVisible(),
-              });
-            }, 700); // Чекаємо 700ms анімації + запас
-          }, 100); // Затримка для рендерингу
+            }, 700);
+          }, 100);
         });
-      }, 200); // Збільшено для повного приховування
+      }, 200);
     } else {
       this.selectedItem.set(img);
       this.fadeIn.set(true);
@@ -102,22 +76,14 @@ export class PhotoCollectionsComponent implements OnInit {
 
   prev() {
     if (this.animating()) return;
-
-    // переміщаємо останню картку на початок масиву
     const arr = [...this.items()];
     const last = arr.pop();
     if (last) arr.unshift(last);
     this.items.set(arr);
-
     this.offset.set(-100 / this.visibleCount());
-
-    // одразу зсуваємо на -1 картку
-    this.offset.set(-100 / this.visibleCount());
-
-    // невелика затримка, щоб анімація спрацювала
     setTimeout(() => {
       this.animating.set(true);
-      this.offset.set(0); // плавний рух вправо на 1 картку
+      this.offset.set(0);
     }, 10);
   }
 

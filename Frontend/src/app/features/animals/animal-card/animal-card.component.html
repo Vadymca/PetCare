@@ -5,9 +5,15 @@
     class="relative rounded-tl-40 rounded-tr-40 rounded-bl-[136px] rounded-br-[136px] overflow-hidden bg-primary-beige h-[256px] w-full"
   >
     <div
-      class="m-y-[3px] absolute top-4 left-0 w-[112px] h-auto rounded-tr-[12px] rounded-br-[12px] bg-primary-blue font-bold text-sm text-center pl-1"
+      class="m-y-[3px] absolute top-4 left-0 w-[112px] h-auto rounded-tr-[12px] rounded-br-[12px] font-bold text-sm text-center p-[2px] pl-1"
+      [ngClass]="{
+        'bg-primary-blue text-white':
+          animal.status.toLowerCase() === 'available',
+        'bg-secondary-jordyBlue-1 text-primary-blue':
+          animal.status.toLowerCase() !== 'available',
+      }"
     >
-      {{ animal.status | lowercase }}
+      {{ animal.status | translate | lowercase }}
     </div>
     @if (isChecked()) {
       <div class="absolute top-4 right-4">
@@ -31,7 +37,7 @@
   <div class="mt-[18px] flex-col">
     <h5 class="font-bold">{{ animal.name }}</h5>
     <p class="mt-2">
-      {{ animal.species?.name || ('WITHOUT_SPECIES' | translate) }},
+      {{ animal.species?.name || 'WITHOUT_SPECIES' | translate }},
       {{ animal.age![0] }}
       {{
         animal.age![0] === 1

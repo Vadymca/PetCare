@@ -27,6 +27,7 @@ import { IconComponent } from '../icon.component';
 })
 export class MultiSelectDropdownComponent implements OnInit {
   @Input() options: string[] = [];
+  @Input() selectedOptions: string[] = [];
   @Input() label = 'Select';
   @Output() selectionChange = new EventEmitter<string[]>();
   isOpen = signal(false);
@@ -37,9 +38,25 @@ export class MultiSelectDropdownComponent implements OnInit {
     effect(() => {
       this.isDisabled.set(this.selected().length === 0);
     });
+    // effect(() => {
+    //   const newOptions = this.selectedOptions;
+    //   // Якщо options змінилися — скидаємо selected до всіх (або порожньо)
+    //   if (newOptions.length > 0 && newOptions.length < this.options.length) {
+    //     this.selected.set(newOptions); //
+    //   } else {
+    //     this.selected.set(this.options);
+    //   }
+    //   this.isDisabled.set(this.selected().length === 0);
+    // });
   }
   ngOnInit() {
-    this.selected.set(this.options);
+    const newOptions = this.selectedOptions;
+    // Якщо options змінилися — скидаємо selected до всіх (або порожньо)
+    if (newOptions.length > 0 && newOptions.length < this.options.length) {
+      this.selected.set(newOptions); //
+    } else {
+      this.selected.set(this.options);
+    }
   }
   selectAll() {
     if (this.selected().length < this.options.length) {

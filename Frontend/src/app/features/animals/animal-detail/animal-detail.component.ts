@@ -4,23 +4,25 @@ import {
   Component,
   effect,
   inject,
+  OnInit,
   PLATFORM_ID,
   Signal,
   signal,
 } from '@angular/core';
 
 import { CommonModule } from '@angular/common';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { filter, switchMap } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { Animal } from '../../../core/models/animal';
 import { AnimalSubscriptionService } from '../../../core/services/animal-subscription.service';
 import { AnimalService } from '../../../core/services/animal.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ModalService } from '../../../core/services/modal.service';
 import { PrimaryLargeButtonComponent } from '../../../shared/components/buttons/blue/primary-large-button.component';
+import { SecondaryLargeButtonComponent } from '../../../shared/components/buttons/blue/secondary-large-button.component';
 import { PrimaryLargeOrangeButtonComponent } from '../../../shared/components/buttons/orange/primary-large-orange-button.component';
 import { RoundFilledWhiteBlueButtonWithIconComponent } from '../../../shared/components/buttons/round-filled-white-blue-button-with-icon.component';
 import { RoundWhiteBlueButtonWithIconComponent } from '../../../shared/components/buttons/round-white-blue-button-with-icon.component';
@@ -28,6 +30,7 @@ import { SmallShareButtonComponent } from '../../../shared/components/buttons/sm
 import { IconComponent } from '../../../shared/components/icon.component';
 import { PhotoCollectionsComponent } from '../../../shared/components/photo-collections/photo-collections.component';
 import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
+import { AnimalCardComponent } from '../animal-card/animal-card.component';
 type IconName = 'shareInsta' | 'shareFacebook';
 @Component({
   selector: 'app-animal-detail',
@@ -38,18 +41,89 @@ type IconName = 'shareInsta' | 'shareFacebook';
     TranslateModule,
     LoadingSpinnerComponent,
     PrimaryLargeButtonComponent,
+    SecondaryLargeButtonComponent,
     PhotoCollectionsComponent,
     IconComponent,
     PrimaryLargeOrangeButtonComponent,
     RoundFilledWhiteBlueButtonWithIconComponent,
     RoundWhiteBlueButtonWithIconComponent,
     SmallShareButtonComponent,
+    AnimalCardComponent,
   ],
   templateUrl: './animal-detail.component.html',
   styleUrls: ['./animal-detail.component.css'], // зверни увагу на styleUrls (замість styleUrl)
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AnimalDetailComponent {
+export class AnimalDetailComponent implements OnInit {
+  animals = signal<Animal[]>([]);
+
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private animalService = inject(AnimalService);
+  private animalSubscriptionService = inject(AnimalSubscriptionService);
+  private authModalService = inject(ModalService);
+  private authService = inject(AuthService);
+  private translate = inject(TranslateService);
+  private title = inject(Title);
+  private meta = inject(Meta);
+
+  shareInsta = signal<IconName>('shareInsta');
+  shareFacebook = signal<IconName>('shareFacebook');
+  platformId = inject(PLATFORM_ID);
+  isAuthenticated: Signal<boolean> = this.authService.isLoggedIn;
+  // slug = toSignal(
+  //   this.route.paramMap.pipe(
+  //     map(params => params.get('slug')),
+  //     filter((slug): slug is string => !!slug)
+  //   ),
+  //   { initialValue: null }
+  // );
+  slug = signal<string | null>(null);
+  animal = signal<Animal | undefined>(undefined);
+  favoriteAnimals = signal<Animal[]>([]);
+  isSubscribed = signal(false);
+  round(value: number | undefined | null): string {
+    return value != null ? value.toFixed(2) : this.translate.instant('UNKNOWN');
+  }
+  constructor() {
+    // Завантаження тварини
+    effect(() => {
+      const slugValue = this.slug();
+      if (!slugValue) return;
+
+      this.animalService.getAnimalBySlug(slugValue).subscribe(animal => {
+        if (!animal) {
+          this.router.navigate(['/not-found']);
+          return;
+        }
+        this.animal.set(animal);
+        this.loadFavorites();
+        this.updateSubscriptionStatus();
+        this.setMetaTags(animal);
+        this.getAnimals();
+      });
+    });
+  }
+  ngOnInit(): void {
+    this.route.paramMap.subscribe(params => {
+      const newSlug = params.get('slug');
+      if (!newSlug) return;
+      this.slug.set(newSlug);
+
+      this.animalService.getAnimalBySlug(newSlug).subscribe(animal => {
+        if (!animal) {
+          this.router.navigate(['/not-found']);
+          return;
+        }
+        this.animal.set(animal);
+        this.loadFavorites();
+        this.updateSubscriptionStatus();
+        this.setMetaTags(animal);
+        this.getAnimals();
+      });
+      this.getAnimals();
+    });
+  }
   onShareFacebookClick() {
     if (!isPlatformBrowser(this.platformId)) return;
 
@@ -83,50 +157,49 @@ export class AnimalDetailComponent {
   onTakeHome() {
     throw new Error('Method not implemented.');
   }
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private animalService = inject(AnimalService);
-  private animalSubscriptionService = inject(AnimalSubscriptionService);
-  private authModalService = inject(ModalService);
-  private authService = inject(AuthService);
-  private translate = inject(TranslateService);
-  private title = inject(Title);
-  private meta = inject(Meta);
+  getAnimals() {
+    this.animalService
+      .getAnimals({
+        pageSize: 5,
+        statuses: ['Available'],
+        isUndercare: false,
+      })
+      .subscribe(result => {
+        const animals = result.animals
+          // фільтруємо, щоб не включати поточну тварину
+          .filter(animal => animal.id !== this.animal()!.id)
+          // і беремо максимум 4 тварини
+          .slice(0, 4)
+          // додаємо потрібні поля
+          .map(animal => ({
+            ...animal,
+            isChecked: true,
+            isFavorite: false,
+          }));
 
-  shareInsta = signal<IconName>('shareInsta');
-  shareFacebook = signal<IconName>('shareFacebook');
-  platformId = inject(PLATFORM_ID);
-  isAuthenticated: Signal<boolean> = this.authService.isLoggedIn;
-  slug = toSignal(
-    this.route.paramMap.pipe(
-      switchMap(params => [params.get('slug')]),
-      filter((slug): slug is string => slug !== null)
-    )
-  );
-
-  animal = signal<Animal | undefined>(undefined);
-  favoriteAnimals = signal<Animal[]>([]);
-  isSubscribed = signal(false);
-  round(value: number | undefined | null): string {
-    return value != null ? value.toFixed(2) : this.translate.instant('UNKNOWN');
-  }
-  constructor() {
-    // Завантаження тварини
-    effect(() => {
-      const slugValue = this.slug();
-      if (!slugValue) return;
-
-      this.animalService.getAnimalBySlug(slugValue).subscribe(animal => {
-        if (!animal) {
-          this.router.navigate(['/not-found']);
-          return;
-        }
-        this.animal.set(animal);
-        this.loadFavorites();
-        this.updateSubscriptionStatus();
-        this.setMetaTags(animal);
+        this.animals.set(animals);
+        this.updateFavorites();
       });
-    });
+  }
+  private updateFavorites() {
+    this.animalSubscriptionService
+      .getFavoriteAnimals()
+      .pipe(
+        catchError(err => {
+          console.error('Error fetching favorite animals:', err);
+          return of([]);
+        })
+      )
+      .subscribe(favorites => {
+        const favoriteIds = new Set(favorites.map(a => a.id));
+        this.animals.update(all =>
+          all.map(animal => ({
+            ...animal,
+            isFavorite: favoriteIds.has(animal.id),
+            isChecked: true,
+          }))
+        );
+      });
   }
 
   private loadFavorites() {
@@ -136,6 +209,72 @@ export class AnimalDetailComponent {
         this.updateSubscriptionStatus();
       });
     }
+  }
+  onOtherHeartClick(animal: Animal) {
+    if (!this.authService.isLoggedIn()) {
+      this.authModalService.openModal('welcome');
+      return;
+    }
+
+    if (animal.isFavorite) {
+      this.unsubscribeFromAnimal(animal);
+    } else {
+      this.subscribeToAnimal(animal);
+    }
+  }
+
+  subscribeToAnimal(animal: Animal) {
+    if (animal.isFavorite) return;
+    animal.isChecked = false;
+
+    this.animalSubscriptionService
+      .createAnimalSubscription(animal.id)
+      .subscribe({
+        next: () => {
+          this.animals.update(all =>
+            all.map(a =>
+              a.id === animal.id
+                ? { ...a, isFavorite: true, isChecked: true }
+                : a
+            )
+          );
+        },
+        error: err => {
+          console.error('Error creating animal subscription:', err);
+          animal.isChecked = true;
+        },
+      });
+  }
+
+  unsubscribeFromAnimal(animal: Animal) {
+    if (!animal.isFavorite) return;
+    animal.isChecked = false;
+
+    this.animalSubscriptionService
+      .deleteAnimalSubscription(animal.id)
+      .subscribe({
+        next: () => {
+          this.animals.update(all =>
+            all.map(a =>
+              a.id === animal.id
+                ? { ...a, isFavorite: false, isChecked: true }
+                : a
+            )
+          );
+        },
+        error: err => {
+          console.error('Error deleting animal subscription:', err);
+          animal.isChecked = true;
+        },
+      });
+  }
+
+  onSeeAllAnimalsClick() {
+    this.router.navigate(['/animals']);
+  }
+
+  onAnimalDetailClick(animal: Animal) {
+    this.router.navigate(['/animals', animal.slug]);
   }
 
   private updateSubscriptionStatus() {

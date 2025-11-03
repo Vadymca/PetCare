@@ -262,6 +262,11 @@ export const routes: Routes = [
         './pages/errors/service-unavailable/service-unavailable.component'
       ).then(c => c.ServiceUnavailableComponent),
   },
+  {
+    path: 'team',
+    loadComponent: () =>
+      import('./pages/team-dobrodii/team/team.component').then(c => c.TeamComponent),
+  },
 
   {
     path: '**',

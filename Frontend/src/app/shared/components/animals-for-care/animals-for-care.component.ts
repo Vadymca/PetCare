@@ -1,4 +1,4 @@
-import { CommonModule, UpperCasePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, effect, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -8,20 +8,16 @@ import { AnimalSubscriptionService } from '../../../core/services/animal-subscri
 import { AnimalService } from '../../../core/services/animal.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ModalService } from '../../../core/services/modal.service';
-import { AnimalCardComponent } from '../animal-card/animal-card.component';
+import { AnimalCardComponent } from '../../../features/animals/animal-card/animal-card.component';
 import { PrimaryLargeButtonComponent } from '../buttons/blue/primary-large-button.component';
-import { IconComponent } from '../icon.component';
-import { MultiSelectDropdownComponent } from '../multi-select-dropdown/multi-select-dropdown.component';
 
 @Component({
   selector: 'app-animals-for-care',
   standalone: true,
   imports: [
-    MultiSelectDropdownComponent,
     CommonModule,
     TranslateModule,
-    UpperCasePipe,
-    IconComponent,
+
     AnimalCardComponent,
     PrimaryLargeButtonComponent,
   ],
@@ -66,45 +62,22 @@ export class AnimalsForCareComponent {
     });
   }
 
-  toggleFilters() {
-    this.filtersOpen.update(v => !v);
-  }
-
-  onSelectionCostChange($event: string[]) {
-    this.selectedCostOptions.set($event);
-    this.getAnimals();
-  }
-
-  onSelectionAgeChange($event: string[]) {
-    this.selectedAgeOptions.set($event);
-    this.getAnimals();
-  }
-
-  onSelectionSexChange($event: string[]) {
-    this.selectedSexOptions.set($event);
-    this.getAnimals();
-  }
-
-  onSelectionSizeChange($event: string[]) {
-    this.selecteSizeOptions.set($event);
-    this.getAnimals();
-  }
-
-  toggleSterilisationOption() {
-    this.sterelisationOptions.set(!this.sterelisationOptions());
-    this.getAnimals();
-  }
-
   getAnimals() {
-    this.animalService.getAnimals().subscribe(result => {
-      const animals = result.animals.slice(0, 4).map(animal => ({
-        ...animal,
-        isChecked: true,
-        isFavorite: false,
-      }));
-      this.animals.set(animals);
-      this.updateFavorites();
-    });
+    this.animalService
+      .getAnimals({
+        pageSize: 8,
+        statuses: ['Available', 'InTreatment'],
+        isUndercare: false,
+      })
+      .subscribe(result => {
+        const animals = result.animals.map(animal => ({
+          ...animal,
+          isChecked: true,
+          isFavorite: false,
+        }));
+        this.animals.set(animals);
+        this.updateFavorites();
+      });
   }
 
   private updateFavorites() {
