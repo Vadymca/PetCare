@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore.Migrations;
 using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using NpgsqlTypes;
 using PetCare.Domain.Enums;
-
 
 #nullable disable
 
@@ -19,17 +21,22 @@ namespace PetCare.Infrastructure.Migrations
                 .Annotation("Npgsql:Enum:aid_category", "food,medical,equipment,other")
                 .Annotation("Npgsql:Enum:aid_status", "open,in_progress,fulfilled,cancelled")
                 .Annotation("Npgsql:Enum:animal_gender", "male,female,unknown")
+                .Annotation("Npgsql:Enum:animal_size", "small,medium,medium_plus,large")
                 .Annotation("Npgsql:Enum:animal_status", "available,adopted,reserved,in_treatment,dead,euthanized")
+                .Annotation("Npgsql:Enum:animal_temperament", "friendly,shy,needs_socialization,independent,affectionate,protective,curious,playful,calm,energetic,gentle,vocal,quiet,cuddly,nervous,confident,food_motivated,trainable,stubborn,good_with_kids,good_with_other_animals,needs_experienced_owner,senior_and_relaxed,young_and_learning,special_needs,bonded_pair")
                 .Annotation("Npgsql:Enum:article_status", "draft,published,archived")
                 .Annotation("Npgsql:Enum:audit_operation", "insert,update,delete")
                 .Annotation("Npgsql:Enum:comment_status", "pending,approved,rejected")
                 .Annotation("Npgsql:Enum:donation_status", "pending,completed,failed")
                 .Annotation("Npgsql:Enum:event_status", "planned,ongoing,completed,cancelled")
                 .Annotation("Npgsql:Enum:event_type", "adoption_day,fundraiser,webinar,volunteer_training")
+                .Annotation("Npgsql:Enum:guardianship_status", "requires_payment,active,completed")
                 .Annotation("Npgsql:Enum:io_t_device_status", "active,inactive,error")
                 .Annotation("Npgsql:Enum:io_t_device_type", "feeder,temperature,camera")
                 .Annotation("Npgsql:Enum:lost_pet_status", "lost,found,reunited")
-                .Annotation("Npgsql:Enum:user_role", "user,admin,moderator")
+                .Annotation("Npgsql:Enum:subscription_scope", "global,aid_request,guardianship")
+                .Annotation("Npgsql:Enum:subscription_status", "active,canceled,paused")
+                .Annotation("Npgsql:Enum:user_role", "user,admin,moderator,shelter_manager,veterinarian,volunteer")
                 .Annotation("Npgsql:Enum:volunteer_task_status", "open,in_progress,completed,cancelled")
                 .Annotation("Npgsql:PostgresExtension:postgis", ",,");
 
@@ -121,13 +128,14 @@ namespace PetCare.Infrastructure.Migrations
                     PasswordHash = table.Column<string>(type: "text", nullable: true),
                     FirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     LastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Phone = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
+                    Phone = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: true),
                     Role = table.Column<UserRole>(type: "user_role", nullable: false),
                     Preferences = table.Column<string>(type: "jsonb", nullable: false),
                     Points = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     LastLogin = table.Column<DateTime>(type: "timestamptz", nullable: true),
                     ProfilePhoto = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     PostalCode = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    Address = table.Column<string>(type: "text", nullable: true),
                     Language = table.Column<string>(type: "text", nullable: false, defaultValue: "uk"),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
@@ -198,7 +206,7 @@ namespace PetCare.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
                     Title = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     Content = table.Column<string>(type: "text", nullable: false),
-                    Status = table.Column<int>(type: "article_status", nullable: false),
+                    Status = table.Column<ArticleStatus>(type: "article_status", nullable: false),
                     Thumbnail = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     PublishedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
@@ -229,7 +237,7 @@ namespace PetCare.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
                     TableName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     RecordId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Operation = table.Column<int>(type: "audit_operation", nullable: false),
+                    Operation = table.Column<AuditOperation>(type: "audit_operation", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: true),
                     Changes = table.Column<string>(type: "jsonb", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
@@ -277,11 +285,48 @@ namespace PetCare.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PaymentSubscriptions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PaymentMethodId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ScopeType = table.Column<SubscriptionScope>(type: "subscription_scope", nullable: false),
+                    ScopeId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Amount = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: false),
+                    Currency = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
+                    Provider = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    ProviderSubscriptionId = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Status = table.Column<SubscriptionStatus>(type: "subscription_status", nullable: false),
+                    NextChargeAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    LastChargeAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CanceledAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PaymentSubscriptions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PaymentSubscriptions_PaymentMethods_PaymentMethodId",
+                        column: x => x.PaymentMethodId,
+                        principalTable: "PaymentMethods",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_PaymentSubscriptions_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Shelters",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    Slug = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    Slug = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Address = table.Column<string>(type: "text", nullable: false),
                     Coordinates = table.Column<Point>(type: "geometry(Point, 4326)", nullable: false),
@@ -400,13 +445,13 @@ namespace PetCare.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    Slug = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    Slug = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
                     Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
                     LastSeenLocation = table.Column<Point>(type: "geometry (Point, 4326)", nullable: true),
                     LastSeenDate = table.Column<DateTime>(type: "timestamptz", nullable: true),
                     Photos = table.Column<IReadOnlyList<string>>(type: "jsonb", nullable: false),
-                    Status = table.Column<int>(type: "lost_pet_status", nullable: false),
+                    Status = table.Column<LostPetStatus>(type: "lost_pet_status", nullable: false),
                     AdminNotes = table.Column<string>(type: "text", nullable: true),
                     Reward = table.Column<decimal>(type: "numeric", nullable: true),
                     ContactAlternative = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
@@ -443,7 +488,7 @@ namespace PetCare.Infrastructure.Migrations
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     ParentCommentId = table.Column<Guid>(type: "uuid", nullable: true),
                     Content = table.Column<string>(type: "text", nullable: false),
-                    Status = table.Column<int>(type: "comment_status", nullable: false),
+                    Status = table.Column<CommentStatus>(type: "comment_status", nullable: false),
                     ModeratedById = table.Column<Guid>(type: "uuid", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
@@ -484,8 +529,8 @@ namespace PetCare.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
                     Title = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "text", nullable: true),
-                    Category = table.Column<int>(type: "aid_category", nullable: false),
-                    Status = table.Column<int>(type: "aid_status", nullable: false),
+                    Category = table.Column<AidCategory>(type: "aid_category", nullable: false),
+                    Status = table.Column<AidStatus>(type: "aid_status", nullable: false),
                     EstimatedCost = table.Column<decimal>(type: "numeric", nullable: true),
                     Photos = table.Column<IReadOnlyList<string>>(type: "jsonb", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
@@ -516,28 +561,33 @@ namespace PetCare.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    Slug = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    Slug = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
                     Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Birthday = table.Column<DateOnly>(type: "date", nullable: true),
-                    Gender = table.Column<int>(type: "animal_gender", nullable: false),
+                    Birthday = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Gender = table.Column<AnimalGender>(type: "animal_gender", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: true),
-                    HealthStatus = table.Column<string>(type: "text", nullable: true),
+                    HealthConditions = table.Column<string>(type: "jsonb", nullable: false),
+                    SpecialNeeds = table.Column<string>(type: "jsonb", nullable: false),
+                    Size = table.Column<AnimalSize>(type: "animal_size", nullable: false),
+                    Temperaments = table.Column<string>(type: "jsonb", nullable: false),
                     Photos = table.Column<IReadOnlyList<string>>(type: "jsonb", nullable: true),
                     Videos = table.Column<IReadOnlyList<string>>(type: "jsonb", nullable: true),
-                    Status = table.Column<int>(type: "animal_status", nullable: false),
+                    Status = table.Column<AnimalStatus>(type: "animal_status", nullable: false),
+                    CareCost = table.Column<int>(type: "int", nullable: false, defaultValue: 600),
                     AdoptionRequirements = table.Column<string>(type: "text", nullable: true),
                     MicrochipId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    IdNumber = table.Column<int>(type: "integer", nullable: false),
                     Weight = table.Column<float>(type: "real", nullable: true),
                     Height = table.Column<float>(type: "real", nullable: true),
                     Color = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     IsSterilized = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    IsUnderCare = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     HaveDocuments = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     UserId = table.Column<Guid>(type: "uuid", nullable: true),
                     BreedId = table.Column<Guid>(type: "uuid", nullable: false),
                     ShelterId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SearchVector = table.Column<NpgsqlTsVector>(type: "tsvector", nullable: true, computedColumnSql: "\r\n            to_tsvector('simple', coalesce(\"Name\",'') || ' ' || coalesce(\"Description\",''))\r\n            || to_tsvector('english', coalesce(\"Name\",'') || ' ' || coalesce(\"Description\",''))\r\n        ", stored: true),
                     ShelterId1 = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
@@ -575,10 +625,11 @@ namespace PetCare.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    Amount = table.Column<decimal>(type: "numeric", nullable: false),
-                    Status = table.Column<int>(type: "donation_status", nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: false),
+                    Currency = table.Column<string>(type: "character varying(8)", maxLength: 8, nullable: false, defaultValue: "UAH"),
+                    Status = table.Column<DonationStatus>(type: "donation_status", nullable: false),
                     TransactionId = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    Purpose = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    Purpose = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     Recurring = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     Anonymous = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     DonationDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
@@ -587,7 +638,9 @@ namespace PetCare.Infrastructure.Migrations
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     UserId = table.Column<Guid>(type: "uuid", nullable: true),
                     ShelterId = table.Column<Guid>(type: "uuid", nullable: true),
-                    PaymentMethodId = table.Column<Guid>(type: "uuid", nullable: false)
+                    PaymentMethodId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TargetEntity = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    TargetEntityId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -623,8 +676,8 @@ namespace PetCare.Infrastructure.Migrations
                     EventDate = table.Column<DateTime>(type: "timestamptz", nullable: true),
                     Location = table.Column<Point>(type: "geometry(Point, 4326)", nullable: true),
                     Address = table.Column<string>(type: "text", nullable: true),
-                    Type = table.Column<int>(type: "event_type", nullable: false),
-                    Status = table.Column<int>(type: "event_status", nullable: false),
+                    Type = table.Column<EventType>(type: "event_type", nullable: false),
+                    Status = table.Column<EventStatus>(type: "event_status", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     ShelterId = table.Column<Guid>(type: "uuid", nullable: true),
@@ -651,9 +704,9 @@ namespace PetCare.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    Type = table.Column<int>(type: "io_t_device_type", nullable: false),
+                    Type = table.Column<IoTDeviceType>(type: "io_t_device_type", nullable: false),
                     Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Status = table.Column<int>(type: "io_t_device_status", nullable: false),
+                    Status = table.Column<IoTDeviceStatus>(type: "io_t_device_status", nullable: false),
                     Data = table.Column<Dictionary<string, object>>(type: "jsonb", nullable: true),
                     SerialNumber = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     AlertThresholds = table.Column<Dictionary<string, object>>(type: "jsonb", nullable: true),
@@ -675,7 +728,7 @@ namespace PetCare.Infrastructure.Migrations
                 name: "ShelterSubscriptions",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     ShelterId = table.Column<Guid>(type: "uuid", nullable: false),
                     SubscribedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
@@ -707,7 +760,7 @@ namespace PetCare.Infrastructure.Migrations
                     Date = table.Column<DateOnly>(type: "date", nullable: false),
                     Duration = table.Column<int>(type: "integer", nullable: true),
                     RequiredVolunteers = table.Column<int>(type: "integer", nullable: false),
-                    Status = table.Column<int>(type: "volunteer_task_status", nullable: false),
+                    Status = table.Column<VolunteerTaskStatus>(type: "volunteer_task_status", nullable: false),
                     PointsReward = table.Column<int>(type: "integer", nullable: false),
                     Location = table.Column<Point>(type: "geometry(Point, 4326)", nullable: true),
                     SkillsRequired = table.Column<IReadOnlyDictionary<string, string>>(type: "jsonb", nullable: false),
@@ -765,7 +818,7 @@ namespace PetCare.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    Status = table.Column<int>(type: "adoption_status", nullable: false),
+                    Status = table.Column<AdoptionStatus>(type: "adoption_status", nullable: false),
                     ApplicationDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     Comment = table.Column<string>(type: "text", nullable: true),
                     AdminNotes = table.Column<string>(type: "text", nullable: true),
@@ -803,7 +856,7 @@ namespace PetCare.Infrastructure.Migrations
                 name: "AnimalSubscriptions",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     AnimalId = table.Column<Guid>(type: "uuid", nullable: false),
                     SubscribedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
@@ -850,6 +903,37 @@ namespace PetCare.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Guardianships",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AnimalId = table.Column<Guid>(type: "uuid", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<GuardianshipStatus>(type: "guardianship_status", nullable: false),
+                    GraceUntil = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Guardianships", x => x.Id);
+                    table.CheckConstraint("CK_Guardianships_StartDate", "\"StartDate\" <= NOW()");
+                    table.ForeignKey(
+                        name: "FK_Guardianships_Animals_AnimalId",
+                        column: x => x.AnimalId,
+                        principalTable: "Animals",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Guardianships_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "SuccessStories",
                 columns: table => new
                 {
@@ -887,7 +971,7 @@ namespace PetCare.Infrastructure.Migrations
                 name: "AnimalAidDonations",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
                     DonationId = table.Column<Guid>(type: "uuid", nullable: false),
                     AnimalAidRequestId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
@@ -913,7 +997,7 @@ namespace PetCare.Infrastructure.Migrations
                 name: "EventParticipants",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
                     EventId = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     RegisteredAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
@@ -969,7 +1053,7 @@ namespace PetCare.Infrastructure.Migrations
                 name: "VolunteerTaskAssignments",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
                     VolunteerTaskId = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     AssignedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
@@ -987,6 +1071,39 @@ namespace PetCare.Infrastructure.Migrations
                         name: "FK_VolunteerTaskAssignments_VolunteerTasks_VolunteerTaskId",
                         column: x => x.VolunteerTaskId,
                         principalTable: "VolunteerTasks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GuardianshipDonations",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    GuardianshipId = table.Column<Guid>(type: "uuid", nullable: false),
+                    DonationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    DonationId1 = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GuardianshipDonations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_GuardianshipDonations_Donations_DonationId",
+                        column: x => x.DonationId,
+                        principalTable: "Donations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_GuardianshipDonations_Donations_DonationId1",
+                        column: x => x.DonationId1,
+                        principalTable: "Donations",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_GuardianshipDonations_Guardianships_GuardianshipId",
+                        column: x => x.GuardianshipId,
+                        principalTable: "Guardianships",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -1063,15 +1180,15 @@ namespace PetCare.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Animals_SearchVector",
+                table: "Animals",
+                column: "SearchVector")
+                .Annotation("Npgsql:IndexMethod", "GIN");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Animals_ShelterId",
                 table: "Animals",
                 column: "ShelterId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Animals_ShelterId_IdNumber",
-                table: "Animals",
-                columns: new[] { "ShelterId", "IdNumber" },
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Animals_ShelterId1",
@@ -1212,6 +1329,11 @@ namespace PetCare.Infrastructure.Migrations
                 column: "Status");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Donations_TargetEntity_TargetEntityId",
+                table: "Donations",
+                columns: new[] { "TargetEntity", "TargetEntityId" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Donations_UserId",
                 table: "Donations",
                 column: "UserId");
@@ -1259,6 +1381,37 @@ namespace PetCare.Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_GamificationRewards_UserId",
                 table: "GamificationRewards",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GuardianshipDonations_DonationId",
+                table: "GuardianshipDonations",
+                column: "DonationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GuardianshipDonations_DonationId1",
+                table: "GuardianshipDonations",
+                column: "DonationId1");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GuardianshipDonations_GuardianshipId_DonationId",
+                table: "GuardianshipDonations",
+                columns: new[] { "GuardianshipId", "DonationId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Guardianships_AnimalId",
+                table: "Guardianships",
+                column: "AnimalId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Guardianships_Status",
+                table: "Guardianships",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Guardianships_UserId",
+                table: "Guardianships",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -1345,6 +1498,22 @@ namespace PetCare.Infrastructure.Migrations
                 table: "PaymentMethods",
                 column: "Name",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentSubscriptions_PaymentMethodId",
+                table: "PaymentSubscriptions",
+                column: "PaymentMethodId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentSubscriptions_ProviderSubscriptionId",
+                table: "PaymentSubscriptions",
+                column: "ProviderSubscriptionId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentSubscriptions_Scope",
+                table: "PaymentSubscriptions",
+                columns: new[] { "UserId", "ScopeType", "ScopeId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_RoleClaims_RoleId",
@@ -1435,7 +1604,8 @@ namespace PetCare.Infrastructure.Migrations
                 name: "IX_Users_Phone",
                 table: "Users",
                 column: "Phone",
-                unique: true);
+                unique: true,
+                filter: "\"Phone\" IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
@@ -1494,6 +1664,9 @@ namespace PetCare.Infrastructure.Migrations
                 name: "GamificationRewards");
 
             migrationBuilder.DropTable(
+                name: "GuardianshipDonations");
+
+            migrationBuilder.DropTable(
                 name: "IoTDevices");
 
             migrationBuilder.DropTable(
@@ -1504,6 +1677,9 @@ namespace PetCare.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Notifications");
+
+            migrationBuilder.DropTable(
+                name: "PaymentSubscriptions");
 
             migrationBuilder.DropTable(
                 name: "RoleClaims");
@@ -1533,22 +1709,22 @@ namespace PetCare.Infrastructure.Migrations
                 name: "AnimalAidRequests");
 
             migrationBuilder.DropTable(
-                name: "Donations");
-
-            migrationBuilder.DropTable(
                 name: "Tags");
 
             migrationBuilder.DropTable(
                 name: "Events");
 
             migrationBuilder.DropTable(
+                name: "Donations");
+
+            migrationBuilder.DropTable(
+                name: "Guardianships");
+
+            migrationBuilder.DropTable(
                 name: "ArticleComments");
 
             migrationBuilder.DropTable(
                 name: "NotificationTypes");
-
-            migrationBuilder.DropTable(
-                name: "Animals");
 
             migrationBuilder.DropTable(
                 name: "Roles");
@@ -1558,6 +1734,9 @@ namespace PetCare.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "PaymentMethods");
+
+            migrationBuilder.DropTable(
+                name: "Animals");
 
             migrationBuilder.DropTable(
                 name: "Articles");
