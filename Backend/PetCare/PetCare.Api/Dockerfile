@@ -46,6 +46,11 @@ RUN dotnet publish "PetCare.Api/PetCare.Api.csproj" \
     /p:UseAppHost=false \
     /p:CopyLocalLockFileAssemblies=true
 
+    # 🔹 Додатково компілюємо PetCare.Infrastructure, щоб включити всі міграції в DLL
+RUN dotnet build "PetCare.Infrastructure/PetCare.Infrastructure.csproj" \
+    -c Release \
+    -o /app/publish
+
 # ===== Runtime stage =====
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
