@@ -59,8 +59,11 @@ RUN apt-get update && \
 COPY --from=build /root/.dotnet/tools /root/.dotnet/tools
 ENV PATH="$PATH:/root/.dotnet/tools"
 
-# Копіюємо публішені файли (включно з усіма міграціями)
+# Копіюємо публішені файли
 COPY --from=build /app/publish ./
+
+# 🔹 Додаємо копію вихідного коду інфраструктури (включно з Migrations)
+COPY --from=build /src/PetCare.Infrastructure /app/PetCare.Infrastructure
 
 # Копіюємо скрипт wait-for-db
 COPY --from=build /src/PetCare.Api/wait-for-db.sh /wait-for-db.sh
