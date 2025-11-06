@@ -24,13 +24,7 @@ COPY . .
 # --- Будуємо тільки API-проєкт (уникаємо docker-compose.dcproj) ---
 RUN dotnet build PetCare.Api/PetCare.Api.csproj -c Release
 
-# --- Публікуємо Infrastructure (щоб міграції потрапили в DLL) ---
-RUN dotnet publish PetCare.Infrastructure/PetCare.Infrastructure.csproj \
-    -c Release \
-    -o /app/infrastructure \
-    /p:UseAppHost=false
-
-# --- Публікуємо API ---
+# --- Публікуємо API (це автоматично включить Infrastructure з міграціями) ---
 RUN dotnet publish PetCare.Api/PetCare.Api.csproj \
     -c Release \
     -o /app/publish \
@@ -44,13 +38,8 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends netcat-traditional && \
     rm -rf /var/lib/apt/lists/*
 
-# --- Копіюємо dotnet-ef ---
-COPY --from=build /root/.dotnet/tools /root/.dotnet/tools
-ENV PATH="$PATH:/root/.dotnet/tools"
-
-# --- Копіюємо результати ---
+# --- Копіюємо результати публікації (включає міграції) ---
 COPY --from=build /app/publish .
-COPY --from=build /app/infrastructure ./PetCare.Infrastructure
 
 # --- Копіюємо скрипт очікування бази ---
 COPY --from=build /src/PetCare.Api/wait-for-db.sh /wait-for-db.sh

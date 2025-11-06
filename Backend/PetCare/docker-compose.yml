@@ -59,6 +59,9 @@
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE: "false"
+      Logging__LogLevel__Default: "Information"
+      Logging__LogLevel__Microsoft.EntityFrameworkCore.Database.Command: "Information"
+      Logging__LogLevel__Microsoft.EntityFrameworkCore.Migrations: "Information"
     ports:
       - '5100:5100'
     restart: unless-stopped
