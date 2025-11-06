@@ -7,78 +7,7 @@
   >
     {{ 'PETS_NEED_CARE' | translate }}
   </h2>
-  <div class="flex justify-end items-center cursor-pointer w-full mr-[30px]">
-    <span class="mr-3 font-bold"> {{ 'FILTERS' | translate | uppercase }}</span>
-    <button type="button" (click)="toggleFilters()" class="relative w-16 h-16">
-      <div [class.rotate-180]="!filtersOpen()">
-        <app-icon [name]="'togleFilters'"></app-icon>
-      </div>
-    </button>
-  </div>
-  @if (filtersOpen()) {
-    <div class="relative w-full flex flex-col xl:flex-row">
-      <div
-        class="relative z-10 flex flex-col items-center xl:items-start xl:flex-row xl:justify-start gap-3 xl:gap-8 w-full mt-3"
-      >
-        <!-- Розмір -->
-        <div class="flex">
-          <app-multi-select-dropdown
-            [options]="sizeOptions"
-            label="SIZE"
-            (selectionChange)="onSelectionSizeChange($event)"
-          ></app-multi-select-dropdown>
-        </div>
-        <!-- Стать -->
-        <div class="flex">
-          <app-multi-select-dropdown
-            [options]="sexOptions"
-            label="SEX"
-            (selectionChange)="onSelectionSexChange($event)"
-          ></app-multi-select-dropdown>
-        </div>
-        <!-- Вік -->
-        <div class="flex">
-          <app-multi-select-dropdown
-            [options]="ageOptions"
-            label="AGE"
-            (selectionChange)="onSelectionAgeChange($event)"
-          ></app-multi-select-dropdown>
-        </div>
-        <!-- Вартість -->
-        <div class="flex">
-          <app-multi-select-dropdown
-            [options]="costOptions"
-            label="CARE_PRICE"
-            (selectionChange)="onSelectionCostChange($event)"
-          ></app-multi-select-dropdown>
-        </div>
-      </div>
-      <div
-        class="relative flex justify-center xl:justify-end w-full mt-3 xl:mt-0"
-      >
-        <label
-          class="flex items-center justify-center xl:justify-end w-[260px] text-left gap-2 cursor-pointer"
-        >
-          <input
-            type="checkbox"
-            [checked]="sterelisationOptions()"
-            (change)="toggleSterilisationOption()"
-            class="mr-2 hidden peer"
-          />
-          <!-- unchecked -->
-          <app-icon [name]="'unchecked'" class="peer-checked:hidden"></app-icon>
-          <!-- checked -->
-          <app-icon
-            [name]="'checked'"
-            class="hidden peer-checked:block"
-          ></app-icon>
-          <span class="ml-3 font-bold">
-            {{ 'STERILISATION' | translate | uppercase }}
-          </span>
-        </label>
-      </div>
-    </div>
-  }
+
   <div
     class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-[68px] items-center w-full px-4 justify-center justify-items-center mt-10 mx-[50px]"
   >

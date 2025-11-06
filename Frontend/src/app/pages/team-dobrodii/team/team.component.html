@@ -1,0 +1,81 @@
+<div
+  class="flex w-full flex-col justify-between items-center text-primary-light-orange bg-primary-beige p-[50px] pt-[155px]"
+>
+  <h1
+    class="flex font-bold font-fixel max-w-[520px] leading-[0.8] text-center mb-12"
+    style="font-size: clamp(16px, 6.5vw, 132px); letter-spacing: -0.08em"
+  >
+    {{ 'OUR_TEAM' | translate }}
+  </h1>
+  <div class="hidden xl:flex xl:flex-col w-full">
+    <!-- Дизайнери і розробники-->
+    <div class="flex justify-between w-full mb-12">
+      <h2
+        class="w-full flex font-inter text-start"
+        style="font-size: clamp(16px, 6.5vw, 36px); letter-spacing: -0.08em"
+      >
+        {{ 'DESIGNERS' | translate }}:
+      </h2>
+      <h2
+        class="w-full flex font-inter justify-end text-end"
+        style="font-size: clamp(16px, 6.5vw, 36px); letter-spacing: -0.08em"
+      >
+        {{ 'DEVELOPERS' | translate }}:
+      </h2>
+    </div>
+    <div class="flex-row flex justify-between w-full gap-4">
+      @for (member of designers; track member) {
+        <app-team-member
+          [member]="member"
+          (favoriteChange)="onFavoriteDesignerCange(member)"
+        ></app-team-member>
+      }
+      @for (member of developers; track member) {
+        <app-team-member
+          [member]="member"
+          (favoriteChange)="onFavoriteDeveloperCange(member)"
+        ></app-team-member>
+      }
+    </div>
+  </div>
+  <div class="flex xl:hidden flex-col w-full items-center">
+    <!-- Дизайнери-->
+    <div class="flex justify-center w-full mb-7 items-center">
+      <h2
+        class="w-full flex font-inter text-center justify-center"
+        style="font-size: clamp(16px, 6.5vw, 36px); letter-spacing: -0.08em"
+      >
+        {{ 'DESIGNERS' | translate }}:
+      </h2>
+    </div>
+    <div
+      class="md:flex-row flex-col flex justify-center w-full gap-7 items-center mb-7"
+    >
+      @for (member of designers; track member) {
+        <app-team-member
+          [member]="member"
+          (favoriteChange)="onFavoriteDesignerCange(member)"
+        ></app-team-member>
+      }
+    </div>
+    <!-- Розробники-->
+    <div class="flex justify-center w-full mb-7 items-center">
+      <h2
+        class="w-full flex font-inter text-center justify-center"
+        style="font-size: clamp(16px, 6.5vw, 36px); letter-spacing: -0.08em"
+      >
+        {{ 'DEVELOPERS' | translate }}:
+      </h2>
+    </div>
+    <div
+      class="md:flex-row flex-col flex justify-center w-full gap-7 items-center mb-7"
+    >
+      @for (member of developers; track member) {
+        <app-team-member
+          [member]="member"
+          (favoriteChange)="onFavoriteDeveloperCange(member)"
+        ></app-team-member>
+      }
+    </div>
+  </div>
+</div>

@@ -47,12 +47,17 @@ export class AnimalService {
   getAnimals(filters?: {
     page?: number;
     pageSize?: number;
-    genders?: string[];
+    genders?: string;
     sizes?: string[];
     statuses?: string[];
     isSterilized?: boolean;
     shelterId?: string;
     specieId?: string;
+    isUndercare?: boolean;
+    minAge?: number;
+    maxAge?: number;
+    careCosts?: string[];
+    animalTypeFilter?: string;
   }): Observable<AnimalListResult> {
     let params = new HttpParams();
 
@@ -60,7 +65,7 @@ export class AnimalService {
     if (filters?.pageSize)
       params = params.set('pageSize', filters.pageSize.toString());
     if (filters?.genders?.length)
-      params = params.set('genders', filters.genders.join(','));
+      params = params.set('genders', filters.genders.toString());
     if (filters?.sizes?.length)
       params = params.set('sizes', filters.sizes.join(','));
     if (filters?.statuses?.length)
@@ -69,6 +74,16 @@ export class AnimalService {
       params = params.set('isSterilized', filters.isSterilized.toString());
     if (filters?.shelterId) params = params.set('shelterId', filters.shelterId);
     if (filters?.specieId) params = params.set('specieId', filters.specieId);
+    if (filters?.isUndercare !== undefined)
+      params = params.set('isUndercare', filters.isUndercare.toString());
+    if (filters?.minAge !== undefined)
+      params = params.set('minAge', filters.minAge.toString());
+    if (filters?.maxAge !== undefined)
+      params = params.set('maxAge', filters.maxAge.toString());
+    if (filters?.careCosts?.length)
+      params = params.set('careCosts', filters.careCosts.join(','));
+    if (filters?.animalTypeFilter)
+      params = params.set('animalTypeFilter', filters.animalTypeFilter);
 
     return this.api
       .get<{ animals: Animal[]; totalCount: number }>(this.endpoint, params)
