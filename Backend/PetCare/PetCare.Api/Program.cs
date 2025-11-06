@@ -493,53 +493,15 @@ public class Program
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
-                var logger = services.GetRequiredService<ILogger<Program>>();
 
-                try
-                {
-                    logger.LogInformation("=== Starting database migration ===");
+                // Отримуємо DbContext
+                var dbContext = services.GetRequiredService<AppDbContext>();
 
-                    // Отримуємо DbContext
-                    var dbContext = services.GetRequiredService<AppDbContext>();
+                // Застосовуємо міграції з правильною збіркою
+                await dbContext.Database.MigrateAsync(); // Міграції беруться з MigrationsAssembly, що задано у UseNpgsql
 
-                    // Перевіряємо підключення до БД
-                    var canConnect = await dbContext.Database.CanConnectAsync();
-                    if (!canConnect)
-                    {
-                        logger.LogError("Cannot connect to database. Check connection string and database availability.");
-                        throw new InvalidOperationException("Database connection failed");
-                    }
-
-                    logger.LogInformation("Database connection successful");
-
-                    // Отримуємо список pending міграцій
-                    var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
-                    if (pendingMigrations.Any())
-                    {
-                        logger.LogInformation("Found {Count} pending migrations: {Migrations}",
-                            pendingMigrations.Count(),
-                            string.Join(", ", pendingMigrations));
-                    }
-                    else
-                    {
-                        logger.LogInformation("No pending migrations found");
-                    }
-
-                    // Застосовуємо міграції з правильною збіркою
-                    logger.LogInformation("Applying migrations...");
-                    await dbContext.Database.MigrateAsync();
-                    logger.LogInformation("=== Migrations applied successfully ===");
-
-                    // Виконуємо seed ролей та інших даних
-                    logger.LogInformation("=== Starting data seeding ===");
-                    await DataSeeder.SeedAsync(services);
-                    logger.LogInformation("=== Data seeding completed ===");
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "An error occurred while applying migrations or seeding data");
-                    throw; // Re-throw to prevent application from starting with incomplete database
-                }
+                // Виконуємо seed ролей та інших даних
+                await DataSeeder.SeedAsync(services);
             }
 
             app.Run();
