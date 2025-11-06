@@ -19,8 +19,11 @@ RUN dotnet restore "PetCare.Api/PetCare.Api.csproj"
 # --- Копіюємо весь код ---
 COPY . .
 
-# --- Будуємо рішення ---
-RUN dotnet build -c Release
+# --- Будуємо рішення (вибери одне з двох) ---
+# Якщо є PetCare.sln:
+RUN dotnet build PetCare.sln -c Release
+# Якщо рішення немає — використовуй замість попереднього рядка:
+# RUN dotnet build PetCare.Api/PetCare.Api.csproj -c Release
 
 # --- Публікуємо Infrastructure окремо (щоб міграції компілювались у DLL) ---
 RUN dotnet publish PetCare.Infrastructure/PetCare.Infrastructure.csproj \
