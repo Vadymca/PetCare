@@ -76,4 +76,9 @@
 		<NoWarn>$(NoWarn);SA1000</NoWarn>
 	</PropertyGroup>
 
+	<ItemGroup>
+		<!-- Embed EF Core migration resources into the assembly -->
+		<EmbeddedResource Include="Migrations\**\*.resx" />
+	</ItemGroup>
+
 </Project>
