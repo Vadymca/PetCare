@@ -156,7 +156,7 @@ public class Program
                     connectionString,
                     npgsql =>
                     {
-                        npgsql.MigrationsAssembly("PetCare.Api");
+                        npgsql.MigrationsAssembly("PetCare.Infrastructure");
                         npgsql.UseNetTopologySuite();
 
                         // Enum mapping
@@ -185,8 +185,8 @@ public class Program
                     })
                     .EnableSensitiveDataLogging()
                     .EnableDetailedErrors()
-                   .ConfigureWarnings(warnings =>
-                        warnings.Log(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+                    .ConfigureWarnings(warnings =>
+                        warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
             });
 
             // -------------------- Application & Infrastructure --------------------
