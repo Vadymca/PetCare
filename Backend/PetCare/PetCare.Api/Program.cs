@@ -156,6 +156,7 @@ public class Program
                     connectionString,
                     npgsql =>
                     {
+                        npgsql.MigrationsAssembly("PetCare.Api");
                         npgsql.UseNetTopologySuite();
 
                         // Enum mapping
