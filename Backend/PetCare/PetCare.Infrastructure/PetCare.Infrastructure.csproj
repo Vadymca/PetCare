@@ -72,4 +72,8 @@
 		<NoWarn>$(NoWarn);SA1000</NoWarn>
 	</PropertyGroup>
 
+	<ItemGroup>
+		<Compile Include="Persistence\Migrations\**\*.cs" />
+	</ItemGroup>
+
 </Project>
