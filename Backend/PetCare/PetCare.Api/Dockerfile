@@ -30,6 +30,9 @@ RUN dotnet publish PetCare.Api/PetCare.Api.csproj \
     -o /app/publish \
     /p:UseAppHost=false
 
+RUN mkdir -p /app/publish/Migrations && \
+    cp -r /src/PetCare.Infrastructure/Migrations /app/publish/Migrations
+
 # ===== Runtime stage =====
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
