@@ -24,11 +24,6 @@ COPY . .
 # --- Будуємо тільки API-проєкт (уникаємо docker-compose.dcproj) ---
 RUN dotnet build PetCare.Api/PetCare.Api.csproj -c Release
 
-# --- Публікуємо Infrastructure (щоб у DLL потрапили всі міграції) ---
-RUN dotnet publish PetCare.Infrastructure/PetCare.Infrastructure.csproj \
-    -c Release \
-    -o /app/publish
-
 # --- Публікуємо API (це автоматично включить Infrastructure з міграціями) ---
 RUN dotnet publish PetCare.Api/PetCare.Api.csproj \
     -c Release \
@@ -51,7 +46,7 @@ COPY --from=build /src/PetCare.Api/wait-for-db.sh /wait-for-db.sh
 RUN chmod +x /wait-for-db.sh
 
 # --- ENV налаштування ---
-ENV ASPNETCORE_ENVIRONMENT=Production
+ENV ASPNETCORE_ENVIRONMENT=Development
 ENV ASPNETCORE_URLS=http://+:5100
 
 ENTRYPOINT ["/wait-for-db.sh", "db", "5432", "dotnet", "/app/PetCare.Api.dll"]
