@@ -15,6 +15,7 @@ using PetCare.Application.Interfaces;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
+using PetCare.Domain.Events;
 using PetCare.Domain.ValueObjects;
 using PetCare.Infrastructure.Persistence;
 

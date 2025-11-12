@@ -24,7 +24,7 @@ COPY . .
 # --- Будуємо тільки API-проєкт (уникаємо docker-compose.dcproj) ---
 RUN dotnet build PetCare.Api/PetCare.Api.csproj -c Release
 
-# --- Публікуємо API (це автоматично включить Infrastructure з міграціями) ---
+# --- Публікуємо API разом з усіма залежностями (включаючи Infrastructure з міграціями) ---
 RUN dotnet publish PetCare.Api/PetCare.Api.csproj \
     -c Release \
     -o /app/publish \
@@ -35,10 +35,14 @@ FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends netcat-traditional && \
+    apt-get install -y --no-install-recommends netcat-traditional postgresql-client && \
     rm -rf /var/lib/apt/lists/*
 
-# --- Копіюємо результати публікації (включає міграції) ---
+# --- Копіюємо dotnet-ef ---
+COPY --from=build /root/.dotnet/tools /root/.dotnet/tools
+ENV PATH="$PATH:/root/.dotnet/tools"
+
+# --- Копіюємо результати ---
 COPY --from=build /app/publish .
 
 # --- Копіюємо скрипт очікування бази ---
