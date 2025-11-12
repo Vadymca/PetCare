@@ -146,10 +146,13 @@ public class Program
             builder.Services.AddSingleton<IAuthorizationHandler, ResourceOwnerOrAdminHandler>();
 
             // -------------------- DbContext --------------------
-            builder.Services.AddDbContext<AppDbContext>(options =>
+            builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
             {
-                var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                    ?? builder.Configuration["ConnectionStrings__DefaultConnection"] // для Docker
+                var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+                var environment = serviceProvider.GetRequiredService<IHostEnvironment>();
+
+                var connectionString = configuration.GetConnectionString("DefaultConnection")
+                    ?? configuration["ConnectionStrings__DefaultConnection"]
                     ?? throw new InvalidOperationException("Рядок підключення до бази даних не знайдено.");
 
                 options.UseNpgsql(
@@ -160,7 +163,6 @@ public class Program
                         npgsql.UseNetTopologySuite();
 
                         // Enum mapping
-                        npgsql.UseNetTopologySuite();
                         npgsql.MapEnum<AdoptionStatus>("adoption_status");
                         npgsql.MapEnum<AidCategory>("aid_category");
                         npgsql.MapEnum<AidStatus>("aid_status");
@@ -182,12 +184,27 @@ public class Program
                         npgsql.MapEnum<GuardianshipStatus>("guardianship_status");
                         npgsql.MapEnum<SubscriptionScope>("subscription_scope");
                         npgsql.MapEnum<SubscriptionStatus>("subscription_status");
-                    })
-                    .EnableSensitiveDataLogging()
-                    .EnableDetailedErrors()
-                    .ConfigureWarnings(warnings =>
-                        warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+                    });
+
+                // --- Development: докладне логування ---
+                if (environment.IsDevelopment())
+                {
+                    options
+                        .EnableSensitiveDataLogging()
+                        .EnableDetailedErrors();
+
+                    options.ConfigureWarnings(warnings =>
+                        warnings.Log(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+                }
+
+                // --- Production / Docker: без надмірного логування ---
+                else
+                {
+                    options.ConfigureWarnings(warnings =>
+                        warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.CoreEventId.ManyServiceProvidersCreatedWarning));
+                }
             });
+
 
             // -------------------- Application & Infrastructure --------------------
             builder.Services.AddApplication();
