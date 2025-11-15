@@ -1,78 +1,66 @@
 ﻿services:
-  db:
-    image: postgis/postgis:16-3.4
-    container_name: petcare_db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - '5432:5432'
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - petcare-network
+    db:
+        image: postgis/postgis:16-3.4
+        container_name: petcare_db
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: ${POSTGRES_DB}
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
+        networks:
+            - petcare-network
 
-  minio:
-    image: quay.io/minio/minio:latest
-    container_name: petcare_minio
-    command: server /data --console-address ":9001"
-    restart: unless-stopped
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    volumes:
-      - minio_data:/data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    networks:
-      - petcare-network
+    minio:
+        image: quay.io/minio/minio:latest
+        container_name: petcare_minio
+        command: server /data --console-address ":9001"
+        restart: unless-stopped
+        environment:
+            MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+            MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+        volumes:
+            - minio_data:/data
+        healthcheck:
+            test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 30s
+        networks:
+            - petcare-network
 
-  petcare.api:
-    build:
-      context: .
-      dockerfile: PetCare.Api/Dockerfile
-      target: runtime
-    container_name: petcare_api
-    depends_on:
-      db:
-        condition: service_healthy
-      minio:
-        condition: service_healthy
-    env_file:
-      - .env
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: "http://+:5100"
-      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE: "false"
-      Logging__LogLevel__Default: "Information"
-      Logging__LogLevel__Microsoft.EntityFrameworkCore.Database.Command: "Information"
-      Logging__LogLevel__Microsoft.EntityFrameworkCore.Migrations: "Information"
-    ports:
-      - '5100:5100'
-    restart: unless-stopped
-    entrypoint: ["/wait-for-db.sh", "db", "5432", "dotnet", "/app/PetCare.Api.dll"]
-    networks:
-      - petcare-network
+    petcare.api:
+        build:
+            context: .
+            dockerfile: PetCare.Api/Dockerfile
+            target: runtime
+        container_name: petcare_api
+        depends_on:
+            db:
+                condition: service_healthy
+            minio:
+                condition: service_healthy
+        environment:
+            ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+            JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+        ports:
+            - '5100:8080'
+        restart: unless-stopped
+        networks:
+            - petcare-network
 
 volumes:
-  pgdata:
-  minio_data:
+    pgdata:
+    minio_data:
 
 networks:
-  petcare-network:
-    driver: bridge
+    petcare-network:
+        driver: bridge

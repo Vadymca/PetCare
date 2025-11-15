@@ -1,15 +1,15 @@
 ﻿namespace PetCare.Infrastructure.Persistence.Repositories;
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
 using PetCare.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 /// <summary>
 /// Provides data access and query operations for guardianship entities, including retrieval, listing, and association

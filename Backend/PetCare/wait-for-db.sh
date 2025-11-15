@@ -1,5 +1,4 @@
 #!/bin/bash
-
 host="$1"
 port="$2"
 shift 2
@@ -21,8 +20,6 @@ until PGPASSWORD=$POSTGRES_PASSWORD psql -h "$host" -U "$POSTGRES_USER" -d "$POS
   sleep 2
 done
 
->&2 echo "PostgreSQL is fully ready!"
->&2 echo "Migrations will be applied by application code (MigrateAsync)"
->&2 echo "Starting application..."
-
+>&2 echo "PostgreSQL is fully ready! Starting application..."
+sleep 2
 exec $cmd
