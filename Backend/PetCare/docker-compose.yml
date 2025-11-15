@@ -43,6 +43,8 @@
             dockerfile: PetCare.Api/Dockerfile
             target: runtime
         container_name: petcare_api
+        env_file:
+          - .env
         depends_on:
             db:
                 condition: service_healthy
