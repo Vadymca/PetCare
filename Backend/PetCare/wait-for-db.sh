@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 host="$1"
 port="$2"
