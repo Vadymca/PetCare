@@ -23,16 +23,11 @@ done
 
 >&2 echo "PostgreSQL is fully ready!"
 
-# Застосовуємо міграції через dotnet ef
->&2 echo "Applying EF Core migrations..."
-cd /src
+# Застосовуємо міграції через migrations bundle
+>&2 echo "Applying EF Core migrations using bundle..."
 
-# Виконуємо міграції
-dotnet ef database update \
-  --project PetCare.Infrastructure/PetCare.Infrastructure.csproj \
-  --startup-project PetCare.Api/PetCare.Api.csproj \
-  --no-build \
-  --verbose
+# Виконуємо migrations bundle
+/app/efbundle --connection "$ConnectionStrings__DefaultConnection" --verbose
 
 if [ $? -eq 0 ]; then
   >&2 echo "✅ Migrations applied successfully!"
@@ -41,8 +36,6 @@ else
   exit 1
 fi
 
-# Повертаємось до /app для запуску додатку
-cd /app
 
 >&2 echo "Starting application..."
 exec $cmd

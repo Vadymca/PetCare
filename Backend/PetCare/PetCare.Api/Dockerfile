@@ -41,15 +41,12 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends netcat-traditional postgresql-client && \
     rm -rf /var/lib/apt/lists/*
 
-# --- Копіюємо dotnet-ef ---
-COPY --from=build /root/.dotnet/tools /root/.dotnet/tools
-ENV PATH="$PATH:/root/.dotnet/tools"
-
 # --- Копіюємо результати publish ---
 COPY --from=build /app/publish .
 
-# --- ВАЖЛИВО: Копіюємо вихідний код для dotnet-ef (міграції потребують .csproj файли) ---
-COPY --from=build /src /src
+# --- Копіюємо migrations bundle ---
+COPY --from=build /app/efbundle /app/efbundle
+RUN chmod +x /app/efbundle
 
 # --- Копіюємо скрипт очікування бази ---
 COPY --from=build /src/PetCare.Api/wait-for-db.sh /wait-for-db.sh
