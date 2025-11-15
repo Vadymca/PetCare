@@ -87,7 +87,7 @@ public sealed class RegisterUserCommandHandler : IRequestHandler<RegisterUserCom
 
         var token = await this.userService.GenerateEmailConfirmationTokenAsync(user);
         var encodedToken = HttpUtility.UrlEncode(token);
-        var confirmationUrl = $"https://localhost:4200/verify-email?token={encodedToken}&email={user.Email}";
+        var confirmationUrl = $"https://localhost:4200/verify-email?token={token}&email={user.Email}";
 
         // Формуємо модель для шаблону
         var model = new ConfirmEmailViewModel(user.FirstName, confirmationUrl);
