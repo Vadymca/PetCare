@@ -498,7 +498,7 @@ public class Program
                 var dbContext = services.GetRequiredService<AppDbContext>();
 
                 // Застосовуємо міграції з правильною збіркою
-                await dbContext.Database.MigrateAsync(); // Міграції беруться з MigrationsAssembly, що задано у UseNpgsql
+                //await dbContext.Database.MigrateAsync(); // Міграції беруться з MigrationsAssembly, що задано у UseNpgsql
 
                 // Виконуємо seed ролей та інших даних
                 await DataSeeder.SeedAsync(services);

@@ -1,5 +1,6 @@
 # ===== SDK stage =====
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+
 WORKDIR /src
 
 # --- Встановлення утиліт ---
@@ -16,6 +17,7 @@ COPY ["PetCare.Api/PetCare.Api.csproj", "PetCare.Api/"]
 COPY ["PetCare.Application/PetCare.Application.csproj", "PetCare.Application/"]
 COPY ["PetCare.Infrastructure/PetCare.Infrastructure.csproj", "PetCare.Infrastructure/"]
 COPY ["PetCare.Domain/PetCare.Domain.csproj", "PetCare.Domain/"]
+
 RUN dotnet restore "PetCare.Api/PetCare.Api.csproj"
 
 # --- Копіюємо весь код ---
@@ -32,6 +34,7 @@ RUN dotnet publish PetCare.Api/PetCare.Api.csproj \
 
 # ===== Runtime stage =====
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+
 WORKDIR /app
 
 RUN apt-get update && \
@@ -42,8 +45,11 @@ RUN apt-get update && \
 COPY --from=build /root/.dotnet/tools /root/.dotnet/tools
 ENV PATH="$PATH:/root/.dotnet/tools"
 
-# --- Копіюємо результати ---
+# --- Копіюємо результати publish ---
 COPY --from=build /app/publish .
+
+# --- ВАЖЛИВО: Копіюємо вихідний код для dotnet-ef (міграції потребують .csproj файли) ---
+COPY --from=build /src /src
 
 # --- Копіюємо скрипт очікування бази ---
 COPY --from=build /src/PetCare.Api/wait-for-db.sh /wait-for-db.sh
