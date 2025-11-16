@@ -279,9 +279,11 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
     /// <exception cref="InvalidOperationException">Thrown if a payment method with the specified provider name does not exist.</exception>
     public async Task<Guid> RequirePaymentMethodIdByProviderAsync(string provider, CancellationToken cancellationToken = default)
     {
+        var vo = Name.Create(provider);
+
         var pm = await this.db.PaymentMethods
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Name.Value == provider, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Name == vo, cancellationToken);
 
         if (pm is null)
         {
