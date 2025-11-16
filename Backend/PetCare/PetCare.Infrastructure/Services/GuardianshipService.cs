@@ -71,11 +71,28 @@ public class GuardianshipService : IGuardianshipService
         var g = await this.guardianships.GetByIdForUpdateAsync(guardianshipId, cancellationToken)
             ?? throw new InvalidOperationException("Опіку не знайдено.");
 
+        if (g.Status != GuardianshipStatus.RequiresPayment)
+        {
+            try
+            {
+                g.AddDonation(donationId);
+            }
+            catch
+            {
+                // якщо вже прив’язано — просто ігноруємо
+            }
+
+            await this.guardianships.UpdateAsync(g, cancellationToken);
+            return;
+        }
+
+        // Перша оплата → активуємо
         g.AddDonation(donationId);
         g.Activate();
 
         var animal = await this.animals.GetByIdAsync(g.AnimalId, cancellationToken)
             ?? throw new InvalidOperationException("Тварину не знайдено.");
+
         animal.MarkAsUnderCare();
 
         await this.animals.UpdateAsync(animal, cancellationToken);
