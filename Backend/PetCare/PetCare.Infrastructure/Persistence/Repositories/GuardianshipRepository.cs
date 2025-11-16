@@ -270,6 +270,56 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
     }
 
     /// <summary>
+    /// Retrieves a donation by its transaction identifier.
+    /// </summary>
+    /// <remarks>
+    /// This method returns the donation associated with the specified transaction ID
+    /// or <see langword="null"/> if no such donation exists. The entity is returned
+    /// as a no-tracking record for read-only usage.
+    /// </remarks>
+    /// <param name="transactionId">The external payment provider's transaction identifier.</param>
+    /// <param name="ct">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>
+    /// A <see cref="Donation"/> matching the specified transaction ID, or <see langword="null"/>
+    /// if no matching donation exists.
+    /// </returns>
+    public async Task<Donation?> FindDonationByTransactionIdAsync(string transactionId, CancellationToken ct = default)
+    {
+        return await this.db.Donations
+            .AsNoTracking()
+            .FirstOrDefaultAsync(d => d.TransactionId == transactionId, ct);
+    }
+
+    /// <summary>
+    /// Adds a donation to the database if no existing donation with the same transaction ID exists.
+    /// </summary>
+    /// <remarks>
+    /// This method ensures idempotency for payment callbacks. If a donation with the same
+    /// <see cref="Donation.TransactionId"/> already exists, that donation is returned instead of creating
+    /// a new one.
+    /// </remarks>
+    /// <param name="donation">The donation entity to add. Must not be <see langword="null"/>.</param>
+    /// <param name="ct">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>
+    /// The newly created donation, or the existing donation if one with the same transaction ID is already present.
+    /// </returns>
+    public async Task<Donation> AddDonationIfNotExistsAsync(Donation donation, CancellationToken ct = default)
+    {
+        var existing = await this.db.Donations
+            .FirstOrDefaultAsync(d => d.TransactionId == donation.TransactionId, ct);
+
+        if (existing is not null)
+        {
+            return existing;
+        }
+
+        this.db.Donations.Add(donation);
+        await this.db.SaveChangesAsync(ct);
+
+        return donation;
+    }
+
+    /// <summary>
     /// Retrieves the unique identifier of a payment method by its provider name, ensuring that the payment method
     /// exists.
     /// </summary>

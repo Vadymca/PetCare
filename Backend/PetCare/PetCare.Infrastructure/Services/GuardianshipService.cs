@@ -73,21 +73,13 @@ public class GuardianshipService : IGuardianshipService
 
         if (g.Status != GuardianshipStatus.RequiresPayment)
         {
-            try
-            {
-                g.AddDonation(donationId);
-            }
-            catch
-            {
-                // якщо вже прив’язано — просто ігноруємо
-            }
-
-            await this.guardianships.UpdateAsync(g, cancellationToken);
+            await this.guardianships.LinkDonationAsync(guardianshipId, donationId, cancellationToken);
             return;
         }
 
         // Перша оплата → активуємо
-        g.AddDonation(donationId);
+        await this.guardianships.LinkDonationAsync(guardianshipId, donationId, cancellationToken);
+
         g.Activate();
 
         var animal = await this.animals.GetByIdAsync(g.AnimalId, cancellationToken)

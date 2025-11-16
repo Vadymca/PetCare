@@ -288,4 +288,35 @@ public interface IGuardianshipRepository : IRepository<Guardianship>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
     /// <returns>A task that represents the asynchronous delete operation.</returns>
     Task DeletePaymentMethodAsync(PaymentMethod method, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a donation by its transaction identifier.
+    /// </summary>
+    /// <remarks>
+    /// This method returns the donation associated with the specified transaction ID
+    /// or <see langword="null"/> if no such donation exists. The entity is returned
+    /// as a no-tracking record for read-only usage.
+    /// </remarks>
+    /// <param name="transactionId">The external payment provider's transaction identifier.</param>
+    /// <param name="ct">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>
+    /// A <see cref="Donation"/> matching the specified transaction ID, or <see langword="null"/>
+    /// if no matching donation exists.
+    /// </returns>
+    Task<Donation?> FindDonationByTransactionIdAsync(string transactionId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Adds a donation to the database if no existing donation with the same transaction ID exists.
+    /// </summary>
+    /// <remarks>
+    /// This method ensures idempotency for payment callbacks. If a donation with the same
+    /// <see cref="Donation.TransactionId"/> already exists, that donation is returned instead of creating
+    /// a new one.
+    /// </remarks>
+    /// <param name="donation">The donation entity to add. Must not be <see langword="null"/>.</param>
+    /// <param name="ct">A cancellation token to observe while waiting for the task to complete.</param>
+    /// <returns>
+    /// The newly created donation, or the existing donation if one with the same transaction ID is already present.
+    /// </returns>
+    Task<Donation> AddDonationIfNotExistsAsync(Donation donation, CancellationToken ct = default);
 }
