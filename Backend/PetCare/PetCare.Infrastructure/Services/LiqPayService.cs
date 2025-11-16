@@ -119,15 +119,15 @@ public sealed class LiqPayService : ILiqPayService
 
         var (targetEntity, targetEntityId, isRecurring, donorUserId, anonymous) = parsed.Value;
 
-        // 4. Обробка статусів LiqPay
+        // 4. У нас sandbox завжди = success
         if (status == "sandbox")
         {
+            status = "success";
             this.logger.LogInformation(
-                "Ignoring SANDBOX callback for {Target}({TargetId}) Tx={Tx}",
+                "Treating SANDBOX as SUCCESS for {Target}({TargetId}) Tx={Tx}",
                 targetEntity,
                 targetEntityId,
                 transactionId);
-            return true;
         }
 
         // Реально успішні статуси
