@@ -70,15 +70,38 @@ public sealed class LiqPayService : ILiqPayService
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
 
+        // Helper: читає string або number як string
+        static string? ReadFlexibleString(JsonElement el)
+        {
+            return el.ValueKind switch
+            {
+                JsonValueKind.String => el.GetString(),
+                JsonValueKind.Number => el.GetRawText(),
+                _ => null,
+            };
+        }
+
         // беремо всі поля м'яко
         var status = root.TryGetProperty("status", out var s) ? s.GetString() ?? "pending" : "pending";
         var action = root.TryGetProperty("action", out var a) ? a.GetString() : null;
-        var orderIdRaw = root.TryGetProperty("order_id", out var o) ? o.GetString() : null;
-        var amount = root.TryGetProperty("amount", out var am) ? am.GetDecimal() : 0m;
-        var currency = root.TryGetProperty("currency", out var c) ? c.GetString() ?? "UAH" : "UAH";
-        var transactionId = root.TryGetProperty("transaction_id", out var t) ? t.GetString()
-                           : root.TryGetProperty("payment_id", out var p) ? p.GetString()
-                           : orderIdRaw;
+
+        var orderIdRaw = root.TryGetProperty("order_id", out var o)
+            ? ReadFlexibleString(o)
+            : null;
+
+        var amount = root.TryGetProperty("amount", out var am)
+            ? am.GetDecimal()
+            : 0m;
+
+        var currency = root.TryGetProperty("currency", out var c)
+            ? c.GetString() ?? "UAH"
+            : "UAH";
+
+        // transaction_id може бути number
+        var transactionId =
+            root.TryGetProperty("transaction_id", out var t) ? ReadFlexibleString(t) :
+            root.TryGetProperty("payment_id", out var p) ? ReadFlexibleString(p) :
+            orderIdRaw;
 
         // 3. Парсимо наш composite order_id
         if (string.IsNullOrWhiteSpace(orderIdRaw))
@@ -96,8 +119,12 @@ public sealed class LiqPayService : ILiqPayService
 
         var (targetEntity, targetEntityId, isRecurring, donorUserId, anonymous) = parsed.Value;
 
-        // 4. В залежності від статусу — записуємо успіх або фейл
-        if (status == "success")
+        // 4. У sandbox LiqPay присилає status="sandbox" — це УСПІХ
+        bool isSuccess = status is "success" or "sandbox";
+        bool isFailure = status is "failure" or "error";
+
+        // 5. Обробка успіху
+        if (isSuccess)
         {
             this.logger.LogInformation(
                 "Recording SUCCESS payment for {Target}({TargetId}) Tx={Tx} Amount={Amount}{Currency}",
@@ -118,8 +145,12 @@ public sealed class LiqPayService : ILiqPayService
                 anonymous: anonymous,
                 userId: donorUserId,
                 cancellationToken: cancellationToken);
+
+            return true;
         }
-        else if (status == "failure" || status == "error")
+
+        // 6. Обробка помилки
+        if (isFailure)
         {
             this.logger.LogWarning(
                 "Recording FAILED payment for {Target}({TargetId}) Tx={Tx} Amount={Amount}{Currency}",
@@ -140,17 +171,17 @@ public sealed class LiqPayService : ILiqPayService
                 anonymous: anonymous,
                 userId: donorUserId,
                 cancellationToken: cancellationToken);
+
+            return true;
         }
-        else
-        {
-            // pending / wait_secure / etc. -> просто лог
-            this.logger.LogInformation(
-                "Received NON-FINAL LiqPay status '{Status}' for {Target}({TargetId}) Tx={Tx}",
-                status,
-                targetEntity,
-                targetEntityId,
-                transactionId);
-        }
+
+        // 7. Не фінальний статус — просто лог
+        this.logger.LogInformation(
+            "Received NON-FINAL LiqPay status '{Status}' for {Target}({TargetId}) Tx={Tx}",
+            status,
+            targetEntity,
+            targetEntityId,
+            transactionId);
 
         return true;
     }
