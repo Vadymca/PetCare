@@ -319,4 +319,24 @@ public interface IGuardianshipRepository : IRepository<Guardianship>
     /// The newly created donation, or the existing donation if one with the same transaction ID is already present.
     /// </returns>
     Task<Donation> AddDonationIfNotExistsAsync(Donation donation, CancellationToken ct = default);
+
+    /// <summary>
+    /// Retrieves a payment subscription by its provider-assigned subscription identifier.
+    /// </summary>
+    /// <param name="providerSubscriptionId">The unique provider subscription identifier.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    Task<PaymentSubscription?> GetSubscriptionByProviderIdAsync(
+        string providerSubscriptionId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Updates the specified <see cref="PaymentSubscription"/> and saves changes.
+    /// </summary>
+    /// <param name="subscription">The subscription entity to update.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    Task UpdateSubscriptionAsync(
+        PaymentSubscription subscription,
+        CancellationToken cancellationToken = default);
 }

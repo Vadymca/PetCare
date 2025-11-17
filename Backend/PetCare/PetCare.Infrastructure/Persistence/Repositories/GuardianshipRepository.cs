@@ -587,4 +587,34 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
         this.db.PaymentMethods.Remove(method);
         await this.db.SaveChangesAsync(cancellationToken);
     }
+
+    /// <summary>
+    /// Retrieves a payment subscription by its provider-assigned subscription identifier.
+    /// </summary>
+    /// <param name="providerSubscriptionId">The unique provider subscription identifier.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public async Task<PaymentSubscription?> GetSubscriptionByProviderIdAsync(
+        string providerSubscriptionId,
+        CancellationToken cancellationToken = default)
+    {
+        return await this.db.PaymentSubscriptions
+            .FirstOrDefaultAsync(
+                x => x.ProviderSubscriptionId == providerSubscriptionId,
+                cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates the specified <see cref="PaymentSubscription"/> and saves changes.
+    /// </summary>
+    /// <param name="subscription">The subscription entity to update.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public async Task UpdateSubscriptionAsync(
+        PaymentSubscription subscription,
+        CancellationToken cancellationToken = default)
+    {
+        this.db.PaymentSubscriptions.Update(subscription);
+        await this.db.SaveChangesAsync(cancellationToken);
+    }
 }

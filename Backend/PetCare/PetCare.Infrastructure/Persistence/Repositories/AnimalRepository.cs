@@ -203,11 +203,16 @@ public class AnimalRepository : GenericRepository<Animal>, IAnimalRepository
         animalsList = animalsList
             .OrderByDescending(a => a.Status != AnimalStatus.Dead)
             .ThenByDescending(a => a.CreatedAt)
+            .ToList();
+
+        // Рахуємо total ДО пагінації
+        var total = animalsList.Count;
+
+        // Пагінація
+        animalsList = animalsList
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToList();
-
-        var total = animalsList.Count;
 
         return (animalsList, total);
     }

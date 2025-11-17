@@ -109,4 +109,27 @@ public interface IPaymentService
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A read-only list of <see cref="Donation"/>.</returns>
     Task<IReadOnlyList<Donation>> ListDonationsByProjectAsync(Guid projectId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Finds a recurring subscription by its provider subscription identifier
+    /// (e.g., LiqPay's subscription_id).
+    /// </summary>
+    /// <param name="providerSubscriptionId">The subscription identifier assigned by the payment provider.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>
+    /// A <see cref="PaymentSubscription"/> instance if found; otherwise <see langword="null"/>.
+    /// </returns>
+    Task<PaymentSubscription?> FindSubscriptionByProviderIdAsync(
+        string providerSubscriptionId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Persists changes made to the specified <see cref="PaymentSubscription"/> instance.
+    /// </summary>
+    /// <param name="subscription">The subscription to update.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task UpdateSubscriptionAsync(
+        PaymentSubscription subscription,
+        CancellationToken cancellationToken = default);
 }

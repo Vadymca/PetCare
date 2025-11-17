@@ -309,6 +309,53 @@ public class PaymentService : IPaymentService
         return donations;
     }
 
+    /// <summary>
+    /// Finds a recurring subscription by its provider subscription identifier
+    /// (e.g., LiqPay's subscription_id).
+    /// </summary>
+    /// <param name="providerSubscriptionId">The subscription identifier assigned by the payment provider.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>
+    /// A <see cref="PaymentSubscription"/> instance if found; otherwise <see langword="null"/>.
+    /// </returns>
+    public async Task<PaymentSubscription?> FindSubscriptionByProviderIdAsync(
+        string providerSubscriptionId,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(providerSubscriptionId))
+        {
+            throw new ArgumentException("Provider subscription id cannot be empty.", nameof(providerSubscriptionId));
+        }
+
+        return await this.guardianships.GetSubscriptionByProviderIdAsync(
+            providerSubscriptionId,
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Persists changes made to the specified <see cref="PaymentSubscription"/> instance.
+    /// </summary>
+    /// <param name="subscription">The subscription to update.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public async Task UpdateSubscriptionAsync(
+        PaymentSubscription subscription,
+        CancellationToken cancellationToken = default)
+    {
+        if (subscription is null)
+        {
+            throw new ArgumentNullException(nameof(subscription));
+        }
+
+        await this.guardianships.UpdateSubscriptionAsync(subscription, cancellationToken);
+
+        this.logger.LogInformation(
+            "Payment subscription {Id} updated. NextChargeAt={Next}, LastChargeAt={Last}",
+            subscription.Id,
+            subscription.NextChargeAt,
+            subscription.LastChargeAt);
+    }
+
     // helpers
 
     /// <summary>

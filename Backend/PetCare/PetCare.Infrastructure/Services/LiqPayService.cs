@@ -103,6 +103,30 @@ public sealed class LiqPayService : ILiqPayService
             root.TryGetProperty("payment_id", out var p) ? ReadFlexibleString(p) :
             orderIdRaw;
 
+        // читаємо next_subscribe_date ----
+        DateTime? nextChargeUtc = null;
+
+        if (root.TryGetProperty("next_subscribe_date", out var nsd))
+        {
+            if (nsd.ValueKind == JsonValueKind.Number && nsd.TryGetInt64(out var unix))
+            {
+                nextChargeUtc = DateTimeOffset.FromUnixTimeSeconds(unix).UtcDateTime;
+            }
+        }
+
+        // читаємо subscribe_id (ід підписки LiqPay)
+        string? providerSubscriptionId = null;
+
+        if (root.TryGetProperty("subscribe_id", out var sid))
+        {
+            providerSubscriptionId = ReadFlexibleString(sid);
+        }
+        else
+        {
+            // fallback: використовуємо order_id як ідентифікатор підписки
+            providerSubscriptionId = orderIdRaw;
+        }
+
         // 3. Парсимо наш composite order_id
         if (string.IsNullOrWhiteSpace(orderIdRaw))
         {
@@ -158,6 +182,32 @@ public sealed class LiqPayService : ILiqPayService
                 anonymous: anonymous,
                 userId: donorUserId,
                 cancellationToken: cancellationToken);
+
+            if (isRecurring)
+            {
+                var subscription = await this.paymentService
+                    .FindSubscriptionByProviderIdAsync(providerSubscriptionId!, cancellationToken);
+
+                if (subscription is not null)
+                {
+                    subscription.MarkCharged(DateTime.UtcNow);
+                    subscription.SetNextCharge(nextChargeUtc);
+
+                    await this.paymentService.UpdateSubscriptionAsync(subscription, cancellationToken);
+
+                    this.logger.LogInformation(
+                        "Updated subscription {Id}: LastChargeAt={Last}, NextChargeAt={Next}",
+                        subscription.Id,
+                        subscription.LastChargeAt,
+                        subscription.NextChargeAt);
+                }
+                else
+                {
+                    this.logger.LogWarning(
+                        "Recurring payment received but subscription not found. ProviderSubscriptionId={Id}",
+                        providerSubscriptionId);
+                }
+            }
 
             return true;
         }
