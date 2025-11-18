@@ -279,4 +279,25 @@ public class SubscriptionService : ISubscriptionService
         this.logger.LogInformation("Canceled {Count} expired subscriptions.", expiredSubs.Count);
         return expiredSubs.Count;
     }
+
+    /// <summary>
+    /// Retrieves the payment subscription associated with the specified guardianship, if one exists.
+    /// </summary>
+    /// <param name="guardianshipId">
+    /// The unique identifier of the guardianship for which the subscription should be retrieved.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A cancellation token that can be used to cancel the asynchronous operation.
+    /// </param>
+    /// <returns>
+    /// A task representing the asynchronous operation. The task result contains the matching
+    /// <see cref="PaymentSubscription"/> instance if found; otherwise, <see langword="null"/>.
+    /// </returns>
+    public async Task<PaymentSubscription?> GetByGuardianshipIdAsync(
+        Guid guardianshipId,
+        CancellationToken cancellationToken = default)
+    {
+        return await this.guardianships
+            .FindSubscriptionForGuardianshipAsync(guardianshipId, cancellationToken);
+    }
 }

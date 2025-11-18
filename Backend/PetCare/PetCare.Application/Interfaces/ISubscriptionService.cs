@@ -101,4 +101,21 @@ public interface ISubscriptionService
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>The number of subscriptions that were canceled.</returns>
     Task<int> CancelExpiredAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves the payment subscription associated with the specified guardianship, if one exists.
+    /// </summary>
+    /// <param name="guardianshipId">
+    /// The unique identifier of the guardianship whose payment subscription should be retrieved.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A cancellation token that can be used to cancel the asynchronous operation.
+    /// </param>
+    /// <returns>
+    /// A task representing the asynchronous operation. The task result contains the associated
+    /// <see cref="PaymentSubscription"/> instance if found; otherwise, <see langword="null"/>.
+    /// </returns>
+    Task<PaymentSubscription?> GetByGuardianshipIdAsync(
+        Guid guardianshipId,
+        CancellationToken cancellationToken = default);
 }

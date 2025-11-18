@@ -25,7 +25,7 @@ public static class LiqPayStatusEndpoint
             return Results.Ok(response);
         })
         .WithName("CheckLiqPayPaymentStatus")
-        .WithTags("Payments")
+        .WithTags("Payments.LiqPay")
         .RequireRateLimiting("GlobalPolicy")
         .Produces<LiqPayPaymentStatusResponseDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest);

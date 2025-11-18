@@ -64,7 +64,7 @@ public static class LiqPayCallbackEndpoint
             }
         })
         .WithName("LiqPayCallback")
-        .WithTags("Payments")
+        .WithTags("Payments.LiqPay")
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status500InternalServerError)

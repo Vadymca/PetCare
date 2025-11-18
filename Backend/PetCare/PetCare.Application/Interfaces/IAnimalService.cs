@@ -20,6 +20,15 @@ public interface IAnimalService
     Task<Animal?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets a fully populated <see cref="Animal"/> by its identifier
+    /// for read-only operations such as API responses.
+    /// </summary>
+    /// <param name="id">The animal identifier.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The loaded <see cref="Animal"/> if found; otherwise null.</returns>
+    Task<Animal?> GetFullByIdAsync(Guid id, CancellationToken cancellationToken);
+
+    /// <summary>
     /// Asynchronously retrieves an animal by its unique slug identifier.
     /// </summary>
     /// <param name="slug">The unique slug that identifies the animal to retrieve. Cannot be null or empty.</param>

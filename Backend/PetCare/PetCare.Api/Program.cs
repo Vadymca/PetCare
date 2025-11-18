@@ -19,8 +19,11 @@ using PetCare.Api.Endpoints.Auth.TwoFactor.Sms;
 using PetCare.Api.Endpoints.Breeds;
 using PetCare.Api.Endpoints.Media;
 using PetCare.Api.Endpoints.PaymentMethods;
-using PetCare.Api.Endpoints.Payments;
+using PetCare.Api.Endpoints.Payments.Donations;
+using PetCare.Api.Endpoints.Payments.Guardianships;
+using PetCare.Api.Endpoints.Payments.History;
 using PetCare.Api.Endpoints.Payments.LiqPay;
+using PetCare.Api.Endpoints.Payments.Subscriptions;
 using PetCare.Api.Endpoints.Shelters;
 using PetCare.Api.Endpoints.Species;
 using PetCare.Api.Endpoints.Users;
@@ -468,17 +471,26 @@ public class Program
             app.MapDeleteBreedEndpoint(); // /api/breeds/{id}
 
             // ---------------------- Payments ----------------------
+            // ----------------------- LiqPay -----------------------
             app.MapLiqPayCheckoutEndpoint(); // /api/payments/liqpay/checkout
             app.MapLiqPayCallbackEndpoint(); // /api/payments/liqpay/callback
             app.MapLiqPayStatusEndpoint(); // /api/payments/liqpay/status
-            app.MapGetMyGuardianshipsEndpoint(); // /api/guardianships/me
-            app.MapGetMyPaymentHistoryEndpoint(); // /api/payments/me/history
-            app.MapGetMySubscriptionsEndpoint(); // /api/payments/me/subscriptions
-            app.MapGetMyUpcomingPaymentsEndpoint(); // /api/payments/me/upcoming
+
+            // ---------------------- Donations ----------------------
+            app.MapGetAllDonationsEndpoint(); // /api/payments/donations/all
+            app.MapGetProjectDonationsEndpoint(); // /api/payments/donations/project/{projectId:guid}
+
+            // -------------------- Subscriptions ---------------------
             app.MapCancelSubscriptionEndpoint(); // /api/subscriptions/{providerSubscriptionId}/cancel
+            app.MapGetMySubscriptionsEndpoint(); // /api/payments/me/subscriptions
+
+            // -------------------- Guardianships ---------------------
             app.MapCreateGuardianshipEndpoint(); // /api/guardianships
-            app.MapGetAllDonationsEndpoint(); // /api/payments/all
-            app.MapGetProjectDonationsEndpoint(); // /api/payments/project/{projectId}
+            app.MapGetMyGuardianshipsEndpoint(); // /api/guardianships/me
+
+            // ------------------- Payment History --------------------
+            app.MapGetMyPaymentHistoryEndpoint(); // /api/payments/me/history
+            app.MapGetMyUpcomingPaymentsEndpoint(); // /api/payments/me/upcoming
 
             // -------------------- PaymentMethods --------------------
             app.MapGetAllPaymentMethodsEndpoint(); // /api/payment-methods

@@ -44,6 +44,12 @@ public class AnimalService : IAnimalService
     public async Task<Animal?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         => await this.animalRepository.GetByIdAsync(id, cancellationToken);
 
+    /// <inheritdoc />
+    public async Task<Animal?> GetFullByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await this.animalRepository.GetFullByIdAsync(id, cancellationToken);
+    }
+
     /// <summary>
     /// Asynchronously retrieves an animal entity that matches the specified slug.
     /// </summary>
@@ -221,7 +227,27 @@ public class AnimalService : IAnimalService
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the update operation.</param>
     /// <returns>A task that represents the asynchronous update operation.</returns>
     public async Task UpdateAsync(Animal animal, CancellationToken cancellationToken = default)
-        => await this.animalRepository.UpdateAsync(animal, cancellationToken);
+    {
+        if (animal is null)
+        {
+            throw new ArgumentNullException(nameof(animal));
+        }
+
+        var existing = await this.animalRepository.GetByIdAsync(animal.Id, cancellationToken);
+
+        if (existing is null)
+        {
+            throw new KeyNotFoundException($"Тварину з ID {animal.Id} не знайдено.");
+        }
+
+        await this.animalRepository.UpdateAsync(animal, cancellationToken);
+
+        if (existing.Status != AnimalStatus.Dead &&
+            animal.Status == AnimalStatus.Dead)
+        {
+            await this.shelterRepository.DecrementOccupancyAsync(animal.ShelterId, cancellationToken);
+        }
+    }
 
     /// <summary>
     /// Asynchronously deletes the animal with the specified identifier.

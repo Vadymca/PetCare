@@ -49,6 +49,10 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
             .AsNoTracking()
             .Include(g => g.User)
             .Include(g => g.Animal)
+                .ThenInclude(a => a.Shelter)
+            .Include(g => g.Animal)
+                .ThenInclude(a => a!.Breed)
+                    .ThenInclude(b => b!.Specie)
             .Include(g => g.Donations)
                 .ThenInclude(gd => gd.Donation)
             .FirstOrDefaultAsync(g => g.Id == id, ct);
@@ -616,5 +620,30 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
     {
         this.db.PaymentSubscriptions.Update(subscription);
         await this.db.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Retrieves the payment subscription associated with the guardianship identified by the specified identifier.
+    /// </summary>
+    /// <param name="guardianshipId">
+    /// The unique identifier of the guardianship whose subscription should be retrieved.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A cancellation token that can be used to cancel the asynchronous operation.
+    /// </param>
+    /// <returns>
+    /// A task representing the asynchronous operation. The task result contains the
+    /// <see cref="PaymentSubscription"/> instance if one exists; otherwise, <see langword="null"/>.
+    /// </returns>
+    public async Task<PaymentSubscription?> FindSubscriptionForGuardianshipAsync(
+        Guid guardianshipId,
+        CancellationToken cancellationToken = default)
+    {
+        return await this.db.PaymentSubscriptions
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                s => s.ScopeType == SubscriptionScope.Guardianship
+                     && s.ScopeId == guardianshipId,
+                cancellationToken);
     }
 }

@@ -112,4 +112,14 @@ public interface IAnimalRepository : IRepository<Animal>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task UnsubscribeUserAsync(Guid animalId, Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a fully populated <see cref="Animal"/> by its identifier,
+    /// including breed, specie, shelter, tags, success stories,
+    /// adoption applications and subscribers.
+    /// </summary>
+    /// <param name="id">The identifier of the animal.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The fully loaded <see cref="Animal"/>, or null if not found.</returns>
+    Task<Animal?> GetFullByIdAsync(Guid id, CancellationToken cancellationToken);
 }

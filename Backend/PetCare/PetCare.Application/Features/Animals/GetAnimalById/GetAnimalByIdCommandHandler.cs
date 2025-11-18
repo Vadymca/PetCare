@@ -32,7 +32,7 @@ public sealed class GetAnimalByIdCommandHandler : IRequestHandler<GetAnimalByIdC
             throw new ArgumentException("Id не може бути порожнім.", nameof(request.Id));
         }
 
-        var animal = await this.animalService.GetByIdAsync(request.Id, cancellationToken)
+        var animal = await this.animalService.GetFullByIdAsync(request.Id, cancellationToken)
      ?? throw new InvalidOperationException("Тварину не знайдено.");
 
         return this.mapper.Map<AnimalDto>(animal);

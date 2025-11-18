@@ -229,7 +229,6 @@ public class AnimalRepository : GenericRepository<Animal>, IAnimalRepository
             .AsNoTracking()
             .Include(a => a.Breed)
                 .ThenInclude(b => b!.Specie)
-            .Include(a => a.Shelter)
             .Include(a => a.AdoptionApplications)
             .Include(a => a.Tags)
             .Include(a => a.SuccessStories)
@@ -237,6 +236,22 @@ public class AnimalRepository : GenericRepository<Animal>, IAnimalRepository
             .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
 
         return animal ?? throw new InvalidOperationException($"Тварину з Id '{id}' не знайдено.");
+    }
+
+    /// <inheritdoc />
+    public async Task<Animal?> GetFullByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await this.Context.Animals
+            .AsNoTracking()
+            .Include(a => a.Breed)
+                .ThenInclude(b => b!.Specie)
+            .Include(a => a.Shelter)
+            .Include(a => a.Tags)
+            .Include(a => a.SuccessStories)
+            .Include(a => a.AdoptionApplications)
+            .Include(a => a.Subscribers)
+            .FirstOrDefaultAsync(a => a.Id == id, cancellationToken)
+            ?? throw new InvalidOperationException($"Тварину з Id '{id}' не знайдено.");
     }
 
     /// <summary>

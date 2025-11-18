@@ -339,4 +339,21 @@ public interface IGuardianshipRepository : IRepository<Guardianship>
     Task UpdateSubscriptionAsync(
         PaymentSubscription subscription,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves the payment subscription associated with the guardianship identified by the specified identifier.
+    /// </summary>
+    /// <param name="guardianshipId">
+    /// The unique identifier of the guardianship whose subscription should be retrieved.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// A cancellation token that can be used to cancel the asynchronous operation.
+    /// </param>
+    /// <returns>
+    /// A task representing the asynchronous operation. The task result contains the associated
+    /// <see cref="PaymentSubscription"/> if found; otherwise, <see langword="null"/>.
+    /// </returns>
+    Task<PaymentSubscription?> FindSubscriptionForGuardianshipAsync(
+        Guid guardianshipId,
+        CancellationToken cancellationToken = default);
 }

@@ -52,7 +52,7 @@ public static class LiqPayCheckoutEndpoint
             return Results.Ok(response);
         })
         .WithName("CreateLiqPayCheckout")
-        .WithTags("Payments")
+        .WithTags("Payments.LiqPay")
         .RequireRateLimiting("GlobalPolicy")
         .Produces<LiqPayCheckoutResponseDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest);
