@@ -487,6 +487,7 @@ public class Program
             // -------------------- Guardianships ---------------------
             app.MapCreateGuardianshipEndpoint(); // /api/guardianships
             app.MapGetMyGuardianshipsEndpoint(); // /api/guardianships/me
+            app.MapDeleteGuardianshipEndpoint(); // /api/guardianships/{id:guid}
 
             // ------------------- Payment History --------------------
             app.MapGetMyPaymentHistoryEndpoint(); // /api/payments/me/history

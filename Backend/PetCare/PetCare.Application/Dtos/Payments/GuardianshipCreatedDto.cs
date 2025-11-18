@@ -8,9 +8,8 @@ using PetCare.Application.Dtos.AnimalDtos;
 /// </summary>
 public sealed record GuardianshipCreatedDto(
     Guid Id,
-    Guid AnimalId,
     DateTime StartDate,
     DateTime GraceUntil,
     string Status,
-    AnimalListDto Animal,
+    AnimalDto Animal,
     PaymentSubscriptionDto? PaymentSubscription);

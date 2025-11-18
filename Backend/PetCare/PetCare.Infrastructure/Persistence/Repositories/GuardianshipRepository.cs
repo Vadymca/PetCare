@@ -49,7 +49,7 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
             .AsNoTracking()
             .Include(g => g.User)
             .Include(g => g.Animal)
-                .ThenInclude(a => a.Shelter)
+                .ThenInclude(a => a!.Shelter)
             .Include(g => g.Animal)
                 .ThenInclude(a => a!.Breed)
                     .ThenInclude(b => b!.Specie)
@@ -644,6 +644,27 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
             .FirstOrDefaultAsync(
                 s => s.ScopeType == SubscriptionScope.Guardianship
                      && s.ScopeId == guardianshipId,
+                cancellationToken);
+    }
+
+    /// <summary>
+    /// Retrieves a payment subscription bound to a specific guardianship scope.
+    /// </summary>
+    /// <param name="scope">The subscription scope to filter on (Guardianship).</param>
+    /// <param name="scopeId">The scope identifier (guardianship ID).</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+    /// <returns>
+    /// A <see cref="PaymentSubscription"/> instance if found; otherwise <c>null</c>.
+    /// </returns>
+    public async Task<PaymentSubscription?> GetSubscriptionByScopeAsync(
+        SubscriptionScope scope,
+        Guid scopeId,
+        CancellationToken cancellationToken = default)
+    {
+        return await this.db.PaymentSubscriptions
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                s => s.ScopeType == scope && s.ScopeId == scopeId,
                 cancellationToken);
     }
 }

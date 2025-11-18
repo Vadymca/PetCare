@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Aggregates;
+using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
 using PetCare.Infrastructure.Persistence;
 
@@ -217,4 +218,28 @@ public class GuardianshipService : IGuardianshipService
     /// records matching the specified criteria. The list will be empty if no records are found.</returns>
     public Task<IReadOnlyList<Guardianship>> GetByAnimalAsync(Guid animalId, GuardianshipStatus? status = null, CancellationToken cancellationToken = default)
         => this.guardianships.ListByAnimalAsync(animalId, status, cancellationToken);
+
+    /// <inheritdoc/>
+    public async Task<(Guardianship Guardianship, PaymentSubscription? Subscription)>
+        GetWithSubscriptionAsync(Guid guardianshipId, CancellationToken cancellationToken = default)
+    {
+        var g = await this.guardianships.GetByIdWithDetailsAsync(guardianshipId, cancellationToken)
+            ?? throw new KeyNotFoundException("Опіку не знайдено.");
+
+        var sub = await this.guardianships.GetSubscriptionByScopeAsync(
+            SubscriptionScope.Guardianship,
+            guardianshipId,
+            cancellationToken);
+
+        return (g, sub);
+    }
+
+    /// <inheritdoc/>
+    public async Task DeleteAsync(Guid guardianshipId, CancellationToken cancellationToken = default)
+    {
+        var entity = await this.guardianships.GetByIdAsync(guardianshipId, cancellationToken)
+            ?? throw new KeyNotFoundException("Опіку не знайдено.");
+
+        await this.guardianships.DeleteAsync(entity, cancellationToken);
+    }
 }

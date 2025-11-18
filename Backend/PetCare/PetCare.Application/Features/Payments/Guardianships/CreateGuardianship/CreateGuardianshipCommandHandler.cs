@@ -49,7 +49,7 @@ public sealed class CreateGuardianshipCommandHandler
             throw new InvalidOperationException("Не вдалося завантажити тварину для створеної опіки.");
         }
 
-        var animalDto = this.mapper.Map<AnimalListDto>(loaded.Animal);
+        var animalDto = this.mapper.Map<AnimalDto>(loaded.Animal);
 
         var subscription = await this.subscriptionService
             .GetByGuardianshipIdAsync(guardianship.Id, cancellationToken);
@@ -71,7 +71,6 @@ public sealed class CreateGuardianshipCommandHandler
 
         return new GuardianshipCreatedDto(
            guardianship.Id,
-           guardianship.AnimalId,
            guardianship.StartDate,
            guardianship.GraceUntil ?? DateTime.UtcNow.AddDays(3),
            guardianship.Status.ToString(),

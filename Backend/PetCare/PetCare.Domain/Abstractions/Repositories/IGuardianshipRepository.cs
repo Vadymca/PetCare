@@ -356,4 +356,18 @@ public interface IGuardianshipRepository : IRepository<Guardianship>
     Task<PaymentSubscription?> FindSubscriptionForGuardianshipAsync(
         Guid guardianshipId,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a payment subscription bound to a specific guardianship scope.
+    /// </summary>
+    /// <param name="scope">The subscription scope to filter on (Guardianship).</param>
+    /// <param name="scopeId">The scope identifier (guardianship ID).</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+    /// <returns>
+    /// A <see cref="PaymentSubscription"/> instance if found; otherwise <c>null</c>.
+    /// </returns>
+    Task<PaymentSubscription?> GetSubscriptionByScopeAsync(
+        SubscriptionScope scope,
+        Guid scopeId,
+        CancellationToken cancellationToken = default);
 }

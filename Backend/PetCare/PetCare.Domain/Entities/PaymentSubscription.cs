@@ -105,6 +105,11 @@ public sealed class PaymentSubscription : BaseEntity
     /// <summary>Gets lifecycle status.</summary>
     public SubscriptionStatus Status { get; private set; }
 
+    /// <summary>
+    /// Gets a value indicating whether the subscription is currently active.
+    /// </summary>
+    public bool IsActive => this.Status == SubscriptionStatus.Active;
+
     /// <summary>Gets next scheduled charge moment (UTC), if known.</summary>
     public DateTime? NextChargeAt { get; private set; }
 

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using PetCare.Domain.Aggregates;
+using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
 
 /// <summary>
@@ -91,4 +92,23 @@ public interface IGuardianshipService
     /// <returns>A task that represents the asynchronous operation. The task result contains a read-only list of guardianship
     /// records matching the specified criteria. The list is empty if no records are found.</returns>
     Task<IReadOnlyList<Guardianship>> GetByAnimalAsync(Guid animalId, GuardianshipStatus? status = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes a guardianship by its identifier.
+    /// </summary>
+    /// <param name="guardianshipId">The unique identifier of the guardianship to delete.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+    /// <returns>A task representing the asynchronous delete operation.</returns>
+    Task DeleteAsync(Guid guardianshipId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a guardianship along with its associated payment subscription.
+    /// </summary>
+    /// <param name="guardianshipId">The unique identifier of the guardianship to retrieve.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+    /// <returns>
+    /// A tuple containing the guardianship entity and its related subscription, if one exists.
+    /// </returns>
+    Task<(Guardianship Guardianship, PaymentSubscription? Subscription)>
+        GetWithSubscriptionAsync(Guid guardianshipId, CancellationToken cancellationToken = default);
 }
