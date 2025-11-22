@@ -56,6 +56,14 @@ public class GuardianshipService : IGuardianshipService
 
         var g = Guardianship.Create(userId, animalId, TimeSpan.FromDays(graceDays));
         await this.guardianships.AddAsync(g, cancellationToken);
+
+        // Блокуємо тварину від інших користувачів
+        var animal = await this.animals.GetByIdAsync(animalId, cancellationToken)
+            ?? throw new InvalidOperationException("Тварину не знайдено.");
+
+        animal.MarkAsUnderCare();
+        await this.animals.UpdateAsync(animal, cancellationToken);
+
         return g;
     }
 
@@ -239,6 +247,13 @@ public class GuardianshipService : IGuardianshipService
     {
         var entity = await this.guardianships.GetByIdAsync(guardianshipId, cancellationToken)
             ?? throw new KeyNotFoundException("Опіку не знайдено.");
+
+        var animal = await this.animals.GetByIdAsync(entity.AnimalId, cancellationToken);
+        if (animal is not null)
+        {
+            animal.MarkAsNotUnderCare();
+            await this.animals.UpdateAsync(animal, cancellationToken);
+        }
 
         await this.guardianships.DeleteAsync(entity, cancellationToken);
     }

@@ -193,6 +193,14 @@ public class AppDbContext : IdentityDbContext<User, AppRole, Guid>
    /// SaveChanges is called.</remarks>
     public DbSet<PaymentSubscription> PaymentSubscriptions => this.Set<PaymentSubscription>();
 
+    /// <summary>
+    /// Gets the collection of payment intents in the context.
+    /// </summary>
+    /// <remarks>Use this property to query, add, update, or remove payment intent entities from the database.
+    /// Changes made to this collection are tracked by the context and persisted to the database when SaveChanges is
+    /// called.</remarks>
+    public DbSet<PaymentIntent> PaymentIntents => this.Set<PaymentIntent>();
+
     /// <inheritdoc/>
     /// <summary>
     /// Saves all changes made in this context to the database.
@@ -264,6 +272,7 @@ public class AppDbContext : IdentityDbContext<User, AppRole, Guid>
         modelBuilder.HasPostgresEnum<GuardianshipStatus>();
         modelBuilder.HasPostgresEnum<SubscriptionScope>();
         modelBuilder.HasPostgresEnum<SubscriptionStatus>();
+        modelBuilder.HasPostgresEnum<PaymentIntentStatus>();
 
         base.OnModelCreating(modelBuilder);
 

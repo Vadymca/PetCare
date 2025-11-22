@@ -185,6 +185,7 @@ public class Program
                         npgsql.MapEnum<GuardianshipStatus>("guardianship_status");
                         npgsql.MapEnum<SubscriptionScope>("subscription_scope");
                         npgsql.MapEnum<SubscriptionStatus>("subscription_status");
+                        npgsql.MapEnum<PaymentIntentStatus>("payment_intent_status");
                     })
                     .EnableSensitiveDataLogging()
                     .EnableDetailedErrors()

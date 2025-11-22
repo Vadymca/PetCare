@@ -30,9 +30,14 @@ public static class LiqPayCheckoutEndpoint
             CreateLiqPayCheckoutRequest request,
             CancellationToken cancellationToken) =>
         {
-            // Визначаємо користувача з токена
-            var userIdStr = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var isAuthenticated = Guid.TryParse(userIdStr, out var userId);
+            Guid? tokenUserId =
+                Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out var parsedUserId)
+                    ? parsedUserId
+                    : null;
+
+            string? tokenPayerName = context.User.FindFirstValue(ClaimTypes.Name);
+            string? tokenPayerPhone = context.User.FindFirstValue("phone");
+            string? tokenPayerEmail = context.User.FindFirstValue(ClaimTypes.Email);
 
             var dto = new CreateLiqPayCheckoutDto(
                 Amount: request.Amount,
@@ -41,14 +46,21 @@ public static class LiqPayCheckoutEndpoint
                 IsRecurring: request.IsRecurring,
                 Scope: request.Scope,
                 EntityId: request.EntityId,
-                UserId: isAuthenticated ? userId : null,
-                Anonymous: !isAuthenticated,
+                UserId: null,
+                Anonymous: tokenUserId is null,
                 PayerName: request.PayerName,
                 PayerPhone: request.PayerPhone,
                 PayerEmail: request.PayerEmail);
 
-            var command = new CreateLiqPayCheckoutCommand(dto);
+            var command = new CreateLiqPayCheckoutCommand(
+                Request: dto,
+                TokenUserId: tokenUserId,
+                TokenPayerName: tokenPayerName,
+                TokenPayerPhone: tokenPayerPhone,
+                TokenPayerEmail: tokenPayerEmail);
+
             var response = await mediator.Send(command, cancellationToken);
+
             return Results.Ok(response);
         })
         .WithName("CreateLiqPayCheckout")

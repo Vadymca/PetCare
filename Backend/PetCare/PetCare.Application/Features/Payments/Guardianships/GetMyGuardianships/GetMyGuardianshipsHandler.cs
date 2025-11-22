@@ -1,9 +1,10 @@
 ﻿namespace PetCare.Application.Features.Payments.Guardianships.GetMyGuardianships;
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using MediatR;
+using PetCare.Application.Dtos.AnimalDtos;
 using PetCare.Application.Dtos.Payments;
 using PetCare.Application.Interfaces;
 
@@ -16,12 +17,24 @@ using PetCare.Application.Interfaces;
 public sealed class GetMyGuardianshipsHandler : IRequestHandler<GetMyGuardianshipsCommand, IReadOnlyList<MyGuardianshipDto>>
 {
     private readonly IGuardianshipService guardianships;
+    private readonly ISubscriptionService subscriptions;
+    private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GetMyGuardianshipsHandler"/> class using the specified guardianship service.
     /// </summary>
     /// <param name="guardianships">The service used to retrieve guardianship information. Cannot be null.</param>
-    public GetMyGuardianshipsHandler(IGuardianshipService guardianships) => this.guardianships = guardianships;
+    /// <param name="subscriptions">The service used to manage subscriptions. Cannot be null.</param>
+    /// <param name="mapper">The mapper used for object-object mapping. Cannot be null.</param>
+    public GetMyGuardianshipsHandler(
+         IGuardianshipService guardianships,
+         ISubscriptionService subscriptions,
+         IMapper mapper)
+    {
+        this.guardianships = guardianships ?? throw new ArgumentNullException(nameof(guardianships));
+        this.subscriptions = subscriptions ?? throw new ArgumentNullException(nameof(subscriptions));
+        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+    }
 
     /// <summary>
     /// Retrieves a read-only list of guardianship records associated with the specified user.
@@ -32,13 +45,45 @@ public sealed class GetMyGuardianshipsHandler : IRequestHandler<GetMyGuardianshi
     /// guardianships are found.</returns>
     public async Task<IReadOnlyList<MyGuardianshipDto>> Handle(GetMyGuardianshipsCommand request, CancellationToken ct)
     {
-        var items = await this.guardianships.GetByUserAsync(request.UserId, null, ct);
-        return items.Select(g => new MyGuardianshipDto(
-            g.Id,
-            g.AnimalId,
-            g.Animal!.Name.Value,
-            g.Animal.Slug.Value,
-            g.StartDate,
-            g.Status.ToString())).ToList();
+        var list = await this.guardianships.GetByUserAsync(request.UserId, null, ct);
+
+        var result = new List<MyGuardianshipDto>();
+
+        foreach (var g in list)
+        {
+            if (g.Animal is null)
+            {
+                continue;
+            }
+
+            var animalDto = this.mapper.Map<AnimalDto>(g.Animal);
+
+            var sub = await this.subscriptions.GetByGuardianshipIdAsync(g.Id, ct);
+
+            PaymentSubscriptionDto? subDto = null;
+
+            if (sub is not null)
+            {
+                var isOverdue = sub.NextChargeAt < DateTime.UtcNow;
+
+                subDto = new PaymentSubscriptionDto(
+                    sub.Id,
+                    sub.Amount,
+                    sub.Currency,
+                    sub.NextChargeAt,
+                    sub.Status.ToString(),
+                    isOverdue);
+            }
+
+            result.Add(new MyGuardianshipDto(
+                g.Id,
+                g.StartDate,
+                g.GraceUntil ?? DateTime.UtcNow.AddDays(3),
+                g.Status.ToString(),
+                animalDto,
+                subDto));
+        }
+
+        return result;
     }
 }

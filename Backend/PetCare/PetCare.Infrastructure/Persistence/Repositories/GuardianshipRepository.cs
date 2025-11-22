@@ -104,14 +104,29 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
     /// guardianship exists for the specified user and animal; otherwise, <see langword="false"/>.</returns>
     public async Task<bool> ExistsActiveByUserAndAnimalAsync(Guid userId, Guid animalId, CancellationToken ct = default)
     {
-        return await this.db.Set<Guardianship>()
+        // 1. Перевіряємо активну опіку цього користувача
+        var hasActiveGuardianship = await this.db.Set<Guardianship>()
             .AsNoTracking()
             .AnyAsync(
-            g =>
-                g.UserId == userId &&
-                g.AnimalId == animalId &&
-                g.Status == GuardianshipStatus.Active,
-            ct);
+                g =>
+                    g.UserId == userId &&
+                    g.AnimalId == animalId &&
+                    g.Status == GuardianshipStatus.Active,
+                ct);
+
+        if (hasActiveGuardianship)
+        {
+            return true;
+        }
+
+        // 2. Перевіряємо чи тварина вже під опікою (заблокована)
+        var isUnderCare = await this.db.Set<Animal>()
+            .AsNoTracking()
+            .Where(a => a.Id == animalId)
+            .Select(a => a.IsUnderCare)
+            .FirstOrDefaultAsync(ct);
+
+        return isUnderCare;
     }
 
     /// <summary>

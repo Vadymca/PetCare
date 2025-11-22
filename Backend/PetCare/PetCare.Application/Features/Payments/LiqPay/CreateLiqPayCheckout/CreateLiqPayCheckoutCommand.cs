@@ -7,5 +7,9 @@ using PetCare.Application.Dtos.Payments;
 /// Command to initiate a LiqPay checkout process.
 /// </summary>
 /// <param name="Request">The DTO containing all required payment parameters.</param>
-public sealed record CreateLiqPayCheckoutCommand(CreateLiqPayCheckoutDto Request)
-    : IRequest<LiqPayCheckoutResponseDto>;
+public sealed record CreateLiqPayCheckoutCommand(
+    CreateLiqPayCheckoutDto Request,
+    Guid? TokenUserId,
+    string? TokenPayerName,
+    string? TokenPayerPhone,
+    string? TokenPayerEmail) : IRequest<LiqPayCheckoutResponseDto>;

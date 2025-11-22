@@ -41,6 +41,7 @@ namespace PetCare.Infrastructure.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "io_t_device_status", new[] { "active", "inactive", "error" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "io_t_device_type", new[] { "feeder", "temperature", "camera" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "lost_pet_status", new[] { "lost", "found", "reunited" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "payment_intent_status", new[] { "pending", "succeeded", "failed", "canceled" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "subscription_scope", new[] { "global", "aid_request", "guardianship" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "subscription_status", new[] { "active", "canceled", "paused" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "user_role", new[] { "user", "admin", "moderator", "shelter_manager", "veterinarian", "volunteer" });
@@ -409,6 +410,100 @@ namespace PetCare.Infrastructure.Migrations
                     b.ToTable("Guardianships", null, t =>
                         {
                             t.HasCheckConstraint("CK_Guardianships_StartDate", "\"StartDate\" <= NOW()");
+                        });
+                });
+
+            modelBuilder.Entity("PetCare.Domain.Aggregates.PaymentIntent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<bool>("Anonymous")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.Property<Guid?>("DonationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ExternalOrderId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid?>("GuardianshipId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsRecurring")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("PaymentProvider")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("ProviderPaymentId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<Guid?>("ScopeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<SubscriptionScope?>("ScopeType")
+                        .HasColumnType("subscription_scope");
+
+                    b.Property<PaymentIntentStatus>("Status")
+                        .HasColumnType("payment_intent_status");
+
+                    b.Property<Guid?>("SubscriptionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DonationId")
+                        .IsUnique();
+
+                    b.HasIndex("ExternalOrderId")
+                        .IsUnique();
+
+                    b.HasIndex("GuardianshipId")
+                        .IsUnique();
+
+                    b.HasIndex("ScopeId");
+
+                    b.HasIndex("ScopeType");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("SubscriptionId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PaymentIntents", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_PaymentIntents_Amount", "\"Amount\" > 0");
                         });
                 });
 
@@ -1950,6 +2045,37 @@ namespace PetCare.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Animal");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("PetCare.Domain.Aggregates.PaymentIntent", b =>
+                {
+                    b.HasOne("PetCare.Domain.Entities.Donation", "Donation")
+                        .WithOne()
+                        .HasForeignKey("PetCare.Domain.Aggregates.PaymentIntent", "DonationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("PetCare.Domain.Aggregates.Guardianship", "Guardianship")
+                        .WithOne()
+                        .HasForeignKey("PetCare.Domain.Aggregates.PaymentIntent", "GuardianshipId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("PetCare.Domain.Entities.PaymentSubscription", "Subscription")
+                        .WithOne()
+                        .HasForeignKey("PetCare.Domain.Aggregates.PaymentIntent", "SubscriptionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("PetCare.Domain.Aggregates.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Donation");
+
+                    b.Navigation("Guardianship");
+
+                    b.Navigation("Subscription");
 
                     b.Navigation("User");
                 });
