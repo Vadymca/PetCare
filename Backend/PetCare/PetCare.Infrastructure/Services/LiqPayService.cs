@@ -6,7 +6,10 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using PetCare.Application.Dtos.Payments;
 using PetCare.Application.Interfaces;
+using PetCare.Domain.Abstractions.Repositories;
+using PetCare.Domain.Enums;
 using PetCare.Infrastructure.Options;
 using PetCare.Infrastructure.Payments;
 
@@ -22,6 +25,7 @@ public sealed class LiqPayService : ILiqPayService
     private readonly LiqPaySettings settings;
     private readonly IPaymentService paymentService;
     private readonly IPaymentIntentService paymentIntentService;
+    private readonly IGuardianshipRepository guardianshipRepository;
     private readonly ILogger<LiqPayService> logger;
 
     /// <summary>
@@ -31,16 +35,19 @@ public sealed class LiqPayService : ILiqPayService
     /// <param name="options">The configuration options containing LiqPay settings. Must not be null.</param>
     /// <param name="paymentService">The payment service implementation used to process payments. Must not be null.</param>
     /// <param name="paymentIntentService">The payment intent service implementation used to manage payment intents. Must not be null.</param>
+    /// <param name="guardianshipRepository">The guardianship repository for accessing guardianship data. Must not be null.</param>
     /// <param name="logger">The logger instance for logging information and errors. Must not be null.</param>
     public LiqPayService(
         IOptions<LiqPaySettings> options,
         IPaymentService paymentService,
         IPaymentIntentService paymentIntentService,
+        IGuardianshipRepository guardianshipRepository,
         ILogger<LiqPayService> logger)
     {
         this.settings = options.Value ?? throw new ArgumentNullException(nameof(options));
         this.paymentService = paymentService ?? throw new ArgumentNullException(nameof(paymentService));
         this.paymentIntentService = paymentIntentService ?? throw new ArgumentNullException(nameof(paymentIntentService));
+        this.guardianshipRepository = guardianshipRepository ?? throw new ArgumentNullException(nameof(guardianshipRepository));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -252,6 +259,86 @@ public sealed class LiqPayService : ILiqPayService
             orderId);
 
         return true;
+    }
+
+    /// <summary>
+    /// Creates a new recurring payment contract for the specified user using the LiqPay payment provider.
+    /// </summary>
+    /// <remarks>This method initiates a recurring payment contract with LiqPay and returns information
+    /// necessary to manage the subscription. The contract is created immediately upon successful completion of the
+    /// operation. Ensure that the user has a valid payment method associated with the LiqPay provider before calling
+    /// this method.</remarks>
+    /// <param name="userId">The unique identifier of the user for whom the recurring contract is being created.</param>
+    /// <param name="amount">The amount to be charged for each recurring payment. Must be a positive value.</param>
+    /// <param name="currency">The three-letter ISO currency code (e.g., "USD", "UAH") in which the recurring payment will be charged.</param>
+    /// <param name="scope">The subscription scope that defines the context or type of the recurring contract.</param>
+    /// <param name="scopeId">The unique identifier of the specific scope instance for the subscription. Can be null if not applicable.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a LiqPayRecurringResponseDto with
+    /// details of the created recurring contract, including the provider subscription ID, payment method ID, and the
+    /// date of the next scheduled charge if available.</returns>
+    public async Task<LiqPayRecurringResponseDto> CreateRecurringContractAsync(
+     Guid userId,
+     decimal amount,
+     string currency,
+     SubscriptionScope scope,
+     Guid? scopeId,
+     CancellationToken cancellationToken = default)
+    {
+        // 1. Формуємо order_id в тому ж форматі, що і checkout
+        var orderId = $"{scope}|{scopeId?.ToString() ?? "-"}|1|{userId}|0|{Guid.NewGuid()}";
+
+        // 2. Формуємо body для LiqPay
+        var requestBody = new
+        {
+            action = "subscribe",
+            version = 3,
+            amount = amount,
+            currency = currency,
+            description = "Повторна підписка",
+            order_id = orderId,
+            public_key = this.settings.PublicKey,
+        };
+
+        var json = JsonSerializer.Serialize(requestBody);
+        var data = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
+        var signature = LiqPayCrypto.Sign(this.settings.PrivateKey, data);
+
+        var form = new Dictionary<string, string>
+    {
+        { "data", data },
+        { "signature", signature },
+    };
+
+        using var http = new HttpClient();
+        var httpResponse = await http.PostAsync(
+            "https://www.liqpay.ua/api/request",
+            new FormUrlEncodedContent(form),
+            cancellationToken);
+
+        var respJson = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
+
+        using var doc = JsonDocument.Parse(respJson);
+        var root = doc.RootElement;
+
+        string providerSubId = root.GetProperty("subscribe_id").GetString()!;
+        long? nextUnix = root.TryGetProperty("next_subscribe_date", out var nextEl)
+            && nextEl.TryGetInt64(out var unix)
+            ? unix
+            : null;
+
+        DateTime? nextChargeAt = nextUnix.HasValue
+            ? DateTimeOffset.FromUnixTimeSeconds(nextUnix.Value).UtcDateTime
+            : null;
+
+        // 3. Витягуємо PaymentMethodId з нашої БД
+        var paymentMethodId = await this.guardianshipRepository
+            .RequirePaymentMethodIdByProviderAsync("LiqPay", cancellationToken);
+
+        return new LiqPayRecurringResponseDto(
+            providerSubId,
+            paymentMethodId,
+            nextChargeAt);
     }
 
     /// <summary>

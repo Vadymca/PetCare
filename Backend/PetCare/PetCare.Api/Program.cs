@@ -485,6 +485,7 @@ public class Program
             // -------------------- Subscriptions ---------------------
             app.MapCancelSubscriptionEndpoint(); // /api/subscriptions/{providerSubscriptionId}/cancel
             app.MapGetMySubscriptionsEndpoint(); // /api/payments/me/subscriptions
+            app.MapResetSubscriptionEndpoint(); // /api/subscriptions/{subscriptionId:guid}/reset
 
             // -------------------- Guardianships ---------------------
             app.MapCreateGuardianshipEndpoint(); // /api/guardianships

@@ -356,6 +356,90 @@ public class PaymentService : IPaymentService
             subscription.LastChargeAt);
     }
 
+   /// <summary>
+   /// Resets a user's payment subscription by canceling the specified existing subscription and creating a new one with
+   /// the provided parameters.
+   /// </summary>
+   /// <remarks>The old subscription is canceled before the new subscription is created. The operation is
+   /// performed atomically to ensure that the user does not have overlapping active subscriptions. The method does not
+   /// interact with external payment providers; it updates only the local subscription records.</remarks>
+   /// <param name="oldSubscriptionId">The unique identifier of the existing subscription to be canceled and replaced.</param>
+   /// <param name="userId">The unique identifier of the user who owns the subscription.</param>
+   /// <param name="amount">The recurring payment amount for the new subscription. Must be a positive value.</param>
+   /// <param name="currency">The ISO currency code for the subscription payment (for example, "USD"). Cannot be null or empty.</param>
+   /// <param name="scope">The scope of the subscription, indicating the context or type of subscription being created.</param>
+   /// <param name="scopeId">The unique identifier of the scope, if applicable. Specify null if the subscription does not require a scope
+   /// identifier.</param>
+   /// <param name="provider">The name of the payment provider for the new subscription. Cannot be null or empty.</param>
+   /// <param name="paymentMethodId">The unique identifier of the payment method to be used for the new subscription.</param>
+   /// <param name="providerSubscriptionId">The identifier of the subscription as assigned by the payment provider. Cannot be null or empty.</param>
+   /// <param name="nextChargeAt">The date and time of the next scheduled charge for the new subscription, or null if not scheduled.</param>
+   /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+   /// <returns>A task that represents the asynchronous operation. The task result contains the newly created payment
+   /// subscription.</returns>
+   /// <exception cref="InvalidOperationException">Thrown if the specified subscription does not exist or does not belong to the specified user.</exception>
+    public async Task<PaymentSubscription> ResetSubscriptionAsync(
+       Guid oldSubscriptionId,
+       Guid userId,
+       decimal amount,
+       string currency,
+       SubscriptionScope scope,
+       Guid? scopeId,
+       string provider,
+       Guid paymentMethodId,
+       string providerSubscriptionId,
+       DateTime? nextChargeAt,
+       CancellationToken cancellationToken = default)
+    {
+        // 1. Завантажуємо існуючу підписку (tracked)
+        var old = await this.guardianships.GetSubscriptionByIdForUpdateAsync(
+            oldSubscriptionId,
+            cancellationToken);
+
+        if (old is null)
+        {
+            throw new InvalidOperationException("Підписка не знайдена.");
+        }
+
+        if (old.UserId != userId)
+        {
+            throw new InvalidOperationException("Ця підписка не належить користувачу.");
+        }
+
+        // 2. Скасовуємо стару локально
+        old.Cancel();
+        old.SetNextCharge(null);
+
+        await this.guardianships.UpdateSubscriptionAsync(old, cancellationToken);
+
+        this.logger.LogInformation(
+            "Canceled old subscription {OldId} for user {UserId}.",
+            oldSubscriptionId,
+            userId);
+
+        // 3. Створюємо нову локальну PaymentSubscription
+        var newSub = PaymentSubscription.Create(
+            userId,
+            paymentMethodId,
+            scope,
+            scopeId,
+            amount,
+            currency,
+            provider,
+            providerSubscriptionId);
+
+        newSub.SetNextCharge(nextChargeAt);
+
+        await this.guardianships.AddSubscriptionAsync(newSub, cancellationToken);
+
+        this.logger.LogInformation(
+            "Created new subscription {NewId} for user {UserId}.",
+            newSub.Id,
+            userId);
+
+        return newSub;
+    }
+
     // helpers
 
     /// <summary>

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using PetCare.Domain.Entities;
+using PetCare.Domain.Enums;
 
 /// <summary>
 /// Defines operations for recording payments and building payment return payloads.
@@ -131,5 +132,40 @@ public interface IPaymentService
     /// <returns>A task representing the asynchronous operation.</returns>
     Task UpdateSubscriptionAsync(
         PaymentSubscription subscription,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Resets a user's payment subscription by creating a new subscription with the specified parameters and
+    /// deactivating the previous one.
+    /// </summary>
+    /// <remarks>The previous subscription specified by oldSubscriptionId will be deactivated as part of this
+    /// operation. The new subscription will be created with the provided parameters. This method does not modify the
+    /// payment method or provider details beyond associating them with the new subscription.</remarks>
+    /// <param name="oldSubscriptionId">The unique identifier of the existing subscription to be replaced. The subscription with this ID will be
+    /// deactivated.</param>
+    /// <param name="userId">The unique identifier of the user for whom the subscription is being reset.</param>
+    /// <param name="amount">The recurring payment amount for the new subscription. Must be a non-negative value.</param>
+    /// <param name="currency">The ISO 4217 currency code for the subscription payment (for example, "USD"). Cannot be null or empty.</param>
+    /// <param name="scope">The scope of the subscription, indicating the context or level at which the subscription applies.</param>
+    /// <param name="scopeId">The unique identifier for the scope, if applicable. May be null if the scope does not require an identifier.</param>
+    /// <param name="provider">The name of the payment provider to be used for the new subscription. Cannot be null or empty.</param>
+    /// <param name="paymentMethodId">The unique identifier of the payment method to be associated with the new subscription.</param>
+    /// <param name="providerSubscriptionId">The identifier of the new subscription as assigned by the payment provider. Cannot be null or empty.</param>
+    /// <param name="nextChargeAt">The date and time when the next charge should occur for the new subscription, or null to use the default
+    /// schedule.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the newly created payment
+    /// subscription.</returns>
+    Task<PaymentSubscription> ResetSubscriptionAsync(
+        Guid oldSubscriptionId,
+        Guid userId,
+        decimal amount,
+        string currency,
+        SubscriptionScope scope,
+        Guid? scopeId,
+        string provider,
+        Guid paymentMethodId,
+        string providerSubscriptionId,
+        DateTime? nextChargeAt,
         CancellationToken cancellationToken = default);
 }
