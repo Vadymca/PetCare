@@ -19,6 +19,7 @@ public sealed class CreateLiqPayCheckoutCommandHandler
     private readonly ILiqPayClient liqPayClient;
     private readonly IGuardianshipService guardianshipService;
     private readonly IAnimalService animalService;
+    private readonly IPaymentIntentService paymentIntentService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CreateLiqPayCheckoutCommandHandler"/> class using the specified LiqPay client.
@@ -26,15 +27,18 @@ public sealed class CreateLiqPayCheckoutCommandHandler
     /// <param name="liqPayClient">The client used to interact with the LiqPay payment service. Cannot be null.</param>
     /// <param name="guardianshipService">The service used to manage guardianships. Cannot be null.</param>
     /// <param name="animalService">The service used to manage animals. Cannot be null.</param>
+    /// <param name="paymentIntentService">The service used to manage payment intents. Cannot be null.</param>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="liqPayClient"/> is null.</exception>
     public CreateLiqPayCheckoutCommandHandler(
         ILiqPayClient liqPayClient,
         IGuardianshipService guardianshipService,
-        IAnimalService animalService)
+        IAnimalService animalService,
+        IPaymentIntentService paymentIntentService)
     {
         this.liqPayClient = liqPayClient ?? throw new ArgumentNullException(nameof(liqPayClient));
         this.guardianshipService = guardianshipService ?? throw new ArgumentNullException(nameof(guardianshipService));
         this.animalService = animalService ?? throw new ArgumentNullException(nameof(animalService));
+        this.paymentIntentService = paymentIntentService ?? throw new ArgumentNullException(nameof(paymentIntentService));
     }
 
     /// <inheritdoc/>
@@ -99,6 +103,16 @@ public sealed class CreateLiqPayCheckoutCommandHandler
             userId ??= command.TokenUserId;
         }
 
+        var intent = await this.paymentIntentService.CreateLiqPayIntentAsync(
+            req.Scope,
+            req.EntityId,
+            userId,
+            amount,
+            currency,
+            isRecurring,
+            anonymous: false,
+            cancellationToken);
+
         var finalDto = new CreateLiqPayCheckoutDto(
             Amount: amount,
             Currency: currency,
@@ -112,7 +126,11 @@ public sealed class CreateLiqPayCheckoutCommandHandler
             PayerPhone: payerPhone,
             PayerEmail: payerEmail);
 
-        var checkout = await this.liqPayClient.BuildCheckoutAsync(finalDto, cancellationToken);
+        var checkout = await this.liqPayClient.BuildCheckoutAsync(
+            finalDto,
+            intent.ExternalOrderId,
+            cancellationToken);
+
         return checkout;
     }
 }

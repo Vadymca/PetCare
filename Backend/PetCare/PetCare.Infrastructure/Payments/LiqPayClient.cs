@@ -46,20 +46,24 @@ public sealed class LiqPayClient : ILiqPayClient
     /// method generates a unique order ID for each checkout request.</remarks>
     /// <param name="input">The details of the checkout to create, including payment amount, currency, description, and subscription
     /// options.</param>
+    /// <param name="externalOrderId">The external order identifier used in the result URL to track the payment outcome. Cannot be null or empty.</param>
     /// <param name="ct">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A <see cref="LiqPayCheckoutResponseDto"/> containing the encoded checkout data, signature, public key, gateway
     /// URL, order ID, and result URL required for LiqPay integration.</returns>
-    public async Task<LiqPayCheckoutResponseDto> BuildCheckoutAsync(CreateLiqPayCheckoutDto input, CancellationToken ct = default)
+    public async Task<LiqPayCheckoutResponseDto> BuildCheckoutAsync(
+        CreateLiqPayCheckoutDto input,
+        string externalOrderId,
+        CancellationToken ct = default)
     {
-        var orderId = BuildCompositeOrderId(
-                scope: input.Scope,
-                entityId: input.EntityId,
-                isRecurring: input.IsRecurring,
-                userId: input.UserId,
-                anonymous: input.Anonymous);
+        if (string.IsNullOrWhiteSpace(externalOrderId))
+        {
+            throw new InvalidOperationException("OrderId не може бути порожнім.");
+        }
+
+        var orderId = externalOrderId;
 
         // Максимум параметрів у result_url для фронту (UX)
-        var resultUrl = this.BuildRichResultUrl(input, orderId);
+        string resultUrl = $"{this.settings.ResultUrl}?orderId={orderId}";
 
         // Параметри LiqPay pay/subscribe
         var payload = new Dictionary<string, object?>

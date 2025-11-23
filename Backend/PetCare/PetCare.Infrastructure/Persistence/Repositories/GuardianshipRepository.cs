@@ -682,4 +682,33 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
                 s => s.ScopeType == scope && s.ScopeId == scopeId,
                 cancellationToken);
     }
+
+    /// <summary>
+    /// Asynchronously determines whether any donations exist for the specified guardianship.
+    /// </summary>
+    /// <param name="guardianshipId">The unique identifier of the guardianship to check for associated donations.</param>
+    /// <param name="ct">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains <see langword="true"/> if at least
+    /// one donation exists for the specified guardianship; otherwise, <see langword="false"/>.</returns>
+    public Task<bool> HasAnyDonationsAsync(Guid guardianshipId, CancellationToken ct)
+    => this.db.Donations
+        .AnyAsync(
+            d => d.TargetEntity == "Guardianship" &&
+            d.TargetEntityId == guardianshipId,
+            ct);
+
+    /// <summary>
+    /// Retrieves a payment subscription by its unique identifier for update operations.
+    /// </summary>
+    /// <param name="subscriptionId">The unique identifier of the payment subscription to retrieve.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the payment subscription if found;
+    /// otherwise, <see langword="null"/>.</returns>
+    public async Task<PaymentSubscription?> GetSubscriptionByIdForUpdateAsync(
+    Guid subscriptionId,
+    CancellationToken cancellationToken = default)
+    {
+        return await this.db.PaymentSubscriptions
+            .FirstOrDefaultAsync(s => s.Id == subscriptionId, cancellationToken);
+    }
 }

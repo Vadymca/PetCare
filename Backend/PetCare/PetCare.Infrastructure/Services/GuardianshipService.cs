@@ -169,8 +169,13 @@ public class GuardianshipService : IGuardianshipService
     /// <returns>The number of guardianships that were automatically completed.</returns>
     public async Task<int> AutoCompleteExpiredAsync(DateTime utcNow, CancellationToken cancellationToken = default)
     {
-        var toComplete = await this.guardianships.ListExpiredRequiresPaymentAsync(utcNow, cancellationToken);
-        foreach (var item in toComplete)
+        // Беремо всі опіки, у яких GraceUntil минув і вони чекають оплату
+        var expired = await this.guardianships
+            .ListExpiredRequiresPaymentAsync(utcNow, cancellationToken);
+
+        int deletedCount = 0;
+
+        foreach (var item in expired)
         {
             var tracked = await this.guardianships.GetByIdForUpdateAsync(item.Id, cancellationToken);
             if (tracked is null)
@@ -178,19 +183,48 @@ public class GuardianshipService : IGuardianshipService
                 continue;
             }
 
+            var subscription = await this.guardianships
+            .FindSubscriptionForGuardianshipAsync(tracked.Id, cancellationToken);
+
+            if (subscription is not null)
+            {
+                continue;
+            }
+
+            // видаляємо лише якщо нема платежів
+            bool hasPayments = await this.guardianships.HasAnyDonationsAsync(tracked.Id, cancellationToken);
+
+            if (!hasPayments)
+            {
+                // Повертаємо тварину у вільний статус
+                var animal = await this.animals.GetByIdAsync(tracked.AnimalId, cancellationToken);
+                if (animal is not null)
+                {
+                    animal.MarkAsNotUnderCare();
+                    await this.animals.UpdateAsync(animal, cancellationToken);
+                }
+
+                // Видаляємо опіку
+                await this.guardianships.DeleteAsync(tracked, cancellationToken);
+                deletedCount++;
+
+                continue;
+            }
+
+            // Якщо платежі є → ми НЕ видаляємо, а завершуємо
             tracked.Complete();
 
-            var animal = await this.animals.GetByIdAsync(tracked.AnimalId, cancellationToken);
-            if (animal is not null)
+            var relatedAnimal = await this.animals.GetByIdAsync(tracked.AnimalId, cancellationToken);
+            if (relatedAnimal is not null)
             {
-                animal.MarkAsNotUnderCare();
-                await this.animals.UpdateAsync(animal, cancellationToken);
+                relatedAnimal.MarkAsNotUnderCare();
+                await this.animals.UpdateAsync(relatedAnimal, cancellationToken);
             }
 
             await this.guardianships.UpdateAsync(tracked, cancellationToken);
         }
 
-        return toComplete.Count;
+        return deletedCount;
     }
 
     /// <summary>

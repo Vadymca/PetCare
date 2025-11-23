@@ -21,6 +21,7 @@ public sealed class LiqPayService : ILiqPayService
 {
     private readonly LiqPaySettings settings;
     private readonly IPaymentService paymentService;
+    private readonly IPaymentIntentService paymentIntentService;
     private readonly ILogger<LiqPayService> logger;
 
     /// <summary>
@@ -29,14 +30,17 @@ public sealed class LiqPayService : ILiqPayService
     /// </summary>
     /// <param name="options">The configuration options containing LiqPay settings. Must not be null.</param>
     /// <param name="paymentService">The payment service implementation used to process payments. Must not be null.</param>
+    /// <param name="paymentIntentService">The payment intent service implementation used to manage payment intents. Must not be null.</param>
     /// <param name="logger">The logger instance for logging information and errors. Must not be null.</param>
     public LiqPayService(
         IOptions<LiqPaySettings> options,
         IPaymentService paymentService,
+        IPaymentIntentService paymentIntentService,
         ILogger<LiqPayService> logger)
     {
         this.settings = options.Value ?? throw new ArgumentNullException(nameof(options));
         this.paymentService = paymentService ?? throw new ArgumentNullException(nameof(paymentService));
+        this.paymentIntentService = paymentIntentService ?? throw new ArgumentNullException(nameof(paymentIntentService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -85,9 +89,17 @@ public sealed class LiqPayService : ILiqPayService
         var status = root.TryGetProperty("status", out var s) ? s.GetString() ?? "pending" : "pending";
         var action = root.TryGetProperty("action", out var a) ? a.GetString() : null;
 
-        var orderIdRaw = root.TryGetProperty("order_id", out var o)
+        var orderId = root.TryGetProperty("order_id", out var o)
             ? ReadFlexibleString(o)
             : null;
+
+        if (string.IsNullOrWhiteSpace(orderId))
+        {
+            this.logger.LogError("Callback missing order_id. Raw JSON: {Json}", json);
+            return false;
+        }
+
+        this.logger.LogInformation("Callback received for order_id: {Id}", orderId);
 
         var amount = root.TryGetProperty("amount", out var am)
             ? am.GetDecimal()
@@ -101,7 +113,7 @@ public sealed class LiqPayService : ILiqPayService
         var transactionId =
             root.TryGetProperty("transaction_id", out var t) ? ReadFlexibleString(t) :
             root.TryGetProperty("payment_id", out var p) ? ReadFlexibleString(p) :
-            orderIdRaw;
+            orderId;
 
         // читаємо next_subscribe_date ----
         DateTime? nextChargeUtc = null;
@@ -124,34 +136,25 @@ public sealed class LiqPayService : ILiqPayService
         else
         {
             // fallback: використовуємо order_id як ідентифікатор підписки
-            providerSubscriptionId = orderIdRaw;
+            providerSubscriptionId = orderId;
         }
 
         // 3. Парсимо наш composite order_id
-        if (string.IsNullOrWhiteSpace(orderIdRaw))
-        {
-            this.logger.LogError("LiqPay callback without order_id. Raw JSON: {Json}", json);
-            return false;
-        }
-
-        var parsed = ParseCompositeOrderId(orderIdRaw);
+        var parsed = ParseCompositeOrderId(orderId);
         if (parsed is null)
         {
-            this.logger.LogError("Failed to parse composite order_id: {OrderId}", orderIdRaw);
+            this.logger.LogError("Failed to parse composite order_id: {OrderId}", orderId);
             return false;
         }
 
-        var (targetEntity, targetEntityId, isRecurring, donorUserId, anonymous) = parsed.Value;
+        var (scope, scopeId, isRecurring, userId, anonymous) = parsed.Value;
 
         // 4. У нас sandbox завжди = success
         if (status == "sandbox")
         {
             status = "success";
             this.logger.LogInformation(
-                "Treating SANDBOX as SUCCESS for {Target}({TargetId}) Tx={Tx}",
-                targetEntity,
-                targetEntityId,
-                transactionId);
+                "Sandbox treated as success for {Id}", orderId);
         }
 
         // Реально успішні статуси
@@ -164,24 +167,38 @@ public sealed class LiqPayService : ILiqPayService
         if (isSuccess)
         {
             this.logger.LogInformation(
-                "Recording SUCCESS payment for {Target}({TargetId}) Tx={Tx} Amount={Amount}{Currency}",
-                targetEntity,
-                targetEntityId,
-                transactionId,
-                amount,
-                currency);
+                "SUCCESS payment, Scope={Scope} ScopeId={ScopeId}, Tx={Tx}",
+                scope,
+                scopeId,
+                transactionId);
 
-            await this.paymentService.RecordChargeSuccessAsync(
-                provider: "LiqPay",
-                transactionId: transactionId!,
-                amount: amount,
-                currency: currency,
-                targetEntity: targetEntity,
-                targetEntityId: targetEntityId,
-                recurring: isRecurring,
-                anonymous: anonymous,
-                userId: donorUserId,
-                cancellationToken: cancellationToken);
+            // 1. Реєструємо факт успіху (створює Donation/Subscription/оновлює Guardianship)
+            var donation = await this.paymentService.RecordChargeSuccessAsync(
+               provider: "LiqPay",
+               transactionId: transactionId!,
+               amount: amount,
+               currency: currency,
+               targetEntity: scope,
+               targetEntityId: scopeId,
+               recurring: isRecurring,
+               anonymous: anonymous,
+               userId: userId,
+               cancellationToken: cancellationToken);
+
+            // 2. Прив’язуємо сутності до PaymentIntent
+            // 2️⃣ Attach Donation to Intent
+            await this.paymentIntentService.AttachDonationAsync(
+                orderId,
+                donation.Id,
+                cancellationToken);
+
+            if (scope == "Guardianship" && scopeId is not null)
+            {
+                await this.paymentIntentService.AttachGuardianshipAsync(
+                    orderId,
+                    scopeId.Value,
+                    cancellationToken);
+            }
 
             if (isRecurring)
             {
@@ -216,35 +233,23 @@ public sealed class LiqPayService : ILiqPayService
         if (isFailure)
         {
             this.logger.LogWarning(
-                "Recording FAILED payment for {Target}({TargetId}) Tx={Tx} Amount={Amount}{Currency}",
-                targetEntity,
-                targetEntityId,
-                transactionId,
-                amount,
-                currency);
+               "FAILED payment. Scope={Scope} ScopeId={ScopeId} Tx={Tx}",
+               scope,
+               scopeId,
+               transactionId);
 
-            await this.paymentService.RecordChargeFailedAsync(
-                provider: "LiqPay",
-                transactionId: transactionId,
-                amount: amount,
-                currency: currency,
-                targetEntity: targetEntity,
-                targetEntityId: targetEntityId,
-                recurring: isRecurring,
-                anonymous: anonymous,
-                userId: donorUserId,
-                cancellationToken: cancellationToken);
+            await this.paymentIntentService.MarkFailedAsync(
+                orderId,
+                cancellationToken);
 
             return true;
         }
 
         // 7. Не фінальний статус — просто лог
         this.logger.LogInformation(
-            "Received NON-FINAL LiqPay status '{Status}' for {Target}({TargetId}) Tx={Tx}",
+            "Non-final LiqPay status '{Status}' for order {OrderId}",
             status,
-            targetEntity,
-            targetEntityId,
-            transactionId);
+            orderId);
 
         return true;
     }

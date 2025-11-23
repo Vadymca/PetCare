@@ -46,7 +46,7 @@ public static class LiqPayCheckoutEndpoint
                 IsRecurring: request.IsRecurring,
                 Scope: request.Scope,
                 EntityId: request.EntityId,
-                UserId: null,
+                UserId: tokenUserId,
                 Anonymous: tokenUserId is null,
                 PayerName: request.PayerName,
                 PayerPhone: request.PayerPhone,

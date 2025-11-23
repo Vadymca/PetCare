@@ -370,4 +370,29 @@ public interface IGuardianshipRepository : IRepository<Guardianship>
         SubscriptionScope scope,
         Guid scopeId,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Determines asynchronously whether any donations exist for the specified guardianship.
+    /// </summary>
+    /// <param name="guardianshipId">The unique identifier of the guardianship to check for associated donations.</param>
+    /// <param name="ct">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains <see langword="true"/> if at least
+    /// one donation exists for the specified guardianship; otherwise, <see langword="false"/>.</returns>
+    Task<bool> HasAnyDonationsAsync(Guid guardianshipId, CancellationToken ct);
+
+    /// <summary>
+    /// Retrieves a payment subscription by its unique identifier for update operations, acquiring a lock to prevent
+    /// concurrent modifications.
+    /// </summary>
+    /// <remarks>This method acquires a lock on the subscription record to ensure safe updates. While the lock
+    /// is held, other operations that require an update lock on the same subscription may be blocked until the current
+    /// operation completes.</remarks>
+    /// <param name="subscriptionId">The unique identifier of the payment subscription to retrieve for update. Must correspond to an existing
+    /// subscription.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the payment subscription if found;
+    /// otherwise, null.</returns>
+    Task<PaymentSubscription?> GetSubscriptionByIdForUpdateAsync(
+    Guid subscriptionId,
+    CancellationToken cancellationToken = default);
 }

@@ -22,6 +22,7 @@ using PetCare.Api.Endpoints.PaymentMethods;
 using PetCare.Api.Endpoints.Payments.Donations;
 using PetCare.Api.Endpoints.Payments.Guardianships;
 using PetCare.Api.Endpoints.Payments.History;
+using PetCare.Api.Endpoints.Payments.Intents;
 using PetCare.Api.Endpoints.Payments.LiqPay;
 using PetCare.Api.Endpoints.Payments.Subscriptions;
 using PetCare.Api.Endpoints.Shelters;
@@ -493,6 +494,9 @@ public class Program
             // ------------------- Payment History --------------------
             app.MapGetMyPaymentHistoryEndpoint(); // /api/payments/me/history
             app.MapGetMyUpcomingPaymentsEndpoint(); // /api/payments/me/upcoming
+
+            // ----------------------- Intents ------------------------
+            app.MapGetPaymentIntentEndpoint(); // /api/payments/intents/{orderId}
 
             // -------------------- PaymentMethods --------------------
             app.MapGetAllPaymentMethodsEndpoint(); // /api/payment-methods

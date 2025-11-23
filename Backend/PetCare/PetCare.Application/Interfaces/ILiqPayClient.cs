@@ -19,10 +19,14 @@ public interface ILiqPayClient
     /// </summary>
     /// <param name="input">An object containing the details required to create the LiqPay checkout, such as payment amount, currency, and
     /// customer information.</param>
+    /// <param name="externalOrderId">A unique identifier for the external order associated with the checkout. Cannot be null or empty.</param>
     /// <param name="ct">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a <see
     /// cref="LiqPayCheckoutResponseDto"/> with the generated checkout information.</returns>
-    Task<LiqPayCheckoutResponseDto> BuildCheckoutAsync(CreateLiqPayCheckoutDto input, CancellationToken ct = default);
+    Task<LiqPayCheckoutResponseDto> BuildCheckoutAsync(
+        CreateLiqPayCheckoutDto input,
+        string externalOrderId,
+        CancellationToken ct = default);
 
     /// <summary>
     /// Asynchronously retrieves the status information for the specified order.

@@ -256,21 +256,35 @@ public class SubscriptionService : ISubscriptionService
         {
             try
             {
-                await this.guardianships.CancelSubscriptionByProviderIdAsync(
-                    sub.ProviderSubscriptionId!,
-                    cancellationToken);
+                // 3. Отримуємо трекану сутність
+                var tracked = await this.guardianships
+                    .GetSubscriptionByIdForUpdateAsync(sub.Id, cancellationToken);
+
+                if (tracked is null)
+                {
+                    continue;
+                }
+
+                // 4. Оновлюємо модель підписки
+                tracked.Cancel();
+
+                // ДОДАТКОВО: блокуємо майбутні чарджі
+                tracked.SetNextCharge(null);
+
+                // 5. Зберігаємо зміни
+                await this.guardianships.UpdateSubscriptionAsync(tracked, cancellationToken);
 
                 this.logger.LogInformation(
-                    "Canceled expired subscription {SubId} ({ProviderId}) for user {UserId}.",
-                    sub.Id,
-                    sub.ProviderSubscriptionId,
-                    sub.UserId);
+                    "Auto-canceled expired subscription {SubId} ({ProviderId}) for user {UserId}.",
+                    tracked.Id,
+                    tracked.ProviderSubscriptionId,
+                    tracked.UserId);
             }
             catch (Exception ex)
             {
                 this.logger.LogError(
                     ex,
-                    "Error canceling subscription {ProviderId} for user {UserId}.",
+                    "Error auto-canceling subscription {ProviderId} for user {UserId}.",
                     sub.ProviderSubscriptionId,
                     sub.UserId);
             }

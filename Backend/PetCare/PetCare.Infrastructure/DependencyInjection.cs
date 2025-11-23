@@ -39,6 +39,7 @@ public static class DependencyInjection
         services.AddScoped<IAdoptionApplicationRepository, AdoptionApplicationRepository>();
         services.AddScoped<IVolunteerTaskRepository, VolunteerTaskRepository>();
         services.AddScoped<IGuardianshipRepository, GuardianshipRepository>();
+        services.AddScoped<IPaymentIntentRepository, PaymentIntentRepository>();
 
         // Domain services
         services.AddScoped<IUserService, UserService>();
@@ -52,6 +53,7 @@ public static class DependencyInjection
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<ISubscriptionService, SubscriptionService>();
         services.AddScoped<IPaymentMethodService, PaymentMethodService>();
+        services.AddScoped<IPaymentIntentService, PaymentIntentService>();
 
         // Email services
         services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
