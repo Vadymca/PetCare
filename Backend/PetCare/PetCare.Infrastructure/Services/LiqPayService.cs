@@ -51,6 +51,9 @@ public sealed class LiqPayService : ILiqPayService
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
+    private bool IsSandbox =>
+        this.settings.PublicKey.StartsWith("sandbox_", StringComparison.OrdinalIgnoreCase);
+
     /// <summary>
     /// Processes a LiqPay payment callback by verifying the signature and recording the payment result asynchronously.
     /// </summary>
@@ -108,7 +111,7 @@ public sealed class LiqPayService : ILiqPayService
 
         this.logger.LogInformation("Callback received for order_id: {Id}", orderId);
 
-        var amount = root.TryGetProperty("amount", out var am)
+        var amount = root.TryGetProperty("amount", out var am) && am.ValueKind is JsonValueKind.Number
             ? am.GetDecimal()
             : 0m;
 
@@ -131,6 +134,10 @@ public sealed class LiqPayService : ILiqPayService
             {
                 nextChargeUtc = DateTimeOffset.FromUnixTimeSeconds(unix).UtcDateTime;
             }
+            else if (nsd.ValueKind == JsonValueKind.String && long.TryParse(nsd.GetString(), out var unixStr))
+            {
+                nextChargeUtc = DateTimeOffset.FromUnixTimeSeconds(unixStr).UtcDateTime;
+            }
         }
 
         // читаємо subscribe_id (ід підписки LiqPay)
@@ -140,21 +147,41 @@ public sealed class LiqPayService : ILiqPayService
         {
             providerSubscriptionId = ReadFlexibleString(sid);
         }
-        else
-        {
-            // fallback: використовуємо order_id як ідентифікатор підписки
-            providerSubscriptionId = orderId;
-        }
 
         // 3. Парсимо наш composite order_id
         var parsed = ParseCompositeOrderId(orderId);
+
+        string targetEntity;
+        Guid? targetEntityId;
+        bool isRecurring;
+        Guid? userId;
+        bool anonymous;
+
         if (parsed is null)
         {
-            this.logger.LogError("Failed to parse composite order_id: {OrderId}", orderId);
-            return false;
-        }
+            // PARSE FAILED — fallback logic:
+            // - In sandbox: treat as a one-shot Global (but continue processing) — generate useful providerSubscriptionId if missing.
+            // - In prod: treat as Global as well (but log warnings).
+            this.logger.LogWarning("Failed to parse composite order_id: {OrderId}. Using fallback.", orderId);
 
-        var (scope, scopeId, isRecurring, userId, anonymous) = parsed.Value;
+            // fallback values
+            targetEntity = "Global";
+            targetEntityId = null;
+            isRecurring = false;
+            userId = null;
+            anonymous = false;
+
+            // ensure providerSubscriptionId exists in sandbox for recurring flows that expect it
+            if (this.IsSandbox && string.IsNullOrWhiteSpace(providerSubscriptionId))
+            {
+                providerSubscriptionId = $"sandbox-fallback-{Guid.NewGuid()}";
+                this.logger.LogDebug("Sandbox fallback providerSubscriptionId generated: {Id}", providerSubscriptionId);
+            }
+        }
+        else
+        {
+            (targetEntity, targetEntityId, isRecurring, userId, anonymous) = parsed.Value;
+        }
 
         // 4. У нас sandbox завжди = success
         if (status == "sandbox")
@@ -173,11 +200,7 @@ public sealed class LiqPayService : ILiqPayService
         // 5. Обробка успіху
         if (isSuccess)
         {
-            this.logger.LogInformation(
-                "SUCCESS payment, Scope={Scope} ScopeId={ScopeId}, Tx={Tx}",
-                scope,
-                scopeId,
-                transactionId);
+            this.logger.LogInformation("SUCCESS payment, Scope={Scope} ScopeId={ScopeId}, Tx={Tx}", targetEntity, targetEntityId, transactionId);
 
             // 1. Реєструємо факт успіху (створює Donation/Subscription/оновлює Guardianship)
             var donation = await this.paymentService.RecordChargeSuccessAsync(
@@ -185,8 +208,8 @@ public sealed class LiqPayService : ILiqPayService
                transactionId: transactionId!,
                amount: amount,
                currency: currency,
-               targetEntity: scope,
-               targetEntityId: scopeId,
+               targetEntity: targetEntity,
+               targetEntityId: targetEntityId,
                recurring: isRecurring,
                anonymous: anonymous,
                userId: userId,
@@ -199,18 +222,21 @@ public sealed class LiqPayService : ILiqPayService
                 donation.Id,
                 cancellationToken);
 
-            if (scope == "Guardianship" && scopeId is not null)
+            if (targetEntity == "Guardianship" && targetEntityId is not null)
             {
                 await this.paymentIntentService.AttachGuardianshipAsync(
                     orderId,
-                    scopeId.Value,
+                    targetEntityId.Value,
                     cancellationToken);
             }
 
             if (isRecurring)
             {
+                // If providerSubscriptionId missing — attempt to fallback to orderId (sandbox cases)
+                var providerIdToSearch = !string.IsNullOrWhiteSpace(providerSubscriptionId) ? providerSubscriptionId : orderId;
+
                 var subscription = await this.paymentService
-                    .FindSubscriptionByProviderIdAsync(providerSubscriptionId!, cancellationToken);
+                    .FindSubscriptionByProviderIdAsync(providerIdToSearch, cancellationToken);
 
                 if (subscription is not null)
                 {
@@ -241,13 +267,26 @@ public sealed class LiqPayService : ILiqPayService
         {
             this.logger.LogWarning(
                "FAILED payment. Scope={Scope} ScopeId={ScopeId} Tx={Tx}",
-               scope,
-               scopeId,
+               targetEntity,
+               targetEntityId,
                transactionId);
 
             await this.paymentIntentService.MarkFailedAsync(
                 orderId,
                 cancellationToken);
+
+            // record failed donation
+            await this.paymentService.RecordChargeFailedAsync(
+                provider: "LiqPay",
+                transactionId: transactionId,
+                amount: amount,
+                currency: currency,
+                targetEntity: targetEntity,
+                targetEntityId: targetEntityId,
+                recurring: isRecurring,
+                anonymous: anonymous,
+                userId: userId,
+                cancellationToken: cancellationToken);
 
             return true;
         }
@@ -319,14 +358,37 @@ public sealed class LiqPayService : ILiqPayService
         var respJson = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
 
         using var doc = JsonDocument.Parse(respJson);
+
         var root = doc.RootElement;
 
-        string providerSubId = root.GetProperty("subscribe_id").GetString()!;
-        long? nextUnix = root.TryGetProperty("next_subscribe_date", out var nextEl)
-            && nextEl.TryGetInt64(out var unix)
-            ? unix
-            : null;
+        string? providerSubId = null;
+        if (root.TryGetProperty("subscribe_id", out var subIdProp))
+        {
+            providerSubId = subIdProp.GetString();
+        }
 
+        long? nextUnix = null;
+        if (root.TryGetProperty("next_subscribe_date", out var nextProp) &&
+            nextProp.TryGetInt64(out var unix))
+        {
+            nextUnix = unix;
+        }
+
+        // ================= SANDBOX FALLBACK =================
+        if (this.IsSandbox)
+        {
+            if (string.IsNullOrWhiteSpace(providerSubId))
+            {
+                providerSubId = $"sandbox_sub_{Guid.NewGuid()}";
+            }
+
+            if (nextUnix == null)
+            {
+                nextUnix = DateTimeOffset.UtcNow.AddDays(30).ToUnixTimeSeconds();
+            }
+        }
+
+        // ====================================================
         DateTime? nextChargeAt = nextUnix.HasValue
             ? DateTimeOffset.FromUnixTimeSeconds(nextUnix.Value).UtcDateTime
             : null;
@@ -336,7 +398,7 @@ public sealed class LiqPayService : ILiqPayService
             .RequirePaymentMethodIdByProviderAsync("LiqPay", cancellationToken);
 
         return new LiqPayRecurringResponseDto(
-            providerSubId,
+            providerSubId!,
             paymentMethodId,
             nextChargeAt);
     }
@@ -356,10 +418,11 @@ public sealed class LiqPayService : ILiqPayService
     private static (string TargetEntity, Guid? TargetEntityId, bool IsRecurring, Guid? UserId, bool Anonymous)?
              ParseCompositeOrderId(string orderIdRaw)
     {
-        // orderId format:
-        // {scope}|{entityId}|{isRecurring}|{userId}|{anonymous}|{nonceGuid}
-        // приклад:
-        // Guardianship|5c3b...|1|0123...|0|a36c5b...
+        if (string.IsNullOrWhiteSpace(orderIdRaw))
+        {
+            return null;
+        }
+
         var parts = orderIdRaw.Split('|');
         if (parts.Length != 6)
         {
@@ -372,8 +435,8 @@ public sealed class LiqPayService : ILiqPayService
         var userStr = parts[3]; // "-" або Guid
         var anonStr = parts[4]; // "0"/"1"
 
-        Guid? entityId = entityStr == "-" ? null : Guid.Parse(entityStr);
-        Guid? userId = userStr == "-" ? null : Guid.Parse(userStr);
+        Guid? entityId = entityStr == "-" ? null : TryParseGuid(entityStr);
+        Guid? userId = userStr == "-" ? null : TryParseGuid(userStr);
 
         bool isRecurring = recurringStr == "1";
         bool anonymous = anonStr == "1";
@@ -381,5 +444,15 @@ public sealed class LiqPayService : ILiqPayService
         // scopeStr напряму йде в Donation.TargetEntity
         // це дає нам "Guardianship", "AidRequest", "Global"
         return (scopeStr, entityId, isRecurring, userId, anonymous);
+    }
+
+    private static Guid? TryParseGuid(string s)
+    {
+        if (Guid.TryParse(s, out var g))
+        {
+            return g;
+        }
+
+        return null;
     }
 }
