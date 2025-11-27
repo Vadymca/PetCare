@@ -144,6 +144,10 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
         var q = this.db.Set<Guardianship>()
             .AsNoTracking()
             .Include(g => g.Animal)
+                .ThenInclude(a => a!.Shelter)
+            .Include(g => g.Animal)
+                .ThenInclude(a => a!.Breed)
+                    .ThenInclude(b => b!.Specie)
             .Where(g => g.UserId == userId);
 
         if (status is not null)

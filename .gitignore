@@ -56,7 +56,6 @@ project.fragment.lock.json
 artifacts/
 
 # --- Entity Framework Migrations temp ---
-*.Designer.cs
 *.edmx.diagram
 *.edmx.deploy*
 *.edmx.sql

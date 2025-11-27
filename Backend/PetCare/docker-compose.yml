@@ -8,7 +8,7 @@
             POSTGRES_USER: ${POSTGRES_USER}
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
         ports:
-          - '5432:5432'
+            - '5432:5432'
         volumes:
             - pgdata:/var/lib/postgresql/data
         healthcheck:
@@ -29,8 +29,8 @@
             MINIO_ROOT_USER: ${MINIO_ROOT_USER}
             MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
         ports:
-          - "9000:9000"
-          - "9001:9001"
+             - '9000:9000'
+             - '9001:9001'
         volumes:
             - minio_data:/data
         healthcheck:
@@ -49,13 +49,14 @@
             target: runtime
         container_name: petcare_api
         env_file:
-          - .env
+            - .env
         depends_on:
             db:
                 condition: service_healthy
             minio:
                 condition: service_healthy
         environment:
+            ASPNETCORE_URLS: http://+:8080
             ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
             JWT_SECRET_KEY: ${JWT_SECRET_KEY}
         ports:
