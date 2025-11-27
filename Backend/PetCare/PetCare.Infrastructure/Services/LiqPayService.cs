@@ -423,7 +423,7 @@ public sealed class LiqPayService : ILiqPayService
     /// <returns>A tuple containing the target entity name, target entity ID, recurrence status, user ID, and anonymity flag if
     /// parsing succeeds; otherwise, null if the input does not match the expected format.</returns>
     private static (string TargetEntity, Guid? TargetEntityId, bool IsRecurring, Guid? UserId, bool Anonymous)?
-         ParseCompositeOrderId(string orderIdRaw)
+     ParseCompositeOrderId(string orderIdRaw)
     {
         if (string.IsNullOrWhiteSpace(orderIdRaw))
         {
@@ -431,29 +431,43 @@ public sealed class LiqPayService : ILiqPayService
         }
 
         var parts = orderIdRaw.Split('|');
-        if (parts.Length != 6)
+        if (parts.Length == 6)
         {
-            return null;
+            var scopeStr = parts[0];
+            var entityStr = parts[1];
+            var recurringStr = parts[2];
+            var userStr = parts[3];
+            var anonStr = parts[4];
+
+            Guid? entityId = entityStr == "-" ? null : TryParseGuid(entityStr);
+            Guid? userId = userStr == "-" ? null : TryParseGuid(userStr);
+
+            bool isRecurring = recurringStr == "1";
+            bool anonymous = anonStr == "1";
+
+            return (scopeStr, entityId, isRecurring, userId, anonymous);
         }
 
-        var scopeStrRaw = parts[0]; // "Global" / "AidRequest" / "Guardianship"
-        var entityStr = parts[1];   // "-" або Guid
-        var recurringStr = parts[2]; // "0"/"1"
-        var userStr = parts[3];      // "-" або Guid
-        var anonStr = parts[4];      // "0"/"1"
+        // fallback: визначаємо scope за префіксом orderId
+        string targetEntity;
+        if (orderIdRaw.StartsWith("GRN-", StringComparison.OrdinalIgnoreCase))
+        {
+            targetEntity = "Guardianship";
+        }
+        else if (orderIdRaw.StartsWith("DON-", StringComparison.OrdinalIgnoreCase))
+        {
+            targetEntity = "Donation";
+        }
+        else if (orderIdRaw.StartsWith("SUB-", StringComparison.OrdinalIgnoreCase))
+        {
+            targetEntity = "Subscription";
+        }
+        else
+        {
+            targetEntity = "Global";
+        }
 
-        // Нормалізація: перша літера велика, решта маленькі
-        var scopeStr = string.IsNullOrWhiteSpace(scopeStrRaw)
-            ? "Global"
-            : char.ToUpper(scopeStrRaw[0]) + scopeStrRaw.Substring(1).ToLower();
-
-        Guid? entityId = entityStr == "-" ? null : TryParseGuid(entityStr);
-        Guid? userId = userStr == "-" ? null : TryParseGuid(userStr);
-
-        bool isRecurring = recurringStr == "1";
-        bool anonymous = anonStr == "1";
-
-        return (scopeStr, entityId, isRecurring, userId, anonymous);
+        return (targetEntity, null, false, null, false);
     }
 
     private static Guid? TryParseGuid(string s)
