@@ -167,9 +167,15 @@ public sealed class LiqPayService : ILiqPayService
                 // Нормалізація: перша літера велика, решта маленькі
                 targetEntity = char.ToUpper(rawScope[0]) + rawScope.Substring(1).ToLower();
 
-                targetEntityId = root.TryGetProperty("scopeId", out var scopeIdProp)
-                    ? TryParseGuid(scopeIdProp.GetString()!)
-                    : null;
+                if (root.TryGetProperty("scopeId", out var scopeIdProp))
+                {
+                    this.logger.LogInformation("Parsing scopeId from callback: {ScopeIdRaw}", scopeIdProp.GetString());
+                    targetEntityId = TryParseGuid(scopeIdProp.GetString());
+                }
+                else
+                {
+                    targetEntityId = null;
+                }
 
                 isRecurring = root.TryGetProperty("isRecurring", out var recEl) && recEl.GetBoolean();
                 userId = root.TryGetProperty("userId", out var userProp) ? TryParseGuid(userProp.GetString()!) : null;
@@ -188,7 +194,22 @@ public sealed class LiqPayService : ILiqPayService
         else
         {
             (targetEntity, targetEntityId, isRecurring, userId, anonymous) = parsed.Value;
+
+            // Додатковий fallback для Donation / Subscription / Guardianship
+            if (targetEntityId is null && root.TryGetProperty("scopeId", out var scopeIdProp))
+            {
+                this.logger.LogInformation("Fallback parsing scopeId for {TargetEntity}: {ScopeIdRaw}", targetEntity, scopeIdProp.GetString());
+                targetEntityId = TryParseGuid(scopeIdProp.GetString()!);
+            }
         }
+
+        this.logger.LogInformation(
+            "Resolved targetEntity={TargetEntity}, targetEntityId={TargetEntityId}, userId={UserId}, isRecurring={IsRecurring}, anonymous={Anonymous}",
+            targetEntity,
+            targetEntityId,
+            userId,
+            isRecurring,
+            anonymous);
 
         // 4. У нас sandbox завжди = success
         if (status == "sandbox")
@@ -472,7 +493,7 @@ public sealed class LiqPayService : ILiqPayService
 
     private static Guid? TryParseGuid(string s)
     {
-        if (Guid.TryParse(s, out var g))
+        if (Guid.TryParse(s?.Trim(), out var g))
         {
             return g;
         }
