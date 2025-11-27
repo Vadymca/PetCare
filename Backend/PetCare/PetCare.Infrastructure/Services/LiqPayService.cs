@@ -159,23 +159,23 @@ public sealed class LiqPayService : ILiqPayService
 
         if (parsed is null)
         {
-            // PARSE FAILED — fallback logic:
-            // - In sandbox: treat as a one-shot Global (but continue processing) — generate useful providerSubscriptionId if missing.
-            // - In prod: treat as Global as well (but log warnings).
-            this.logger.LogWarning("Failed to parse composite order_id: {OrderId}. Using fallback.", orderId);
-
-            // fallback values
-            targetEntity = "Global";
-            targetEntityId = null;
-            isRecurring = false;
-            userId = null;
-            anonymous = false;
-
-            // ensure providerSubscriptionId exists in sandbox for recurring flows that expect it
-            if (this.IsSandbox && string.IsNullOrWhiteSpace(providerSubscriptionId))
+            if (root.TryGetProperty("scope", out var scopeProp) &&
+                root.TryGetProperty("scopeId", out var scopeIdProp))
             {
-                providerSubscriptionId = $"sandbox-fallback-{Guid.NewGuid()}";
-                this.logger.LogDebug("Sandbox fallback providerSubscriptionId generated: {Id}", providerSubscriptionId);
+                targetEntity = scopeProp.GetString() ?? "Global";
+                targetEntityId = TryParseGuid(scopeIdProp.GetString()!);
+                isRecurring = true; // бо ми отримали recurring
+                userId = root.TryGetProperty("userId", out var userProp) ? TryParseGuid(userProp.GetString()!) : null;
+                anonymous = false;
+            }
+            else
+            {
+                // fallback класичний
+                targetEntity = "Global";
+                targetEntityId = null;
+                isRecurring = false;
+                userId = null;
+                anonymous = false;
             }
         }
         else
