@@ -95,7 +95,6 @@ public sealed class LiqPayService : ILiqPayService
             };
         }
 
-        // беремо всі поля м'яко
         var status = root.TryGetProperty("status", out var s) ? s.GetString() ?? "pending" : "pending";
         var action = root.TryGetProperty("action", out var a) ? a.GetString() : null;
 
@@ -125,7 +124,7 @@ public sealed class LiqPayService : ILiqPayService
             root.TryGetProperty("payment_id", out var p) ? ReadFlexibleString(p) :
             orderId;
 
-        // читаємо next_subscribe_date ----
+        // next_subscribe_date
         DateTime? nextChargeUtc = null;
 
         if (root.TryGetProperty("next_subscribe_date", out var nsd))
@@ -140,12 +139,26 @@ public sealed class LiqPayService : ILiqPayService
             }
         }
 
-        // читаємо subscribe_id (ід підписки LiqPay)
+        // subscribe_id із LiqPay
         string? providerSubscriptionId = null;
 
         if (root.TryGetProperty("subscribe_id", out var sid))
         {
             providerSubscriptionId = ReadFlexibleString(sid);
+        }
+
+        string? rawScope = null;
+        string? rawScopeId = null;
+
+        if (root.TryGetProperty("scope", out var scopeProp))
+        {
+            rawScope = scopeProp.GetString();
+        }
+
+        if (root.TryGetProperty("scopeId", out var scopeIdProp))
+        {
+            rawScopeId = scopeIdProp.GetString();
+            this.logger.LogInformation("Received scopeId from callback: {ScopeIdRaw}", rawScopeId);
         }
 
         // 3. Парсимо наш composite order_id
@@ -159,54 +172,38 @@ public sealed class LiqPayService : ILiqPayService
 
         if (parsed is null)
         {
-            // 1️⃣ Пробуємо взяти scope і scopeId з callback
-            if (root.TryGetProperty("scope", out var scopeProp))
-            {
-                var rawScope = scopeProp.GetString() ?? "Global";
+            // fallback через scope
+            targetEntity = rawScope is null
+                ? "Global"
+                : char.ToUpper(rawScope[0]) + rawScope.Substring(1).ToLower();
 
-                // Нормалізація: перша літера велика, решта маленькі
-                targetEntity = char.ToUpper(rawScope[0]) + rawScope.Substring(1).ToLower();
+            targetEntityId = TryParseGuid(rawScopeId!);
 
-                if (root.TryGetProperty("scopeId", out var scopeIdProp))
-                {
-                    this.logger.LogInformation("Parsing scopeId from callback: {ScopeIdRaw}", scopeIdProp.GetString());
-                    targetEntityId = TryParseGuid(scopeIdProp.GetString());
-                }
-                else
-                {
-                    targetEntityId = null;
-                }
-
-                isRecurring = root.TryGetProperty("isRecurring", out var recEl) && recEl.GetBoolean();
-                userId = root.TryGetProperty("userId", out var userProp) ? TryParseGuid(userProp.GetString()!) : null;
-                anonymous = root.TryGetProperty("anonymous", out var anonEl) && anonEl.GetBoolean();
-            }
-            else
-            {
-                // fallback класичний
-                targetEntity = "Global";
-                targetEntityId = null;
-                isRecurring = false;
-                userId = null;
-                anonymous = false;
-            }
+            isRecurring = root.TryGetProperty("isRecurring", out var recEl) && recEl.GetBoolean();
+            userId = root.TryGetProperty("userId", out var userProp) ? TryParseGuid(userProp.GetString()!) : null;
+            anonymous = root.TryGetProperty("anonymous", out var anonEl) && anonEl.GetBoolean();
         }
         else
         {
             (targetEntity, targetEntityId, isRecurring, userId, anonymous) = parsed.Value;
 
-            // Додатковий fallback для Donation / Subscription / Guardianship
-            if (targetEntityId is null && root.TryGetProperty("scopeId", out var scopeIdProp))
+            // fallback targetEntityId ← scopeId
+            if (targetEntityId is null && rawScopeId is not null)
             {
-                this.logger.LogInformation("Fallback parsing scopeId for {TargetEntity}: {ScopeIdRaw}", targetEntity, scopeIdProp.GetString());
-                targetEntityId = TryParseGuid(scopeIdProp.GetString()!);
+                this.logger.LogInformation(
+                    "Fallback using scopeId for {Entity}: {ScopeIdRaw}",
+                    targetEntity,
+                    rawScopeId);
+
+                targetEntityId = TryParseGuid(rawScopeId);
             }
         }
 
-        if (root.TryGetProperty("scopeId", out var scopeIdProp))
+        // фінальний fallback
+        if (targetEntityId is null && rawScopeId is not null)
         {
-            targetEntityId ??= TryParseGuid(scopeIdProp.GetString());
-            this.logger.LogInformation("Using scopeId from callback as targetEntityId: {ScopeId}", targetEntityId);
+            targetEntityId = TryParseGuid(rawScopeId);
+            this.logger.LogInformation("Final assignment of targetEntityId from scopeId: {Value}", targetEntityId);
         }
 
         this.logger.LogInformation(
@@ -217,40 +214,37 @@ public sealed class LiqPayService : ILiqPayService
             isRecurring,
             anonymous);
 
-        // 4. У нас sandbox завжди = success
+        // 4. Sandbox → always success
         if (status == "sandbox")
         {
             status = "success";
-            this.logger.LogInformation(
-                "Sandbox treated as success for {Id}", orderId);
+            this.logger.LogInformation("Sandbox treated as success for {Id}", orderId);
         }
 
-        // Реально успішні статуси
         bool isSuccess = status is "success" or "subscribed";
-
-        // Помилкові статуси
         bool isFailure = status is "failure" or "error";
 
-        // 5. Обробка успіху
+        // SUCCESS
         if (isSuccess)
         {
-            this.logger.LogInformation("SUCCESS payment, Scope={Scope} ScopeId={ScopeId}, Tx={Tx}", targetEntity, targetEntityId, transactionId);
+            this.logger.LogInformation(
+                "SUCCESS payment, Scope={Scope} ScopeId={ScopeId}, Tx={Tx}",
+                targetEntity,
+                targetEntityId,
+                transactionId);
 
-            // 1. Реєструємо факт успіху (створює Donation/Subscription/оновлює Guardianship)
             var donation = await this.paymentService.RecordChargeSuccessAsync(
-               provider: "LiqPay",
-               transactionId: transactionId!,
-               amount: amount,
-               currency: currency,
-               targetEntity: targetEntity,
-               targetEntityId: targetEntityId,
-               recurring: isRecurring,
-               anonymous: anonymous,
-               userId: userId,
-               cancellationToken: cancellationToken);
+                provider: "LiqPay",
+                transactionId: transactionId!,
+                amount: amount,
+                currency: currency,
+                targetEntity: targetEntity,
+                targetEntityId: targetEntityId,
+                recurring: isRecurring,
+                anonymous: anonymous,
+                userId: userId,
+                cancellationToken: cancellationToken);
 
-            // 2. Прив’язуємо сутності до PaymentIntent
-            // 2️⃣ Attach Donation to Intent
             await this.paymentIntentService.AttachDonationAsync(
                 orderId,
                 donation.Id,
@@ -264,10 +258,12 @@ public sealed class LiqPayService : ILiqPayService
                     cancellationToken);
             }
 
+            // recurring logic
             if (isRecurring)
             {
-                // If providerSubscriptionId missing — attempt to fallback to orderId (sandbox cases)
-                var providerIdToSearch = !string.IsNullOrWhiteSpace(providerSubscriptionId) ? providerSubscriptionId : orderId;
+                var providerIdToSearch = !string.IsNullOrWhiteSpace(providerSubscriptionId)
+                    ? providerSubscriptionId
+                    : orderId;
 
                 var subscription = await this.paymentService
                     .FindSubscriptionByProviderIdAsync(providerIdToSearch, cancellationToken);
@@ -296,20 +292,17 @@ public sealed class LiqPayService : ILiqPayService
             return true;
         }
 
-        // 6. Обробка помилки
+        // FAILURE
         if (isFailure)
         {
             this.logger.LogWarning(
-               "FAILED payment. Scope={Scope} ScopeId={ScopeId} Tx={Tx}",
-               targetEntity,
-               targetEntityId,
-               transactionId);
+                "FAILED payment. Scope={Scope} ScopeId={ScopeId} Tx={Tx}",
+                targetEntity,
+                targetEntityId,
+                transactionId);
 
-            await this.paymentIntentService.MarkFailedAsync(
-                orderId,
-                cancellationToken);
+            await this.paymentIntentService.MarkFailedAsync(orderId, cancellationToken);
 
-            // record failed donation
             await this.paymentService.RecordChargeFailedAsync(
                 provider: "LiqPay",
                 transactionId: transactionId,
@@ -325,7 +318,7 @@ public sealed class LiqPayService : ILiqPayService
             return true;
         }
 
-        // 7. Не фінальний статус — просто лог
+        // NON-FINAL
         this.logger.LogInformation(
             "Non-final LiqPay status '{Status}' for order {OrderId}",
             status,
