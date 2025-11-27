@@ -159,14 +159,21 @@ public sealed class LiqPayService : ILiqPayService
 
         if (parsed is null)
         {
-            if (root.TryGetProperty("scope", out var scopeProp) &&
-                root.TryGetProperty("scopeId", out var scopeIdProp))
+            // 1️⃣ Пробуємо взяти scope і scopeId з callback
+            if (root.TryGetProperty("scope", out var scopeProp))
             {
-                targetEntity = scopeProp.GetString() ?? "Global";
-                targetEntityId = TryParseGuid(scopeIdProp.GetString()!);
-                isRecurring = true; // бо ми отримали recurring
+                var rawScope = scopeProp.GetString() ?? "Global";
+
+                // Нормалізація: перша літера велика, решта маленькі
+                targetEntity = char.ToUpper(rawScope[0]) + rawScope.Substring(1).ToLower();
+
+                targetEntityId = root.TryGetProperty("scopeId", out var scopeIdProp)
+                    ? TryParseGuid(scopeIdProp.GetString()!)
+                    : null;
+
+                isRecurring = root.TryGetProperty("isRecurring", out var recEl) && recEl.GetBoolean();
                 userId = root.TryGetProperty("userId", out var userProp) ? TryParseGuid(userProp.GetString()!) : null;
-                anonymous = false;
+                anonymous = root.TryGetProperty("anonymous", out var anonEl) && anonEl.GetBoolean();
             }
             else
             {
@@ -416,7 +423,7 @@ public sealed class LiqPayService : ILiqPayService
     /// <returns>A tuple containing the target entity name, target entity ID, recurrence status, user ID, and anonymity flag if
     /// parsing succeeds; otherwise, null if the input does not match the expected format.</returns>
     private static (string TargetEntity, Guid? TargetEntityId, bool IsRecurring, Guid? UserId, bool Anonymous)?
-             ParseCompositeOrderId(string orderIdRaw)
+         ParseCompositeOrderId(string orderIdRaw)
     {
         if (string.IsNullOrWhiteSpace(orderIdRaw))
         {
@@ -429,11 +436,16 @@ public sealed class LiqPayService : ILiqPayService
             return null;
         }
 
-        var scopeStr = parts[0]; // "Global" / "AidRequest" / "Guardianship"
-        var entityStr = parts[1]; // "-" або Guid
+        var scopeStrRaw = parts[0]; // "Global" / "AidRequest" / "Guardianship"
+        var entityStr = parts[1];   // "-" або Guid
         var recurringStr = parts[2]; // "0"/"1"
-        var userStr = parts[3]; // "-" або Guid
-        var anonStr = parts[4]; // "0"/"1"
+        var userStr = parts[3];      // "-" або Guid
+        var anonStr = parts[4];      // "0"/"1"
+
+        // Нормалізація: перша літера велика, решта маленькі
+        var scopeStr = string.IsNullOrWhiteSpace(scopeStrRaw)
+            ? "Global"
+            : char.ToUpper(scopeStrRaw[0]) + scopeStrRaw.Substring(1).ToLower();
 
         Guid? entityId = entityStr == "-" ? null : TryParseGuid(entityStr);
         Guid? userId = userStr == "-" ? null : TryParseGuid(userStr);
@@ -441,8 +453,6 @@ public sealed class LiqPayService : ILiqPayService
         bool isRecurring = recurringStr == "1";
         bool anonymous = anonStr == "1";
 
-        // scopeStr напряму йде в Donation.TargetEntity
-        // це дає нам "Guardianship", "AidRequest", "Global"
         return (scopeStr, entityId, isRecurring, userId, anonymous);
     }
 
