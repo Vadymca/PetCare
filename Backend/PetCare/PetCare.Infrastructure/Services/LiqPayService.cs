@@ -203,6 +203,12 @@ public sealed class LiqPayService : ILiqPayService
             }
         }
 
+        if (root.TryGetProperty("scopeId", out var scopeIdProp))
+        {
+            targetEntityId ??= TryParseGuid(scopeIdProp.GetString());
+            this.logger.LogInformation("Using scopeId from callback as targetEntityId: {ScopeId}", targetEntityId);
+        }
+
         this.logger.LogInformation(
             "Resolved targetEntity={TargetEntity}, targetEntityId={TargetEntityId}, userId={UserId}, isRecurring={IsRecurring}, anonymous={Anonymous}",
             targetEntity,
