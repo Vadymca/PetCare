@@ -66,183 +66,140 @@ public sealed class LiqPayService : ILiqPayService
     /// <param name="signature">The signature string used to verify the authenticity of the callback data.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>true if the callback signature is valid and the payment result was processed; otherwise, false.</returns>
-    public async Task<bool> ProcessCallbackAsync(string data, string signature, CancellationToken cancellationToken = default)
+    public async Task<bool> ProcessCallbackAsync(
+     string data,
+     string signature,
+     CancellationToken cancellationToken = default)
     {
-        // 1. Перевірка сигнатури
-        var expected = LiqPayCrypto.Sign(this.settings.PrivateKey, data);
-        if (!string.Equals(expected, signature, StringComparison.Ordinal))
+        // 1. Validate LiqPay signature
+        var expectedSignature = LiqPayCrypto.Sign(this.settings.PrivateKey, data);
+
+        if (!string.Equals(expectedSignature, signature, StringComparison.Ordinal))
         {
             this.logger.LogWarning(
                 "Invalid LiqPay signature. Expected {Expected}, got {Actual}",
-                expected,
+                expectedSignature,
                 signature);
+
             return false;
         }
 
-        // 2. Розпаковуємо body
+        // 2. Decode and parse LiqPay body
         var json = Encoding.UTF8.GetString(Convert.FromBase64String(data));
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
 
-        // Helper: читає string або number як string
-        static string? ReadFlexibleString(JsonElement el)
-        {
-            return el.ValueKind switch
+        string? ReadString(JsonElement el) =>
+            el.ValueKind switch
             {
                 JsonValueKind.String => el.GetString(),
                 JsonValueKind.Number => el.GetRawText(),
                 _ => null,
             };
-        }
 
-        var status = root.TryGetProperty("status", out var s) ? s.GetString() ?? "pending" : "pending";
-        var action = root.TryGetProperty("action", out var a) ? a.GetString() : null;
+        var status = root.TryGetProperty("status", out var st) ? st.GetString() ?? "pending" : "pending";
 
-        var orderId = root.TryGetProperty("order_id", out var o)
-            ? ReadFlexibleString(o)
-            : null;
+        var liqpayOrderId = ReadString(root.GetProperty("order_id"));
 
-        if (string.IsNullOrWhiteSpace(orderId))
+        if (string.IsNullOrWhiteSpace(liqpayOrderId))
         {
-            this.logger.LogError("Callback missing order_id. Raw JSON: {Json}", json);
+            this.logger.LogError("Callback missing order_id. Raw JSON={Json}", json);
             return false;
         }
 
-        this.logger.LogInformation("Callback received for order_id: {Id}", orderId);
+        this.logger.LogInformation("LiqPay callback for external order_id={LiqPayOrderId}", liqpayOrderId);
 
-        var amount = root.TryGetProperty("amount", out var am) && am.ValueKind is JsonValueKind.Number
-            ? am.GetDecimal()
-            : 0m;
+        // 3. Load internal payment intent (IMPORTANT FIX)
+        var intent = await this.paymentIntentService.GetByExternalOrderIdAsync(liqpayOrderId, cancellationToken);
 
-        var currency = root.TryGetProperty("currency", out var c)
-            ? c.GetString() ?? "UAH"
-            : "UAH";
-
-        // transaction_id може бути number
-        var transactionId =
-            root.TryGetProperty("transaction_id", out var t) ? ReadFlexibleString(t) :
-            root.TryGetProperty("payment_id", out var p) ? ReadFlexibleString(p) :
-            orderId;
-
-        // next_subscribe_date
-        DateTime? nextChargeUtc = null;
-
-        if (root.TryGetProperty("next_subscribe_date", out var nsd))
+        if (intent is null)
         {
-            if (nsd.ValueKind == JsonValueKind.Number && nsd.TryGetInt64(out var unix))
-            {
-                nextChargeUtc = DateTimeOffset.FromUnixTimeSeconds(unix).UtcDateTime;
-            }
-            else if (nsd.ValueKind == JsonValueKind.String && long.TryParse(nsd.GetString(), out var unixStr))
-            {
-                nextChargeUtc = DateTimeOffset.FromUnixTimeSeconds(unixStr).UtcDateTime;
-            }
-        }
-
-        // subscribe_id із LiqPay
-        string? providerSubscriptionId = null;
-
-        if (root.TryGetProperty("subscribe_id", out var sid))
-        {
-            providerSubscriptionId = ReadFlexibleString(sid);
-        }
-
-        string? rawScope = null;
-        string? rawScopeId = null;
-
-        if (root.TryGetProperty("scope", out var scopeProp))
-        {
-            rawScope = scopeProp.GetString();
-        }
-
-        if (root.TryGetProperty("scopeId", out var scopeIdProp))
-        {
-            rawScopeId = scopeIdProp.GetString();
-            this.logger.LogInformation("Received scopeId from callback: {ScopeIdRaw}", rawScopeId);
-        }
-        else if (root.TryGetProperty("scope_id", out var scopeIdSnake))
-        {
-            rawScopeId = scopeIdSnake.GetString();
-        }
-
-        // 3. Парсимо наш composite order_id
-        var parsed = ParseCompositeOrderId(orderId);
-
-        string targetEntity;
-        Guid? targetEntityId;
-        bool isRecurring;
-        Guid? userId;
-        bool anonymous;
-
-        if (parsed is null)
-        {
-            // fallback через scope
-            targetEntity = rawScope is null
-                ? "Global"
-                : char.ToUpper(rawScope[0]) + rawScope.Substring(1).ToLower();
-
-            targetEntityId = TryParseGuid(rawScopeId!);
-
-            isRecurring = root.TryGetProperty("isRecurring", out var recEl) && recEl.GetBoolean();
-            userId = root.TryGetProperty("userId", out var userProp) ? TryParseGuid(userProp.GetString()!) : null;
-            anonymous = root.TryGetProperty("anonymous", out var anonEl) && anonEl.GetBoolean();
-        }
-        else
-        {
-            (targetEntity, targetEntityId, isRecurring, userId, anonymous) = parsed.Value;
-
-            // fallback targetEntityId ← scopeId
-            if (targetEntityId is null && rawScopeId is not null)
-            {
-                this.logger.LogInformation(
-                    "Fallback using scopeId for {Entity}: {ScopeIdRaw}",
-                    targetEntity,
-                    rawScopeId);
-
-                targetEntityId = TryParseGuid(rawScopeId);
-            }
-        }
-
-        // фінальний fallback
-        if (targetEntityId is null && rawScopeId is not null)
-        {
-            targetEntityId = TryParseGuid(rawScopeId);
-            this.logger.LogInformation("Final assignment of targetEntityId from scopeId: {Value}", targetEntityId);
+            this.logger.LogError("PaymentIntent not found for external order_id={OrderId}", liqpayOrderId);
+            return false;
         }
 
         this.logger.LogInformation(
-            "Resolved targetEntity={TargetEntity}, targetEntityId={TargetEntityId}, userId={UserId}, isRecurring={IsRecurring}, anonymous={Anonymous}",
-            targetEntity,
-            targetEntityId,
-            userId,
-            isRecurring,
-            anonymous);
+            "Resolved internal PaymentIntent: Id={IntentId}, OrderId={OrderId}, Scope={Scope}, ScopeId={ScopeId}",
+            intent.Id,
+            intent.ExternalOrderId,
+            intent.ScopeType,
+            intent.ScopeId);
 
-        // 4. Sandbox → always success
+        // 4. Extract final internal composite order_id
+        var internalOrderId = intent.ExternalOrderId;
+
+        var parsed = ParseCompositeOrderId(internalOrderId);
+
+        // Default values
+        var targetEntity = intent.ScopeType?.ToString();
+        var targetEntityId = intent.ScopeId;
+        bool isRecurring = intent.IsRecurring;
+        Guid? userId = intent.UserId;
+        bool anonymous = intent.Anonymous;
+
+        // Composite format overrides fallback fields
+        if (parsed is not null)
+        {
+            var (entity, entityId, recurring, user, anon) = parsed.Value;
+
+            targetEntity = entity;
+            targetEntityId ??= entityId;
+            isRecurring = recurring;
+            userId ??= user;
+            anonymous = anon;
+        }
+
+        // 5. Parse amount, currency, transaction ids
+        var amount = root.TryGetProperty("amount", out var amEl) && amEl.ValueKind == JsonValueKind.Number
+            ? amEl.GetDecimal()
+            : 0m;
+
+        var currency = root.TryGetProperty("currency", out var cc)
+            ? cc.GetString() ?? "UAH"
+            : "UAH";
+
+        var transactionId =
+            root.TryGetProperty("transaction_id", out var tx1) ? ReadString(tx1) :
+            root.TryGetProperty("payment_id", out var tx2) ? ReadString(tx2) :
+            internalOrderId;
+
+        // 6. Recurring specific fields
+        DateTime? nextCharge = null;
+
+        if (root.TryGetProperty("next_subscribe_date", out var nsd))
+        {
+            if (nsd.ValueKind == JsonValueKind.Number && nsd.TryGetInt64(out var ts))
+            {
+                nextCharge = DateTimeOffset.FromUnixTimeSeconds(ts).UtcDateTime;
+            }
+
+            if (nsd.ValueKind == JsonValueKind.String && long.TryParse(nsd.GetString(), out var ts2))
+            {
+                nextCharge = DateTimeOffset.FromUnixTimeSeconds(ts2).UtcDateTime;
+            }
+        }
+
+        var providerSubscriptionId =
+            root.TryGetProperty("subscribe_id", out var sid) ? ReadString(sid) : null;
+
+        // 7. Normalize status
         if (status == "sandbox")
         {
             status = "success";
-            this.logger.LogInformation("Sandbox treated as success for {Id}", orderId);
         }
 
-        bool isSuccess = status is "success" or "subscribed";
-        bool isFailure = status is "failure" or "error";
+        var isSuccess = status is "success" or "subscribed";
+        var isFailure = status is "failure" or "error";
 
-        // SUCCESS
+        // 8. SUCCESS
         if (isSuccess)
         {
-            this.logger.LogInformation(
-                "SUCCESS payment, Scope={Scope} ScopeId={ScopeId}, Tx={Tx}",
-                targetEntity,
-                targetEntityId,
-                transactionId);
-
             var donation = await this.paymentService.RecordChargeSuccessAsync(
                 provider: "LiqPay",
                 transactionId: transactionId!,
                 amount: amount,
                 currency: currency,
-                targetEntity: targetEntity,
+                targetEntity: targetEntity!,
                 targetEntityId: targetEntityId,
                 recurring: isRecurring,
                 anonymous: anonymous,
@@ -250,69 +207,64 @@ public sealed class LiqPayService : ILiqPayService
                 cancellationToken: cancellationToken);
 
             await this.paymentIntentService.AttachDonationAsync(
-                orderId,
+                intent.ExternalOrderId,
                 donation.Id,
                 cancellationToken);
 
-            if (targetEntity == "Guardianship" && targetEntityId is not null)
+            // FIX: Attach guardianship from intent, not from parsed
+            if (intent.ScopeType == SubscriptionScope.Guardianship && intent.ScopeId is not null)
             {
                 await this.paymentIntentService.AttachGuardianshipAsync(
-                    orderId,
-                    targetEntityId.Value,
+                    intent.ExternalOrderId,
+                    intent.ScopeId.Value,
                     cancellationToken);
             }
 
-            // recurring logic
+            // Recurring logic FIX
             if (isRecurring)
             {
-                var providerIdToSearch = !string.IsNullOrWhiteSpace(providerSubscriptionId)
-                    ? providerSubscriptionId
-                    : orderId;
+                var lookupId =
+                    providerSubscriptionId
+                    ?? intent.SubscriptionId?.ToString()
+                    ?? intent.ExternalOrderId;
 
-                var subscription = await this.paymentService
-                    .FindSubscriptionByProviderIdAsync(providerIdToSearch, cancellationToken);
+                var subscription =
+                    await this.paymentService.FindSubscriptionByProviderIdAsync(lookupId, cancellationToken);
 
                 if (subscription is not null)
                 {
                     subscription.MarkCharged(DateTime.UtcNow);
-                    subscription.SetNextCharge(nextChargeUtc);
+                    subscription.SetNextCharge(nextCharge);
 
                     await this.paymentService.UpdateSubscriptionAsync(subscription, cancellationToken);
 
                     this.logger.LogInformation(
-                        "Updated subscription {Id}: LastChargeAt={Last}, NextChargeAt={Next}",
+                        "Subscription updated: Id={Id}, NextCharge={NextCharge}",
                         subscription.Id,
-                        subscription.LastChargeAt,
                         subscription.NextChargeAt);
                 }
                 else
                 {
                     this.logger.LogWarning(
-                        "Recurring payment received but subscription not found. ProviderSubscriptionId={Id}",
-                        providerSubscriptionId);
+                        "Recurring payment, but subscription not found. Lookup={Lookup}",
+                        lookupId);
                 }
             }
 
             return true;
         }
 
-        // FAILURE
+        // 9. FAILURE
         if (isFailure)
         {
-            this.logger.LogWarning(
-                "FAILED payment. Scope={Scope} ScopeId={ScopeId} Tx={Tx}",
-                targetEntity,
-                targetEntityId,
-                transactionId);
-
-            await this.paymentIntentService.MarkFailedAsync(orderId, cancellationToken);
+            await this.paymentIntentService.MarkFailedAsync(intent.ExternalOrderId, cancellationToken);
 
             await this.paymentService.RecordChargeFailedAsync(
                 provider: "LiqPay",
                 transactionId: transactionId,
                 amount: amount,
                 currency: currency,
-                targetEntity: targetEntity,
+                targetEntity: targetEntity!,
                 targetEntityId: targetEntityId,
                 recurring: isRecurring,
                 anonymous: anonymous,
@@ -322,11 +274,11 @@ public sealed class LiqPayService : ILiqPayService
             return true;
         }
 
-        // NON-FINAL
+        // 10. NON-FINAL STATUS
         this.logger.LogInformation(
-            "Non-final LiqPay status '{Status}' for order {OrderId}",
+            "Ignoring non-final LiqPay status={Status} for order={Order}",
             status,
-            orderId);
+            internalOrderId);
 
         return true;
     }
