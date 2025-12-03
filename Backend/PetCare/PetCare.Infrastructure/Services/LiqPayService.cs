@@ -160,6 +160,10 @@ public sealed class LiqPayService : ILiqPayService
             rawScopeId = scopeIdProp.GetString();
             this.logger.LogInformation("Received scopeId from callback: {ScopeIdRaw}", rawScopeId);
         }
+        else if (root.TryGetProperty("scope_id", out var scopeIdSnake))
+        {
+            rawScopeId = scopeIdSnake.GetString();
+        }
 
         // 3. Парсимо наш composite order_id
         var parsed = ParseCompositeOrderId(orderId);
