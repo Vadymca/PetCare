@@ -126,25 +126,11 @@ public sealed class LiqPayService : ILiqPayService
             intent.ScopeId);
 
         // 4. Extract payment info
-        var targetEntity = intent.ScopeType?.ToString();
+        var targetEntity = intent.ScopeType?.ToString() ?? "Global";
         var targetEntityId = intent.ScopeId;
         bool isRecurring = intent.IsRecurring;
         Guid? userId = intent.UserId;
         bool anonymous = intent.Anonymous;
-
-        var parsed = ParseCompositeOrderId(intent.ExternalOrderId);
-
-        // Composite format overrides fallback fields
-        if (parsed is not null)
-        {
-            var (entity, entityId, recurring, user, anon) = parsed.Value;
-
-            targetEntity = entity;
-            targetEntityId ??= entityId;
-            isRecurring = recurring;
-            userId ??= user;
-            anonymous = anon;
-        }
 
         // 5. Parse amount, currency, transaction ids
         var amount = root.TryGetProperty("amount", out var amEl) && amEl.ValueKind == JsonValueKind.Number
