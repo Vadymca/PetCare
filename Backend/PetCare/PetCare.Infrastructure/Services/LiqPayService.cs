@@ -125,17 +125,14 @@ public sealed class LiqPayService : ILiqPayService
             intent.ScopeType,
             intent.ScopeId);
 
-        // 4. Extract final internal composite order_id
-        var internalOrderId = intent.ExternalOrderId;
-
-        var parsed = ParseCompositeOrderId(internalOrderId);
-
-        // Default values
+        // 4. Extract payment info
         var targetEntity = intent.ScopeType?.ToString();
         var targetEntityId = intent.ScopeId;
         bool isRecurring = intent.IsRecurring;
         Guid? userId = intent.UserId;
         bool anonymous = intent.Anonymous;
+
+        var parsed = ParseCompositeOrderId(intent.ExternalOrderId);
 
         // Composite format overrides fallback fields
         if (parsed is not null)
@@ -161,7 +158,7 @@ public sealed class LiqPayService : ILiqPayService
         var transactionId =
             root.TryGetProperty("transaction_id", out var tx1) ? ReadString(tx1) :
             root.TryGetProperty("payment_id", out var tx2) ? ReadString(tx2) :
-            internalOrderId;
+            intent.ExternalOrderId;
 
         // 6. Recurring specific fields
         DateTime? nextCharge = null;
@@ -221,59 +218,22 @@ public sealed class LiqPayService : ILiqPayService
             }
 
             // Recurring logic FIX
-            if (isRecurring)
+            if (isRecurring && userId.HasValue)
             {
-                // 1. Створюємо donation і підписку всередині RecordChargeSuccessAsync
-                var recurringDonation = await this.paymentService.RecordChargeSuccessAsync(
-                    provider: "LiqPay",
-                    transactionId: transactionId!,
-                    amount: amount,
-                    currency: currency,
-                    targetEntity: targetEntity!,
-                    targetEntityId: targetEntityId,
-                    recurring: true,
-                    anonymous: anonymous,
-                    userId: userId,
-                    cancellationToken: cancellationToken);
+                var providerSubscriptionIdOrLookup = transactionId;
+                var subscription = await this.paymentService.FindSubscriptionByProviderIdAsync(providerSubscriptionIdOrLookup!, cancellationToken);
 
-                // 2. Прив'язуємо donation до PaymentIntent
-                await this.paymentIntentService.AttachDonationAsync(
-                    intent.ExternalOrderId,
-                    recurringDonation.Id,
-                    cancellationToken);
-
-                // 3. Використовуємо transactionId як providerSubscriptionId для пошуку підписки
-                var providerSubscriptionIdOrLookup = providerSubscriptionId
-                    ?? intent.SubscriptionId?.ToString()
-                    ?? transactionId;
-
-                var subscription = await this.paymentService.FindSubscriptionByProviderIdAsync(
-                    providerSubscriptionIdOrLookup!,
-                    cancellationToken);
-
-                if (subscription is null)
+                if (subscription is not null)
                 {
-                    // Підписка має бути створена всередині RecordChargeSuccessAsync. Якщо немає — логування.
-                    this.logger.LogWarning(
-                        "Recurring payment, but subscription not found. It should have been created inside RecordChargeSuccessAsync. Lookup={Lookup}",
-                        providerSubscriptionIdOrLookup);
-                }
-                else
-                {
-                    // 4. Оновлюємо дату наступної оплати
-                    subscription.SetNextCharge(nextCharge);
-                    await this.paymentService.UpdateSubscriptionAsync(subscription, cancellationToken);
+                    // Оновлюємо дату наступного платежу
+                    if (nextCharge.HasValue)
+                    {
+                        subscription.SetNextCharge(nextCharge);
+                        await this.paymentService.UpdateSubscriptionAsync(subscription, cancellationToken);
+                    }
 
-                    // 5. Прив'язуємо підписку до PaymentIntent
-                    await this.paymentIntentService.AttachSubscriptionAsync(
-                        intent.ExternalOrderId,
-                        subscription.Id,
-                        cancellationToken);
-
-                    this.logger.LogInformation(
-                        "Subscription processed and attached: Id={Id}, NextCharge={NextCharge}",
-                        subscription.Id,
-                        subscription.NextChargeAt);
+                    // Прив’язуємо підписку до PaymentIntent
+                    await this.paymentIntentService.AttachSubscriptionAsync(intent.ExternalOrderId, subscription.Id, cancellationToken);
                 }
             }
 
@@ -304,7 +264,7 @@ public sealed class LiqPayService : ILiqPayService
         this.logger.LogInformation(
             "Ignoring non-final LiqPay status={Status} for order={Order}",
             status,
-            internalOrderId);
+            intent.ExternalOrderId);
 
         return true;
     }
