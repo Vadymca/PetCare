@@ -221,33 +221,51 @@ public sealed class LiqPayService : ILiqPayService
             }
 
             // Recurring logic FIX
-            if (isRecurring)
+            if (isRecurring && userId.HasValue)
             {
-                var lookupId =
-                    providerSubscriptionId
-                    ?? intent.SubscriptionId?.ToString()
-                    ?? intent.ExternalOrderId;
+                // Передаємо providerSubscriptionId у RecordChargeSuccessAsync
+                var recurringDonation = await this.paymentService.RecordChargeSuccessAsync(
+                    provider: "LiqPay",
+                    transactionId: transactionId!,
+                    amount: amount,
+                    currency: currency,
+                    targetEntity: targetEntity!,
+                    targetEntityId: targetEntityId,
+                    recurring: true,
+                    anonymous: anonymous,
+                    userId: userId,
+                    cancellationToken: cancellationToken);
 
-                var subscription =
-                    await this.paymentService.FindSubscriptionByProviderIdAsync(lookupId, cancellationToken);
+                // Прив'язуємо donation до PaymentIntent
+                await this.paymentIntentService.AttachDonationAsync(
+                    intent.ExternalOrderId,
+                    recurringDonation.Id,
+                    cancellationToken);
 
-                if (subscription is not null)
+                // Знайдемо існуючу підписку по providerSubscriptionId або створимо нову всередині RecordChargeSuccessAsync
+                var lookupId = providerSubscriptionId ?? intent.SubscriptionId?.ToString() ?? intent.ExternalOrderId;
+
+                var subscription = await this.paymentService.FindSubscriptionByProviderIdAsync(lookupId, cancellationToken);
+
+                if (subscription is null)
                 {
-                    subscription.MarkCharged(DateTime.UtcNow);
-                    subscription.SetNextCharge(nextCharge);
-
-                    await this.paymentService.UpdateSubscriptionAsync(subscription, cancellationToken);
-
-                    this.logger.LogInformation(
-                        "Subscription updated: Id={Id}, NextCharge={NextCharge}",
-                        subscription.Id,
-                        subscription.NextChargeAt);
+                    this.logger.LogWarning(
+                        "Recurring payment, but subscription not found. It should have been created inside RecordChargeSuccessAsync. Lookup={Lookup}",
+                        lookupId);
                 }
                 else
                 {
-                    this.logger.LogWarning(
-                        "Recurring payment, but subscription not found. Lookup={Lookup}",
-                        lookupId);
+                    // Оновлюємо дату наступної оплати
+                    subscription.SetNextCharge(nextCharge);
+                    await this.paymentService.UpdateSubscriptionAsync(subscription, cancellationToken);
+
+                    // Прив'язуємо підписку до PaymentIntent
+                    await this.paymentIntentService.AttachSubscriptionAsync(intent.ExternalOrderId, subscription.Id, cancellationToken);
+
+                    this.logger.LogInformation(
+                        "Subscription processed: Id={Id}, NextCharge={NextCharge}",
+                        subscription.Id,
+                        subscription.NextChargeAt);
                 }
             }
 
