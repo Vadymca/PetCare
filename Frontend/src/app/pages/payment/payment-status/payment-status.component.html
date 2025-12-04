@@ -1,0 +1,128 @@
+<div
+  class="flex flex-col justify-center items-center bg-primary-lightBlue h-[100vh] w-full"
+>
+  @if (!isLoading()) {
+    @if (paymentStatus(); as data) {
+      <div class="mt-8 flex flex-col px-[50px] items-center">
+        <div
+          class="flex-1 flex justify-center items-center w-ful h-full text-primary-beige"
+        >
+          @if (data.status === 'success' || data.status === 'pending') {
+            <app-icon [name]="'logoCheerful'"></app-icon>
+          } @else {
+            <app-icon [name]="'logoFailure'"></app-icon>
+          }
+        </div>
+
+        <h2
+          class="font-fixel text-[24px] font-bold text-center mt-10"
+          style="font-size: clamp(16px, 6.5vw, 24px)"
+        >
+          @if (data.status === 'success') {
+            {{ 'PAYMENT_SUCCESS_TITLE' | translate }}
+          }
+          @if (data.status === 'pending') {
+            {{ 'PAYMENT_PENDING_TITLE' | translate }}
+          }
+          @if (data.status === 'failure') {
+            {{ 'PAYMENT_FAILURE_TITLE' | translate }}
+          }
+        </h2>
+        <p
+          class="text-sm text-secondary-neutral-mineShaft mt-5 leading-snug text-center"
+        >
+          @if (data.status === 'failure') {
+            {{ 'PAYMENT_FAILURE_DESCRIPTION' | translate }}
+          }
+          @if (data.scope === 'guardianship' && data.status === 'success') {
+            {{ 'PAYMENT_SUCCESS_DESCRIPTION_GUARDIANSHIP' | translate }}
+          }
+          @if (data.scope === 'guardianship' && data.status === 'pending') {
+            {{ 'PAYMENT_PENDING_DESCRIPTION_GUARDIANSHIP' | translate }}
+          }
+          @if (data.scope !== 'guardianship' && data.status === 'success') {
+            {{ 'PAYMENT_SUCCESS_DESCRIPTION_GLOBAL' | translate }}
+          }
+          @if (data.scope !== 'guardianship' && data.status === 'pending') {
+            {{ 'PAYMENT_SUCCESS_DESCRIPTION_GLOBAL' | translate }}
+          }
+        </p>
+        @if (
+          data.scope === 'guardianship' &&
+          (data.status === 'success' || data.status === 'pending')
+        ) {
+          <div
+            class="flex flex-col items-center justify-center rounded-40 bg-primary-beige lg:w-[600px] p-2 mt-8"
+          >
+            @if (data.guardianship && data.guardianship.animalName) {
+              <p class="flex">
+                {{ 'NEW_GUARDIANSHIP' | translate | uppercase }} -
+                {{ data.guardianship.animalName | uppercase }}
+              </p>
+              <p class="flex">
+                {{ 'CARE_PRICE' | translate | uppercase }} -
+                {{ data?.donation?.amount }}
+                {{ 'MONTLY' | translate }}
+              </p>
+            }
+
+            <!-- Додати абзац з даними про опіку -->
+          </div>
+        }
+        <div class="flex flex-col items-center justify-center mt-8">
+          @if (data.scope === 'guardianship') {
+            <app-primary-large-button
+              class="w-[260px]"
+              buttonTitle="TO_MY_GUARDIANSHIPS"
+              (pressButton)="goToGuardianships()"
+            ></app-primary-large-button>
+          }
+          @if (data.scope === 'aidRequest') {
+            <app-primary-large-button
+              class="w-[260px]"
+              buttonTitle="HOME"
+              (pressButton)="goToProjects()"
+            ></app-primary-large-button>
+          }
+          @if (data.scope === 'global') {
+            <app-primary-large-button
+              class="w-[260px]"
+              buttonTitle="HELP_MORE"
+              (pressButton)="goToDonations()"
+            ></app-primary-large-button>
+          }
+        </div>
+      </div>
+    }
+    @if (isError()) {
+      <div
+        class="flex-1 flex justify-center items-center w-ful h-full text-primary-beige"
+      >
+        <app-icon [name]="'logoFailure'"></app-icon>
+      </div>
+
+      <h2
+        class="font-fixel text-[24px] font-bold text-center mt-10"
+        style="font-size: clamp(16px, 6.5vw, 24px)"
+      >
+        {{ 'PAYMENT_FAILURE_TITLE' | translate }}
+      </h2>
+      <p
+        class="text-sm text-secondary-neutral-mineShaft mt-5 leading-snug text-center"
+      >
+        {{ 'PAYMENT_FAILURE_DESCRIPTION' | translate }}
+      </p>
+      <div class="flex flex-col items-center justify-center mt-10">
+        <app-primary-large-button
+          class="w-[260px]"
+          buttonTitle="HELP_MORE"
+          (pressButton)="goToDonations()"
+        ></app-primary-large-button>
+      </div>
+    }
+  } @else {
+    <div class="text-center text-gray-500 text-lg mt-10">
+      <app-loading-spinner></app-loading-spinner>
+    </div>
+  }
+</div>

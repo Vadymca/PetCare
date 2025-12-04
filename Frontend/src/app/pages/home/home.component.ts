@@ -15,7 +15,9 @@ import {
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { filter, Subscription, take } from 'rxjs';
+import { PaymentScope } from '../../core/models/liqPayCheckoutRequest';
 import { AuthService } from '../../core/services/auth.service';
+import { LiqPayService } from '../../core/services/liq-pay-service.service';
 import { ModalService } from '../../core/services/modal.service';
 import { animateCounter } from '../../shared/animation/counter-animation';
 import { AnimalsPreviewComponent } from '../../shared/components/animals-preview/animals-preview.component';
@@ -267,9 +269,9 @@ export class HomeComponent implements AfterViewInit, OnDestroy, OnInit {
   onSupportClick() {
     this.router.navigate(['/support']);
   }
-  onTempClick() {
-    this.router.navigate(['/public-offer']);
-  }
+  // onTempClick() {
+  //   this.router.navigate(['/public-offer']);
+  // }
   onDownloadMonthlyReportClick() {
     const month = new Date().getMonth();
     const year = new Date().getFullYear();
@@ -303,5 +305,35 @@ export class HomeComponent implements AfterViewInit, OnDestroy, OnInit {
   }
   onAboutUsClick() {
     this.router.navigate(['/about']);
+  }
+  //по платежах
+  private selectedAmount: number | null = null;
+  private isRecurring = false;
+  private liqPay = inject(LiqPayService);
+
+  onSelectionConfirmed(selection: { amount: number; isOnce: boolean }) {
+    this.selectedAmount = selection.amount;
+    this.isRecurring = !selection.isOnce;
+    if (this.selectedAmount !== null) {
+      this.startGlobalPayment();
+    } else {
+      console.warn('Selected amount is null');
+    }
+  }
+
+  private startGlobalPayment() {
+    // Очищаємо старий контекст + записуємо новий глобальний
+    this.liqPay.startPayment({
+      scope: 'global' as PaymentScope,
+      amount: this.selectedAmount!,
+      isRecurring: this.isRecurring,
+      description: this.isRecurring
+        ? 'Щомісячна підтримка притулку'
+        : 'Разова підтримка притулку',
+    });
+
+    // Переходимо до форми з контактами
+    //поміняти потім
+    this.router.navigate(['/payment/details']);
   }
 }

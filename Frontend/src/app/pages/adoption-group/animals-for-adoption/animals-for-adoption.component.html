@@ -11,7 +11,7 @@
   <div
     class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-[68px] w-full px-4 justify-center justify-items-center mt-10 mx-[50px]"
   >
-    @for (animal of animals; track animal.id) {
+    @for (animal of displayedAnimals(); track animal.id) {
       <app-animal-card
         [animal]="animal"
         (animalDetailClick)="onAnimalDetailClick(animal)"

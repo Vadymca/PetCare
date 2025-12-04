@@ -52,9 +52,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import(
         './pages/adoption-group/adoption-rules/adoption-rules.component'
-      ).then(
-        c => c.AdoptionRulesComponent // c.AdoptionRul
-      ),
+      ).then(c => c.AdoptionRulesComponent),
   },
   {
     path: 'volunteer-application-confirmation',
@@ -86,6 +84,13 @@ export const routes: Routes = [
       import(
         './features/shelters/shelter-detail/shelter-detail.component'
       ).then(c => c.ShelterDetailComponent),
+  },
+  {
+    path: 'shelters/:slug/animals',
+    loadComponent: () =>
+      import(
+        './features/shelters/shelter-animals/shelter-animals.component'
+      ).then(c => c.ShelterAnimalsComponent),
   },
 
   {
@@ -123,13 +128,13 @@ export const routes: Routes = [
         c => c.AdoptionComponent
       ),
   },
-  {
-    path: 'lost-pets',
-    loadComponent: () =>
-      import(
-        './features/lost-pets/lost-pets-list/lost-pets-list.component'
-      ).then(c => c.LostPetsListComponent),
-  },
+  // {
+  //   path: 'lost-pets',
+  //   loadComponent: () =>
+  //     import(
+  //       './features/lost-pets/lost-pets-list/lost-pets-list.component'
+  //     ).then(c => c.LostPetsListComponent),
+  // },
   {
     path: 'lost-pets/:slug',
     loadComponent: () =>
@@ -151,23 +156,20 @@ export const routes: Routes = [
         './features/animal-aid-request/animal-aid-request-detail/animal-aid-request-detail.component'
       ).then(c => c.AnimalAidRequestDetailComponent),
   },
-
-  // {
-  //   path: 'user-profile',
-  //   canActivate: [authGuard],
-  //   loadComponent: () =>
-  //     import('./pages/user-account/user-profile/user-profile.component').then(
-  //       c => c.UserProfileComponent
-  //     ),
-
-  //   data: { roles: ['Admin'] }, // хто може, крім власника
-  // },
   {
     path: 'profile',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/user-account/profile/profile.component').then(
         c => c.ProfileComponent
+      ),
+  },
+  {
+    path: 'favorites',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/favorites/favorites.component').then(
+        c => c.FavoritesComponent
       ),
   },
   {
@@ -240,7 +242,40 @@ export const routes: Routes = [
         m => m.FeedbackFormComponent
       ),
   },
-
+  {
+    path: 'payment', // /payment
+    redirectTo: 'payment/amount',
+    pathMatch: 'full',
+  },
+  {
+    path: 'payment/amount',
+    loadComponent: () =>
+      import('./pages/payment/payment-amount/payment-amount.component').then(
+        m => m.PaymentAmountComponent
+      ),
+  },
+  {
+    path: 'payment/details',
+    loadComponent: () =>
+      import('./pages/payment/payment-details/payment-details.component').then(
+        m => m.PaymentDetailsComponent
+      ),
+  },
+  {
+    path: 'payment-status',
+    loadComponent: () =>
+      import('./pages/payment/payment-status/payment-status.component').then(
+        m => m.PaymentStatusComponent
+      ),
+  },
+  {
+    path: 'guardianships',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/guardianships/guardianships.component').then(
+        m => m.GuardianshipsComponent
+      ),
+  },
   {
     path: 'access-denied',
     loadComponent: () =>
@@ -265,7 +300,9 @@ export const routes: Routes = [
   {
     path: 'team',
     loadComponent: () =>
-      import('./pages/team-dobrodii/team/team.component').then(c => c.TeamComponent),
+      import('./pages/team-dobrodii/team/team.component').then(
+        c => c.TeamComponent
+      ),
   },
 
   {

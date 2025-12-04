@@ -27,7 +27,7 @@ export class AppComponent implements OnInit {
       .subscribe({
         next: () => console.log('Токен оновлено(app.component)'),
         error: () =>
-          console.error('Помилка при спробі оновлення токена (app.component)'),
+          console.log('Помилка при спробі оновлення токена (app.component)'),
       });
   }
 }

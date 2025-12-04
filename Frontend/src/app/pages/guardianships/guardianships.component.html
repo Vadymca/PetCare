@@ -1,0 +1,61 @@
+<div
+  class="flex items-center flex-col w-full px-6 sm:px-[50px] py-[150px] bg-primary-lightBlue text-secondary-neutral-mineShaft"
+>
+  <div class="inline-flex items-center w-full">
+    <div
+      class="hover:text-primary-orange inline-flex items-center cursor-pointer -translate-y-1/2 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-50"
+      (click)="toProfile()"
+      (keyup.enter)="toProfile()"
+      (keyup.space)="toProfile()"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'BACK' | translate"
+    >
+      <app-icon [name]="'arrowLeft'" class=""></app-icon>
+      <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
+    </div>
+  </div>
+  <h1
+    class="font-display text-[40px] font-bold leading-none text-center w-full sm:px-[50px]"
+    style="font-size: clamp(16px, 6.5vw, 40px)"
+  >
+    {{ 'GUARDIANSHIP_TITLE' | translate }}
+  </h1>
+  @if (guardianships().length > 0) {
+    <p class="max-w-[660px] mt-6">
+      {{ 'FOUND' | translate }}: {{ guardianships().length }}
+    </p>
+    <div class="flex flex-col gap-6 mt-6">
+      @for (g of guardianships(); track g.animal.id) {
+        <app-guardianship-card
+          [guardianship]="g"
+          (toggleFavourite)="toggleFavourite($event)"
+          (adopt)="toAdoption(g.animal.id)"
+          (editPaymentData)="toChangePayment(g)"
+          (deleteGuardianship)="toDeleteGuardianship(g.id)"
+        ></app-guardianship-card>
+      }
+    </div>
+  } @else {
+    <p class="max-w-[660px] text-[24px] font-bold mt-[100px]">
+      {{ 'NO_GUARDIANSHIPS' | translate }}
+    </p>
+    <div class="flex mt-10">
+      <app-primary-large-orange-button
+        class="w-[260px]"
+        buttonTitle="SEE_ALL_ANIMALS"
+        (pressButton)="toAllAnimals()"
+      ></app-primary-large-orange-button>
+    </div>
+  }
+  @if (showModal()) {
+    <div>
+      <app-confirm-modal
+        [text]="'DELETE_GUARDIANSHIP'"
+        [titleSubmit]="'CANCEL_GUARDIANSHIP'"
+        [titleCancel]="'DONT_DELETE_GUARDIANSHIP'"
+        (confirmAction)="toSubmitCancel($event)"
+      ></app-confirm-modal>
+    </div>
+  }
+</div>

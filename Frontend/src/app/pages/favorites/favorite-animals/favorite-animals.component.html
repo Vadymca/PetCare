@@ -1,0 +1,28 @@
+<div class="flex flex-col items-center p-5 sm:px-[50px] pt-10">
+  @if (animals().length === 0) {
+    <div class="text-[16px] mb-3 text-inter">
+      {{ 'NO_FAVORITE_ANIMALS' | translate }}
+    </div>
+  }
+  <div
+    class="grid grid-cols-1 gap-5 w-full text-secondary-neutral-mineShaft"
+    [ngClass]="{
+      'md:grid-cols-2': animals().length > 1,
+      'xl:grid-cols-3': animals().length === 3,
+      'xl:grid-cols-4': animals().length > 3,
+    }"
+  >
+    @for (animal of animals(); track animal.id) {
+      <app-animal-card
+        [animal]="animal"
+        (animalDetailClick)="onAnimalDetailClick(animal)"
+        (heartClick)="onHeartClick(animal)"
+      ></app-animal-card>
+    }
+  </div>
+  <app-primary-large-button
+    class="mt-[60px] w-[260px]"
+    buttonTitle="SEE_ALL_ANIMALS"
+    (pressButton)="onSeeAllAnimalsClick()"
+  ></app-primary-large-button>
+</div>

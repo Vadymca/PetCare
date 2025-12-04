@@ -1,8 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { catchError, of } from 'rxjs';
 import { Animal } from '../../../core/models/animal';
 import { AnimalSubscriptionService } from '../../../core/services/animal-subscription.service';
 import { AnimalService } from '../../../core/services/animal.service';
@@ -17,127 +23,102 @@ import { PrimaryLargeButtonComponent } from '../../../shared/components/buttons/
   imports: [
     CommonModule,
     TranslateModule,
-
     AnimalCardComponent,
     PrimaryLargeButtonComponent,
   ],
   templateUrl: './animals-for-adoption.component.html',
   styleUrl: './animals-for-adoption.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AnimalsForAdoptionComponent {
-  animals: Animal[] = [];
-  favoriteAnimals = signal<Animal[]>([]); // тварини на які підписаний користувач
+  private router = inject(Router);
+  private authService = inject(AuthService);
+  private authModalService = inject(ModalService);
+  private animalService = inject(AnimalService);
+  private animalSubscriptionService = inject(AnimalSubscriptionService);
 
-  router = inject(Router);
-  authService = inject(AuthService);
-  private user = this.authService._currentUser;
-  authModalService = inject(ModalService);
-  animalService = inject(AnimalService);
-  animalSubscriptionService = inject(AnimalSubscriptionService);
+  // === Дані ===
+  private rawAnimals = signal<Animal[]>([]);
+  private favoriteAnimalIds = signal<Set<string>>(new Set());
+
+  // Головний computed — тварини з актуальним isFavorite
+  displayedAnimals = computed(() => {
+    const favIds = this.favoriteAnimalIds();
+    return this.rawAnimals().map(animal => ({
+      ...animal,
+      isFavorite: favIds.has(animal.id),
+      isChecked: true,
+    }));
+  });
 
   constructor() {
-    this.getAnimals();
+    this.loadAnimals();
 
+    // Завантажуємо улюблені один раз (якщо користувач залогінений)
+    if (this.authService._currentUser()) {
+      this.animalSubscriptionService.getFavoriteAnimals().subscribe(favs => {
+        this.favoriteAnimalIds.set(new Set(favs.map(a => a.id)));
+      });
+    }
+
+    // Реакція на логін/вихід — оновлюємо сердечка
     effect(() => {
-      const currentUser = this.user();
-      if (currentUser) {
-        this.animalSubscriptionService
-          .getFavoriteAnimals()
-          .pipe(
-            catchError(err => {
-              console.error('Error fetching favorite animals:', err);
-              return of([]);
-            })
-          )
-          .subscribe(favorites => {
-            this.favoriteAnimals.set(favorites);
-            this.updateFavorites();
-          });
+      const user = this.authService._currentUser();
+      if (user) {
+        this.animalSubscriptionService.getFavoriteAnimals().subscribe(favs => {
+          this.favoriteAnimalIds.set(new Set(favs.map(a => a.id)));
+        });
       } else {
-        this.favoriteAnimals.set([]);
-        this.updateFavorites();
+        this.favoriteAnimalIds.set(new Set());
       }
     });
   }
 
-  getAnimals() {
+  private loadAnimals() {
     this.animalService
       .getAnimals({
         pageSize: 8,
         statuses: ['Available'],
       })
       .subscribe(result => {
-        const animals = result.animals;
-        this.animals = animals.map(animal => ({
-          ...animal,
-          isChecked: false,
-          isFavorite: false,
-        }));
-        this.updateFavorites();
+        this.rawAnimals.set(result.animals);
       });
   }
 
-  private updateFavorites() {
-    const favorites = this.favoriteAnimals();
-    this.animals.forEach(animal => {
-      animal.isFavorite = !!favorites.find(f => f.id === animal.id);
-      animal.isChecked = true;
-    });
-  }
-
-  onAnimalDetailClick(animal: Animal) {
-    this.router.navigate(['/animals', animal.slug]);
-  }
-
+  // === Сердечко — миттєве ===
   onHeartClick(animal: Animal) {
-    if (!this.user()) {
+    if (!this.authService._currentUser()) {
       this.authModalService.openModal('welcome');
       return;
     }
 
-    if (animal.isFavorite) {
-      this.unsubscribeFromAnimal(animal);
+    const isFavorite = this.favoriteAnimalIds().has(animal.id);
+
+    if (isFavorite) {
+      this.animalSubscriptionService
+        .deleteAnimalSubscription(animal.id)
+        .subscribe({
+          next: () => {
+            this.favoriteAnimalIds.update(set => {
+              const newSet = new Set(set);
+              newSet.delete(animal.id);
+              return newSet;
+            });
+          },
+        });
     } else {
-      this.subscribeToAnimal(animal);
+      this.animalSubscriptionService
+        .createAnimalSubscription(animal.id)
+        .subscribe({
+          next: () => {
+            this.favoriteAnimalIds.update(set => new Set([...set, animal.id]));
+          },
+        });
     }
   }
 
-  unsubscribeFromAnimal(animal: Animal) {
-    animal.isChecked = false;
-    this.animalSubscriptionService
-      .deleteAnimalSubscription(animal.id)
-      .subscribe({
-        next: () => {
-          animal.isFavorite = false;
-          animal.isChecked = true;
-          this.favoriteAnimals.update(all =>
-            all.filter(a => a.id !== animal.id)
-          );
-        },
-        error: err => {
-          console.error('Error deleting subscription:', err);
-          animal.isChecked = true;
-        },
-      });
-  }
-
-  subscribeToAnimal(animal: Animal) {
-    if (animal.isFavorite) return;
-    animal.isChecked = false;
-
-    this.animalSubscriptionService
-      .createAnimalSubscription(animal.id)
-      .subscribe({
-        next: () => {
-          animal.isFavorite = true;
-          animal.isChecked = true;
-          this.favoriteAnimals.update(all => [...all, animal]);
-        },
-        error: err => {
-          console.error('Error creating subscription:', err);
-          animal.isChecked = true;
-        },
-      });
+  onAnimalDetailClick(animal: Animal) {
+    this.router.navigate(['/animals', animal.slug]);
   }
 
   onSeeAllAnimalsClick() {

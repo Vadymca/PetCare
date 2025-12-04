@@ -9,8 +9,8 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { catchError, of } from 'rxjs';
 import { Animal } from '../../../core/models/animal';
+import { AnimalFiltersDto } from '../../../core/models/animalFiltersDto';
 import { AnimalSubscriptionService } from '../../../core/services/animal-subscription.service';
 import { AnimalService } from '../../../core/services/animal.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -20,21 +20,6 @@ import { MultiSelectDropdownComponent } from '../../../shared/components/multi-s
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { AnimalCardComponent } from '../animal-card/animal-card.component';
 
-interface AnimalFilters {
-  page?: number;
-  pageSize?: number;
-  genders?: string;
-  sizes?: string[];
-  statuses?: string[];
-  isSterilized?: boolean;
-  isUndercare?: boolean;
-  minAge?: number;
-  maxAge?: number;
-  careCosts?: string[];
-  animalTypeFilter?: string;
-}
-
-// Типи
 type SexOption = 'BOY' | 'GIRL';
 type SizeOption = 'SMALL' | 'MEDIUM' | 'MEDIUM_PLUS' | 'BIG';
 type AgeOption = 'UP_TO_1' | '1_TO_5' | '5_OR_MORE';
@@ -64,7 +49,7 @@ export class AnimalListComponent {
   private authModalService = inject(ModalService);
   private animalSubscriptionService = inject(AnimalSubscriptionService);
 
-  // === Сигнали ===
+  // === Фільтри ===
   currentPage = signal(1);
   selectedSexOptions = signal<SexOption[]>([]);
   selectedSizeOptions = signal<SizeOption[]>([]);
@@ -73,34 +58,37 @@ export class AnimalListComponent {
   selectedSpeciesOptions = signal<SpeciesOption>('ALL_SPECIES');
   sterelisationOptions = signal(true);
   availableForCareOptions = signal(true);
-
-  // === Дані ===
-  animals = signal<Animal[]>([]);
-  totalCount = signal(0);
-  favoriteAnimals = signal<Animal[]>([]);
   filtersOpen = signal(true);
 
-  // === Константи ===
+  // === Дані ===
+  private rawAnimals = signal<Animal[]>([]);
+  private favoriteAnimalIds = signal<Set<string>>(new Set<string>());
+  totalCount = signal(0);
+
   readonly pageSize = 16;
+
   readonly sexOptions = ['BOY', 'GIRL'] as const;
   readonly sizeOptions = ['SMALL', 'MEDIUM', 'MEDIUM_PLUS', 'BIG'] as const;
   readonly ageOptions = ['UP_TO_1', '1_TO_5', '5_OR_MORE'] as const;
   readonly costOptions = ['600', '700', '1000', '1300', '2000'] as const;
-  readonly animalSpecies = [
-    'CAT',
-    'DOG',
-    'OTHER_SPECIES',
-    'ALL_SPECIES',
-  ] as const;
+
+  sexOptionsSignal = computed(() => [...this.sexOptions]);
   sizeOptionsSignal = computed(() => [...this.sizeOptions]);
   ageOptionsSignal = computed(() => [...this.ageOptions]);
   costOptionsSignal = computed(() => [...this.costOptions]);
-  sexOptionsSignal = computed(() => [...this.sexOptions]);
   totalPages = computed(
     () => Math.ceil(this.totalCount() / this.pageSize) || 1
   );
 
-  // === Мапінг ===
+  displayedAnimals = computed(() => {
+    const favIds = this.favoriteAnimalIds();
+    return this.rawAnimals().map(animal => ({
+      ...animal,
+      isFavorite: favIds.has(animal.id),
+      isChecked: true,
+    }));
+  });
+
   private readonly FILTER_PARAM_MAP = {
     gender: {
       toUrl: (v: SexOption) => (v === 'BOY' ? 'male' : 'female'),
@@ -161,12 +149,17 @@ export class AnimalListComponent {
   } as const;
 
   constructor() {
-    // 1. Завантажити з URL
     this.loadFiltersFromUrl();
 
-    // 2. Ефект: реагує на ВСІ зміни фільтрів
+    // Завантажуємо улюблені один раз при вході
+    if (this.authService._currentUser()) {
+      this.animalSubscriptionService.getFavoriteAnimals().subscribe(favs => {
+        this.favoriteAnimalIds.set(new Set(favs.map(a => a.id)));
+      });
+    }
+
+    // Реакція на зміна будь-якого фільтра
     effect(() => {
-      // Викликаємо всі сигнали — щоб Angular відстежував
       this.currentPage();
       this.selectedSexOptions();
       this.selectedSizeOptions();
@@ -175,34 +168,15 @@ export class AnimalListComponent {
       this.selectedSpeciesOptions();
       this.sterelisationOptions();
       this.availableForCareOptions();
-      console.log('EFFECT TRIGGERED');
 
       this.updateUrl();
-      this.getAnimals();
-    });
-
-    // 3. Ефект: улюблені
-    effect(() => {
-      const user = this.authService._currentUser();
-      if (user) {
-        this.animalSubscriptionService
-          .getFavoriteAnimals()
-          .pipe(catchError(() => of([])))
-          .subscribe(favorites => {
-            this.favoriteAnimals.set(favorites);
-            this.updateFavorites();
-          });
-      } else {
-        this.favoriteAnimals.set([]);
-        this.updateFavorites();
-      }
+      this.fetchAnimals();
     });
   }
 
   private loadFiltersFromUrl() {
     const params = this.route.snapshot.queryParams;
 
-    // Скидання до дефолтів
     this.currentPage.set(1);
     this.selectedSexOptions.set([]);
     this.selectedSizeOptions.set([]);
@@ -252,69 +226,69 @@ export class AnimalListComponent {
       );
     }
 
-    if (params['sterilized'] === 'true') this.sterelisationOptions.set(true);
-    else this.sterelisationOptions.set(false);
+    if (params['sterilized'] !== undefined) {
+      this.sterelisationOptions.set(params['sterilized'] !== 'false');
+    }
 
-    if (params['undercare'] === 'false') this.availableForCareOptions.set(true);
-    else this.availableForCareOptions.set(false);
+    if (params['undercare'] !== undefined) {
+      this.availableForCareOptions.set(params['undercare'] === 'false');
+    }
 
-    const page = parseInt(params['page'], 10);
+    const page = parseInt(params['page'] || '1', 10);
     if (page > 0) this.currentPage.set(page);
   }
 
   private updateUrl() {
     const params = new URLSearchParams();
 
-    const add = (key: string, value: string) => {
-      if (value) params.set(key, value);
-    };
-
-    // Gender
     const genders = this.selectedSexOptions();
-    if (genders.length > 0 && genders.length < this.sexOptions.length) {
-      const values = genders.map(g => this.FILTER_PARAM_MAP.gender.toUrl(g));
-      add('gender', values.length === 1 ? values[0] : values.join(','));
+    if (genders.length > 0) {
+      params.set(
+        'gender',
+        genders.map(g => this.FILTER_PARAM_MAP.gender.toUrl(g)).join(',')
+      );
     }
 
-    // Size
     const sizes = this.selectedSizeOptions();
-    if (sizes.length > 0 && sizes.length < this.sizeOptions.length) {
-      add(
+    if (sizes.length > 0) {
+      params.set(
         'size',
         sizes.map(s => this.FILTER_PARAM_MAP.size.toUrl(s)).join(',')
       );
     }
 
-    // Age
     const ages = this.selectedAgeOptions();
-    if (ages.length > 0 && ages.length < this.ageOptions.length) {
-      add('age', ages.map(a => this.FILTER_PARAM_MAP.age.toUrl(a)).join(','));
+    if (ages.length > 0) {
+      params.set(
+        'age',
+        ages.map(a => this.FILTER_PARAM_MAP.age.toUrl(a)).join(',')
+      );
     }
 
-    // Cost
     const costs = this.selectedCostOptions();
-    if (costs.length > 0 && costs.length < this.costOptions.length) {
-      add('cost', costs.join(','));
+    if (costs.length > 0) {
+      params.set('cost', costs.join(','));
     }
 
-    // Species
     if (this.selectedSpeciesOptions() !== 'ALL_SPECIES') {
-      add(
+      params.set(
         'species',
         this.FILTER_PARAM_MAP.species.toUrl(this.selectedSpeciesOptions())
       );
     }
 
-    // Sterilized
-    if (this.sterelisationOptions()) add('sterilized', 'true');
+    if (!this.sterelisationOptions()) {
+      params.set('sterilized', 'false');
+    }
 
-    // Undercare
-    if (this.availableForCareOptions()) add('undercare', 'false');
+    if (!this.availableForCareOptions()) {
+      params.set('undercare', 'true');
+    }
 
-    // Page
-    if (this.currentPage() > 1) add('page', this.currentPage().toString());
+    if (this.currentPage() > 1) {
+      params.set('page', this.currentPage().toString());
+    }
 
-    // Оновлення URL
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: Object.fromEntries(params),
@@ -323,35 +297,61 @@ export class AnimalListComponent {
     });
   }
 
-  private getAnimals() {
-    const filters: Partial<AnimalFilters> = {
+  private fetchAnimals() {
+    const filters: AnimalFiltersDto = {
       page: this.currentPage(),
       pageSize: this.pageSize,
-      statuses: ['Available', 'Reserved', 'InTreatment'],
+      statuses: ['Available', 'InTreatment', 'Reserved'],
     };
 
-    const genders = this.selectedSexOptions();
-    if (genders.length > 0 && genders.length < this.sexOptions.length) {
-      const mapped = genders.map(g => (g === 'BOY' ? 'male' : 'female'));
-      filters.genders = mapped.length === 1 ? mapped[0] : mapped.join(',');
+    if (this.selectedSexOptions().length) {
+      filters.genders = this.selectedSexOptions().map(g =>
+        g === 'BOY' ? 'male' : 'female'
+      );
     }
 
-    const sizes = this.selectedSizeOptions();
-    if (sizes.length > 0 && sizes.length < this.sizeOptions.length) {
+    if (this.selectedSizeOptions().length) {
       const map: Record<SizeOption, string> = {
-        SMALL: 'Small',
-        MEDIUM: 'Medium',
-        MEDIUM_PLUS: 'MediumPlus',
-        BIG: 'Large',
+        SMALL: 'small',
+        MEDIUM: 'medium',
+        MEDIUM_PLUS: 'mediumPlus',
+        BIG: 'large',
       };
-      filters.sizes = sizes.map(s => map[s]);
+      filters.sizes = this.selectedSizeOptions().map(s => map[s]);
     }
 
-    const ageRanges = this.selectedAgeOptions();
-    if (ageRanges.length > 0 && ageRanges.length < this.ageOptions.length) {
+    if (this.selectedCostOptions().length) {
+      const map: Record<CostOption, string> = {
+        '600': 'sixHundred',
+        '700': 'sevenHundred',
+        '1000': 'oneThousand',
+        '1300': 'oneThousandThreeHundred',
+        '2000': 'twoThousand',
+      };
+      filters.careCosts = this.selectedCostOptions().map(c => map[c]);
+    }
+
+    if (this.selectedSpeciesOptions() !== 'ALL_SPECIES') {
+      filters.animalTypeFilter =
+        this.selectedSpeciesOptions() === 'CAT'
+          ? 'cats'
+          : this.selectedSpeciesOptions() === 'DOG'
+            ? 'dogs'
+            : 'others';
+    }
+
+    if (this.sterelisationOptions()) {
+      filters.isSterilized = true;
+    }
+
+    if (this.availableForCareOptions()) {
+      filters.isUndercare = false;
+    }
+
+    if (this.selectedAgeOptions().length) {
       const mins: number[] = [];
       const maxs: number[] = [];
-      ageRanges.forEach(r => {
+      this.selectedAgeOptions().forEach(r => {
         if (r === 'UP_TO_1') {
           mins.push(0);
           maxs.push(1);
@@ -363,166 +363,108 @@ export class AnimalListComponent {
           maxs.push(400);
         }
       });
-      if (
-        !(
-          ageRanges.includes('UP_TO_1') &&
-          ageRanges.includes('5_OR_MORE') &&
-          !ageRanges.includes('1_TO_5')
-        )
-      ) {
-        filters.minAge = Math.min(...mins);
-        filters.maxAge = Math.max(...maxs);
-      }
-    }
-
-    const costs = this.selectedCostOptions();
-    if (costs.length > 0 && costs.length < this.costOptions.length) {
-      const map: Record<CostOption, string> = {
-        '600': 'SixHundred',
-        '700': 'SevenHundred',
-        '1000': 'OneThousand',
-        '1300': 'OneThousandThreeHundred',
-        '2000': 'TwoThousand',
-      };
-      filters.careCosts = costs.map(c => map[c]);
-    }
-
-    if (this.sterelisationOptions()) filters.isSterilized = true;
-    if (this.availableForCareOptions()) filters.isUndercare = false;
-
-    const species = this.selectedSpeciesOptions();
-    if (species !== 'ALL_SPECIES') {
-      filters.animalTypeFilter =
-        species === 'CAT' ? 'cats' : species === 'DOG' ? 'dogs' : 'others';
+      filters.minAge = Math.min(...mins);
+      filters.maxAge = Math.max(...maxs);
     }
 
     this.animalService.getAnimals(filters).subscribe(result => {
       this.totalCount.set(result.totalCount);
-      this.animals.set(
-        result.animals.map(a => ({
-          ...a,
-          isChecked: false,
-          isFavorite: false,
-        }))
-      );
-      this.updateFavorites();
+      this.rawAnimals.set(result.animals);
     });
   }
 
-  private updateFavorites() {
-    const favorites = this.favoriteAnimals();
-    this.animals.update(animals =>
-      animals.map(animal => ({
-        ...animal,
-        isChecked: true,
-        isFavorite: !!favorites.find(f => f.id === animal.id),
-      }))
-    );
-  }
-
-  // === UI ===
-  setPage(page: number) {
-    this.currentPage.set(page);
-  }
-
-  onSelectionCostChange($event: string[]) {
-    const typed = $event as CostOption[];
-    this.selectedCostOptions.set(typed);
-  }
-
-  onSelectionAgeChange($event: string[]) {
-    const typed = $event as AgeOption[];
-    this.selectedAgeOptions.set(typed);
-  }
-
-  onSelectionSexChange($event: string[]) {
-    const typed = $event as SexOption[];
-    this.selectedSexOptions.set(typed);
-  }
-
-  onSelectionSizeChange($event: string[]) {
-    const typed = $event as SizeOption[];
-    this.selectedSizeOptions.set(typed);
-  }
-
-  toggleSterilisationOption() {
-    this.sterelisationOptions.update(v => !v);
-  }
-
-  toggleAvailableForCareOption() {
-    this.availableForCareOptions.update(v => !v);
-  }
-
-  onCatsFilterClick() {
-    this.selectedSpeciesOptions.set('CAT');
-  }
-  onDogsFilterClick() {
-    this.selectedSpeciesOptions.set('DOG');
-  }
-  onOtherSpeciesFilterClick() {
-    this.selectedSpeciesOptions.set('OTHER_SPECIES');
-  }
-  onAllAnimalsFilterClick() {
-    this.selectedSpeciesOptions.set('ALL_SPECIES');
-  }
-
-  toggleFilters() {
-    this.filtersOpen.update(v => !v);
-  }
-
-  onAnimalDetailClick(animal: Animal) {
-    this.router.navigate(['/animals', animal.slug]);
-  }
-
+  // === Сердечко — миттєве, без помилок типів ===
   onHeartClick(animal: Animal) {
     if (!this.authService._currentUser()) {
       this.authModalService.openModal('welcome');
       return;
     }
 
-    if (animal.isFavorite) {
-      this.unsubscribeFromAnimal(animal);
+    const isFavorite = this.favoriteAnimalIds().has(animal.id);
+
+    if (isFavorite) {
+      this.animalSubscriptionService
+        .deleteAnimalSubscription(animal.id)
+        .subscribe({
+          next: () => {
+            this.favoriteAnimalIds.update(set => {
+              const newSet = new Set(set);
+              newSet.delete(animal.id);
+              return newSet;
+            });
+          },
+        });
     } else {
-      this.subscribeToAnimal(animal);
+      this.animalSubscriptionService
+        .createAnimalSubscription(animal.id)
+        .subscribe({
+          next: () => {
+            this.favoriteAnimalIds.update(set => new Set([...set, animal.id]));
+          },
+        });
     }
   }
 
-  private subscribeToAnimal(animal: Animal) {
-    if (animal.isFavorite) return;
-    animal.isChecked = false;
-    this.animalSubscriptionService
-      .createAnimalSubscription(animal.id)
-      .subscribe({
-        next: () => {
-          animal.isFavorite = true;
-          animal.isChecked = true;
-          this.favoriteAnimals.update(all => [...all, animal]);
-        },
-        error: () => {
-          animal.isChecked = true;
-        },
-      });
+  onAnimalDetailClick(animal: Animal) {
+    this.router.navigate(['/animals', animal.slug]);
   }
 
-  private unsubscribeFromAnimal(animal: Animal) {
-    animal.isChecked = false;
-    this.animalSubscriptionService
-      .deleteAnimalSubscription(animal.id)
-      .subscribe({
-        next: () => {
-          animal.isFavorite = false;
-          animal.isChecked = true;
-          this.favoriteAnimals.update(all =>
-            all.filter(a => a.id !== animal.id)
-          );
-        },
-        error: () => {
-          animal.isChecked = true;
-        },
-      });
+  // === Фільтри ===
+  setPage(page: number) {
+    this.currentPage.set(page);
   }
 
-  onSeeAllAnimalsClick() {
-    this.router.navigate(['/animals'], { queryParams: {} });
+  onSelectionCostChange($event: string[]) {
+    this.selectedCostOptions.set($event as CostOption[]);
+    this.currentPage.set(1);
+  }
+
+  onSelectionAgeChange($event: string[]) {
+    this.selectedAgeOptions.set($event as AgeOption[]);
+    this.currentPage.set(1);
+  }
+
+  onSelectionSexChange($event: string[]) {
+    this.selectedSexOptions.set($event as SexOption[]);
+    this.currentPage.set(1);
+  }
+
+  onSelectionSizeChange($event: string[]) {
+    this.selectedSizeOptions.set($event as SizeOption[]);
+    this.currentPage.set(1);
+  }
+
+  toggleSterilisationOption() {
+    this.sterelisationOptions.update(v => !v);
+    this.currentPage.set(1);
+  }
+
+  toggleAvailableForCareOption() {
+    this.availableForCareOptions.update(v => !v);
+    this.currentPage.set(1);
+  }
+
+  onCatsFilterClick() {
+    this.selectedSpeciesOptions.set('CAT');
+    this.currentPage.set(1);
+  }
+
+  onDogsFilterClick() {
+    this.selectedSpeciesOptions.set('DOG');
+    this.currentPage.set(1);
+  }
+
+  onOtherSpeciesFilterClick() {
+    this.selectedSpeciesOptions.set('OTHER_SPECIES');
+    this.currentPage.set(1);
+  }
+
+  onAllAnimalsFilterClick() {
+    this.selectedSpeciesOptions.set('ALL_SPECIES');
+    this.currentPage.set(1);
+  }
+
+  toggleFilters() {
+    this.filtersOpen.update(v => !v);
   }
 }
