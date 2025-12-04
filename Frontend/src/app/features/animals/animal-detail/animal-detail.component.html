@@ -201,7 +201,7 @@
               <app-primary-large-orange-button
                 class="w-[260px]"
                 buttonTitle="TAKE_CARE"
-                (pressButton)="onTakeCare()"
+                (pressButton)="showModal()"
               ></app-primary-large-orange-button>
               <a
                 [routerLink]="['/care-rules']"
@@ -304,3 +304,11 @@
     </div>
   }
 </div>
+@if (showTakeCareModalWindow()) {
+  <app-confirm-modal
+    [text]="'ARE_YOU_SURE_YOU_WANT_TO_PAY_FOR_TAKE_CARE'"
+    [titleCancel]="'CANCEL'"
+    [titleSubmit]="'CONTINUE'"
+    (confirmAction)="onTakeCare($event)"
+  ></app-confirm-modal>
+}

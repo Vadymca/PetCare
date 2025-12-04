@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
-  effect,
   EventEmitter,
   Input,
+  OnInit,
   Output,
   signal,
 } from '@angular/core';
@@ -25,36 +25,58 @@ import { IconComponent } from '../icon.component';
   templateUrl: './financial-support.component.html',
   styleUrl: './financial-support.component.css',
 })
-export class FinancialSupportComponent {
+export class FinancialSupportComponent implements OnInit {
+  @Input() initialSum: number | null = null;
+  @Input() initialIsOnce = true;
   @Input() sums: number[] = [50, 100, 200, 500, 1000];
-  @Output() selectedSum = new EventEmitter<number>();
-  @Output() selectedPeriod = new EventEmitter<boolean>();
-  chosenSum = signal<number | undefined>(undefined);
-  customSum = signal<number | undefined>(undefined);
+  @Output() selectionConfirmed = new EventEmitter<{
+    amount: number;
+    isOnce: boolean; // true = разово, false = щомісяця
+  }>();
+  chosenSum = signal<number | null>(null);
+  customSum = signal<number | null>(null);
   donateOnce = signal(true);
   fb = new FormBuilder();
   registerForm = this.fb.group({
     customSum: ['', [Validators.required]],
   });
+  ngOnInit() {
+    this.donateOnce.set(this.initialIsOnce);
+
+    if (this.initialSum !== null && this.initialSum > 0) {
+      // Якщо сума є в стандартному списку — підсвічуємо кнопку
+      if (this.sums.includes(this.initialSum)) {
+        this.chosenSum.set(this.initialSum);
+        this.customSum.set(null);
+        this.registerForm.patchValue({ customSum: '' });
+      }
+      // Інакше — це кастомна сума → кладемо в інпут
+      else {
+        this.customSum.set(this.initialSum);
+        this.chosenSum.set(null);
+        this.registerForm.patchValue({ customSum: this.initialSum.toString() });
+      }
+    }
+  }
+
   constructor() {
-    this.donateOnce.set(true);
-    effect(() => {
-      // Тут беремо значення форми через signal-обгортку
-      this.registerForm.valueChanges.subscribe(() => {
-        this.customSum.set(
-          parseInt(this.registerForm.value.customSum?.toString() || '0', 10)
-        );
-        if (this.customSum() && this.customSum()! > 0) {
-          this.chosenSum.set(undefined);
-        }
-      });
+    this.registerForm.valueChanges.subscribe(value => {
+      const input = (value.customSum || '').toString().trim();
+      const num = parseInt(input, 10);
+
+      if (!isNaN(num) && num > 0) {
+        this.customSum.set(num);
+        this.chosenSum.set(null);
+      } else {
+        this.customSum.set(null);
+      }
     });
   }
-  
   selectSum(sum: number) {
     this.chosenSum.set(sum);
 
-    this.customSum.set(undefined); // очистити кастомну суму
+    this.customSum.set(null); // очистити кастомну суму
+    this.registerForm.patchValue({ customSum: '' });
   }
   onCustomSumChange() {
     const num = parseInt(
@@ -63,19 +85,21 @@ export class FinancialSupportComponent {
     );
     if (!isNaN(num) && num > 0) {
       this.customSum.set(num);
-      this.chosenSum.set(undefined); // очистити вибрану суму
+      this.chosenSum.set(null); // очистити вибрану суму
     } else {
-      this.customSum.set(undefined);
+      this.customSum.set(null);
     }
   }
 
   onContinueClick() {
-    const sumToSend = this.chosenSum() ?? this.customSum();
+    const amount = this.chosenSum() ?? this.customSum();
 
-    if (sumToSend) {
-      this.selectedSum.emit(sumToSend);
+    if (amount && amount > 0) {
+      this.selectionConfirmed.emit({
+        amount,
+        isOnce: this.donateOnce(), // true = разово
+      });
     }
-    this.selectedPeriod.emit(this.donateOnce());
   }
 
   onDonateMontlyClick() {

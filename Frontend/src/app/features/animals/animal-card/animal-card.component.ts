@@ -1,11 +1,5 @@
 import { CommonModule, LowerCasePipe } from '@angular/common';
-import {
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-  computed,
-} from '@angular/core';
+import { Component, EventEmitter, Output, input } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { Animal } from '../../../core/models/animal';
 import { PrimaryLargeButtonComponent } from '../../../shared/components/buttons/blue/primary-large-button.component';
@@ -27,24 +21,24 @@ import { RoundWhiteBlueButtonWithIconComponent } from '../../../shared/component
   styleUrl: './animal-card.component.css',
 })
 export class AnimalCardComponent {
-  @Input({ required: true }) animal!: Animal;
+  animal = input.required<Animal>();
   @Output() animalDetailClick = new EventEmitter();
   @Output() heartClick = new EventEmitter();
-  readonly isChecked = computed(() => {
-    const checked = this.animal.isChecked;
+  // readonly isChecked = computed(() => {
+  //   const checked = this.animal.isChecked;
 
-    return checked;
-  });
+  //   return checked;
+  // });
 
   onAnimalDetailClick() {
     this.animalDetailClick.emit();
   }
 
   onHeartClick() {
-    this.heartClick.emit(this.animal);
+    this.heartClick.emit(this.animal());
   }
 
   onFilledHeartClick() {
-    this.heartClick.emit(this.animal);
+    this.heartClick.emit(this.animal());
   }
 }

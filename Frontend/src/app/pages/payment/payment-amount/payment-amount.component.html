@@ -1,0 +1,23 @@
+<div
+  class="flex flex-col min-v-[100vh] bg-primary-lightBlue w-full pb-[40px] pt-[130px]"
+>
+  <div class="inline-flex items-center w-full pl-[50px]">
+    <div
+      class="hover:text-primary-orange inline-flex items-center cursor-pointer -translate-y-1/2 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-50"
+      (click)="backBottomClick()"
+      (keyup.enter)="backBottomClick()"
+      (keyup.space)="backBottomClick()"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'BACK' | translate"
+    >
+      <app-icon [name]="'arrowLeft'" class=""></app-icon>
+      <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
+    </div>
+  </div>
+  <app-financial-support
+    [initialSum]="initialSum()"
+    [initialIsOnce]="initialIsOnce()"
+    (selectionConfirmed)="onSelectionConfirmed($event)"
+  ></app-financial-support>
+</div>

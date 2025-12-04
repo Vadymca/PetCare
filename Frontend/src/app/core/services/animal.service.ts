@@ -4,7 +4,7 @@ import { Animal, AnimalListResult } from '../models/animal';
 
 import { ApiService } from './api.service'; // оновлена адреса
 
-import { HttpParams } from '@angular/common/http';
+import { AnimalFiltersDto } from '../models/animalFiltersDto';
 import { BreedService } from './breed.service';
 import { ShelterService } from './shelter.service';
 import { SpeciesService } from './species.service';
@@ -20,17 +20,7 @@ export class AnimalService {
 
   private readonly endpoint = 'animals';
 
-  getAnimalById(id: string): Observable<Animal | undefined> {
-    return this.api.getById<Animal>(this.endpoint, id).pipe(
-      map(animal => {
-        if (!animal) return undefined;
 
-        const age = this.calculateAgeParts(animal.birthday);
-
-        return { ...animal, age } as Animal;
-      })
-    );
-  }
 
   getAnimalBySlug(slug: string): Observable<Animal | undefined> {
     return this.api.getBySlug<Animal>(this.endpoint, slug).pipe(
@@ -44,49 +34,15 @@ export class AnimalService {
     );
   }
 
-  getAnimals(filters?: {
-    page?: number;
-    pageSize?: number;
-    genders?: string;
-    sizes?: string[];
-    statuses?: string[];
-    isSterilized?: boolean;
-    shelterId?: string;
-    specieId?: string;
-    isUndercare?: boolean;
-    minAge?: number;
-    maxAge?: number;
-    careCosts?: string[];
-    animalTypeFilter?: string;
-  }): Observable<AnimalListResult> {
-    let params = new HttpParams();
-
-    if (filters?.page) params = params.set('page', filters.page.toString());
-    if (filters?.pageSize)
-      params = params.set('pageSize', filters.pageSize.toString());
-    if (filters?.genders?.length)
-      params = params.set('genders', filters.genders.toString());
-    if (filters?.sizes?.length)
-      params = params.set('sizes', filters.sizes.join(','));
-    if (filters?.statuses?.length)
-      params = params.set('statuses', filters.statuses.join(','));
-    if (filters?.isSterilized !== undefined)
-      params = params.set('isSterilized', filters.isSterilized.toString());
-    if (filters?.shelterId) params = params.set('shelterId', filters.shelterId);
-    if (filters?.specieId) params = params.set('specieId', filters.specieId);
-    if (filters?.isUndercare !== undefined)
-      params = params.set('isUndercare', filters.isUndercare.toString());
-    if (filters?.minAge !== undefined)
-      params = params.set('minAge', filters.minAge.toString());
-    if (filters?.maxAge !== undefined)
-      params = params.set('maxAge', filters.maxAge.toString());
-    if (filters?.careCosts?.length)
-      params = params.set('careCosts', filters.careCosts.join(','));
-    if (filters?.animalTypeFilter)
-      params = params.set('animalTypeFilter', filters.animalTypeFilter);
+  getAnimals(filters: AnimalFiltersDto): Observable<AnimalListResult> {
+    // clean перед відправкою — видаляємо undefined
+    const payload = this.cleanObject(filters);
 
     return this.api
-      .get<{ animals: Animal[]; totalCount: number }>(this.endpoint, params)
+      .post<{
+        animals: Animal[];
+        totalCount: number;
+      }>(`${this.endpoint}/filter`, payload)
       .pipe(
         map(response => {
           const animals = Array.isArray(response.animals)
@@ -102,7 +58,7 @@ export class AnimalService {
           } as AnimalListResult;
         }),
         tap(result =>
-          console.log('Animals after processing in service:', result)
+          console.log('Animals after processing in service (POST):', result)
         )
       );
   }
@@ -125,5 +81,16 @@ export class AnimalService {
     const years = Math.floor(ageInDays / 365);
     const months = Math.floor((ageInDays % 365) / 30);
     return [years, months];
+  }
+  private cleanObject<T extends object>(obj: T): T {
+    const copy = { ...obj };
+
+    (Object.keys(copy) as (keyof T)[]).forEach(key => {
+      if (copy[key] === undefined) {
+        delete copy[key];
+      }
+    });
+
+    return copy;
   }
 }

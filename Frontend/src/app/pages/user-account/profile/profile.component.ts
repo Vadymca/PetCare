@@ -66,15 +66,24 @@ export class ProfileComponent {
     this.showLogoutModal.set(false);
   }
   toDonations() {
+    //дописати компонент мої платежі і мої платіжні підписки
     throw new Error('Method not implemented.');
   }
   toNotifications() {
+    //дописати компонент з нотифікаціями
     throw new Error('Method not implemented.');
   }
   toApplications() {
+    //дописати компонент заявки на усиновлення і заявки на волонтерство
     throw new Error('Method not implemented.');
+  }
+  toGuardianships() {
+    this.router.navigate(['guardianships']);
   }
   editProfile() {
     this.router.navigate(['profile/edit']);
+  }
+  toFavorites() {
+    this.router.navigate(['favorites']);
   }
 }

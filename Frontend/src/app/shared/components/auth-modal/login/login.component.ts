@@ -24,6 +24,8 @@ import { IconComponent } from '../../icon.component';
     PrimaryLargeButtonComponent,
     ReactiveFormsModule,
     RouterModule,
+
+
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
@@ -40,6 +42,12 @@ export class LoginComponent {
   showPassword = signal(false);
   isDisabled = signal(true);
   isLoading = signal(false);
+
+  fb = new FormBuilder();
+  loginForm = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required]],
+  });
   constructor() {
     effect(() => {
       this.loginForm.valueChanges.subscribe(() => {
@@ -50,11 +58,6 @@ export class LoginComponent {
       });
     });
   }
-  fb = new FormBuilder();
-  loginForm = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required]],
-  });
   togglePasswordVisibility() {
     this.showPassword.update(v => !v);
   }

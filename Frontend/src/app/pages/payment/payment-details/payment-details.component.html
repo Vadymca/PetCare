@@ -1,0 +1,185 @@
+<div
+  class="relative w-full flex flex-col text-center items-center text-secondary-neutral-mineShaft pb-[60px] bg-primary-lightBlue"
+>
+  <!-- Garland як фон -->
+  <div class="absolute top-[100px] w-full flex justify-center z-0">
+    <app-icon
+      [name]="'garland'"
+      class="w-full transform scale-x-[1.03] scale-y-[1.03]"
+    ></app-icon>
+  </div>
+  <div class="inline-flex items-center mt-3 w-full sm:mt-[130px] ml-[50px]">
+    <div
+      class="hover:text-primary-orange inline-flex items-center cursor-pointer -translate-y-1/2 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-50"
+      (click)="backBottomClick()"
+      (keyup.enter)="backBottomClick()"
+      (keyup.space)="backBottomClick()"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'BACK' | translate"
+    >
+      <app-icon [name]="'arrowLeft'" class=""></app-icon>
+      <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
+    </div>
+  </div>
+  <h2
+    class="w-full font-fixel font-bold text-secondary-neutral-mineShaft relative z-10"
+    style="font-size: clamp(16px, 12.5vw, 40px)"
+  >
+    {{ 'FINANCIAL_SUPPORT' | translate }}
+  </h2>
+
+  <!-- Контейнер для текстів -->
+  <div class="flex flex-col lg:w-[680px] mt-10 relative z-10">
+    <div
+      class="flex flex-col justify-end items-center bg-primary-light-orange text-secondary-neutral-mineShaft p-6 w-full h-[278px] rounded-tl-[680px] rounded-tr-[680px] rounded-bl-[3px] rounded-br-[3px]"
+    >
+      <div
+        class="font-fixel font-bold text-[40px] text-primary-beige sm:text-end text-center"
+        style="font-size: clamp(16px, 12.5vw, 40px)"
+      >
+        <p class="flex flex-col w-full items-center">
+          {{ 'FILL_YOUR_DATA' | translate }}
+        </p>
+        <p class="flex flex-col w-full items-center leading-none">
+          {{ 'IF_YOU_WANT' | translate }}
+        </p>
+      </div>
+    </div>
+    <div
+      class="mt-1 flex flex-col items-center bg-secondary-neutral-white text-secondary-neutral-mineShaft w-full rounded-tl-[3px] rounded-tr-[3px] rounded-bl-[40px] rounded-br-[40px] pb-10"
+    >
+      <form
+        #formRef
+        [formGroup]="registerForm"
+        (ngSubmit)="onContinueClick()"
+        class="group flex flex-1 flex-col flex-wrap justify-start items-center w-full h-full"
+      >
+        <div class="flex-1 flex flex-col w-[360px]">
+          <!-- Name -->
+          <div class="flex flex-col w-full mt-8">
+            <label for="fullName" class="text-left">
+              {{ 'FIRST_NAME_AND_SURNAME' | translate }}
+            </label>
+            <input
+              id="fullName"
+              type="text"
+              formControlName="fullName"
+              [placeholder]="'ENTER_YOUR_NAME' | translate"
+              class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none pr-10"
+              [class.ring-2]="nameInvalid"
+              [class.ring-secondary-semantic-error]="nameInvalid"
+            />
+          </div>
+          <!-- Phone number -->
+          <div class="flex flex-col w-full mt-3 leading-none">
+            <label for="phoneNumber" class="text-left">
+              {{ 'PHONE_NUMBER' | translate }}
+            </label>
+            <input
+              id="phoneNumber"
+              type="tel"
+              formControlName="phoneNumber"
+              [placeholder]="'ENTER_YOUR_PHONE_NUMBER' | translate"
+              pattern="^\+\d{7,15}$"
+              class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none pr-10"
+              [class.ring-2]="phoneNumberInvalid"
+              [class.ring-secondary-semantic-error]="phoneNumberInvalid"
+              aria-label="phoneNumber"
+              autocomplete="tel"
+            />
+            @if (
+              registerForm.controls.phoneNumber.touched &&
+              registerForm.controls.phoneNumber.invalid
+            ) {
+              <div class="text-red-600 text-sm mt-3 leading-none">
+                {{ 'PHONE_NUMBER_INVALID' | translate }}
+              </div>
+            }
+          </div>
+          <!-- Email -->
+          <div class="flex flex-col w-full mt-3 leading-none">
+            <label for="email" class="text-left">
+              {{ 'EMAIL' | translate }}
+            </label>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              [placeholder]="'ENTER_YOUR_EMAIL' | translate"
+              class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none pr-10"
+              [class.ring-2]="emailInvalid"
+              [class.ring-secondary-semantic-error]="emailInvalid"
+              autocomplete="email"
+            />
+            @if (
+              registerForm.controls.email.touched &&
+              registerForm.controls.email.invalid
+            ) {
+              <div class="text-red-600 text-sm mt-3">
+                {{ 'EMAIL_INVALID' | translate }}
+              </div>
+            }
+          </div>
+        </div>
+        <div class="flex flex-column gap-2 mt-5 text-left leading-none">
+          <div class="flex justify-center items-start">
+            <label class="flex items-start">
+              <input
+                type="checkbox"
+                formControlName="termsAndConditions"
+                class="mr-2 hidden peer"
+              />
+              <!-- unchecked -->
+              <app-icon
+                [name]="'unchecked'"
+                class="peer-checked:hidden"
+              ></app-icon>
+              <!-- checked -->
+              <app-icon
+                [name]="'checked'"
+                class="hidden peer-checked:block"
+              ></app-icon>
+              <span
+                class="text-sm text-secondary-neutral-doveGray ml-3 w-[438px]"
+              >
+                {{ 'AGREE_TERMS' | translate }}
+                <a
+                  [routerLink]="['//terms-and-conditions']"
+                  target="_blank"
+                  class="hover:text-primary-orange hover:underline underline cursor-pointer"
+                >
+                  {{ 'TERMS_AND_CONDITIONS' | translate }}
+                </a>
+                {{ 'AND_PRIVATE_POLICY' | translate }}
+                <a
+                  [routerLink]="['//privacy-policy']"
+                  target="_blank"
+                  class="hover:text-primary-orange hover:underline underline cursor-pointer"
+                >
+                  {{ 'PRIVACY_POLICY' | translate }}
+                </a>
+              </span>
+            </label>
+          </div>
+        </div>
+      </form>
+
+      <div class="flex mt-10">
+        <app-secondary-large-button
+          buttonTitle="TO_CHOOSE_PAYMENT"
+          (pressButton)="onContinueClick()"
+          [disabled]="isDisabled"
+        ></app-secondary-large-button>
+      </div>
+      <!-- Повідомлення про помилку -->
+      @if (errorMessage(); as data) {
+        <div
+          class="flex items-center justify-center flex-wrap text-secondary-semantic-error text-sm mt-3 leading-none text-left"
+        >
+          {{ data | translate }}
+        </div>
+      }
+    </div>
+  </div>
+</div>

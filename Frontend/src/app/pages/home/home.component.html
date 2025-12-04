@@ -374,7 +374,11 @@
   </div>
 </div>
 <!-- Сторінка №6 фінансова підтримка -->
-<app-financial-support></app-financial-support>
+<div class="min-v-[100vh] bg-primary-lightBlue sm:pt-[108px]">
+  <app-financial-support
+    (selectionConfirmed)="onSelectionConfirmed($event)"
+  ></app-financial-support>
+</div>
 <!-- Сторінка №7 тваринки -->
 <app-animals-preview></app-animals-preview>
 <!-- Сторінка №8 проекти -->

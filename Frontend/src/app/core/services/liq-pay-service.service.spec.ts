@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ConfirmModalService } from './confirm-modal.service';
+import { LiqPayServiceService } from './liq-pay-service.service';
 
-describe('ConfirmModalService', () => {
-  let service: ConfirmModalService;
+describe('LiqPayServiceService', () => {
+  let service: LiqPayServiceService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(ConfirmModalService);
+    service = TestBed.inject(LiqPayServiceService);
   });
 
   it('should be created', () => {
