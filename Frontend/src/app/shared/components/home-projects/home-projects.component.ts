@@ -29,10 +29,14 @@ export class HomeProjectsComponent {
     this.router.navigate(['/animal-aid-requests']);
   }
   constructor() {
-    this.animalAidRequestService
-      .getAnimalAidRequests()
-      .subscribe(animalAidRequests => {
-        this.animalAidRequests = animalAidRequests.slice(0, 4);
-      });
+    try {
+      this.animalAidRequestService
+        .getAnimalAidRequests()
+        .subscribe(animalAidRequests => {
+          this.animalAidRequests = animalAidRequests.slice(0, 4);
+        });
+    } catch (e) {
+      console.log(e);
+    }
   }
 }

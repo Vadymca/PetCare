@@ -17,9 +17,12 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Animal } from '../../../core/models/animal';
+import { PaymentScope } from '../../../core/models/liqPayCheckoutRequest';
 import { AnimalSubscriptionService } from '../../../core/services/animal-subscription.service';
 import { AnimalService } from '../../../core/services/animal.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { GuardianshipService } from '../../../core/services/guardianship.service';
+import { LiqPayService } from '../../../core/services/liq-pay-service.service';
 import { ModalService } from '../../../core/services/modal.service';
 import { PrimaryLargeButtonComponent } from '../../../shared/components/buttons/blue/primary-large-button.component';
 import { SecondaryLargeButtonComponent } from '../../../shared/components/buttons/blue/secondary-large-button.component';
@@ -27,6 +30,7 @@ import { PrimaryLargeOrangeButtonComponent } from '../../../shared/components/bu
 import { RoundFilledWhiteBlueButtonWithIconComponent } from '../../../shared/components/buttons/round-filled-white-blue-button-with-icon.component';
 import { RoundWhiteBlueButtonWithIconComponent } from '../../../shared/components/buttons/round-white-blue-button-with-icon.component';
 import { SmallShareButtonComponent } from '../../../shared/components/buttons/small-share-button/small-share-button.component';
+import { ConfirmModalComponent } from '../../../shared/components/confirm-modal/confirm-modal.component';
 import { IconComponent } from '../../../shared/components/icon.component';
 import { PhotoCollectionsComponent } from '../../../shared/components/photo-collections/photo-collections.component';
 import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
@@ -49,6 +53,7 @@ type IconName = 'shareInsta' | 'shareFacebook';
     RoundWhiteBlueButtonWithIconComponent,
     SmallShareButtonComponent,
     AnimalCardComponent,
+    ConfirmModalComponent,
   ],
   templateUrl: './animal-detail.component.html',
   styleUrls: ['./animal-detail.component.css'], // зверни увагу на styleUrls (замість styleUrl)
@@ -59,6 +64,8 @@ export class AnimalDetailComponent implements OnInit {
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private guardianshipService = inject(GuardianshipService);
+  private liqPayService = inject(LiqPayService);
   private animalService = inject(AnimalService);
   private animalSubscriptionService = inject(AnimalSubscriptionService);
   private authModalService = inject(ModalService);
@@ -66,18 +73,12 @@ export class AnimalDetailComponent implements OnInit {
   private translate = inject(TranslateService);
   private title = inject(Title);
   private meta = inject(Meta);
-
+  showTakeCareModalWindow = signal(false);
   shareInsta = signal<IconName>('shareInsta');
   shareFacebook = signal<IconName>('shareFacebook');
   platformId = inject(PLATFORM_ID);
   isAuthenticated: Signal<boolean> = this.authService.isLoggedIn;
-  // slug = toSignal(
-  //   this.route.paramMap.pipe(
-  //     map(params => params.get('slug')),
-  //     filter((slug): slug is string => !!slug)
-  //   ),
-  //   { initialValue: null }
-  // );
+
   slug = signal<string | null>(null);
   animal = signal<Animal | undefined>(undefined);
   favoriteAnimals = signal<Animal[]>([]);
@@ -151,8 +152,32 @@ export class AnimalDetailComponent implements OnInit {
     });
   }
 
-  onTakeCare() {
-    throw new Error('Method not implemented.');
+  onTakeCare($event: boolean) {
+    if ($event) {
+      if (!this.isAuthenticated()) {
+        this.authModalService.openModal('welcome');
+        return;
+      }
+      try {
+        this.guardianshipService
+          .createGuardianship(this.animal()!.id)
+          .subscribe(guardianship => {
+            if (guardianship.status === 'RequiresPayment') {
+              this.liqPayService.startPayment({
+                scope: 'guardianship' as PaymentScope,
+                isRecurring: true,
+                entityId: guardianship.id,
+              });
+
+              // Переходимо до форми з контактами
+              this.router.navigate(['/payment/details']);
+            }
+          });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    this.showTakeCareModalWindow.set(false);
   }
   onTakeHome() {
     throw new Error('Method not implemented.');
@@ -360,5 +385,8 @@ export class AnimalDetailComponent implements OnInit {
       name: 'keywords',
       content: `petcare, ${animal.name}, ${animal.breed?.name}, ${animal.species?.name}`,
     });
+  }
+  showModal() {
+    this.showTakeCareModalWindow.set(true);
   }
 }

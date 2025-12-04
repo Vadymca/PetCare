@@ -11,7 +11,9 @@
     <!-- Logo & Title -->
     <div
       class="ml-4 cursor-pointer hover:text-primary-orange"
-      [routerLink]="['/']"
+      (click)="home()"
+      (keydown)="home()"
+      tabindex="0"
     >
       <app-icon [name]="'logoUkr'"></app-icon>
     </div>

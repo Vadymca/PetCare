@@ -1,7 +1,6 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   DestroyRef,
   effect,
@@ -24,7 +23,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Observable, of } from 'rxjs';
 import { catchError, filter, map, switchMap } from 'rxjs/operators';
 import { Shelter } from '../../../core/models/shelter';
-import { ShelterSubscription } from '../../../core/models/shelterSubscriptions';
 import { User } from '../../../core/models/user';
 import { AuthService } from '../../../core/services/auth.service';
 import { ModalService } from '../../../core/services/modal.service';
@@ -62,7 +60,7 @@ export class ShelterDetailComponent {
   private translate = inject(TranslateService);
   private shelterService = inject(ShelterService);
   private sanitizer = inject(DomSanitizer);
-  private cdr = inject(ChangeDetectorRef);
+
   private authService = inject(AuthService);
   private shelterSubscriptionService = inject(ShelterSubscriptionService);
   private platformId = inject(PLATFORM_ID);
@@ -72,7 +70,6 @@ export class ShelterDetailComponent {
   );
   private modalService = inject(ModalService);
   private destroyRef = inject(DestroyRef);
-  private shelterSubscriptionId = '';
 
   mapUrl = signal<SafeResourceUrl | null>(null);
 
@@ -87,7 +84,7 @@ export class ShelterDetailComponent {
 
   public isAuthenticated: Signal<boolean> = this.authService.isLoggedIn;
   user: Signal<User | null> = signal(this.authService._currentUser());
-  isSubscribed = false;
+  isSubscribed = signal(false); // Початкове значення isSubscribed false;
   isSubscriptionChecked = signal<boolean>(false);
 
   constructor() {
@@ -127,9 +124,8 @@ export class ShelterDetailComponent {
           }
           this.isSubscriptionChecked.set(false);
           this.isSubscribedToShelter().subscribe(isSubscribed => {
-            this.isSubscribed = isSubscribed;
+            this.isSubscribed.set(isSubscribed);
             this.isSubscriptionChecked.set(true);
-            this.cdr.detectChanges();
           });
           if (shelter.coordinates?.lat && shelter.coordinates?.lng) {
             const url = `https://maps.google.com/maps?q=${shelter.coordinates.lat},${shelter.coordinates.lng}&z=14&output=embed`;
@@ -203,36 +199,31 @@ export class ShelterDetailComponent {
 
   isSubscribedToShelter(): Observable<boolean> {
     const shelterValue = this.shelter();
-    const userValue = this.user();
-    if (!userValue || !shelterValue) return of(false);
+    // const userValue = this.user();
+    // if (!userValue || !shelterValue) return of(false);
 
-    return this.shelterSubscriptionService
-      .getShelterSubscriptionsByUserId(userValue.id)
-      .pipe(
-        map(subscriptions => {
-          const found = subscriptions.find(
-            s => s.shelterId === shelterValue.id
-          );
-          this.shelterSubscriptionId = found?.id ?? '';
-          this.isSubscribed = !!found;
-          return !!found;
-        }),
-        catchError(err => {
-          console.error('Error fetching shelter subscriptions:', err);
-          return of(false);
-        })
-      );
+    return this.shelterSubscriptionService.getMyFavouriteShelters().pipe(
+      map(shelters => {
+        const found = shelters.find(s => s.id === shelterValue!.id);
+        this.isSubscribed.set(!!found);
+        return !!found;
+      }),
+      catchError(err => {
+        console.error('Error fetching shelter subscriptions:', err);
+        return of(false);
+      })
+    );
   }
 
   unsubscribe() {
-    if (!this.isSubscribed || this.shelterSubscriptionId === '') return;
+    if (!this.isSubscribed()) return;
+    const shelterValue = this.shelter();
+    if (!shelterValue) return;
     this.shelterSubscriptionService
-      .deleteShelterSubscription(this.shelterSubscriptionId)
+      .deleteShelterSubscription(shelterValue.id)
       .subscribe({
         next: () => {
-          this.isSubscribed = false;
-          this.shelterSubscriptionId = '';
-          this.cdr.detectChanges();
+          this.isSubscribed.set(false);
         },
         error: err => {
           console.error('Error deleting shelter subscription:', err);
@@ -241,26 +232,23 @@ export class ShelterDetailComponent {
   }
 
   subscribe() {
-    if (this.isSubscribed) return;
+    if (this.isSubscribed()) return;
     const shelterValue = this.shelter();
-    const userValue = this.user();
-    if (!shelterValue || !userValue) return;
-    const shelterSubscription: Partial<ShelterSubscription> = {
-      shelterId: shelterValue.id,
-      userId: userValue.id,
-    };
+    if (!shelterValue) return;
 
     this.shelterSubscriptionService
-      .createShelterSubscription(shelterSubscription)
+      .createShelterSubscription(shelterValue.id)
       .subscribe({
-        next: subscription => {
-          this.isSubscribed = true;
-          this.shelterSubscriptionId = subscription.id;
-          this.cdr.detectChanges();
+        next: () => {
+          this.isSubscribed.set(true);
         },
         error: err => {
           console.error('Error creating shelter subscription:', err);
         },
       });
+  }
+
+  onOccupancyClick() {
+    this.router.navigate(['shelters', this.shelter()?.slug, 'animals']);
   }
 }

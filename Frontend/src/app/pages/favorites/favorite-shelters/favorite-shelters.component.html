@@ -1,0 +1,63 @@
+<div class="flex flex-col w-full items-center justify-center">
+  @if (shelters().length === 0) {
+    <div class="text-[16px] mb-3 text-inter">
+      {{ 'NO_FAVORITE_SHELTERS' | translate }}
+    </div>
+  }
+
+  <div
+    class="grid grid-cols-1 gap-5 w-full text-secondary-neutral-mineShaft"
+    [ngClass]="{
+      'lg:grid-cols-1': shelters().length === 1,
+      'lg:grid-cols-2': shelters().length > 1,
+    }"
+  >
+    @for (shelter of shelters(); track shelter.id) {
+      <div
+        class="flex flex-col items-center p-7 bg-white rounded-40 shadow hover:shadow-lg transition"
+      >
+        <h2 class="text-xl font-bold mb-3 text-inter">
+          {{ shelter.name }}
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 w-full mb-3">
+          <div>
+            <p class="font-semibold mb-3">{{ 'ADDRESS' | translate }}:</p>
+            <p class="mb-1">
+              {{ shelter.address }}
+            </p>
+          </div>
+          <div>
+            <p class="font-semibold mb-3">Email:</p>
+            <p class="mb-1">{{ shelter.contactEmail }}</p>
+          </div>
+          <div>
+            <p class="font-semibold mb-3">{{ 'PHONE' | translate }}:</p>
+            <p class="mb-1">{{ shelter.contactPhone }}</p>
+            <p class="text-sm">
+              {{ 'PHONE_SCHEDULE' | translate }}{{ shelter.workingHours }}
+            </p>
+          </div>
+          <div>
+            <p class="font-semibold mb-3">{{ 'SСHEDULE' | translate }}:</p>
+            <p class="mb-1">
+              {{ 'WORK_SCHEDULE' | translate }} {{ shelter.workingHours }}
+            </p>
+            <p class="text-sm">
+              {{ 'VISITING_SCHEDULE' | translate }}
+            </p>
+          </div>
+        </div>
+        <app-secondary-large-button
+          class="mt-5"
+          [buttonTitle]="'SHELTER_DETAILS' | translate"
+          (pressButton)="visitShelter(shelter)"
+        ></app-secondary-large-button>
+      </div>
+    }
+  </div>
+  <app-primary-large-button
+    class="mt-5 w-[300px]"
+    buttonTitle="RETURN_TO_SHELTER_LIST"
+    (pressButton)="goToShelters()"
+  ></app-primary-large-button>
+</div>

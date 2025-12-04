@@ -61,10 +61,22 @@ export class AuthService {
   readonly authStep = signal<AuthStep>('login');
   readonly isAuthReady = signal(false);
   readonly isLoggedIn = computed(() => !!this.accessToken());
+  readonly returnUrl = signal<string | null>(null);
 
   //qrCodeUrl = signal<string | null>(null);
   readonly backupCodes = signal<string[] | null>(null);
   readonly twoFaStatus = signal<TwoFaStatus | null>(null);
+
+  setReturnUrl(url: string | null) {
+    this.returnUrl.set(url);
+  }
+  getReturnUrl(): string | null {
+    return this.returnUrl();
+  }
+  clearReturnUrl() {
+    this.returnUrl.set(null);
+  }
+
   //логін--------------------------------------------------,????? Що поверне коли треба 2ф???????доробити
   login(payload: AuthRequest): Observable<LoginResponse> {
     return this.http
@@ -101,6 +113,11 @@ export class AuthService {
               isTwoFactorEnabled: false,
               isSms2FaEnabled: false,
             });
+            const returnUrl = this.getReturnUrl(); // метод в AuthService, який зберігає URL з guard
+            if (returnUrl) {
+              this.router.navigateByUrl(returnUrl);
+              this.clearReturnUrl(); // очищаємо після переходу
+            }
           }
           this.isAuthReady.set(true);
         })
@@ -163,6 +180,11 @@ export class AuthService {
               },
             });
             this.authStep.set('authenticated');
+            const returnUrl = this.getReturnUrl(); // AuthService
+            if (returnUrl) {
+              this.router.navigateByUrl(returnUrl);
+              this.clearReturnUrl();
+            }
           }
           this.isAuthReady.set(true);
         })
@@ -308,6 +330,11 @@ export class AuthService {
               },
             });
             this.authStep.set('authenticated');
+            const returnUrl = this.getReturnUrl(); // AuthService
+            if (returnUrl) {
+              this.router.navigateByUrl(returnUrl);
+              this.clearReturnUrl();
+            }
             this.twoFaToken.set(null);
           }
         })
@@ -388,6 +415,11 @@ export class AuthService {
             });
 
             this.authStep.set('authenticated');
+            const returnUrl = this.getReturnUrl(); // AuthService
+            if (returnUrl) {
+              this.router.navigateByUrl(returnUrl);
+              this.clearReturnUrl();
+            }
             this.twoFaToken.set(null);
           }
         })
@@ -461,6 +493,11 @@ export class AuthService {
               },
             });
             this.authStep.set('authenticated');
+            const returnUrl = this.getReturnUrl(); // AuthService
+            if (returnUrl) {
+              this.router.navigateByUrl(returnUrl);
+              this.clearReturnUrl();
+            }
             this.twoFaToken.set(null);
           }
         })
@@ -556,6 +593,11 @@ export class AuthService {
             });
 
             this.authStep.set('authenticated');
+            const returnUrl = this.getReturnUrl(); // AuthService
+            if (returnUrl) {
+              this.router.navigateByUrl(returnUrl);
+              this.clearReturnUrl();
+            }
             this.twoFaToken.set(null);
           }
         })

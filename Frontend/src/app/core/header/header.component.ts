@@ -35,8 +35,11 @@ import { AuthService } from '../services/auth.service';
   styleUrls: ['./header.component.css'],
 })
 export class HeaderComponent {
+  home() {
+    this.router.navigate(['/']);
+  }
   openFavourite() {
-    throw new Error('Method not implemented.');
+    this.router.navigate(['/favorites']);
   }
   openNotification() {
     throw new Error('Method not implemented.');

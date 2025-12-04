@@ -1,9 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, signal } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { catchError, of } from 'rxjs';
 import { Animal } from '../../../core/models/animal';
 import { AnimalSubscriptionService } from '../../../core/services/animal-subscription.service';
 import { AnimalService } from '../../../core/services/animal.service';
@@ -18,152 +23,103 @@ import { SecondaryLargeButtonComponent } from '../buttons/blue/secondary-large-b
   imports: [
     CommonModule,
     TranslateModule,
-    SecondaryLargeButtonComponent,
-    ReactiveFormsModule,
     AnimalCardComponent,
+    SecondaryLargeButtonComponent,
   ],
   templateUrl: './animals-preview.component.html',
   styleUrl: './animals-preview.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AnimalsPreviewComponent {
-  router = inject(Router);
-  private animalSubscriptionService = inject(AnimalSubscriptionService);
-  private animalService = inject(AnimalService);
+  private router = inject(Router);
   private authService = inject(AuthService);
   private authModalService = inject(ModalService);
-  private user = this.authService._currentUser;
+  private animalService = inject(AnimalService);
+  private animalSubscriptionService = inject(AnimalSubscriptionService);
 
-  animals = signal<Animal[]>([]);
+  // === Дані ===
+  private rawAnimals = signal<Animal[]>([]);
+  private favoriteAnimalIds = signal<Set<string>>(new Set());
+
+  // Головний computed — тварини з актуальним isFavorite
+  displayedAnimals = computed(() => {
+    const favIds = this.favoriteAnimalIds();
+    return this.rawAnimals().map(animal => ({
+      ...animal,
+      isFavorite: favIds.has(animal.id),
+      isChecked: true,
+    }));
+  });
 
   constructor() {
-    // Завантажуємо тварин
-    this.animalService
-      .getAnimals({
-        pageSize: 8,
-        statuses: ['Available'],
-      })
-      .subscribe(result => {
-        const animals = result.animals.map(animal => ({
-          ...animal,
-          isChecked: true,
-          isFavorite: false,
-        }));
-        this.animals.set(animals);
+    this.loadAnimals();
 
-        // Завантажуємо фаворити і оновлюємо стани
-        this.updateFavorites();
-      });
+    // Завантажуємо улюблені один раз (якщо користувач залогінений)
+    if (this.authService._currentUser()) {
+      this.loadFavorites();
+    }
 
-    // Ефект оновлення фаворитів
+    // Реакція на логін/вихід
     effect(() => {
-      const currentUser = this.user();
-      if (!currentUser) return;
-
-      this.updateFavorites();
+      const user = this.authService._currentUser();
+      if (user) {
+        this.loadFavorites();
+      } else {
+        this.favoriteAnimalIds.set(new Set());
+      }
     });
   }
 
-  private updateFavorites() {
-    if (!this.user()) return;
-
-    this.animalSubscriptionService
-      .getFavoriteAnimals()
-      .pipe(
-        catchError(err => {
-          console.error('Error fetching favorite animals:', err);
-          return of([]);
-        })
-      )
-      .subscribe(favorites => {
-        const favoriteIds = new Set(favorites.map(a => a.id));
-        this.animals.update(all =>
-          all.map(animal => ({
-            ...animal,
-            isFavorite: favoriteIds.has(animal.id),
-            isChecked: true,
-          }))
-        );
+  private loadAnimals() {
+    this.animalService
+      .getAnimals({
+        pageSize: 8,
+        statuses: ['Available', 'InTreatment', 'Reserved'],
+      })
+      .subscribe(result => {
+        this.rawAnimals.set(result.animals);
       });
   }
 
+  private loadFavorites() {
+    this.animalSubscriptionService.getFavoriteAnimals().subscribe(favs => {
+      this.favoriteAnimalIds.set(new Set(favs.map(a => a.id)));
+    });
+  }
+
+  // === Сердечко — миттєве ===
   onHeartClick(animal: Animal) {
-    if (!this.user()) {
+    if (!this.authService._currentUser()) {
       this.authModalService.openModal('welcome');
       return;
     }
 
-    if (animal.isFavorite) {
-      this.unsubscribeFromAnimal(animal);
-    } else {
-      this.subscribeToAnimal(animal);
-    }
-  }
+    const isFavorite = this.favoriteAnimalIds().has(animal.id);
 
-  subscribeToAnimal(animal: Animal) {
-    if (animal.isFavorite) return;
-    animal.isChecked = false;
-
-    this.animalSubscriptionService
-      .createAnimalSubscription(animal.id)
-      .subscribe({
-        next: subscription => {
-          this.animals.update(all =>
-            all.map(a =>
-              a.id === animal.id
-                ? {
-                    ...a,
-                    isFavorite: true,
-                    animalSubscriptionId: subscription.id,
-                    isChecked: true,
-                  }
-                : a
-            )
-          );
-        },
-        error: err => {
-          console.error('Error creating animal subscription:', err);
-          animal.isChecked = true;
-        },
-      });
-  }
-
-  unsubscribeFromAnimal(animal: Animal) {
-    if (!animal.isFavorite || !animal.animalSubscriptionId) return;
-    animal.isChecked = false;
-
-    this.animalSubscriptionService
-      .deleteAnimalSubscription(animal.animalSubscriptionId)
-      .subscribe({
+    if (isFavorite) {
+      this.animalSubscriptionService.deleteAnimalSubscription(animal.id).subscribe({
         next: () => {
-          this.animals.update(all =>
-            all.map(a =>
-              a.id === animal.id
-                ? {
-                    ...a,
-                    isFavorite: false,
-                    animalSubscriptionId: '',
-                    isChecked: true,
-                  }
-                : a
-            )
-          );
-        },
-        error: err => {
-          console.error('Error deleting animal subscription:', err);
-          animal.isChecked = true;
+          this.favoriteAnimalIds.update(set => {
+            const newSet = new Set(set);
+            newSet.delete(animal.id);
+            return newSet;
+          });
         },
       });
-  }
-
-  onSeeAllAnimalsClick() {
-    this.router.navigate(['/animals']);
+    } else {
+      this.animalSubscriptionService.createAnimalSubscription(animal.id).subscribe({
+        next: () => {
+          this.favoriteAnimalIds.update(set => new Set([...set, animal.id]));
+        },
+      });
+    }
   }
 
   onAnimalDetailClick(animal: Animal) {
     this.router.navigate(['/animals', animal.slug]);
   }
 
-  trackByAnimalId(index: number, animal: Animal): string {
-    return animal.id;
+  onSeeAllAnimalsClick() {
+    this.router.navigate(['/animals']);
   }
 }

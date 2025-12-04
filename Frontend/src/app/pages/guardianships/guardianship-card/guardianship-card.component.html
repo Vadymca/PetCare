@@ -1,0 +1,82 @@
+<div class="flex flex-col lg:flex-row w-full items-center justify-center gap-4">
+  @if (guardianship()) {
+    <!-- картка тварини -->
+    <div class="flex flex-col w-full">
+      <app-animal-card
+        [animal]="animalSignal()"
+        (animalDetailClick)="onAnimalDetailClick()"
+        (heartClick)="onHeartClick()"
+      ></app-animal-card>
+    </div>
+    <!-- деталі опіки -->
+    <div
+      class="flex flex-col rounded-40 bg-primary-beige px-[10px] py-5 gap-6 justify-start w-full h-full min-w-[320px] min-h-[420px]"
+    >
+      <p>
+        <span class="font-bold"
+          >{{ 'UNDER_CARE' | translate }} {{ 'FROM' | translate }}:
+          {{ guardianship().startDate | date: 'dd.MM.yyyy' }}
+        </span>
+      </p>
+      <p>
+        <span class="font-bold">{{ 'CARE_COST' | translate }}: </span>
+        {{ guardianship().animal.careCost! | translate }}
+      </p>
+      <p>
+        <span class="font-bold">{{ 'LAST_PAYMENT' | translate }}: </span>
+        {{
+          guardianship().paymentSubscription
+            ? (guardianship().paymentSubscription.lastChargeAt
+              | date: 'dd.MM.yyyy')
+            : '—'
+        }}
+      </p>
+      <p>
+        <span class="font-bold">{{ 'NEXT_PAYMENT' | translate }}: </span>
+        {{
+          guardianship().paymentSubscription
+            ? (guardianship().paymentSubscription.nextChargeAt
+              | date: 'dd.MM.yyyy')
+            : '—'
+        }}
+      </p>
+      @if (guardianship().status === 'RequiresPayment') {
+        <p class="font-bold text-secondary-semantic-error">
+          {{ 'PAYMENT_ERROR_RETRY' | translate }}
+        </p>
+        <p class="font-bold text-secondary-semantic-error">
+          {{ 'GUARDIANSHIP_EXPIRES_AT' | translate }}:
+          {{ guardianship().graceUntil | date: 'dd.MM.yyyy' }}
+        </p>
+      }
+    </div>
+    <!-- кнопки -->
+    <div class="flex flex-col gap-5 justify-start w-full items-center">
+      <app-primary-large-button
+        class="w-[320px]"
+        buttonTitle="ADOPT"
+        (pressButton)="toAdoption()"
+      ></app-primary-large-button>
+      <app-primary-large-orange-button
+        class="w-[320px]"
+        buttonTitle="CHANGE_PAYMENT"
+        (pressButton)="toChangePayment()"
+      ></app-primary-large-orange-button>
+      <app-primary-large-orange-button
+        class="w-[320px]"
+        buttonTitle="CONTACT"
+        (pressButton)="toContactUs()"
+      ></app-primary-large-orange-button>
+      <a
+        (click)="toDeleteGuardianship()"
+        (keyup.enter)="toDeleteGuardianship()"
+        (keyup.space)="toDeleteGuardianship()"
+        tabindex="0"
+        role="button"
+        class="cursor-pointer font-bold underline hover:text-primary-orange"
+      >
+        {{ 'CANCEL_GUARDIANSHIP' | translate }}
+      </a>
+    </div>
+  }
+</div>

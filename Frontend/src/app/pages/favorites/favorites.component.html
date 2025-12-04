@@ -1,0 +1,51 @@
+<div class="flex flex-col px-[50px] bg-primary-lightBlue w-full">
+  <div
+    class="mt-[150px] flex items-center justify-center w-full gap-6"
+    style="letter-spacing: -0.07em"
+  >
+    <!-- Тварини -->
+    <button
+      class="cursor-pointer bg-transparent p-0 border-none"
+      (click)="onAnimalsClick()"
+    >
+      <div
+        class="group flex flex-col items-center justify-center cursor-pointer"
+      >
+        <div
+          class="flex w-[200px] h-[100px] rounded-t-[100px] bg-secondary-chileanFire-2 group-hover:bg-primary-light-orange"
+        ></div>
+        <p
+          class="pt-1 font-inter font-bold text-[36px] text-secondary-chileanFire-2 leading-[1.2] group-hover:text-primary-light-orange"
+        >
+          {{ 'ANIMALS' | translate | uppercase }}
+        </p>
+      </div>
+    </button>
+
+    <!-- Притулки -->
+    <button
+      class="cursor-pointer bg-transparent p-0 border-none"
+      (click)="onSheltersClick()"
+    >
+      <div
+        class="group flex flex-col items-center justify-center cursor-pointer"
+      >
+        <div
+          class="flex w-[200px] h-[100px] rounded-t-[100px] bg-secondary-jordyBlue-2 group-hover:bg-primary-blue"
+        ></div>
+        <p
+          class="pt-1 font-inter font-bold text-[36px] text-secondary-jordyBlue-2 leading-[1.2] group-hover:text-primary-blue"
+        >
+          {{ 'SHELTERS' | translate | uppercase }}
+        </p>
+      </div>
+    </button>
+  </div>
+  <div class="flex flex-col w-full items-center justify-center mt-8 mb-8">
+    @if (isAnimalsVisible()) {
+      <app-favorite-animals></app-favorite-animals>
+    } @else {
+      <app-favorite-shelters></app-favorite-shelters>
+    }
+  </div>
+</div>
