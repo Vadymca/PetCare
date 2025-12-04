@@ -159,6 +159,17 @@ public sealed class PaymentSubscription : BaseEntity
         this.Touch();
     }
 
+    /// <summary>
+    /// Sets the timestamp of the last charge event in Coordinated Universal Time (UTC).
+    /// </summary>
+    /// <param name="whenUtc">The date and time, in UTC, when the last charge occurred. Specify <see langword="null"/> to clear the last
+    /// charge timestamp.</param>
+    public void SetLastCharge(DateTime? whenUtc)
+    {
+        this.LastChargeAt = whenUtc;
+        this.Touch();
+    }
+
     /// <summary>Mark subscription as charged at given time.</summary>
     /// <param name="whenUtc">The UTC timestamp when the charge occurred.</param>
     public void MarkCharged(DateTime whenUtc)

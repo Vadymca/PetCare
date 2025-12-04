@@ -211,12 +211,16 @@ public sealed class LiqPayService : ILiqPayService
 
                 if (subscription is not null)
                 {
-                    // Оновлюємо дату наступного платежу
-                    if (nextCharge.HasValue)
+                    // Встановлюємо lastChargeAt як зараз
+                    subscription.SetLastCharge(DateTime.UtcNow);
+
+                    // Встановлюємо nextChargeAt
+                    if (!nextCharge.HasValue)
                     {
-                        subscription.SetNextCharge(nextCharge);
-                        await this.paymentService.UpdateSubscriptionAsync(subscription, cancellationToken);
+                        nextCharge = DateTime.UtcNow.AddDays(30); // fallback 30 днів
                     }
+
+                    subscription.SetNextCharge(nextCharge);
 
                     // Прив’язуємо підписку до PaymentIntent
                     await this.paymentIntentService.AttachSubscriptionAsync(intent.ExternalOrderId, subscription.Id, cancellationToken);
