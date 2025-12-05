@@ -18,6 +18,7 @@ public class GuardianshipService : IGuardianshipService
 {
     private readonly IGuardianshipRepository guardianships;
     private readonly IAnimalRepository animals;
+    private readonly IPaymentIntentRepository paymentIntents;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GuardianshipService"/> class with the specified repositories and database.
@@ -25,13 +26,16 @@ public class GuardianshipService : IGuardianshipService
     /// </summary>
     /// <param name="guardianships">The repository used to manage guardianship records. Cannot be null.</param>
     /// <param name="animals">The repository used to access animal data. Cannot be null.</param>
+    /// <param name="paymentIntents">The repository used to manage payment intents. Cannot be null.</param>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="guardianships"/>, <paramref name="animals"/>, or <paramref name="db"/> is null.</exception>
     public GuardianshipService(
         IGuardianshipRepository guardianships,
-        IAnimalRepository animals)
+        IAnimalRepository animals,
+        IPaymentIntentRepository paymentIntents)
     {
         this.guardianships = guardianships ?? throw new ArgumentNullException(nameof(guardianships));
         this.animals = animals ?? throw new ArgumentNullException(nameof(animals));
+        this.paymentIntents = paymentIntents;
     }
 
     /// <summary>
@@ -279,9 +283,11 @@ public class GuardianshipService : IGuardianshipService
     /// <inheritdoc/>
     public async Task DeleteAsync(Guid guardianshipId, CancellationToken cancellationToken = default)
     {
+        // 1. Отримуємо опіку
         var entity = await this.guardianships.GetByIdAsync(guardianshipId, cancellationToken)
             ?? throw new KeyNotFoundException("Опіку не знайдено.");
 
+        // 2. Позначаємо тварину як не під опікою
         var animal = await this.animals.GetByIdAsync(entity.AnimalId, cancellationToken);
         if (animal is not null)
         {
@@ -289,6 +295,19 @@ public class GuardianshipService : IGuardianshipService
             await this.animals.UpdateAsync(animal, cancellationToken);
         }
 
+        // 3. Видаляємо всі PaymentIntents, що прив'язані до цієї опіки
+        var intents = await this.paymentIntents
+            .GetByGuardianshipIdAsync(entity.Id, cancellationToken);
+
+        if (intents.Any())
+        {
+            foreach (var intent in intents)
+            {
+                await this.paymentIntents.DeleteAsync(intent, cancellationToken);
+            }
+        }
+
+        // 4. Видаляємо саму опіку
         await this.guardianships.DeleteAsync(entity, cancellationToken);
     }
 }

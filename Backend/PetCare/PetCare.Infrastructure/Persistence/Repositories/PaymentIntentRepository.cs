@@ -43,7 +43,7 @@ public sealed class PaymentIntentRepository
             .Include(pi => pi.Donation)
             .Include(pi => pi.Subscription)
             .Include(pi => pi.Guardianship)
-                .ThenInclude(g => g.Animal)
+                .ThenInclude(g => g!.Animal)
             .FirstOrDefaultAsync(
                 pi => pi.ExternalOrderId == externalOrderId,
                 cancellationToken);
@@ -66,5 +66,15 @@ public sealed class PaymentIntentRepository
             .FirstOrDefaultAsync(
                 pi => pi.ProviderPaymentId == providerPaymentId,
                 cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public Task<List<PaymentIntent>> GetByGuardianshipIdAsync(
+    Guid guardianshipId,
+    CancellationToken ct = default)
+    {
+        return this.db.PaymentIntents
+            .Where(pi => pi.GuardianshipId == guardianshipId)
+            .ToListAsync(ct);
     }
 }

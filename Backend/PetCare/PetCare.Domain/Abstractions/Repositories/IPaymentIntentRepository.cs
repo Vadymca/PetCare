@@ -27,4 +27,15 @@ public interface IPaymentIntentRepository : IRepository<PaymentIntent>
     Task<PaymentIntent?> FindByProviderPaymentIdAsync(
         string providerPaymentId,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously retrieves all payment intents associated with the specified guardianship identifier.
+    /// </summary>
+    /// <param name="guardianshipId">The unique identifier of the guardianship for which to retrieve payment intents.</param>
+    /// <param name="ct">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a list of payment intents linked to
+    /// the specified guardianship. The list is empty if no payment intents are found.</returns>
+    Task<List<PaymentIntent>> GetByGuardianshipIdAsync(
+    Guid guardianshipId,
+    CancellationToken ct = default);
 }
