@@ -9,92 +9,147 @@ using PetCare.Application.Interfaces;
 using PetCare.Domain.Enums;
 
 /// <summary>
-/// Handles the process of resetting a recurring subscription, including
-/// canceling the old subscription and creating a new LiqPay recurring contract.
+/// Handles the process of resetting a recurring subscription by cancelling the old subscription,
+/// creating a new local subscription, and generating a LiqPay checkout for the new subscription.
 /// </summary>
 public sealed class ResetSubscriptionCommandHandler
-    : IRequestHandler<ResetSubscriptionCommand, SubscriptionDto>
+    : IRequestHandler<ResetSubscriptionCommand, LiqPayCheckoutResponseDto>
 {
-    private readonly ILiqPayService liqPayService;
     private readonly IPaymentService paymentService;
+    private readonly ILiqPayClient liqPayClient;
+    private readonly IGuardianshipService guardianshipService;
+    private readonly IAnimalService animalService;
+    private readonly IPaymentIntentService paymentIntentService;
     private readonly ILogger<ResetSubscriptionCommandHandler> logger;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ResetSubscriptionCommandHandler"/> class with the specified payment and logging.
-    /// services.
+    /// Initializes a new instance of the <see cref="ResetSubscriptionCommandHandler"/> class.
     /// </summary>
-    /// <param name="liqPayService">The service used to interact with the LiqPay payment gateway. Cannot be null.</param>
-    /// <param name="paymentService">The service responsible for handling payment operations. Cannot be null.</param>
-    /// <param name="logger">The logger used to record diagnostic and operational information. Cannot be null.</param>
-    /// <exception cref="ArgumentNullException">Thrown if liqPayService, paymentService, or logger is null.</exception>
+    /// <param name="paymentService">The payment service.</param>
+    /// <param name="liqPayClient">The LiqPay client.</param>
+    /// <param name="guardianshipService">The guardianship service.</param>
+    /// <param name="animalService">The animal service.</param>
+    /// <param name="paymentIntentService">The payment intent service.</param>
+    /// <param name="logger">The logger.</param>
     public ResetSubscriptionCommandHandler(
-        ILiqPayService liqPayService,
         IPaymentService paymentService,
+        ILiqPayClient liqPayClient,
+        IGuardianshipService guardianshipService,
+        IAnimalService animalService,
+        IPaymentIntentService paymentIntentService,
         ILogger<ResetSubscriptionCommandHandler> logger)
     {
-        this.liqPayService = liqPayService ?? throw new ArgumentNullException(nameof(liqPayService));
         this.paymentService = paymentService ?? throw new ArgumentNullException(nameof(paymentService));
+        this.liqPayClient = liqPayClient ?? throw new ArgumentNullException(nameof(liqPayClient));
+        this.guardianshipService = guardianshipService ?? throw new ArgumentNullException(nameof(guardianshipService));
+        this.animalService = animalService ?? throw new ArgumentNullException(nameof(animalService));
+        this.paymentIntentService = paymentIntentService ?? throw new ArgumentNullException(nameof(paymentIntentService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    /// <summary>
-    /// Resets a user's subscription by creating a new recurring contract and updating the subscription details.
-    /// </summary>
-    /// <param name="command">The command containing information required to reset the subscription, including the user ID, old subscription
-    /// ID, amount, currency, scope, and scope ID.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains a SubscriptionDto with the updated
-    /// subscription details.</returns>
-    public async Task<SubscriptionDto> Handle(
+    /// <inheritdoc />
+    public async Task<LiqPayCheckoutResponseDto> Handle(
         ResetSubscriptionCommand command,
         CancellationToken cancellationToken)
     {
-        this.logger.LogInformation(
-            "Resetting subscription {OldId} for user {UserId}",
-            command.OldSubscriptionId,
-            command.UserId);
+        // 1. Отримуємо стару підписку
+        var oldSub = await this.paymentService
+            .FindSubscriptionByProviderIdAsync(command.SubscriptionId.ToString(), cancellationToken)
+            ?? throw new KeyNotFoundException("Підписку не знайдено.");
 
-        // 1. string → enum
-        var scope = command.Scope switch
+        // 2. Визначаємо суму і валюту
+        decimal amount;
+        string currency;
+        if (oldSub.ScopeType == SubscriptionScope.Guardianship)
         {
-            "Guardianship" => SubscriptionScope.Guardianship,
-            "AidRequest" => SubscriptionScope.AidRequest,
-            _ => SubscriptionScope.Global,
-        };
+            var guardianship = await this.guardianshipService.GetByIdAsync(oldSub.ScopeId!.Value, cancellationToken)
+                ?? throw new InvalidOperationException("Опіка не знайдена.");
 
-        // 2. Створюємо новий LiqPay контракт
-        var liqResp = await this.liqPayService.CreateRecurringContractAsync(
-            command.UserId,
-            command.Amount,
-            command.Currency,
-            scope,
-            command.ScopeId,
+            var animal = await this.animalService.GetByIdAsync(guardianship.AnimalId, cancellationToken)
+                ?? throw new InvalidOperationException("Тварину не знайдено.");
+
+            amount = (decimal)animal.CareCost;
+            currency = "UAH";
+        }
+        else
+        {
+            amount = oldSub.Amount;
+            currency = oldSub.Currency;
+        }
+
+        // 3. Скидаємо стару підписку та створюємо нову локальну
+        var newSub = await this.paymentService.ResetSubscriptionAsync(
+            oldSubscriptionId: oldSub.Id,
+            userId: oldSub.UserId,
+            amount: amount,
+            currency: currency,
+            scope: oldSub.ScopeType,
+            scopeId: oldSub.ScopeId,
+            provider: oldSub.Provider,
+            paymentMethodId: oldSub.PaymentMethodId,
+            providerSubscriptionId: Guid.NewGuid().ToString(), // новий providerSubscriptionId
+            nextChargeAt: null,
             cancellationToken);
 
-        // 3. Оновлюємо локальні підписки через PaymentService
-        var newSub = await this.paymentService.ResetSubscriptionAsync(
-            command.OldSubscriptionId,
-            command.UserId,
-            command.Amount,
-            command.Currency,
-            scope,
-            command.ScopeId,
-            provider: "LiqPay",
-            paymentMethodId: liqResp.PaymentMethodId,
-            providerSubscriptionId: liqResp.ProviderSubscriptionId,
-            nextChargeAt: liqResp.NextChargeAt,
-            cancellationToken: cancellationToken);
-
-        return new SubscriptionDto(
+        this.logger.LogInformation(
+            "Old subscription {OldId} reset and new subscription {NewId} created for user {UserId}.",
+            oldSub.Id,
             newSub.Id,
+            oldSub.UserId);
+
+        // 4. Створюємо LiqPay intent для нової підписки
+        var intent = await this.paymentIntentService.CreateLiqPayIntentAsync(
+            newSub.ScopeType,
+            newSub.ScopeId,
             newSub.UserId,
-            newSub.Amount,
-            newSub.Currency,
-            newSub.Provider,
-            newSub.ProviderSubscriptionId,
-            newSub.NextChargeAt,
-            newSub.Status.ToString(),
-            newSub.ScopeType.ToString(),
-            newSub.ScopeId);
+            amount,
+            currency,
+            isRecurring: true,
+            anonymous: false,
+            cancellationToken);
+
+        string description;
+
+        if (newSub.ScopeType == SubscriptionScope.Guardianship && newSub.ScopeId.HasValue)
+        {
+            var guardianship = await this.guardianshipService.GetByIdAsync(newSub.ScopeId.Value, cancellationToken);
+            var animalName = guardianship?.AnimalId != null
+                ? (await this.animalService.GetByIdAsync(guardianship.AnimalId, cancellationToken))?.Name
+                : null;
+
+            description = animalName != null
+               ? $"Ви відновлюєте підписку на опіку для {animalName} (опікун: {newSub.User!.FirstName} {newSub.User.LastName})"
+               : $"Ви відновлюєте підписку на опіку (опікун: {newSub.User!.FirstName} {newSub.User.LastName})";
+        }
+        else
+        {
+            description = $"Відновлення підписки для користувача: {newSub.User!.FirstName} {newSub.User.LastName}";
+        }
+
+        // 5. Формуємо DTO для checkout
+        var dto = new CreateLiqPayCheckoutDto(
+            Amount: amount,
+            Currency: currency,
+            Description: description,
+            IsRecurring: true,
+            Scope: newSub.ScopeType,
+            EntityId: newSub.ScopeId,
+            UserId: newSub.UserId,
+            Anonymous: false,
+            PayerName: newSub.User!.FirstName,
+            PayerPhone: newSub.User.Phone,
+            PayerEmail: newSub.User.Email);
+
+        // 6. Генеруємо LiqPay checkout
+        var checkout = await this.liqPayClient.BuildCheckoutAsync(
+            dto,
+            intent.ExternalOrderId,
+            cancellationToken);
+
+        this.logger.LogInformation(
+            "LiqPay checkout generated for new subscription {NewId}.",
+            newSub.Id);
+
+        return checkout;
     }
 }

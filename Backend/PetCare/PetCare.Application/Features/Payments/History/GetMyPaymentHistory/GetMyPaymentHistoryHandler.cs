@@ -43,6 +43,7 @@ public sealed class GetMyPaymentHistoryHandler : IRequestHandler<GetMyPaymentHis
             p.Purpose ?? string.Empty,
             p.TargetEntity ?? string.Empty,
             p.TargetEntityId,
+            p.TransactionId,
             p.DonationDate)).ToList();
     }
 }

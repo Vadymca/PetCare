@@ -12,4 +12,5 @@ public sealed record MyPaymentHistoryDto(
     string Purpose,
     string TargetEntity,
     Guid? TargetEntityId,
+    string? ProviderSubscriptionId,
     DateTime DonationDate);

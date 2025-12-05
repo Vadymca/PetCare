@@ -2,7 +2,7 @@
 
 using System.Security.Claims;
 using MediatR;
-using Microsoft.AspNetCore.Mvc;
+using PetCare.Application.Dtos.Payments;
 using PetCare.Application.Features.Payments.Subscriptions.ResetSubscription;
 
 /// <summary>
@@ -29,7 +29,6 @@ public static class ResetSubscriptionEndpoint
     {
         app.MapPost("/api/subscriptions/{subscriptionId:guid}/reset", async (
             Guid subscriptionId,
-            [FromBody] ResetSubscriptionRequest request,
             HttpContext httpContext,
             IMediator mediator,
             ILoggerFactory loggerFactory,
@@ -38,60 +37,38 @@ public static class ResetSubscriptionEndpoint
             var logger = loggerFactory.CreateLogger("ResetSubscriptionEndpoint");
 
             var userIdClaim = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdClaim))
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             {
-                logger.LogWarning(
-                    "Unauthorized access attempt to reset subscription {SubId}",
-                    subscriptionId);
+                logger.LogWarning("Unauthorized attempt to reset subscription {SubId}", subscriptionId);
                 return Results.Unauthorized();
             }
 
-            Guid userId = Guid.Parse(userIdClaim);
-
             try
             {
-                var result = await mediator.Send(
-                    new ResetSubscriptionCommand(
-                        UserId: userId,
-                        OldSubscriptionId: subscriptionId,
-                        Amount: request.Amount,
-                        Currency: request.Currency,
-                        Scope: request.Scope,
-                        ScopeId: request.ScopeId),
-                    cancellationToken);
+                // Викликаємо команду, яка скасовує стару підписку і створює нову
+                var command = new ResetSubscriptionCommand(
+                    SubscriptionId: subscriptionId,
+                    UserId: userId);
 
-                logger.LogInformation(
-                    "Subscription {SubId} successfully reset for user {UserId}",
-                    subscriptionId,
-                    userId);
+                var checkout = await mediator.Send(command, cancellationToken);
 
-                return Results.Ok(result);
+                logger.LogInformation("Subscription {SubId} reset successfully for user {UserId}", subscriptionId, userId);
+
+                return Results.Ok(checkout);
             }
             catch (KeyNotFoundException ex)
             {
-                logger.LogWarning(
-                    ex,
-                    "Subscription {SubId} not found for reset.",
-                    subscriptionId);
-
+                logger.LogWarning(ex, "Subscription {SubId} not found.", subscriptionId);
                 return Results.NotFound(new { Error = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
-                logger.LogWarning(
-                    ex,
-                    "Invalid operation while resetting subscription {SubId}",
-                    subscriptionId);
-
+                logger.LogWarning(ex, "Invalid operation while resetting subscription {SubId}", subscriptionId);
                 return Results.BadRequest(new { Error = ex.Message });
             }
             catch (Exception ex)
             {
-                logger.LogError(
-                    ex,
-                    "Unexpected error resetting subscription {SubId}",
-                    subscriptionId);
-
+                logger.LogError(ex, "Unexpected error resetting subscription {SubId}", subscriptionId);
                 return Results.Problem($"Помилка при оновленні підписки: {ex.Message}");
             }
         })
@@ -99,19 +76,10 @@ public static class ResetSubscriptionEndpoint
         .RequireRateLimiting("GlobalPolicy")
         .WithName("ResetSubscription")
         .WithTags("Payments.Subscriptions")
-        .Produces(StatusCodes.Status200OK)
+        .Produces<LiqPayCheckoutResponseDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status500InternalServerError);
     }
-
-    /// <summary>
-    /// Represents the request body for resetting a subscription.
-    /// </summary>
-    public sealed record ResetSubscriptionRequest(
-        decimal Amount,
-        string Currency,
-        string Scope,
-        Guid? ScopeId);
 }
