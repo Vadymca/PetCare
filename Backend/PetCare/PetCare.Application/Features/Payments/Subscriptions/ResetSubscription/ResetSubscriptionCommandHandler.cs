@@ -62,11 +62,18 @@ public sealed class ResetSubscriptionCommandHandler
         string currency;
         if (oldSub.ScopeType == SubscriptionScope.Guardianship)
         {
-            var guardianship = await this.guardianshipService.GetByIdAsync(oldSub.ScopeId!.Value, cancellationToken)
-                ?? throw new InvalidOperationException("Опіка не знайдена.");
+            var guardianship = oldSub.ScopeId.HasValue
+                ? await this.guardianshipService.GetByIdAsync(oldSub.ScopeId.Value, cancellationToken)
+                : null;
 
-            var animal = await this.animalService.GetByIdAsync(guardianship.AnimalId, cancellationToken)
-                ?? throw new InvalidOperationException("Тварину не знайдено.");
+            var animal = guardianship?.AnimalId != null
+                ? await this.animalService.GetByIdAsync(guardianship.AnimalId, cancellationToken)
+                : null;
+
+            if (animal == null)
+            {
+                throw new InvalidOperationException("Тварину не знайдено.");
+            }
 
             amount = (decimal)animal.CareCost;
             currency = "UAH";
@@ -108,25 +115,29 @@ public sealed class ResetSubscriptionCommandHandler
             anonymous: false,
             cancellationToken);
 
-        string description;
+        // 5. Формуємо опис, null-безпечний
+        var userName = newSub.User != null
+            ? $"{newSub.User.FirstName} {newSub.User.LastName}"
+            : "анонім";
 
+        string description;
         if (newSub.ScopeType == SubscriptionScope.Guardianship && newSub.ScopeId.HasValue)
         {
             var guardianship = await this.guardianshipService.GetByIdAsync(newSub.ScopeId.Value, cancellationToken);
-            var animalName = guardianship?.AnimalId != null
-                ? (await this.animalService.GetByIdAsync(guardianship.AnimalId, cancellationToken))?.Name
+            var animal = guardianship?.AnimalId != null
+                ? await this.animalService.GetByIdAsync(guardianship.AnimalId, cancellationToken)
                 : null;
 
-            description = animalName != null
-               ? $"Ви відновлюєте підписку на опіку для {animalName} (опікун: {newSub.User!.FirstName} {newSub.User.LastName})"
-               : $"Ви відновлюєте підписку на опіку (опікун: {newSub.User!.FirstName} {newSub.User.LastName})";
+            description = animal != null
+                ? $"Ви відновлюєте підписку на опіку для {animal.Name} (опікун: {userName})"
+                : $"Ви відновлюєте підписку на опіку (опікун: {userName})";
         }
         else
         {
-            description = $"Відновлення підписки для користувача: {newSub.User!.FirstName} {newSub.User.LastName}";
+            description = $"Відновлення підписки для користувача: {userName}";
         }
 
-        // 5. Формуємо DTO для checkout
+        // 6. Формуємо DTO для checkout
         var dto = new CreateLiqPayCheckoutDto(
             Amount: amount,
             Currency: currency,
@@ -140,7 +151,7 @@ public sealed class ResetSubscriptionCommandHandler
             PayerPhone: newSub.User.Phone,
             PayerEmail: newSub.User.Email);
 
-        // 6. Генеруємо LiqPay checkout
+        // 7. Генеруємо LiqPay checkout
         var checkout = await this.liqPayClient.BuildCheckoutAsync(
             dto,
             intent.ExternalOrderId,

@@ -731,7 +731,8 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
         return await this.db.PaymentSubscriptions
             .AsNoTracking()
             .FirstOrDefaultAsync(
-                s => s.Id == idOrProviderId || s.ProviderSubscriptionId == providerId,
+                s => s.Id == idOrProviderId
+                     || (!string.IsNullOrEmpty(s.ProviderSubscriptionId) && s.ProviderSubscriptionId == idOrProviderId.ToString()),
                 cancellationToken);
     }
 }
