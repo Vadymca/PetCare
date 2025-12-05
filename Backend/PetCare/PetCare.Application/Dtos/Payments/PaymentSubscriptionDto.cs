@@ -17,4 +17,5 @@ public sealed record PaymentSubscriptionDto(
     string Currency,
     DateTime? NextChargeAt,
     string Status,
+    string? ProviderSubscriptionId,
     bool IsOverdue);
