@@ -116,8 +116,8 @@ public sealed class ResetSubscriptionCommandHandler
             cancellationToken);
 
         // 5. Формуємо опис, null-безпечний
-        var userName = newSub.User != null
-            ? $"{newSub.User.FirstName} {newSub.User.LastName}"
+        string userName = oldSub.User != null
+            ? $"{oldSub.User.FirstName} {oldSub.User.LastName}"
             : "анонім";
 
         string description;
@@ -147,9 +147,9 @@ public sealed class ResetSubscriptionCommandHandler
             EntityId: newSub.ScopeId,
             UserId: newSub.UserId,
             Anonymous: false,
-            PayerName: newSub.User!.FirstName,
-            PayerPhone: newSub.User.Phone,
-            PayerEmail: newSub.User.Email);
+            PayerName: oldSub.User?.FirstName ?? string.Empty,
+            PayerPhone: oldSub.User?.Phone,
+            PayerEmail: oldSub.User?.Email);
 
         // 7. Генеруємо LiqPay checkout
         var checkout = await this.liqPayClient.BuildCheckoutAsync(
