@@ -440,6 +440,20 @@ public class PaymentService : IPaymentService
         return newSub;
     }
 
+    /// <summary>
+    /// Finds a payment subscription by its local Id or provider subscription Id.
+    /// </summary>
+    /// <param name="idOrProviderId">The local subscription Id or provider subscription Id (as Guid).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The <see cref="PaymentSubscription"/> if found; otherwise, null.</returns>
+    public async Task<PaymentSubscription?> FindSubscriptionByIdOrProviderIdAsync(
+        Guid idOrProviderId,
+        CancellationToken cancellationToken = default)
+    {
+        return await this.guardianships
+            .FindSubscriptionByIdOrProviderIdAsync(idOrProviderId, cancellationToken);
+    }
+
     // helpers
 
     /// <summary>

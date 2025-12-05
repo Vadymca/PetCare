@@ -715,4 +715,23 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
         return await this.db.PaymentSubscriptions
             .FirstOrDefaultAsync(s => s.Id == subscriptionId, cancellationToken);
     }
+
+    /// <summary>
+    /// Retrieves a payment subscription either by its local Id or by provider-assigned subscription Id.
+    /// </summary>
+    /// <param name="idOrProviderId">The local subscription Id (Guid) or provider subscription Id (string as Guid).</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A <see cref="PaymentSubscription"/> instance if found; otherwise, null.</returns>
+    public async Task<PaymentSubscription?> FindSubscriptionByIdOrProviderIdAsync(
+        Guid idOrProviderId,
+        CancellationToken cancellationToken = default)
+    {
+        string providerId = idOrProviderId.ToString();
+
+        return await this.db.PaymentSubscriptions
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                s => s.Id == idOrProviderId || s.ProviderSubscriptionId == providerId,
+                cancellationToken);
+    }
 }

@@ -168,4 +168,14 @@ public interface IPaymentService
         string providerSubscriptionId,
         DateTime? nextChargeAt,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Finds a payment subscription by its local Id or provider subscription Id.
+    /// </summary>
+    /// <param name="idOrProviderId">The local subscription Id or provider subscription Id (as Guid).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The <see cref="PaymentSubscription"/> if found; otherwise, null.</returns>
+    Task<PaymentSubscription?> FindSubscriptionByIdOrProviderIdAsync(
+        Guid idOrProviderId,
+        CancellationToken cancellationToken = default);
 }
