@@ -13,7 +13,7 @@
   </div>
   @if (animalAidRequests.length > 3) {
     <div
-      class="w-full flex flex-col gap-2 mt-6 xl:grid xl:grid-cols-4 xl:grid-rows-2 xl:gap-2 xl:min-h-[820px] overflow-hidden"
+      class="w-full flex flex-col gap-2 mt-6 xl:grid xl:grid-cols-5 xl:grid-rows-2 xl:gap-2 xl:min-h-[820px] overflow-hidden"
     >
       <div class="relative xl:col-span-1 xl:row-span-1 overflow-hidden">
         <app-home-project-card
@@ -28,7 +28,7 @@
         ></app-home-project-card>
       </div>
       <div
-        class="box xl:col-start-2 xl:row-start-1 xl:row-span-2 overflow-hidden"
+        class="box xl:col-start-2 xl:row-start-1 xl:row-span-2 xl:col-span-2 overflow-hidden"
       >
         <app-home-project-card
           [animalAidRequest]="animalAidRequests[2]"
@@ -36,7 +36,7 @@
         ></app-home-project-card>
       </div>
       <div
-        class="xl:box relative xl:col-span-2 xl:row-span-2 xl:col-start-3 xl:row-start-1"
+        class="xl:box relative xl:col-span-2 xl:row-span-2 xl:col-start-4 xl:row-start-1"
       >
         <app-home-project-card
           [animalAidRequest]="animalAidRequests[3]"

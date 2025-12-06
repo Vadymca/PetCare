@@ -3,6 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Guardianship } from '../../core/models/guardianship';
+import { PaymentScope } from '../../core/models/liqPayCheckoutRequest';
 import { AnimalSubscriptionService } from '../../core/services/animal-subscription.service';
 import { GuardianshipService } from '../../core/services/guardianship.service';
 import { LiqPayService } from '../../core/services/liq-pay-service.service';
@@ -98,8 +99,54 @@ export class GuardianshipsComponent {
   }
   toChangePayment(guardianship: Guardianship) {
     console.log('toChangePayment', guardianship);
-    throw new Error('Method not implemented.');
-    //дописати, бо треба міняти не просто опіку, а регулярний платіж всередині опіки
+    if (!guardianship.paymentSubscription) this.createPayment(guardianship);
+    else this.renewPayment(guardianship);
+  }
+
+  renewPayment(guardianship: Guardianship) {
+    const id = guardianship.paymentSubscription.providerSubscriptionId;
+    if (!id) return;
+    try {
+      this.liqpayService.resetSubscription(id).subscribe({
+        next: response => {
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = response.gatewayUrl; // → https://www.liqpay.ua/api/3/checkout
+          form.style.display = 'none';
+
+          const dataInput = document.createElement('input');
+          dataInput.name = 'data';
+          dataInput.value = response.data;
+          form.appendChild(dataInput);
+
+          const signatureInput = document.createElement('input');
+          signatureInput.name = 'signature';
+          signatureInput.value = response.signature;
+          form.appendChild(signatureInput);
+
+          document.body.appendChild(form);
+          form.submit(); // Відкриває LiqPay у тій самій вкладці — ідеально!
+        },
+        error: err => {
+          console.error('LiqPay error:', err);
+        },
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  createPayment(guardianship: Guardianship) {
+    try {
+      this.liqpayService.startPayment({
+        scope: 'guardianship' as PaymentScope,
+        isRecurring: true,
+        entityId: guardianship.id,
+      });
+      this.router.navigate(['/payment/details']);
+    } catch (err) {
+      console.error(err);
+    }
   }
   toAdoption(animalId: string) {
     console.log('toAdoption', animalId);
@@ -136,40 +183,6 @@ export class GuardianshipsComponent {
         });
     }
   }
-  // private subscribeToAnimal(animal: Animal) {
-  //   if (animal.isFavorite) return;
-  //   animal.isChecked = false;
-  //   this.animalSubscriptionService
-  //     .createAnimalSubscription(animal.id)
-  //     .subscribe({
-  //       next: () => {
-  //         animal.isFavorite = true;
-  //         animal.isChecked = true;
-  //         this.favoriteAnimals.update(all => [...all, animal]);
-  //       },
-  //       error: () => {
-  //         animal.isChecked = true;
-  //       },
-  //     });
-  // }
-
-  // private unsubscribeFromAnimal(animal: Animal) {
-  //   animal.isChecked = false;
-  //   this.animalSubscriptionService
-  //     .deleteAnimalSubscription(animal.id)
-  //     .subscribe({
-  //       next: () => {
-  //         animal.isFavorite = false;
-  //         animal.isChecked = true;
-  //         this.favoriteAnimals.update(all =>
-  //           all.filter(a => a.id !== animal.id)
-  //         );
-  //       },
-  //       error: () => {
-  //         animal.isChecked = true;
-  //       },
-  //     });
-  // }
 
   toProfile() {
     this.router.navigate(['/profile']);
