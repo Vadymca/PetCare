@@ -1,0 +1,70 @@
+<div
+  class="flex flex-col items-center justify-start w-full px-6 sm:px-[50px] py-[150px] bg-primary-lightBlue text-secondary-neutral-mineShaft"
+>
+  <div class="inline-flex items-center w-full">
+    <div
+      class="hover:text-primary-orange inline-flex items-center cursor-pointer -translate-y-1/2 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-50"
+      (click)="toProfile()"
+      (keyup.enter)="toProfile()"
+      (keyup.space)="toProfile()"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'BACK' | translate"
+    >
+      <app-icon [name]="'arrowLeft'" class=""></app-icon>
+      <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
+    </div>
+  </div>
+
+  <h1
+    class="w-full font-fixel text-center text-40 font-bold leading-none"
+    style="font-size: clamp(16px, 6.5vw, 40px)"
+  >
+    {{ 'DONATIONS' | translate }}
+  </h1>
+  @if (subscriptions().length === 0 && payments().length === 0) {
+    <div class="flex font-bold font-inter text-base mt-4">
+      {{ 'NO_PAYMENTS' | translate }}
+    </div>
+  }
+  <div class="flex flex-col w-full max-w-[660px] mt-10 items-start">
+    @if (subscriptions().length > 0) {
+      <h2 class="flex font-bold font-Inter text-base">
+        {{ 'PAYMENT_SUBSCRIPTIONS' | translate }}
+      </h2>
+      <div class="flex flex-col mt-5 w-full items-stretch justify-start gap-4">
+        @for (subscription of subscriptions(); track subscription) {
+          <app-subscription-item
+            [subscription]="subscription"
+            (deleteSubscription)="showModal(subscription)"
+          ></app-subscription-item>
+        }
+      </div>
+    }
+    @if (payments().length > 0) {
+      <h2 class="flex font-bold font-Inter text-base mt-10">
+        {{ 'PAYMENT_ARCHIVE' | translate }}
+      </h2>
+      <div class="flex flex-col mt-5 w-full items-stretch justify-start gap-4">
+        @for (payment of payments(); track payment) {
+          <app-payment-item [payment]="payment"></app-payment-item>
+        }
+      </div>
+    }
+  </div>
+  <div class="flex flex-col items-center justify-center mt-10">
+    <app-primary-large-button
+      class="w-[260px]"
+      buttonTitle="MAKE_DONATION"
+      (pressButton)="goToDonations()"
+    ></app-primary-large-button>
+  </div>
+  @if (showModalWindow()) {
+    <app-confirm-modal
+      [text]="'DELETE_SUBSCRIPTION'"
+      [titleCancel]="'NOT_CANCEL'"
+      [titleSubmit]="'CANCEL'"
+      (confirmAction)="cancelSubscription()"
+    ></app-confirm-modal>
+  }
+</div>

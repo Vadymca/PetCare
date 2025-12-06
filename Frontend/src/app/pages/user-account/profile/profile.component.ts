@@ -66,8 +66,7 @@ export class ProfileComponent {
     this.showLogoutModal.set(false);
   }
   toDonations() {
-    //дописати компонент мої платежі і мої платіжні підписки
-    throw new Error('Method not implemented.');
+    this.router.navigate(['my-payments']);
   }
   toNotifications() {
     //дописати компонент з нотифікаціями

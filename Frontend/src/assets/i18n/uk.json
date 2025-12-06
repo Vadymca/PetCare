@@ -561,6 +561,7 @@
   "published": "Опубліковано",
   "archived": "Архівовано",
   "completed": "Завершено",
+  "Completed": "Завершено",
   "planned": "Заплановано",
   "ongoing": "В процесі",
   "adoptionDay": "День усиновлення",
@@ -683,7 +684,7 @@
   "FOUND": "Знайдено",
   "UNDER_CARE": "Під опікою",
   "CARE_PRICE": "Вартість опіки",
-	"LAST_PAYMENT": "Останній платіж",
+  "LAST_PAYMENT": "Останній платіж",
   "NEXT_PAYMENT": "Наступний платіж",
   "PAYMENT_ERROR_RETRY": "Платіж невдалий, повторіть оплату, будь ласка!",
   "ADOPT": "Усиновити",
@@ -692,5 +693,19 @@
   "CONTACT": "Зв'язатися з нами",
   "DELETE_GUARDIANSHIP": "Дуже шкода, що Ви вирішили припинити опіку над твариною. Ви впевнені, що хочете продовжити?",
   "DONT_DELETE_GUARDIANSHIP": "Буду опікуном",
-	"GUARDIANSHIP_EXPIRES_AT":"Опіку можна оплатити без скасування до"
+  "GUARDIANSHIP_EXPIRES_AT": "Опіку можна оплатити без скасування до",
+
+  "DONATIONS": "Мої донати",
+  "PAYMENT_ARCHIVE": "Архів платежів",
+  "PAYMENT_SUBSCRIPTIONS": "Заплановані платежі",
+  "PLANNED": "Очікується",
+  "PURPOSE": "Призначення",
+  "GUARDIANSHIP_PAYMENT": "Оплата за опіку, підопічний - ",
+  "AIDREQUEST_PAYMENT": "Донат на проект - ",
+  "GLOBAL_PURPOSE": "Загальна допомога притулку",
+  "CANCEL_SUBSCRIPTION": "Відмінити платіжну підписку",
+  "NOT_CANCEL": "Не відміняти",
+  "DELETE_SUBSCRIPTION": "Дуже шкода, що Ви вирішили припинити допомогу. Ви впевнені, що хочете продовжити?",
+  "MAKE_DONATION": "Зробити донат",
+  "NO_PAYMENTS": "Немає платежів"
 }
