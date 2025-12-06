@@ -85,3 +85,12 @@ desktop.ini
 docker-compose.override.yml
 
 .env
+
+# --- Frontend build & deps ---
+Frontend/dist/
+Frontend/node_modules/
+Frontend/.angular/
+Frontend/.vscode/
+
+# --- Mobile app ---
+Android/
