@@ -1,4 +1,0 @@
-package com.example.petcareapp.data.models;
-
-public class LoginRequest {
-}
