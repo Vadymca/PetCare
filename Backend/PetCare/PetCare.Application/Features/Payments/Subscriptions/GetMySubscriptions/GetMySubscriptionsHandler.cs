@@ -1,11 +1,12 @@
 ﻿namespace PetCare.Application.Features.Payments.Subscriptions.GetMySubscriptions;
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using MediatR;
 using PetCare.Application.Dtos.Payments;
 using PetCare.Application.Interfaces;
+using PetCare.Domain.Entities;
+using PetCare.Domain.Enums;
 
 /// <summary>
 /// Handles requests to retrieve the list of recurring subscriptions for a specific user.
@@ -17,12 +18,20 @@ using PetCare.Application.Interfaces;
 public sealed class GetMySubscriptionsHandler : IRequestHandler<GetMySubscriptionsCommand, IReadOnlyList<MySubscriptionDto>>
 {
     private readonly ISubscriptionService subscriptions;
+    private readonly IGuardianshipService guardianships;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GetMySubscriptionsHandler"/> class using the specified subscription service.
     /// </summary>
     /// <param name="subscriptions">The subscription service used to retrieve subscription information. Cannot be null.</param>
-    public GetMySubscriptionsHandler(ISubscriptionService subscriptions) => this.subscriptions = subscriptions;
+    /// <param name="guardianships">The guardianship service used for additional user context. Cannot be null.</param>
+    public GetMySubscriptionsHandler(
+        ISubscriptionService subscriptions,
+        IGuardianshipService guardianships)
+    {
+        this.subscriptions = subscriptions ?? throw new ArgumentNullException(nameof(subscriptions));
+        this.guardianships = guardianships ?? throw new ArgumentNullException(nameof(guardianships));
+    }
 
     /// <summary>
     /// Retrieves a read-only list of subscription details for the specified user.
@@ -34,16 +43,45 @@ public sealed class GetMySubscriptionsHandler : IRequestHandler<GetMySubscriptio
     public async Task<IReadOnlyList<MySubscriptionDto>> Handle(GetMySubscriptionsCommand request, CancellationToken ct)
     {
         var items = await this.subscriptions.GetMyRecurringAsync(request.UserId, ct);
-        return items.Select(s => new MySubscriptionDto(
-            s.Id,
-            s.Provider,
-            s.Amount,
-            s.Currency,
-            s.Status,
-            s.ScopeType,
-            s.ScopeId,
-            s.CreatedAt,
-            s.NextChargeAt,
-            s.LastChargeAt)).ToList();
+
+        var result = new List<MySubscriptionDto>(items.Count);
+
+        foreach (var s in items)
+        {
+            var purpose = await this.BuildPurposeAsync(s, ct);
+
+            result.Add(new MySubscriptionDto(
+                s.Id,
+                s.Provider,
+                s.Amount,
+                s.Currency,
+                s.Status,
+                s.ScopeType,
+                s.ScopeId,
+                s.ProviderSubscriptionId,
+                s.CreatedAt,
+                s.NextChargeAt,
+                s.LastChargeAt,
+                purpose));
+        }
+
+        return result;
+    }
+
+    private async Task<string> BuildPurposeAsync(PaymentSubscription subscription, CancellationToken ct)
+    {
+        if (subscription.ScopeType == SubscriptionScope.Guardianship && subscription.ScopeId is Guid gId)
+        {
+            var g = await this.guardianships.GetByIdAsync(gId, ct);
+
+            if (g?.Animal is null)
+            {
+                return "Опіка тварини";
+            }
+
+            return $"Опіка тварини: {g.Animal.Name}";
+        }
+
+        return "Підписка";
     }
 }

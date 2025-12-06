@@ -65,6 +65,7 @@ public sealed class CreateGuardianshipCommandHandler
                 subscription.Amount,
                 subscription.Currency,
                 subscription.NextChargeAt,
+                subscription.LastChargeAt,
                 subscription.Status.ToString(),
                 subscription.ProviderSubscriptionId,
                 isOverdue);

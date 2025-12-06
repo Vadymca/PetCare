@@ -71,6 +71,7 @@ public sealed class GetMyGuardianshipsHandler : IRequestHandler<GetMyGuardianshi
                     sub.Amount,
                     sub.Currency,
                     sub.NextChargeAt,
+                    sub.LastChargeAt,
                     sub.Status.ToString(),
                     sub.ProviderSubscriptionId,
                     isOverdue);

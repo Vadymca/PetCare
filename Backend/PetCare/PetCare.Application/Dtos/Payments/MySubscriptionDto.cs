@@ -12,6 +12,8 @@ public sealed record MySubscriptionDto(
     SubscriptionStatus Status,
     SubscriptionScope ScopeType,
     Guid? ScopeId,
+    string? ProviderSubscriptionId,
     DateTime CreatedAt,
     DateTime? NextChargeAt,
-    DateTime? LastChargeAt);
+    DateTime? LastChargeAt,
+    string Purpose);
