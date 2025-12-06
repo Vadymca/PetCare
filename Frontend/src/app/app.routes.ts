@@ -76,6 +76,7 @@ export const routes: Routes = [
       import('./features/animals/animal-detail/animal-detail.component').then(
         c => c.AnimalDetailComponent
       ),
+    data: { renderMode: 'server' },
   },
 
   {
@@ -91,6 +92,7 @@ export const routes: Routes = [
       import(
         './features/shelters/shelter-animals/shelter-animals.component'
       ).then(c => c.ShelterAnimalsComponent),
+    data: { renderMode: 'server' },
   },
 
   {
@@ -106,6 +108,7 @@ export const routes: Routes = [
       import(
         './features/articles/article-detail/article-detail.component'
       ).then(c => c.ArticleDetailComponent),
+    data: { renderMode: 'server' },
   },
   {
     path: 'success-stories',
@@ -120,6 +123,7 @@ export const routes: Routes = [
       import(
         './features/successStories/succes-story-detail/succes-story-detail.component'
       ).then(c => c.SuccesStoryDetailComponent),
+    data: { renderMode: 'server' },
   },
   {
     path: `adoption`,
@@ -141,6 +145,7 @@ export const routes: Routes = [
       import(
         './features/lost-pets/lost-pets-detail/lost-pets-detail.component'
       ).then(c => c.LostPetsDetailComponent),
+    data: { renderMode: 'server' },
   },
   {
     path: 'animal-aid-requests',
@@ -155,6 +160,7 @@ export const routes: Routes = [
       import(
         './features/animal-aid-request/animal-aid-request-detail/animal-aid-request-detail.component'
       ).then(c => c.AnimalAidRequestDetailComponent),
+    data: { renderMode: 'server' },
   },
   {
     path: 'profile',
