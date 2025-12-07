@@ -344,8 +344,11 @@ public class Program
             app.UseAntiforgery();
 
             // Явно відповідаємо на всі OPTIONS-запити (preflight)
-            app.MapMethods("{*path}", new[] { "OPTIONS" }, () => Results.Ok())
-               .RequireCors("PetCarePolicy");
+            app.MapMethods("{*any}", new[] { "OPTIONS" }, (HttpContext context) =>
+            {
+                context.Response.StatusCode = 200;
+                return Task.CompletedTask;
+            }).RequireCors("PetCarePolicy");
 
 
             // app.MapGet("/api/csrf-token", (IAntiforgery antiforgery, HttpContext context) =>
