@@ -150,10 +150,6 @@ export class AnimalAidRequestDetailComponent {
     const script = document.createElement('script');
     script.type = 'application/ld+json';
 
-    const authorName = animalAidRequest.user
-      ? `${animalAidRequest.user.firstName} ${animalAidRequest.user.lastName}`
-      : 'Admin';
-
     const shortDescription = animalAidRequest.description
       ? animalAidRequest.description.split(' ').slice(0, 25).join(' ') // приблизно 150 символів
       : '';
@@ -166,10 +162,6 @@ export class AnimalAidRequestDetailComponent {
       datePosted: new Date(animalAidRequest.createdAt).toISOString(),
       category: animalAidRequest.category,
       availability: 'https://schema.org/InStock',
-      author: {
-        '@type': 'Person',
-        name: authorName,
-      },
     };
 
     if (animalAidRequest.photos?.length) {

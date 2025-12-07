@@ -1,0 +1,32 @@
+<div
+  class="flex flex-col w-full rounded-40 p-5 bg-primary-beige text-secondary-neutral-mineShaft gap-2"
+>
+  <!-- Перший рядок - зліва номер і дата справа сума -->
+  <div class="flex flex-row justify-between gap-3 items-center">
+    <div class="flex gap-2">
+      <span class="font-bold">№ {{ payment().providerSubscriptionId }}</span>
+      <span class="text-[14px] text-secondary-neutral-doveGray">
+        {{ payment().donationDate | date: 'dd.MM.yyyy' }}</span
+      >
+    </div>
+    <div>
+      <span class="font-bold text-base text-primary-orange"
+        >{{ payment().amount | number: '1.2-2' }}
+        {{ payment().currency | translate }}</span
+      >
+    </div>
+  </div>
+  <!-- Другий рядок - статус -->
+  <p class="text-primary-light-orange text-start">
+    {{ payment().status | translate }}
+  </p>
+  <hr class="border-secondary-neutral-silverChalice mt-4" />
+  <!-- Призначення -->
+  <p class="flex font-bold">{{ 'PURPOSE' | translate }}</p>
+
+  <div class="flex">
+    <p class="flex text-secondary-neutral-doveGray">
+      {{ payment().purpose | translate }}
+    </p>
+  </div>
+</div>

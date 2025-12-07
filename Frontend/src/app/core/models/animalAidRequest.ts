@@ -1,5 +1,4 @@
 import { Shelter } from './shelter';
-import { User } from './user';
 
 export type AidCategory = 'Food' | 'Medical' | 'Equipment' | 'Other';
 export type AidRequestStatus =
@@ -9,8 +8,8 @@ export type AidRequestStatus =
   | 'Cancelled';
 export interface AnimalAidRequest {
   id: string;
-  userId: string;
-  user?: User; // якщо потрібно
+  // userId: string;
+  // user?: User; // якщо потрібно
   shelterId: string;
   shelter?: Shelter;
   title: string;

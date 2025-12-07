@@ -45,11 +45,6 @@
         </p>
         <div class="mt-4 space-y-1 text-gray-600 text-sm">
           <p class="text-gray-600">
-            {{ 'AUTHOR' | translate }} —
-            {{ animalAidRequest()?.user?.firstName || ('UNKNOWN' | translate) }}
-            {{ animalAidRequest()?.user?.lastName || ('UNKNOWN' | translate) }}
-          </p>
-          <p class="text-gray-600">
             {{ 'SHELTER' | translate }}:
             <a
               [routerLink]="['/shelters', animalAidRequest()?.shelter?.slug]"

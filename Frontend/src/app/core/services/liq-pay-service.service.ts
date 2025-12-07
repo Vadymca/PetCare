@@ -1,13 +1,12 @@
-import { HttpParams } from '@angular/common/http';
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import {
-  ActiveSubscriptionsResponse,
   LiqPayCheckoutRequest,
   LiqPayCheckoutResponse,
   PaymentHistoryResponse,
   PaymentScope,
   PaymentStatusResponse,
+  PaymentSubscription,
 } from '../models/liqPayCheckoutRequest';
 import { ApiService } from './api.service';
 
@@ -85,7 +84,9 @@ export class LiqPayService {
     this._data.set(null);
   }
 
-  proceed(overrides?: Partial<LiqPayCheckoutRequest>) {
+  proceed(
+    overrides?: Partial<LiqPayCheckoutRequest>
+  ): Observable<LiqPayCheckoutResponse> {
     const current = this._data();
     if (
       !current?.scope ||
@@ -130,26 +131,32 @@ export class LiqPayService {
     return this.api.getById<PaymentStatusResponse>(`payments/intents`, orderId);
   }
 
-  getPaymentHistory(page = 1, limit = 10): Observable<PaymentHistoryResponse> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('limit', limit.toString());
-
-    return this.api.get<PaymentHistoryResponse>(
-      `${this.endpoint}/history`,
-      params
-    );
+  getPaymentHistory(): Observable<[PaymentHistoryResponse]> {
+    return this.api.get<[PaymentHistoryResponse]>(`payments/me/history`);
   }
-  // 4. Активні підписки
-  getActiveSubscriptions(): Observable<ActiveSubscriptionsResponse> {
-    return this.api.get<ActiveSubscriptionsResponse>(
-      `${this.endpoint}/subscriptions/active`
-    );
+  // 4. Активні підписки - доопрацювати
+  getActiveSubscriptions(): Observable<[PaymentSubscription]> {
+    return this.api.get<[PaymentSubscription]>(`payments/me/subscriptions`);
   }
-  cancelSubscription(paymentId: string, reason?: string) {
+  cancelSubscription(subscriptionId: string) {
     return this.api.post<{ success: boolean; message: string }>(
-      `${this.endpoint}/subscription/${paymentId}/cancel`,
-      { reason }
+      `/api/subscriptions/${subscriptionId}/cancel`,
+      ''
     );
+  }
+  resetSubscription(
+    subscriptionId: string
+  ): Observable<LiqPayCheckoutResponse> {
+    return this.api
+      .post<LiqPayCheckoutResponse>(
+        `/api/subscriptions/${subscriptionId}/reset`,
+        ''
+      )
+      .pipe(
+        tap({
+          next: () => this._loading.set(false),
+          error: () => this._loading.set(false),
+        })
+      );
   }
 }

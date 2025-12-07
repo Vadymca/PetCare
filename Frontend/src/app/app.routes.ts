@@ -269,6 +269,15 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'my-payments',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/payment/my-payments/my-payments.component').then(
+        m => m.MyPaymentsComponent
+      ),
+  },
+
+  {
     path: 'guardianships',
     canActivate: [authGuard],
     loadComponent: () =>

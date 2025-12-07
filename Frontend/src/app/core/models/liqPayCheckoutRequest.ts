@@ -45,6 +45,10 @@ export interface PaymentStatusResponse {
 }
 
 export type PaymentStatus = 'pending' | 'success' | 'failure';
+export type PaymentSubscriptionStatus =
+  | 'RequiresPayment'
+  | 'Active'
+  | 'Completed';
 // | 'in_progress'
 // | 'reversed'
 // | 'expired'
@@ -74,23 +78,31 @@ export interface Payment {
 }
 /** Список платежів / історія */
 export interface PaymentHistoryResponse {
-  success: boolean;
-  total: number;
-  page: number;
-  limit: number;
-  payments: Payment[];
-}
-export interface ActiveSubscriptionsResponse {
-  success: boolean;
-  subscriptions: Payment[]; // тільки з type: 'recurring' і status !== 'fail'
-}
-export interface PaymentSubscription {
   id: string;
+  providerSubscriptionId?: string;
   amount: number;
   currency: 'UAH';
-  //provider?: string;//це що?
-  providerSubscriptionId?: string;
   status: PaymentStatus;
+  recurring: boolean;
+  purpose: string;
+  targetEntityId?: string;
+  donationDate: string;
+}
+
+export interface PaymentSubscription {
+  id: string;
+
+  amount: number;
+  currency: 'UAH';
+  provider?: string; //це що?
+  providerSubscriptionId?: string; //нема такого
+  status: PaymentSubscriptionStatus;
+  guardianship?: Guardianship;
+  aidRequest?: AnimalAidRequest;
+  scopeType: PaymentScope;
+  scopeId?: string;
+  createdAt: string; //"2025-12-04T20:25:42.841Z"
   lastChargeAt: string;
   nextChargeAt: string;
+  purpose?: string;
 }

@@ -1,0 +1,59 @@
+<div
+  class="flex flex-col w-full rounded-40 p-5 bg-primary-beige text-secondary-neutral-mineShaft gap-2"
+>
+  <!-- Перший рядок - зліва номер і дата справа сума -->
+  <div class="flex flex-row justify-between gap-3 items-center">
+    <div class="flex gap-2">
+      <span class="font-bold"
+        >№ {{ subscription().providerSubscriptionId }}</span
+      >
+      <span class="text-[14px] text-secondary-neutral-doveGray">
+        {{ subscription().nextChargeAt | date: 'dd.MM.yyyy' }}</span
+      >
+    </div>
+    <div>
+      <span class="font-bold text-base text-primary-orange"
+        >{{ subscription().amount | number: '1.2-2' }}
+        {{ 'CURRENCY' | translate }}</span
+      >
+    </div>
+  </div>
+  <!-- Другий рядок - очікується -->
+  <p class="text-primary-light-orange text-start">
+    {{ 'PLANNED' | translate }}
+  </p>
+  <hr class="border-secondary-neutral-silverChalice mt-4" />
+  <!-- Призначення -->
+  <p class="flex font-bold">{{ 'PURPOSE' | translate }}</p>
+  <!-- scope -->
+  <div class="flex">
+    @if (subscription().scopeType === 'guardianship') {
+      <p class="flex text-secondary-neutral-doveGray">
+        {{ subscription().purpose }}
+      </p>
+    }
+    @if (subscription().scopeType === 'aidRequest') {
+      <p class="flex text-secondary-neutral-doveGray">
+        {{ 'AIDREQUEST_PAYMENT' | translate }} -
+        <span class="text-primary-orange text-bold">{{
+          subscription().aidRequest?.title | uppercase
+        }}</span>
+      </p>
+    }
+    @if (subscription().scopeType === 'global') {
+      <p class="flex text-secondary-neutral-doveGray">
+        {{ 'GLOBAL_PURPOSE' | translate }}
+      </p>
+    }
+  </div>
+  <a
+    (click)="onDelete()"
+    (keyup.enter)="onDelete()"
+    (keyup.space)="onDelete()"
+    tabindex="0"
+    role="button"
+    class="cursor-pointer font-bold underline hover:text-primary-orange"
+  >
+    {{ 'CANCEL_SUBSCRIPTION' | translate }}
+  </a>
+</div>
