@@ -739,6 +739,7 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
     CancellationToken cancellationToken = default)
     {
         return await this.db.PaymentSubscriptions
+            .Include(s => s.User)
             .FirstOrDefaultAsync(s => s.Id == subscriptionId, cancellationToken);
     }
 

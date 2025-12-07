@@ -148,9 +148,9 @@ public sealed class ResetSubscriptionCommandHandler
             EntityId: newSub.ScopeId,
             UserId: newSub.UserId,
             Anonymous: false,
-            PayerName: oldSub.User?.FirstName ?? string.Empty,
-            PayerPhone: oldSub.User?.Phone,
-            PayerEmail: oldSub.User?.Email);
+            PayerName: newSub.User?.FirstName ?? string.Empty,
+            PayerPhone: newSub.User?.Phone,
+            PayerEmail: newSub.User?.Email);
 
         // 7. Генеруємо LiqPay checkout
         var checkout = await this.liqPayClient.BuildCheckoutAsync(
