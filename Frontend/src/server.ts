@@ -16,7 +16,7 @@ const app = express();
 const angularApp = new AngularNodeAppEngine();
 
 const apiProxy = createProxyMiddleware({
-  target: 'https://api-dobrodiy.kn314-uz.keenetic.pro',
+  target: 'https://api-dobrodiy.kn314-uz.keenetic.pro/api',
   changeOrigin: true,
   secure: false,
   pathRewrite: (path, req) => {

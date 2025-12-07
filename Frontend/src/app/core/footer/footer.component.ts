@@ -3,8 +3,9 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { SecondaryLargeButtonComponent } from '../../shared/components/buttons/blue/secondary-large-button.component';
+import { ConfirmModalComponent } from '../../shared/components/confirm-modal/confirm-modal.component';
 import { IconComponent } from '../../shared/components/icon.component';
-import { SocialMediaComponent } from "../../shared/components/social-media/social-media.component";
+import { SocialMediaComponent } from '../../shared/components/social-media/social-media.component';
 
 @Component({
   selector: 'app-footer',
@@ -15,18 +16,23 @@ import { SocialMediaComponent } from "../../shared/components/social-media/socia
     RouterModule,
     SecondaryLargeButtonComponent,
     ReactiveFormsModule,
-    SocialMediaComponent
-],
+    SocialMediaComponent,
+    ConfirmModalComponent,
+  ],
   templateUrl: './footer.component.html',
   styleUrl: './footer.component.css',
 })
 export class FooterComponent {
+  onSubscribe() {
+    this.showTakeCareModalWindow.set(false);
+  }
   fb = new FormBuilder();
   subscriptionForm = this.fb.group({
-    email: ['', [Validators.required,Validators.email]],
+    email: ['', [Validators.required, Validators.email]],
   });
   isDisabled = signal(true);
   submitted = signal(false);
+  showTakeCareModalWindow = signal(false);
   constructor() {
     effect(() => {
       // Тут беремо значення форми через signal-обгортку
@@ -36,6 +42,6 @@ export class FooterComponent {
     });
   }
   onSubmit() {
-    throw new Error('Method not implemented.');
+    this.showTakeCareModalWindow.set(true);
   }
 }

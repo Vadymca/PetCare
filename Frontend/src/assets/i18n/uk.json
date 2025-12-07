@@ -707,5 +707,6 @@
   "NOT_CANCEL": "Не відміняти",
   "DELETE_SUBSCRIPTION": "Дуже шкода, що Ви вирішили припинити допомогу. Ви впевнені, що хочете продовжити?",
   "MAKE_DONATION": "Зробити донат",
-  "NO_PAYMENTS": "Немає платежів"
+  "NO_PAYMENTS": "Немає платежів",
+	"SUBSCRIBE_TO_NEWSLETTER_CONFIRMATION": "Ви підписуєтеся на новини сайту!"
 }

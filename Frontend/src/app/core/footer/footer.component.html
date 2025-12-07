@@ -18,7 +18,7 @@
       >
         <div class="flex">
           <a
-            [routerLink]="'/animals'"
+            [routerLink]="'/support'"
             routerLinkActive="underline  font-semibold"
             class="transition hover:underline flex items-center justify-center cursor-pointer"
           >
@@ -27,7 +27,7 @@
         </div>
         <div class="flex">
           <a
-            [routerLink]="'/animals'"
+            [routerLink]="'/about'"
             routerLinkActive="underline  font-semibold"
             class="transition hover:underline flex items-center justify-center cursor-pointer"
           >
@@ -36,7 +36,7 @@
         </div>
         <div class="flex">
           <a
-            [routerLink]="'/animals'"
+            [routerLink]="'/reports'"
             routerLinkActive="underline  font-semibold"
             class="transition hover:underline flex items-center justify-center cursor-pointer"
           >
@@ -45,7 +45,7 @@
         </div>
         <div class="flex">
           <a
-            [routerLink]="'/animals'"
+            [routerLink]="'/adoption'"
             routerLinkActive="underline  font-semibold"
             class="transition hover:underline flex items-center justify-center cursor-pointer"
           >
@@ -54,7 +54,7 @@
         </div>
         <div class="flex">
           <a
-            [routerLink]="'/animals'"
+            [routerLink]="'/animal-aid-requests'"
             routerLinkActive="underline  font-semibold"
             class="transition hover:underline flex items-center justify-center cursor-pointer"
           >
@@ -63,7 +63,7 @@
         </div>
         <div class="flex">
           <a
-            [routerLink]="'/animals'"
+            [routerLink]="'/contacts'"
             routerLinkActive="underline  font-semibold"
             class="transition hover:underline flex items-center justify-center cursor-pointer"
           >
@@ -125,6 +125,14 @@
             ></app-secondary-large-button>
           </div>
         </div>
+        @if (showTakeCareModalWindow()) {
+          <app-confirm-modal
+            [text]="'SUBSCRIBE_TO_NEWSLETTER_CONFIRMATION'"
+            [titleCancel]="'CANCEL'"
+            [titleSubmit]="'CONTINUE'"
+            (confirmAction)="onSubscribe()"
+          ></app-confirm-modal>
+        }
       </div>
     </form>
     <app-icon

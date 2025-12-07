@@ -701,5 +701,6 @@
   "NOT_CANCEL": "Not cancel",
   "DELETE_SUBSCRIPTION": "Very sorry that you have decided to stop helping. Are you sure you want to continue?",
   "MAKE_DONATION": "Make a donation",
-  "NO_PAYMENTS": "No payments"
+  "NO_PAYMENTS": "No payments",
+  "SUBSCRIBE_TO_NEWSLETTER_CONFIRMATION": "You subscribe to the newsletter!"
 }
