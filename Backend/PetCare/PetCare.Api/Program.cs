@@ -93,7 +93,11 @@ public class Program
             {
                 options.AddPolicy("PetCarePolicy", policy =>
                 {
-                    policy.WithOrigins("http://localhost:4200", "https://localhost:4200", "https://api-dobrodiy.kn314-uz.keenetic.pro")
+                    policy.WithOrigins(
+                        "http://localhost:4200",
+                        "https://localhost:4200",
+                        "https://dobrodii.onrender.com",
+                        "https://api-dobrodiy.kn314-uz.keenetic.pro")
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials();
