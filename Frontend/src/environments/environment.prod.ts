@@ -12,7 +12,9 @@
 
 export const environment = {
   production: true,
+  // Fallback: Vite може не побачити env під час білда, тому використовуємо дефолт (твій бекенд)
+  // На Render env перезапишеться runtime, якщо вона є
   apiUrl:
-    import.meta.env.VITE_API_URL ??
+    import.meta.env.VITE_API_URL ||
     'https://api-dobrodiy.kn314-uz.keenetic.pro',
 };
