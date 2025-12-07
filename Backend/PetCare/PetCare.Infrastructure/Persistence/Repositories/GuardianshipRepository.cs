@@ -275,6 +275,9 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
         }
 
         subscription.Cancel();
+
+        this.db.PaymentSubscriptions.Remove(subscription);
+
         await this.db.SaveChangesAsync(ct);
     }
 

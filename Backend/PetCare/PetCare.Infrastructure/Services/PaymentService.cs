@@ -406,12 +406,8 @@ public class PaymentService : IPaymentService
             throw new InvalidOperationException("Ця підписка не належить користувачу.");
         }
 
-        // 2. Скасовуємо стару локально
-        old.Cancel();
-        old.SetNextCharge(null);
-
-        await this.guardianships.UpdateSubscriptionAsync(old, cancellationToken);
-
+        // 2. Викликаємо готовий метод CancelSubscriptionAsync
+        await this.guardianships.CancelSubscriptionAsync(old.ScopeId!.Value, cancellationToken);
         this.logger.LogInformation(
             "Canceled old subscription {OldId} for user {UserId}.",
             oldSubscriptionId,
