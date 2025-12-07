@@ -343,7 +343,7 @@ public class Program
 
             app.UseAntiforgery();
 
-            // 👇 Явно відповідаємо на всі OPTIONS-запити (preflight)
+            // Явно відповідаємо на всі OPTIONS-запити (preflight)
             app.MapMethods("{*path}", new[] { "OPTIONS" }, () => Results.Ok())
                .RequireCors("PetCarePolicy");
 
@@ -448,7 +448,7 @@ public class Program
             app.MapGetAnimalSubscriptionsByUserIdEndpoint(); // /api/animals/subscriptions/{userId}
 
             // ----------------------Shelters-----------------------
-            app.MapGetSheltersEndpoint(); // /api/shelters
+            app.MapGetSheltersEndpoint() // /api/shelters
             app.MapGetShelterByIdEndpoint(); // /api/shelters/{id}
             app.MapGetShelterBySlugEndpoint(); // /api/shelters/{slug}
             app.MapCreateShelterEndpoint(); // /api/shelters
