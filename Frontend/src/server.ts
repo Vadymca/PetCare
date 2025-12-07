@@ -15,15 +15,19 @@ const browserDistFolder = resolve(serverDistFolder, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
-app.use(
-  '/api',
-  createProxyMiddleware({
-    target: 'https://api-dobrodiy.kn314-uz.keenetic.pro',
-    changeOrigin: true,
-    secure: false,
-    pathRewrite: { '^/api': '/api' },
-  })
-);
+const apiProxy = createProxyMiddleware({
+  target: 'https://api-dobrodiy.kn314-uz.keenetic.pro',
+  changeOrigin: true,
+  secure: false,
+  pathRewrite: (path, req) => {
+    console.log('➡️ Original Path:', path);
+    const newPath = path.replace(/^\/api/, '/api');
+    console.log('➡️ Rewritten Path:', newPath);
+    return newPath;
+  },
+}) as unknown as import('http-proxy-middleware').RequestHandler;
+
+app.use('/api', apiProxy);
 
 /**
  * Example Express Rest API endpoints can be defined here.
