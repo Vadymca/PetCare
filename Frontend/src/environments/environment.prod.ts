@@ -10,11 +10,10 @@
 //     'https://api-dobrodiy.kn314-uz.keenetic.pro/',
 // };
 
+import { GLOBAL_ENV } from '../app/global-env';
+
 export const environment = {
   production: true,
-  // Fallback: Vite може не побачити env під час білда, тому використовуємо дефолт (твій бекенд)
-  // На Render env перезапишеться runtime, якщо вона є
-  apiUrl:
-    import.meta.env.VITE_API_URL ||
-    'https://api-dobrodiy.kn314-uz.keenetic.pro',
+  // Чисто, типобезпечно і без any
+  apiUrl: GLOBAL_ENV.API_BASE_URL,
 };
