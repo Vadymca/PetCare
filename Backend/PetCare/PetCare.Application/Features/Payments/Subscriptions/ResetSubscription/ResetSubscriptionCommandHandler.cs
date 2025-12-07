@@ -84,7 +84,19 @@ public sealed class ResetSubscriptionCommandHandler
             currency = oldSub.Currency;
         }
 
-        // 3. Скидаємо стару підписку та створюємо нову локальну
+        // 3. Створюємо LiqPay intent для нової підписки
+        var intent = await this.paymentIntentService.CreateLiqPayIntentAsync(
+            oldSub.ScopeType,
+            oldSub.ScopeId,
+            oldSub.UserId,
+            amount,
+            currency,
+            isRecurring: true,
+            anonymous: false,
+            cancellationToken);
+
+        // 4. Скидаємо стару підписку та створюємо нову локальну
+        var nextChargeAt = DateTime.UtcNow.AddDays(30);
         var newSub = await this.paymentService.ResetSubscriptionAsync(
             oldSubscriptionId: oldSub.Id,
             userId: oldSub.UserId,
@@ -95,7 +107,8 @@ public sealed class ResetSubscriptionCommandHandler
             provider: oldSub.Provider,
             paymentMethodId: oldSub.PaymentMethodId,
             providerSubscriptionId: oldSub.ProviderSubscriptionId,
-            nextChargeAt: null,
+            nextChargeAt: nextChargeAt,
+            externalOrderId: intent.ExternalOrderId,
             cancellationToken);
 
         this.logger.LogInformation(
@@ -103,17 +116,6 @@ public sealed class ResetSubscriptionCommandHandler
             oldSub.Id,
             newSub.Id,
             oldSub.UserId);
-
-        // 4. Створюємо LiqPay intent для нової підписки
-        var intent = await this.paymentIntentService.CreateLiqPayIntentAsync(
-            newSub.ScopeType,
-            newSub.ScopeId,
-            newSub.UserId,
-            amount,
-            currency,
-            isRecurring: true,
-            anonymous: false,
-            cancellationToken);
 
         // 5. Формуємо опис, null-безпечний
         string userName = oldSub.User != null

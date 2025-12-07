@@ -16,6 +16,7 @@ public class PaymentService : IPaymentService
 {
     private readonly IGuardianshipRepository guardianships;
     private readonly IGuardianshipService guardianshipService;
+    private readonly IPaymentIntentService paymentIntentService;
     private readonly ILogger<PaymentService> logger;
 
     /// <summary>
@@ -25,15 +26,18 @@ public class PaymentService : IPaymentService
     /// <param name="db">The database context used for accessing and managing payment-related data.</param>
     /// <param name="guardianships">The repository used to retrieve and manage guardianship information associated with payments.</param>
     /// <param name="guardianshipService">The service for managing guardianship-related operations.</param>
+    /// <param name="paymentIntentService">The service for managing payment intents.</param>
     /// <param name="logger">The logger instance for logging payment service operations and events.</param>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="db"/> or <paramref name="guardianships"/> is null.</exception>
     public PaymentService(
         IGuardianshipRepository guardianships,
         IGuardianshipService guardianshipService,
+        IPaymentIntentService paymentIntentService,
         ILogger<PaymentService> logger)
     {
         this.guardianships = guardianships ?? throw new ArgumentNullException(nameof(guardianships));
         this.guardianshipService = guardianshipService ?? throw new ArgumentNullException(nameof(guardianshipService));
+        this.paymentIntentService = paymentIntentService ?? throw new ArgumentNullException(nameof(paymentIntentService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -356,28 +360,29 @@ public class PaymentService : IPaymentService
             subscription.LastChargeAt);
     }
 
-   /// <summary>
-   /// Resets a user's payment subscription by canceling the specified existing subscription and creating a new one with
-   /// the provided parameters.
-   /// </summary>
-   /// <remarks>The old subscription is canceled before the new subscription is created. The operation is
-   /// performed atomically to ensure that the user does not have overlapping active subscriptions. The method does not
-   /// interact with external payment providers; it updates only the local subscription records.</remarks>
-   /// <param name="oldSubscriptionId">The unique identifier of the existing subscription to be canceled and replaced.</param>
-   /// <param name="userId">The unique identifier of the user who owns the subscription.</param>
-   /// <param name="amount">The recurring payment amount for the new subscription. Must be a positive value.</param>
-   /// <param name="currency">The ISO currency code for the subscription payment (for example, "USD"). Cannot be null or empty.</param>
-   /// <param name="scope">The scope of the subscription, indicating the context or type of subscription being created.</param>
-   /// <param name="scopeId">The unique identifier of the scope, if applicable. Specify null if the subscription does not require a scope
-   /// identifier.</param>
-   /// <param name="provider">The name of the payment provider for the new subscription. Cannot be null or empty.</param>
-   /// <param name="paymentMethodId">The unique identifier of the payment method to be used for the new subscription.</param>
-   /// <param name="providerSubscriptionId">The identifier of the subscription as assigned by the payment provider. Cannot be null or empty.</param>
-   /// <param name="nextChargeAt">The date and time of the next scheduled charge for the new subscription, or null if not scheduled.</param>
-   /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-   /// <returns>A task that represents the asynchronous operation. The task result contains the newly created payment
-   /// subscription.</returns>
-   /// <exception cref="InvalidOperationException">Thrown if the specified subscription does not exist or does not belong to the specified user.</exception>
+    /// <summary>
+    /// Resets a user's payment subscription by canceling the specified existing subscription and creating a new one with
+    /// the provided parameters.
+    /// </summary>
+    /// <remarks>The old subscription is canceled before the new subscription is created. The operation is
+    /// performed atomically to ensure that the user does not have overlapping active subscriptions. The method does not
+    /// interact with external payment providers; it updates only the local subscription records.</remarks>
+    /// <param name="oldSubscriptionId">The unique identifier of the existing subscription to be canceled and replaced.</param>
+    /// <param name="userId">The unique identifier of the user who owns the subscription.</param>
+    /// <param name="amount">The recurring payment amount for the new subscription. Must be a positive value.</param>
+    /// <param name="currency">The ISO currency code for the subscription payment (for example, "USD"). Cannot be null or empty.</param>
+    /// <param name="scope">The scope of the subscription, indicating the context or type of subscription being created.</param>
+    /// <param name="scopeId">The unique identifier of the scope, if applicable. Specify null if the subscription does not require a scope
+    /// identifier.</param>
+    /// <param name="provider">The name of the payment provider for the new subscription. Cannot be null or empty.</param>
+    /// <param name="paymentMethodId">The unique identifier of the payment method to be used for the new subscription.</param>
+    /// <param name="providerSubscriptionId">The identifier of the subscription as assigned by the payment provider. Cannot be null or empty.</param>
+    /// <param name="nextChargeAt">The date and time of the next scheduled charge for the new subscription, or null if not scheduled.</param>
+    /// <param name="externalOrderId">An optional external order identifier to associate with the new subscription for tracking purposes.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the newly created payment
+    /// subscription.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the specified subscription does not exist or does not belong to the specified user.</exception>
     public async Task<PaymentSubscription> ResetSubscriptionAsync(
        Guid oldSubscriptionId,
        Guid userId,
@@ -389,6 +394,7 @@ public class PaymentService : IPaymentService
        Guid paymentMethodId,
        string providerSubscriptionId,
        DateTime? nextChargeAt,
+       string? externalOrderId = null,
        CancellationToken cancellationToken = default)
     {
         // 1. Завантажуємо існуючу підписку (tracked)
@@ -428,7 +434,9 @@ public class PaymentService : IPaymentService
             provider,
             providerSubscriptionId);
 
-        newSub.SetNextCharge(nextChargeAt);
+        // 4. Встановлюємо дати
+        newSub.SetLastCharge(DateTime.UtcNow);
+        newSub.SetNextCharge(nextChargeAt ?? DateTime.UtcNow.AddDays(30));
 
         await this.guardianships.AddSubscriptionAsync(newSub, cancellationToken);
 
@@ -436,6 +444,17 @@ public class PaymentService : IPaymentService
             "Created new subscription {NewId} for user {UserId}.",
             newSub.Id,
             userId);
+
+        // 6. Прив'язуємо підписку до PaymentIntent
+        if (!string.IsNullOrWhiteSpace(externalOrderId))
+        {
+            await this.paymentIntentService.AttachSubscriptionAsync(externalOrderId, newSub.Id, cancellationToken);
+
+            if (scope == SubscriptionScope.Guardianship && scopeId.HasValue)
+            {
+                await this.paymentIntentService.AttachGuardianshipAsync(externalOrderId, scopeId.Value, cancellationToken);
+            }
+        }
 
         return newSub;
     }

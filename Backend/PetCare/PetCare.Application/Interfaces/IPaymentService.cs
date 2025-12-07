@@ -153,6 +153,7 @@ public interface IPaymentService
     /// <param name="providerSubscriptionId">The identifier of the new subscription as assigned by the payment provider. Cannot be null or empty.</param>
     /// <param name="nextChargeAt">The date and time when the next charge should occur for the new subscription, or null to use the default
     /// schedule.</param>
+    /// <param name="externalOrderId">An optional external order identifier associated with the subscription.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the newly created payment
     /// subscription.</returns>
@@ -167,6 +168,7 @@ public interface IPaymentService
         Guid paymentMethodId,
         string providerSubscriptionId,
         DateTime? nextChargeAt,
+        string? externalOrderId = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
