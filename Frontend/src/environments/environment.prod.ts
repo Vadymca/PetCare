@@ -10,10 +10,7 @@
 //     'https://api-dobrodiy.kn314-uz.keenetic.pro/',
 // };
 
-import { GLOBAL_ENV } from '../app/global-env';
-
 export const environment = {
   production: true,
-  // Чисто, типобезпечно і без any
-  apiUrl: GLOBAL_ENV.API_BASE_URL,
+  apiUrl: 'https://api-dobrodiy.kn314-uz.keenetic.pro', // жорстко твій бекенд — без жодних змінних
 };

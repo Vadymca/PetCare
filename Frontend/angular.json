@@ -60,11 +60,7 @@
                 }
               ],
               "sourceMap": false,
-              "optimization": true,
-
-              "define": {
-                "GLOBAL_ENV.API_BASE_URL": "\"https://api-dobrodiy.kn314-uz.keenetic.pro\""
-              }
+              "optimization": true
             },
             "development": {
               "optimization": false,
