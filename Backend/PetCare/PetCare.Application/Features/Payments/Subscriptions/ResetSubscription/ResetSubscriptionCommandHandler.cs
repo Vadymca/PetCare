@@ -94,7 +94,7 @@ public sealed class ResetSubscriptionCommandHandler
             scopeId: oldSub.ScopeId,
             provider: oldSub.Provider,
             paymentMethodId: oldSub.PaymentMethodId,
-            providerSubscriptionId: Guid.NewGuid().ToString(), // новий providerSubscriptionId
+            providerSubscriptionId: oldSub.ProviderSubscriptionId,
             nextChargeAt: null,
             cancellationToken);
 
