@@ -8,6 +8,7 @@
 // ];
 
 import { Routes } from '@angular/router';
+import { RenderMode } from '@angular/ssr';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -76,7 +77,7 @@ export const routes: Routes = [
       import('./features/animals/animal-detail/animal-detail.component').then(
         c => c.AnimalDetailComponent
       ),
-    data: { renderMode: 'Server' },
+    data: { renderMode: RenderMode.Server },
   },
 
   {
@@ -92,7 +93,7 @@ export const routes: Routes = [
       import(
         './features/shelters/shelter-animals/shelter-animals.component'
       ).then(c => c.ShelterAnimalsComponent),
-    data: { renderMode: 'Server' },
+    data: { renderMode: RenderMode.Server },
   },
 
   {
@@ -108,7 +109,7 @@ export const routes: Routes = [
       import(
         './features/articles/article-detail/article-detail.component'
       ).then(c => c.ArticleDetailComponent),
-    data: { renderMode: 'Server' },
+    data: { renderMode: RenderMode.Server },
   },
   {
     path: 'success-stories',
@@ -123,7 +124,7 @@ export const routes: Routes = [
       import(
         './features/successStories/succes-story-detail/succes-story-detail.component'
       ).then(c => c.SuccesStoryDetailComponent),
-    data: { renderMode: 'Server' },
+    data: { renderMode: RenderMode.Server },
   },
   {
     path: `adoption`,
@@ -145,7 +146,7 @@ export const routes: Routes = [
       import(
         './features/lost-pets/lost-pets-detail/lost-pets-detail.component'
       ).then(c => c.LostPetsDetailComponent),
-    data: { renderMode: 'Server' },
+    data: { renderMode: RenderMode.Server },
   },
   {
     path: 'animal-aid-requests',
@@ -160,7 +161,7 @@ export const routes: Routes = [
       import(
         './features/animal-aid-request/animal-aid-request-detail/animal-aid-request-detail.component'
       ).then(c => c.AnimalAidRequestDetailComponent),
-    data: { renderMode: 'Server' },
+    data: { renderMode: RenderMode.Server },
   },
   {
     path: 'profile',
