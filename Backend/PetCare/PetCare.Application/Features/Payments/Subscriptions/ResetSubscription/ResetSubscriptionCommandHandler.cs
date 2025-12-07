@@ -53,8 +53,7 @@ public sealed class ResetSubscriptionCommandHandler
         CancellationToken cancellationToken)
     {
         // 1. Отримуємо стару підписку
-        var oldSub = await this.paymentService
-            .FindSubscriptionByIdOrProviderIdAsync(command.SubscriptionId, cancellationToken)
+        var oldSub = await this.paymentService.GetSubscriptionByIdForUpdateAsync(command.SubscriptionId, cancellationToken)
             ?? throw new KeyNotFoundException("Підписку не знайдено.");
 
         // 2. Визначаємо суму і валюту

@@ -180,4 +180,18 @@ public interface IPaymentService
     Task<PaymentSubscription?> FindSubscriptionByIdOrProviderIdAsync(
         Guid idOrProviderId,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a payment subscription by its unique identifier for update operations.
+    /// </summary>
+    /// <remarks>This method is intended for scenarios where the subscription will be updated. The returned
+    /// subscription may be locked for concurrency control depending on the underlying data store
+    /// implementation.</remarks>
+    /// <param name="subscriptionId">The unique identifier of the payment subscription to retrieve.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A <see cref="PaymentSubscription"/> instance representing the subscription if found; otherwise, <see
+    /// langword="null"/>.</returns>
+    Task<PaymentSubscription?> GetSubscriptionByIdForUpdateAsync(
+    Guid subscriptionId,
+    CancellationToken cancellationToken = default);
 }
