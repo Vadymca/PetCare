@@ -1,5 +1,6 @@
 namespace PetCare.Api;
 
+using System.Threading.RateLimiting;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -39,7 +40,6 @@ using PetCare.Infrastructure.Identity;
 using PetCare.Infrastructure.Persistence;
 using Scalar.AspNetCore;
 using Serilog;
-using System.Threading.RateLimiting;
 
 /// <summary>
 /// The main entry point class for the PetCare API application.
@@ -337,9 +337,9 @@ public class Program
 
             app.UseRouting();
             app.UseCors("PetCarePolicy");
-            app.UseRateLimiter();
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseRateLimiter();
 
             app.UseAntiforgery();
 

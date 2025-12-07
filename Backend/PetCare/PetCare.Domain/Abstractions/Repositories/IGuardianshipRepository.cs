@@ -124,6 +124,14 @@ public interface IGuardianshipRepository : IRepository<Guardianship>
     Task CancelSubscriptionAsync(Guid guardianshipId, CancellationToken ct = default);
 
     /// <summary>
+    /// Cancels the payment subscription associated with the specified guardianship Id asynchronously.
+    /// </summary>
+    /// <param name="guardianshipId">The unique identifier of the guardianship.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task CancelSubscriptionByIdAsync(Guid guardianshipId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Asynchronously adds a new donation record to the data store.
     /// </summary>
     /// <param name="donation">The donation to add. Cannot be null. All required fields of the donation must be populated.</param>

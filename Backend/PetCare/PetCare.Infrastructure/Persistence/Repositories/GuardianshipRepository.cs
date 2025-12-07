@@ -439,6 +439,29 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
     }
 
     /// <summary>
+    /// Cancels the payment subscription associated with the specified guardianship Id asynchronously.
+    /// </summary>
+    /// <param name="guardianshipId">The unique identifier of the guardianship.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public async Task CancelSubscriptionByIdAsync(Guid guardianshipId, CancellationToken cancellationToken = default)
+    {
+        var subscription = await this.db.PaymentSubscriptions
+            .FirstOrDefaultAsync(s => s.ScopeType == SubscriptionScope.Guardianship && s.ScopeId == guardianshipId, cancellationToken);
+
+        if (subscription is null)
+        {
+            return;
+        }
+
+        subscription.Cancel();
+
+        this.db.PaymentSubscriptions.Remove(subscription);
+
+        await this.db.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
     /// Asynchronously retrieves the list of payment subscriptions associated with the specified user.
     /// </summary>
     /// <param name="userId">The unique identifier of the user whose payment subscriptions are to be retrieved.</param>
