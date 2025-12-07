@@ -448,7 +448,7 @@ public class Program
             app.MapGetAnimalSubscriptionsByUserIdEndpoint(); // /api/animals/subscriptions/{userId}
 
             // ----------------------Shelters-----------------------
-            app.MapGetSheltersEndpoint() // /api/shelters
+            app.MapGetSheltersEndpoint(); // /api/shelters
             app.MapGetShelterByIdEndpoint(); // /api/shelters/{id}
             app.MapGetShelterBySlugEndpoint(); // /api/shelters/{slug}
             app.MapCreateShelterEndpoint(); // /api/shelters
