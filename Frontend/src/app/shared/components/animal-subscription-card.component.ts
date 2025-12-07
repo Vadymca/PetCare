@@ -16,7 +16,10 @@ import { AnimalSubscription } from '../../core/models/animalSubscription';
         class="block p-4 bg-white rounded-2xl shadow hover:shadow-lg transition cursor-pointer"
         (click)="goToAnimal()"
       >
-        <h2 class="text-xl font-semibold">
+        <h2
+          class="text-xl font-semibold"
+          style="font-size: clamp(16px, 6.5vw, 20px)"
+        >
           {{ animalSubscription.animal!.name }}
         </h2>
         <p class="text-gray-600">

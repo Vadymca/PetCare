@@ -3,6 +3,7 @@ import {
   Component,
   HostListener,
   inject,
+  OnInit,
   PLATFORM_ID,
   signal,
 } from '@angular/core';
@@ -16,7 +17,7 @@ import { IconComponent } from '../icon.component';
   templateUrl: './home-partners.component.html',
   styleUrl: './home-partners.component.css',
 })
-export class HomePartnersComponent {
+export class HomePartnersComponent implements OnInit {
   items = signal<string[]>([
     'PartnersItem1',
     'PartnersItem2',
@@ -36,6 +37,9 @@ export class HomePartnersComponent {
   onResize() {
     this.updateVisibleCount();
   }
+  ngOnInit() {
+    this.updateVisibleCount(); // встановлюємо одразу при завантаженні
+  }
   private updateVisibleCount() {
     const width = window.innerWidth;
 
@@ -51,11 +55,13 @@ export class HomePartnersComponent {
     }
   }
   next() {
+    const vis = this.visibleCount();
+    console.log(vis);
     if (this.animating) return;
     this.animating = true;
-    // плавний рух вліво на 1 картку
-
-    this.offset.set(-100 / this.visibleCount());
+    // права стрілка
+    const move = vis === 1 ? 120 : vis === 2 ? 49.3 : 25;
+    this.offset.set(-move);
   }
 
   prev() {
@@ -68,7 +74,9 @@ export class HomePartnersComponent {
     this.items.set(arr);
 
     // одразу зсуваємо на -1 картку
-    this.offset.set(-100 / this.visibleCount());
+    const move =
+      this.visibleCount() === 1 ? 120 : this.visibleCount() === 2 ? 49.3 : 25;
+    this.offset.set(-move);
 
     // невелика затримка, щоб анімація спрацювала
     setTimeout(() => {
@@ -78,6 +86,7 @@ export class HomePartnersComponent {
   }
 
   onTransitionEnd() {
+    this.animating = false;
     const arr = [...this.items()];
     if (this.offset() < 0) {
       const first = arr.shift();
@@ -90,7 +99,7 @@ export class HomePartnersComponent {
     this.items.set(arr);
 
     // обнуляємо offset без анімації
-    this.animating = false;
+
     this.offset.set(0);
   }
 }

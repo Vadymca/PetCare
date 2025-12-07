@@ -24,6 +24,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
 
+    //provideHttpClient(),
     provideHttpClient(withInterceptors([httpInterceptor])),
 
     // 👇 Підключаємо TranslateModule через importProvidersFrom

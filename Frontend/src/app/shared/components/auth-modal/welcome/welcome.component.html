@@ -2,15 +2,18 @@
   <div class="flex justify-center text-primary-orange content-center">
     <app-icon [name]="'logoUkrSmall'" class="relative -top-5"></app-icon>
   </div>
-  <h5 class="text-40 mb-1 relative -top-2">
+  <h5
+    class="text-40 mb-1 relative -top-2"
+    style="font-size: clamp(16px, 4vw, 40px)"
+  >
     {{ 'LOGIN' | translate | uppercase }}
   </h5>
 
   <p class="mb-6">{{ 'DONT_HAVE_ACCOUNT' | translate }}</p>
-  <h5 class="text-40 relative -top-2">
+  <h5 class="text-40 relative -top-2" style="font-size: clamp(16px, 4vw, 40px)">
     {{ 'REGISTER' | translate | uppercase }}
   </h5>
-  <div class="space-y-4 mt-10 content-center">
+  <div class="space-y-2 sm:space-y-4 mt-1 sm:mt-10 content-center">
     <div class="flex justify-center">
       <app-primary-large-button
         class="w-[260px]"
@@ -26,11 +29,17 @@
       ></app-secondary-large-button>
     </div>
   </div>
-  <p class="mt-5 mb-11">{{ 'OR_CONTINUE_WITH' | translate | uppercase }}</p>
+  <p class="mt-1 sm:mt-5 mb-3 sm:mb-11">
+    {{ 'OR_CONTINUE_WITH' | translate | uppercase }}
+  </p>
   <div class="flex flex-col w-full space-x-4 justify-center">
-    <div class="flex justify-center gap-2">
-      <app-icon [name]="'google'" class="cursor-pointer"></app-icon>
-      <app-icon [name]="'apple'" class="cursor-pointer"></app-icon>
+    <div
+      class="flex flex-col lg:flex-row justify-center gap-1 sm:gap-2 w-full items-center"
+    >
+      <button (click)="googleLogin()">
+        <app-icon [name]="'google'" class="cursor-pointer"></app-icon>
+      </button>
+      <!-- <app-icon [name]="'apple'" class="cursor-pointer"></app-icon> -->
       <button (click)="facebookLogin()">
         <app-icon [name]="'facebook'" class="cursor-pointer"></app-icon>
       </button>
@@ -38,7 +47,7 @@
     <div class="flex justify-center">
       <button
         type="button"
-        class="flex mt-[60px] space-x-4 justify-center cursor-pointer hover:text-primary-orange focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-offset-2 bg-transparent border-none"
+        class="flex mt-1 sm:mt-[60px] space-x-4 justify-center cursor-pointer hover:text-primary-orange focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-offset-2 bg-transparent border-none"
         (click)="emitOption('login')"
         (keyup.enter)="emitOption('login')"
         (keyup.space)="emitOption('login')"

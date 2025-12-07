@@ -24,11 +24,14 @@ export class WelcomeComponent {
   @Output() selectOption = new EventEmitter<ModalState['component']>();
   private readonly baseUrl = environment.apiUrl;
   facebookUri = `${this.baseUrl}/auth/facebook`;
-
+  googleUri = `${this.baseUrl}/auth/google`;
   emitOption(option: ModalState['component']) {
     this.selectOption.emit(option);
   }
   facebookLogin() {
     window.location.href = this.facebookUri;
+  }
+  googleLogin() {
+    window.location.href = this.googleUri;
   }
 }

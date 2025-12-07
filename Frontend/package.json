@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --host=0.0.0.0",
-    "build": "ng build",
+    "build": "ng build --configuration production --force",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:ci": "ng test --watch=false --browsers=ChromeHeadless",
@@ -16,7 +16,7 @@
     "start:ssr": "node server.mjs",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
-		"start:proxy": "ng serve --proxy-config proxy.conf.json"
+    "start:proxy": "ng serve --proxy-config proxy.conf.json"
   },
   "private": true,
   "dependencies": {
@@ -36,6 +36,7 @@
     "@splidejs/splide": "^4.1.4",
     "@tailwindcss/vite": "^4.1.11",
     "express": "^4.21.2",
+    "http-proxy-middleware": "^3.0.5",
     "image-conversion": "^2.1.1",
     "jsdom": "^26.1.0",
     "ngx-swiper-wrapper": "^10.0.0",

@@ -2,10 +2,10 @@ import { CommonModule, LowerCasePipe, UpperCasePipe } from '@angular/common';
 import { Component, effect, EventEmitter, Output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
+import { environment } from '../../../../../environments/environment';
 import { ModalState } from '../../../../core/services/modal.service';
 import { PrimaryLargeButtonComponent } from '../../buttons/blue/primary-large-button.component';
 import { IconComponent } from '../../icon.component';
-
 @Component({
   selector: 'app-register-email',
   standalone: true,
@@ -22,6 +22,16 @@ import { IconComponent } from '../../icon.component';
   styleUrl: './register-email.component.css',
 })
 export class RegisterEmailComponent {
+  private readonly baseUrl = environment.apiUrl;
+  facebookUri = `${this.baseUrl}/auth/facebook`;
+  googleUri = `${this.baseUrl}/auth/google`;
+  facebookLogin() {
+    window.location.href = this.facebookUri;
+  }
+  googleLogin() {
+    window.location.href = this.googleUri;
+  }
+
   @Output() selectOption = new EventEmitter<ModalState['component']>();
   @Output() email = new EventEmitter<string>();
   @Output() phoneNumber = new EventEmitter<string>();

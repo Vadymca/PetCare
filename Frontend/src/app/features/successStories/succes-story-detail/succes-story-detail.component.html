@@ -2,8 +2,13 @@
   <div
     class="bg-white rounded-2xl shadow-xl p-6 flex flex-col md:flex-row gap-6"
   >
-    <div class="flex-1 space-y-4">
-      <h1 class="text-3xl font-bold text-gray-800">{{ data.title }}</h1>
+    <div class="flex-1 space-y-2 sm:space-y-4">
+      <h1
+        class="text-3xl font-bold text-gray-800"
+        style="font-size: clamp(16px, 6.5vw, 30px)"
+      >
+        {{ data.title }}
+      </h1>
       <p class="text-gray-600">
         {{ 'ADOPTED_PET' | translate }} —
         {{ data.adoptionApplication?.animal?.name || ('UNKNOWN' | translate) }}

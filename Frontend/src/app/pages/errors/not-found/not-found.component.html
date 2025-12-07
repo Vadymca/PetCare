@@ -1,20 +1,22 @@
 <div
   class="flex flex-col items-center justify-center text-center p-4 bg-primary-lightBlue"
 >
-  <div class="relative mt-[200px] text-primary-beige">
+  <div class="relative mt-[200px]">
     <h1
       class="font-fixel font-extrabold text-primary-light-orange text-[320px] mb-1 leading-none"
+      style="font-size: clamp(16px, 30vw, 320px)"
     >
       404
     </h1>
+
     <app-icon
       [name]="'logoFailure'"
-      class="text-primary-beige absolute top-[-45px] left-[calc(50%-60px)] translate scale-125"
+      class="text-primary-beige absolute top-[-55px] sm:top-[-50px] lg:top-[-45px] left-[calc(50%-60px)] translate scale-[0.6] sm:scale-[1.25]"
     ></app-icon>
   </div>
 
   <p
-    class="text-2xl font-fixel font-bold text-primary-beige leading-none translate-y-[-40px]"
+    class="text-2xl font-fixel font-bold text-primary-beige leading-none sm:translate-y-[-30px]"
   >
     {{ 'NOT_FOUND_MESSAGE' | translate }}
   </p>

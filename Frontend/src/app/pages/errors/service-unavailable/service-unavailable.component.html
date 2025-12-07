@@ -4,17 +4,20 @@
   <div class="relative mt-[200px]">
     <h1
       class="font-fixel font-extrabold text-primary-light-orange text-[320px] mb-1 leading-none"
+      style="font-size: clamp(16px, 20vw, 320px)"
     >
       500
     </h1>
-    <app-icon
-      [name]="'logo500'"
-      class="absolute top-[12px] left-[-264px]"
-    ></app-icon>
+    <div
+      class="absolute transform origin-top-left top-[4px] left-[-70px] scale-[0.25] sm:top-[8px] sm:left-[-130px] sm:scale-[0.45] lg:top-[12px] lg:left-[-264px] lg:scale-[1]"
+    >
+      <app-icon [name]="'logo500'"></app-icon>
+    </div>
   </div>
 
   <p
-    class="text-2xl font-fixel font-bold text-primary-beige leading-none translate-y-[-40px]"
+    class="text-2xl font-fixel font-bold text-primary-beige leading-none mt-2 sm:mt-0"
+    style="font-size: clamp(16px, 5vw, 20px)"
   >
     {{ 'ERROR.500_MESSAGE' | translate }}
   </p>

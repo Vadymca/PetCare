@@ -46,9 +46,9 @@ export interface PaymentStatusResponse {
 
 export type PaymentStatus = 'pending' | 'success' | 'failure';
 export type PaymentSubscriptionStatus =
-  | 'RequiresPayment'
-  | 'Active'
-  | 'Completed';
+  | 'requirespayment'
+  | 'active'
+  | 'canceled';
 // | 'in_progress'
 // | 'reversed'
 // | 'expired'

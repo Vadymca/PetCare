@@ -12,5 +12,6 @@
 
 export const environment = {
   production: true,
-  apiUrl: 'https://api-dobrodiy.kn314-uz.keenetic.pro', // жорстко твій бекенд — без жодних змінних
+  //apiUrl: 'https://api-dobrodiy.kn314-uz.keenetic.pro', // жорстко твій бекенд — без жодних змінних
+  apiUrl: '/api',
 };

@@ -10,8 +10,13 @@
       class="w-full md:w-1/2 h-auto object-cover rounded-xl shadow-md"
     />
 
-    <div class="flex-1 space-y-4">
-      <h1 class="text-3xl font-bold text-gray-800">{{ data.name }}</h1>
+    <div class="flex-1 space-y-2 sm:space-y-4">
+      <h1
+        class="text-3xl font-bold text-gray-800"
+        style="font-size: clamp(16px, 6.5vw, 30px)"
+      >
+        {{ data.name }}
+      </h1>
 
       <!-- Опис -->
       <p class="text-gray-600 text-lg leading-relaxed">

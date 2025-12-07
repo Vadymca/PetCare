@@ -3,6 +3,7 @@
 >
   <h2
     class="w-full font-fixel text-[40px] font-bold text-secondary-neutral-mineShaft"
+    style="font-size: clamp(16px, 6.5vw, 40px)"
   >
     {{ 'PARTNERS_TITLE' | translate }}
   </h2>
@@ -29,10 +30,10 @@
       >
         @for (item of items(); track item) {
           <div
-            class="flex-1 xl:min-w-[calc(25%-24px)] sm:min-w-[calc(50%-24px)] min-w-[100%] h-40 justify-center"
+            class="flex-1 lg:min-w-[calc(25%-24px)] sm:min-w-[calc(50%-24px)] min-w-[100%] h-40 justify-center"
           >
             <div
-              class="bg-primary-beige rounded-40 flex items-center overflow-hidden justify-center h-full w-full"
+              class="bg-white rounded-40 flex items-center overflow-hidden justify-center h-full w-full"
             >
               <img
                 [src]="'assets/images/partners/' + item + '.png'"

@@ -99,12 +99,14 @@ export class GuardianshipsComponent {
   }
   toChangePayment(guardianship: Guardianship) {
     console.log('toChangePayment', guardianship);
-    if (!guardianship.paymentSubscription) this.createPayment(guardianship);
-    else this.renewPayment(guardianship);
+    // if (!guardianship.paymentSubscription) this.createPayment(guardianship);
+    // else this.renewPayment(guardianship);
+
+    this.createPayment(guardianship);
   }
 
   renewPayment(guardianship: Guardianship) {
-    const id = guardianship.paymentSubscription.providerSubscriptionId;
+    const id = guardianship.paymentSubscription.id;
     if (!id) return;
     try {
       this.liqpayService.resetSubscription(id).subscribe({

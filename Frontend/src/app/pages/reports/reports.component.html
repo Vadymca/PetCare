@@ -1,7 +1,10 @@
 <div
   class="relative w-full flex flex-col text-center items-center text-primary-beige bg-primary-blue pb-[22px] px-[50px]"
 >
-  <h1 class="w-full font-fixel text-[64px] font-bold mt-[155px] relative z-10">
+  <h1
+    class="w-full font-fixel text-[64px] font-bold mt-[155px] relative z-10"
+    style="font-size: clamp(16px, 6.5vw, 64px)"
+  >
     {{ 'WE_ROPORT' | translate | uppercase }}
   </h1>
   <div
@@ -43,14 +46,14 @@
   </div>
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-[36px] w-full">
     <div class="">
-      <h3 class="text-left text-[16px] text-primary-beige">
+      <h3 class="text-left text-base text-primary-beige">
         {{ 'FIRST_THREE_MONTHS' | translate | uppercase }}
       </h3>
       <div
         class="flex gap-[41px] justify-center items-center content-center bg-secondary-dodgerBlue-1 rounded-40 min-h-[210px] mt-5"
       >
         <div class="flex items-center gap-[14px]">
-          <p class="text-[16px] text-secondary-neutral-mineShaft">
+          <p class="text-base text-secondary-neutral-mineShaft">
             {{ 'JANUARY' | translate | uppercase | uppercase }}
           </p>
           <app-download-orange-button-with-icon-and-border

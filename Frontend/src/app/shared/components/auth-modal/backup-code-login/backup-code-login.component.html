@@ -13,7 +13,10 @@
       <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
     </div>
   </div>
-  <h2 class="mt-5 text-2xl font-bold mb-6 text-center">
+  <h2
+    class="mt-5 text-2xl font-bold mb-6 text-center"
+    style="font-size: clamp(16px, 6.5vw, 24px)"
+  >
     {{ 'ENTER_BACKUP_CODE' | translate }}
   </h2>
   <div
@@ -57,13 +60,15 @@
     </div>
   </form>
 
-  <app-primary-large-button
-    buttonTitle="CONTINUE"
-    class="w-[260px] mt-6 mb-6"
-    [loading]="loading"
-    (pressButton)="submitCode()"
-    [disabled]="isDisabled"
-  ></app-primary-large-button>
+  <div class="content-center mt-2 sm:mt-4">
+    <app-primary-large-button
+      buttonTitle="CONTINUE"
+      class="w-[260px] mt-6 mb-6"
+      [loading]="loading"
+      (pressButton)="submitCode()"
+      [disabled]="isDisabled"
+    ></app-primary-large-button>
+  </div>
   @if (errorMessage()) {
     <p class="text-red-600 mt-4">{{ 'BACKUP_CODE_INVALID' | translate }}</p>
   }

@@ -1,9 +1,16 @@
 <div
   class="flex flex-col items-center justify-center text-center text-primary-beige p-4 bg-primary-lightBlue"
 >
-  <app-icon [name]="'logoCool'" class="flex mt-[160px]"></app-icon>
+  <div
+    class="mt-[120px] flex transform scale-[0.6] sm:scale-[0.7] lg:scale-[1]"
+  >
+    <app-icon [name]="'logoCool'"></app-icon>
+  </div>
 
-  <h1 class="text-2xl font-fixel font-bold leading-none mt-10">
+  <h1
+    class="font-fixel font-extrabold text-primary-beige text-[320px] mb-1 leading-none"
+    style="font-size: clamp(16px, 20vw, 40px)"
+  >
     {{ 'ACCESS_DENIED_TITLE' | translate }}
   </h1>
   <p class="mt-5 text-lg 6">{{ 'ACCESS_DENIED_MESSAGE' | translate }}</p>

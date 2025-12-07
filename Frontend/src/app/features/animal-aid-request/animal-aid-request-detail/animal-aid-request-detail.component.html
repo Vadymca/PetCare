@@ -7,7 +7,7 @@
     <div
       class="bg-white rounded-2xl shadow-xl p-6 flex flex-col md:flex-row gap-6"
     >
-      <div class="flex-1 space-y-4 content-center">
+      <div class="flex-1 space-y-2 sm:space-y-4 content-center">
         <!-- Фото -->
         <div
           *ngIf="animalAidRequest() as data"
@@ -20,7 +20,10 @@
             class="w-full md:w-1/2 h-auto object-cover center rounded-xl shadow-md"
           />
         </div>
-        <h1 class="text-3xl font-bold text-gray-800 text-center">
+        <h1
+          class="text-3xl font-bold text-gray-800 text-center"
+          style="font-size: clamp(16px, 20vw, 30px)"
+        >
           {{ animalAidRequest()?.title }}
         </h1>
         <p class="text-gray-600">

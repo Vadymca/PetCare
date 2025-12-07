@@ -1,5 +1,8 @@
 <div class="gap-4 p-4">
-  <h1 class="text-3xl font-bold mb-4">
+  <h1
+    class="text-3xl font-bold mb-4"
+    style="font-size: clamp(16px, 6.5vw, 30px)"
+  >
     {{ 'ANIMAL_AID_REQUEST' | translate }}
   </h1>
 </div>
@@ -22,7 +25,12 @@
         [routerLink]="['/animal-aid-requests', animalAidRequest.id]"
         class="block p-4 bg-white rounded-2xl shadow hover:shadow-lg transition"
       >
-        <h2 class="text-xl font-semibold">{{ animalAidRequest.title }}</h2>
+        <h2
+          class="text-xl font-semibold"
+          style="font-size: clamp(16px, 6.5vw, 20px)"
+        >
+          {{ animalAidRequest.title }}
+        </h2>
         <p class="text-gray-600">
           {{ 'AID_REQUEST_CATEGORY' | translate }}:
           {{ animalAidRequest.category || ('UNKNOWN' | translate) }}

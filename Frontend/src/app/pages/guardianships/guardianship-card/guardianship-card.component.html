@@ -1,7 +1,9 @@
 <div class="flex flex-col lg:flex-row w-full items-center justify-center gap-4">
   @if (guardianship()) {
     <!-- картка тварини -->
-    <div class="flex flex-col w-full">
+    <div
+      class="flex flex-col items-center bg-primary-light-orange lg:bg-transparent w-[284px] sm:w-[320px] lg:w-full rounded-40"
+    >
       <app-animal-card
         [animal]="animalSignal()"
         (animalDetailClick)="onAnimalDetailClick()"
@@ -10,7 +12,7 @@
     </div>
     <!-- деталі опіки -->
     <div
-      class="flex flex-col rounded-40 bg-primary-beige px-[10px] py-5 gap-6 justify-start w-full h-full min-w-[320px] min-h-[420px]"
+      class="flex flex-col rounded-40 bg-primary-beige px-[10px] py-5 gap-6 justify-start min-w-[284px] h-full sm:min-w-[320px] min-h-[420px]"
     >
       <p>
         <span class="font-bold"

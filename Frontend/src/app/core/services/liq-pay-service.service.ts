@@ -1,5 +1,5 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 import {
   LiqPayCheckoutRequest,
   LiqPayCheckoutResponse,
@@ -135,12 +135,18 @@ export class LiqPayService {
     return this.api.get<[PaymentHistoryResponse]>(`payments/me/history`);
   }
   // 4. Активні підписки - доопрацювати
-  getActiveSubscriptions(): Observable<[PaymentSubscription]> {
-    return this.api.get<[PaymentSubscription]>(`payments/me/subscriptions`);
+  getActiveSubscriptions(): Observable<PaymentSubscription[]> {
+    return this.api
+      .get<PaymentSubscription[]>(`payments/me/subscriptions`)
+      .pipe(
+        map(subscriptions =>
+          subscriptions.filter(sub => sub.status !== 'canceled')
+        )
+      );
   }
   cancelSubscription(subscriptionId: string) {
     return this.api.post<{ success: boolean; message: string }>(
-      `/api/subscriptions/${subscriptionId}/cancel`,
+      `subscriptions/${subscriptionId}/cancel`,
       ''
     );
   }
@@ -148,10 +154,7 @@ export class LiqPayService {
     subscriptionId: string
   ): Observable<LiqPayCheckoutResponse> {
     return this.api
-      .post<LiqPayCheckoutResponse>(
-        `/api/subscriptions/${subscriptionId}/reset`,
-        ''
-      )
+      .post<LiqPayCheckoutResponse>(`subscriptions/${subscriptionId}/reset`, '')
       .pipe(
         tap({
           next: () => this._loading.set(false),
