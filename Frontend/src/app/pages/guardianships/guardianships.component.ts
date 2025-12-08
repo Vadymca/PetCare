@@ -1,10 +1,11 @@
 import { CommonModule, UpperCasePipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, Signal, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Guardianship } from '../../core/models/guardianship';
 import { PaymentScope } from '../../core/models/liqPayCheckoutRequest';
 import { AnimalSubscriptionService } from '../../core/services/animal-subscription.service';
+import { AuthService } from '../../core/services/auth.service';
 import { GuardianshipService } from '../../core/services/guardianship.service';
 import { LiqPayService } from '../../core/services/liq-pay-service.service';
 import { PrimaryLargeOrangeButtonComponent } from '../../shared/components/buttons/orange/primary-large-orange-button.component';
@@ -27,7 +28,9 @@ import { GuardianshipCardComponent } from './guardianship-card/guardianship-card
   styleUrl: './guardianships.component.css',
 })
 export class GuardianshipsComponent {
+  authService = inject(AuthService);
   router = inject(Router);
+  isAuthenticated: Signal<boolean> = this.authService.isLoggedIn;
   showModal = signal(false);
   guardianshipService = inject(GuardianshipService);
   private rawGuardianships = signal<Guardianship[]>([]);
@@ -65,12 +68,14 @@ export class GuardianshipsComponent {
   }
 
   private loadGuardianships() {
+    if (!this.isAuthenticated()) return;
     this.guardianshipService.getGuardianships().subscribe({
       next: data => this.rawGuardianships.set(data),
     });
   }
 
   private loadFavoriteAnimalIds() {
+    if (!this.isAuthenticated()) return;
     this.animalSubscriptionService.getFavoriteAnimals().subscribe({
       next: favs => {
         this.favoriteAnimalIds.set(new Set(favs.map(a => a.id)));
@@ -86,6 +91,7 @@ export class GuardianshipsComponent {
     this.showModal.set(true);
   }
   toSubmitCancel($event: boolean) {
+    if (!this.isAuthenticated()) return;
     if ($event) {
       this.guardianshipService
         .cancelGuardianship(this.cancelationGuardianshipId())

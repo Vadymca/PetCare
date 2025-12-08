@@ -29,7 +29,7 @@ export class AdoptionComponent {
     throw new Error('Method not implemented.');
   }
   goToAdoptionRules() {
-    window.open('/adoption-rules', '_blank');
+    window.open('/adoption-rules');
   }
   hovered = signal<number | null>(null); // зберігає id елемента, на якому hover
 

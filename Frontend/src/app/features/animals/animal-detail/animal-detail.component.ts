@@ -207,6 +207,8 @@ export class AnimalDetailComponent implements OnInit {
       });
   }
   private updateFavorites() {
+    if (!this.isAuthenticated()) return;
+
     this.animalSubscriptionService
       .getFavoriteAnimals()
       .pipe(
@@ -250,6 +252,7 @@ export class AnimalDetailComponent implements OnInit {
 
   subscribeToAnimal(animal: Animal) {
     if (animal.isFavorite) return;
+    if (!this.isAuthenticated()) return;
     animal.isChecked = false;
 
     this.animalSubscriptionService
@@ -273,6 +276,7 @@ export class AnimalDetailComponent implements OnInit {
 
   unsubscribeFromAnimal(animal: Animal) {
     if (!animal.isFavorite) return;
+    if (!this.isAuthenticated()) return;
     animal.isChecked = false;
 
     this.animalSubscriptionService
@@ -327,6 +331,7 @@ export class AnimalDetailComponent implements OnInit {
   }
 
   private subscribe(animal: Animal) {
+    if (!this.isAuthenticated()) return;
     this.animalSubscriptionService
       .createAnimalSubscription(animal.id)
       .subscribe({
@@ -338,6 +343,7 @@ export class AnimalDetailComponent implements OnInit {
   }
 
   private unsubscribe(animal: Animal) {
+    if (!this.isAuthenticated()) return;
     this.animalSubscriptionService
       .deleteAnimalSubscription(animal.id)
       .subscribe({

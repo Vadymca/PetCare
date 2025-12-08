@@ -33,6 +33,7 @@ export class FavoriteAnimalsComponent {
     this.getAnimals();
   }
   getAnimals() {
+    if (!this.user()) return;
     this.animalSubscriptionService.getFavoriteAnimals().subscribe(favorites => {
       const updatedFavorites = favorites.map(animal => ({
         ...animal,
@@ -56,6 +57,7 @@ export class FavoriteAnimalsComponent {
     this.router.navigate(['/animals']);
   }
   unsubscribeFromAnimal(animal: Animal) {
+		if(!this.user()) return;
     this.animalSubscriptionService
       .deleteAnimalSubscription(animal.id)
       .subscribe({
