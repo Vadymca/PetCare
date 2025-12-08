@@ -16,6 +16,7 @@ public sealed class ResetSubscriptionCommandHandler
     : IRequestHandler<ResetSubscriptionCommand, LiqPayCheckoutResponseDto>
 {
     private readonly IPaymentService paymentService;
+    private readonly ISubscriptionService subscriptionService;
     private readonly ILiqPayClient liqPayClient;
     private readonly IGuardianshipService guardianshipService;
     private readonly IAnimalService animalService;
@@ -26,6 +27,7 @@ public sealed class ResetSubscriptionCommandHandler
     /// Initializes a new instance of the <see cref="ResetSubscriptionCommandHandler"/> class.
     /// </summary>
     /// <param name="paymentService">The payment service.</param>
+    /// <param name="subscriptionService">The subscription service.</param>
     /// <param name="liqPayClient">The LiqPay client.</param>
     /// <param name="guardianshipService">The guardianship service.</param>
     /// <param name="animalService">The animal service.</param>
@@ -33,6 +35,7 @@ public sealed class ResetSubscriptionCommandHandler
     /// <param name="logger">The logger.</param>
     public ResetSubscriptionCommandHandler(
         IPaymentService paymentService,
+        ISubscriptionService subscriptionService,
         ILiqPayClient liqPayClient,
         IGuardianshipService guardianshipService,
         IAnimalService animalService,
@@ -40,6 +43,7 @@ public sealed class ResetSubscriptionCommandHandler
         ILogger<ResetSubscriptionCommandHandler> logger)
     {
         this.paymentService = paymentService ?? throw new ArgumentNullException(nameof(paymentService));
+        this.subscriptionService = subscriptionService ?? throw new ArgumentNullException(nameof(subscriptionService));
         this.liqPayClient = liqPayClient ?? throw new ArgumentNullException(nameof(liqPayClient));
         this.guardianshipService = guardianshipService ?? throw new ArgumentNullException(nameof(guardianshipService));
         this.animalService = animalService ?? throw new ArgumentNullException(nameof(animalService));
@@ -83,7 +87,15 @@ public sealed class ResetSubscriptionCommandHandler
             currency = oldSub.Currency;
         }
 
-        // 3. Створюємо LiqPay intent для нової підписки
+        // 3. Видаляємо / скасовуємо стару підписку (це оновить опіку і тварину)
+        if (!string.IsNullOrWhiteSpace(oldSub.ProviderSubscriptionId))
+        {
+            await this.subscriptionService.CancelAsync(
+                oldSub.ProviderSubscriptionId,
+                cancellationToken);
+        }
+
+        // 4. Створюємо LiqPay intent для нової підписки
         var intent = await this.paymentIntentService.CreateLiqPayIntentAsync(
             oldSub.ScopeType,
             oldSub.ScopeId,
@@ -94,38 +106,20 @@ public sealed class ResetSubscriptionCommandHandler
             anonymous: false,
             cancellationToken);
 
-        // 4. Скидаємо стару підписку та створюємо нову локальну
-        var nextChargeAt = DateTime.UtcNow.AddDays(30);
-        var newSub = await this.paymentService.ResetSubscriptionAsync(
-            oldSubscriptionId: oldSub.Id,
-            userId: oldSub.UserId,
-            amount: amount,
-            currency: currency,
-            scope: oldSub.ScopeType,
-            scopeId: oldSub.ScopeId,
-            provider: oldSub.Provider,
-            paymentMethodId: oldSub.PaymentMethodId,
-            providerSubscriptionId: oldSub.ProviderSubscriptionId,
-            nextChargeAt: nextChargeAt,
-            externalOrderId: intent.ExternalOrderId,
-            cancellationToken);
-
-        this.logger.LogInformation(
-            "Old subscription {OldId} reset and new subscription {NewId} created for user {UserId}.",
-            oldSub.Id,
-            newSub.Id,
-            oldSub.UserId);
-
-        // 5. Формуємо опис, null-безпечний
+        // 5. Формуємо опис
         string userName = oldSub.User != null
             ? $"{oldSub.User.FirstName} {oldSub.User.LastName}"
             : "анонім";
 
         string description;
-        if (newSub.ScopeType == SubscriptionScope.Guardianship && newSub.ScopeId.HasValue)
+
+        if (oldSub.ScopeType == SubscriptionScope.Guardianship && oldSub.ScopeId.HasValue)
         {
-            var guardianship = await this.guardianshipService.GetByIdAsync(newSub.ScopeId.Value, cancellationToken);
-            var animal = guardianship?.AnimalId != null
+            var guardianship = await this.guardianshipService.GetByIdAsync(
+                oldSub.ScopeId.Value,
+                cancellationToken);
+
+            var animal = guardianship != null
                 ? await this.animalService.GetByIdAsync(guardianship.AnimalId, cancellationToken)
                 : null;
 
@@ -138,19 +132,19 @@ public sealed class ResetSubscriptionCommandHandler
             description = $"Відновлення підписки для користувача: {userName}";
         }
 
-        // 6. Формуємо DTO для checkout
+        // 6. Готуємо DTO
         var dto = new CreateLiqPayCheckoutDto(
             Amount: amount,
             Currency: currency,
             Description: description,
             IsRecurring: true,
-            Scope: newSub.ScopeType,
-            EntityId: newSub.ScopeId,
-            UserId: newSub.UserId,
+            Scope: oldSub.ScopeType,
+            EntityId: oldSub.ScopeId,
+            UserId: oldSub.UserId,
             Anonymous: false,
-            PayerName: newSub.User?.FirstName ?? string.Empty,
-            PayerPhone: newSub.User?.Phone,
-            PayerEmail: newSub.User?.Email);
+            PayerName: oldSub.User?.FirstName ?? string.Empty,
+            PayerPhone: oldSub.User?.Phone,
+            PayerEmail: oldSub.User?.Email);
 
         // 7. Генеруємо LiqPay checkout
         var checkout = await this.liqPayClient.BuildCheckoutAsync(
@@ -160,7 +154,7 @@ public sealed class ResetSubscriptionCommandHandler
 
         this.logger.LogInformation(
             "LiqPay checkout generated for new subscription {NewId}.",
-            newSub.Id);
+            oldSub.Id);
 
         return checkout;
     }

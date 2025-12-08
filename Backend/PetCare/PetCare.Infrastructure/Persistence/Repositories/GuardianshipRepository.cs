@@ -274,8 +274,6 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
             return;
         }
 
-        subscription.Cancel();
-
         this.db.PaymentSubscriptions.Remove(subscription);
 
         await this.db.SaveChangesAsync(ct);
@@ -408,10 +406,36 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
     public async Task CancelSubscriptionByProviderIdAsync(string providerSubscriptionId, CancellationToken cancellationToken = default)
     {
         var sub = await this.db.PaymentSubscriptions
-            .FirstOrDefaultAsync(s => s.ProviderSubscriptionId == providerSubscriptionId, cancellationToken)
-            ?? throw new InvalidOperationException("Підписку не знайдено.");
+            .FirstOrDefaultAsync(s => s.ProviderSubscriptionId == providerSubscriptionId, cancellationToken);
 
-        sub.Cancel();
+        if (sub is null)
+        {
+            return;
+        }
+
+        // Якщо це опіка – завершуємо її
+        if (sub.ScopeType == SubscriptionScope.Guardianship && sub.ScopeId.HasValue)
+        {
+            var guardianship = await this.db.Guardianships
+                .FirstOrDefaultAsync(x => x.Id == sub.ScopeId.Value, cancellationToken);
+
+            if (guardianship != null)
+            {
+                guardianship.Complete();
+
+                var animal = await this.db.Animals
+                    .FirstOrDefaultAsync(a => a.Id == guardianship.AnimalId, cancellationToken);
+
+                if (animal != null)
+                {
+                    animal.MarkAsNotUnderCare();
+                }
+            }
+        }
+
+        // Підписку треба видаляти
+        this.db.PaymentSubscriptions.Remove(sub);
+
         await this.db.SaveChangesAsync(cancellationToken);
     }
 
