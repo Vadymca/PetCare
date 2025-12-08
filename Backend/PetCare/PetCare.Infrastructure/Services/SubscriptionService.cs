@@ -20,19 +20,23 @@ using PetCare.Domain.Enums;
 public class SubscriptionService : ISubscriptionService
 {
     private readonly IGuardianshipRepository guardianships;
+    private readonly IPaymentIntentRepository paymentIntents;
     private readonly ILogger<SubscriptionService> logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SubscriptionService"/> class.
     /// </summary>
     /// <param name="guardianships">The repository used for data access via the Guardianship aggregate.</param>
+    /// <param name="paymentIntents">The repository used for data access via the PaymentIntent aggregate.</param>
     /// <param name="logger">The logger instance for logging operations within the service.</param>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="guardianships"/> is null.</exception>
     public SubscriptionService(
         IGuardianshipRepository guardianships,
+        IPaymentIntentRepository paymentIntents,
         ILogger<SubscriptionService> logger)
     {
         this.guardianships = guardianships ?? throw new ArgumentNullException(nameof(guardianships));
+        this.paymentIntents = paymentIntents ?? throw new ArgumentNullException(nameof(paymentIntents));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -176,7 +180,17 @@ public class SubscriptionService : ISubscriptionService
     /// <exception cref="InvalidOperationException">Thrown if a subscription with the specified provider subscription ID does not exist.</exception>
     public async Task CancelAsync(string providerSubscriptionId, CancellationToken cancellationToken = default)
     {
-        await this.guardianships.CancelSubscriptionByProviderIdAsync(providerSubscriptionId, cancellationToken);
+        // Отримуємо підписку по providerSubscriptionId
+        var subscription = await this.guardianships.FindByProviderSubscriptionIdAsync(providerSubscriptionId, cancellationToken);
+
+        if (subscription is not null)
+        {
+            // Видаляємо пов'язані платежі
+            await this.paymentIntents.DeleteBySubscriptionIdAsync(subscription.Id, cancellationToken);
+
+            // Скасовуємо саму підписку
+            await this.guardianships.CancelSubscriptionByProviderIdAsync(providerSubscriptionId.ToString(), cancellationToken);
+        }
     }
 
     /// <summary>

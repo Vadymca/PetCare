@@ -38,4 +38,12 @@ public interface IPaymentIntentRepository : IRepository<PaymentIntent>
     Task<List<PaymentIntent>> GetByGuardianshipIdAsync(
     Guid guardianshipId,
     CancellationToken ct = default);
+
+    /// <summary>
+    /// Asynchronously deletes all resources associated with the specified subscription identifier.
+    /// </summary>
+    /// <param name="subscriptionId">The unique identifier of the subscription whose resources are to be deleted.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous delete operation.</returns>
+    Task DeleteBySubscriptionIdAsync(Guid subscriptionId, CancellationToken cancellationToken = default);
 }

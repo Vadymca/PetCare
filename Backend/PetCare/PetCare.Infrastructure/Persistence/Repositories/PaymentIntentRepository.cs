@@ -77,4 +77,12 @@ public sealed class PaymentIntentRepository
             .Where(pi => pi.GuardianshipId == guardianshipId)
             .ToListAsync(ct);
     }
+
+    /// <inheritdoc/>
+    public async Task DeleteBySubscriptionIdAsync(Guid subscriptionId, CancellationToken cancellationToken = default)
+    {
+        await this.db.PaymentIntents
+            .Where(pi => pi.SubscriptionId == subscriptionId)
+            .ExecuteDeleteAsync(cancellationToken);
+    }
 }

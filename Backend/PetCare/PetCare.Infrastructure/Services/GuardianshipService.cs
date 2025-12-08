@@ -1,5 +1,6 @@
 ﻿namespace PetCare.Infrastructure.Services;
 
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Abstractions.Repositories;
@@ -7,6 +8,7 @@ using PetCare.Domain.Aggregates;
 using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
 using PetCare.Infrastructure.Persistence;
+using System.Threading;
 
 /// <summary>
 /// Provides operations related to guardianship management within the application.
@@ -159,9 +161,16 @@ public class GuardianshipService : IGuardianshipService
 
         if (cancelSubscription)
         {
-            await this.guardianships.CancelSubscriptionAsync(guardianshipId, cancellationToken);
+            // Отримуємо підписку для цієї опіки
+            var subscription = await this.guardianships.FindSubscriptionForGuardianshipAsync(guardianshipId, cancellationToken);
+            if (subscription is not null)
+            {
+                await this.paymentIntents.DeleteBySubscriptionIdAsync(subscription.Id, cancellationToken);
+                await this.guardianships.CancelSubscriptionAsync(guardianshipId, cancellationToken);
+            }
         }
     }
+
 
     /// <summary>
     /// Automatically completes all expired guardianships that require payment as of the specified UTC time.
