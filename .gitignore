@@ -55,11 +55,6 @@ project.lock.json
 project.fragment.lock.json
 artifacts/
 
-# --- Entity Framework Migrations temp ---
-*.edmx.diagram
-*.edmx.deploy*
-*.edmx.sql
-
 # --- Other temp files ---
 *.swp
 *.sw?

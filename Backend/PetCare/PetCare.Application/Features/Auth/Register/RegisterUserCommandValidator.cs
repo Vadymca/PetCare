@@ -20,8 +20,9 @@ public sealed class RegisterUserCommandValidator : AbstractValidator<RegisterUse
 
         this.RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Пароль є обов'язковим.")
-            .MinimumLength(8).WithMessage("Пароль має містити щонайменше 8 символів.")
-            .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]")
+            .MinimumLength(6).WithMessage("Пароль має містити щонайменше 6 символів.")
+            .MaximumLength(32).WithMessage("Пароль не може перевищувати 32 символів.")
+            .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\^$*\.\(\)<>?\""!@#%&/,'’;:_\+=\-~])[A-Za-z\d\^$*\.\(\)<>?\""!@#%&/,'’;:_\+=\-~]{6,32}$")
             .WithMessage("Пароль має містити принаймні одну велику літеру, одну малу літеру, одну цифру та один спеціальний символ.");
 
         this.RuleFor(x => x.FirstName)
