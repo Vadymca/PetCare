@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import {
+  AfterViewInit,
   Component,
   ElementRef,
   EventEmitter,
-  inject,
   Output,
   signal,
+  ViewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
@@ -29,14 +30,8 @@ import { ConfirmModalComponent } from './confirm-modal/confirm-modal.component';
       <app-round-button-with-icon
         class="text-primary-beige"
         [iconName]="'userRound'"
-        (click)="toggleMenu()"
+        (pressButton)="toggleMenu()"
       ></app-round-button-with-icon>
-      <!-- <button
-        (click)="toggleMenu()"
-        class="px-4 py-2 rounded hover:text-orange-300 transition"
-      >
-        {{ 'HELLO' | translate }}, {{ userName }}!
-      </button> -->
 
       @if (menuOpen) {
         <ul
@@ -61,6 +56,7 @@ import { ConfirmModalComponent } from './confirm-modal/confirm-modal.component';
         </ul>
       }
     </div>
+
     @if (showLogoutModal()) {
       <app-confirm-modal
         [text]="'ARE_YOU_SURE_YOU_WANT_TO_EXIT'"
@@ -71,34 +67,33 @@ import { ConfirmModalComponent } from './confirm-modal/confirm-modal.component';
     }
   `,
 })
-export class UserMenuComponent {
-  // @Input() userName = '';
+export class UserMenuComponent implements AfterViewInit {
   @Output() logout = new EventEmitter<void>();
+
   showLogoutModal = signal(false);
   menuOpen = false;
-  private elementRef = inject(ElementRef);
+  @ViewChild('menuWrapper', { read: ElementRef }) menuWrapper!: ElementRef;
 
-  toggleMenu() {
-    this.menuOpen = !this.menuOpen;
-  }
-  // Хост-лістенер кліків по документу
-  constructor() {
-    // Підписка на кліки по документу
+  ngAfterViewInit() {
     fromEvent<MouseEvent>(document, 'click')
       .pipe(
         takeUntilDestroyed(),
         filter(event => {
-          const wrapper =
-            this.elementRef.nativeElement.querySelector('#menuWrapper') ||
-            this.elementRef.nativeElement;
-          return !wrapper.contains(event.target as Node) && this.menuOpen;
+          if (!this.menuOpen) return false;
+          return !this.menuWrapper.nativeElement.contains(event.target as Node);
         })
       )
       .subscribe(() => (this.menuOpen = false));
   }
+
+  toggleMenu() {
+    this.menuOpen = !this.menuOpen;
+  }
+
   showLogoutModalWindow() {
     this.showLogoutModal.set(true);
   }
+
   logoutEmit($event: boolean) {
     if ($event) {
       this.logout.emit();

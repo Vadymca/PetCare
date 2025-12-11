@@ -1,12 +1,10 @@
 import { Component } from '@angular/core';
-import { IconComponent } from "../icon.component";
+import { IconComponent } from '../icon.component';
 
 @Component({
   selector: 'app-social-media',
   imports: [IconComponent],
   templateUrl: './social-media.component.html',
-  styleUrl: './social-media.component.css'
+  styleUrl: './social-media.component.css',
 })
-export class SocialMediaComponent {
-
-}
+export class SocialMediaComponent {}

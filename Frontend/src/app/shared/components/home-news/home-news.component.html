@@ -8,13 +8,13 @@
         class="font-bold leading-none text-left tracking-[-0.07em]"
         style="font-size: clamp(16px, 12.5vw, 150px)"
       >
-        {{ news[0].title | translate | lowercase }}
+        {{ news()[0].title | translate | lowercase }}
       </p>
       <p
         class="leading-[1.2] text-left mt-3 max-w-[321px]"
         style="font-size: clamp(14px, 5.5vw, 24px)"
       >
-        {{ news[0].content | translate | uppercase }}
+        {{ news()[0].content | translate | uppercase }}
       </p>
     </div>
   </div>
@@ -27,13 +27,13 @@
         class="font-bold leading-none text-left tracking-[-0.07em]"
         style="font-size: clamp(16px, 12.5vw, 150px)"
       >
-        {{ news[1].title | translate | lowercase }}
+        {{ news()[1].title | translate | lowercase }}
       </p>
       <p
         class="leading-[1.2] text-left mt-3 max-w-[321px]"
         style="font-size: clamp(14px, 5.5vw, 24px)"
       >
-        {{ news[1].content | translate | uppercase }}
+        {{ news()[1].content | translate | uppercase }}
       </p>
     </div>
   </div>
@@ -46,13 +46,13 @@
         class="font-bold leading-none text-left tracking-[-0.07em]"
         style="font-size: clamp(16px, 12.5vw, 150px)"
       >
-        {{ news[2].title | translate | lowercase }}
+        {{ news()[2].title | translate | lowercase }}
       </p>
       <p
         class="ml-[-100px] leading-[1.2] text-left mt-3 max-w-[400px]"
         style="font-size: clamp(14px, 5.5vw, 24px)"
       >
-        {{ news[2].content | translate | uppercase }}
+        {{ news()[2].content | translate | uppercase }}
       </p>
     </div>
   </div>

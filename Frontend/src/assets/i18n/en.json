@@ -175,7 +175,7 @@
   "REGISTRATION_FAILED_MESSAGE": "Registration failed",
   "REGISTRATION_FAILED_DESCRIPTION": "Sorry, we are unable to register you at the moment. Please try again later.",
   "EXISTING_EMAIL_MESSAGE": "Account already exists",
-  "EXISTING_EMAIL_DESCRIPTION": "An account with this email already exists. Please log in to your account to continue",
+  "EXISTING_EMAIL_DESCRIPTION": "An account with this email or this phone number already exists. Please log in to your account to continue",
   "EMAIL_CONFIRMED_TITLE": "Verification successful",
   "EMAIL_CONFIRMED_MESSAGE": "Go to the website",
   "EMAIL_CONFIRMED_DESCRIPTION": "You can now log in to your account with your username and password",
@@ -583,8 +583,8 @@
   "CARE_RULES3": "Правила опіки",
   "REMOVE_FROM_FAVOURITES": "Remove from favourites",
   "ADD_TO_FAVOURITES": "Add to favourites",
-  "SHARE_WITH_FRIENDS": "Share with friends: ",
-  "LINK_COPIED": "The link to the pet has been copied! Share it in Instagram Stories or Direct.",
+  "SHARE_WITH_FRIENDS": "Share with friends",
+  "LINK_COPIED": "The link to the page has been copied! Share it in Instagram or TikTok.",
   "CARE_COST": "Care cost",
   "ADOPTION_TITLE_DESCRIPTION": "If you want to give a home to a cat, read the adoption rules:",
   "ADOPTION_RULE1_TITLE": "The decision is final",
@@ -702,5 +702,7 @@
   "DELETE_SUBSCRIPTION": "Very sorry that you have decided to stop helping. Are you sure you want to continue?",
   "MAKE_DONATION": "Make a donation",
   "NO_PAYMENTS": "No payments",
-  "SUBSCRIBE_TO_NEWSLETTER_CONFIRMATION": "You subscribe to the newsletter!"
+  "SUBSCRIBE_TO_NEWSLETTER_CONFIRMATION": "You subscribe to the newsletter!",
+  "INVALID_SMS_CODE": "Invalid code",
+  "YOU_CAN_HELP": "You can help pets in this moment!"
 }

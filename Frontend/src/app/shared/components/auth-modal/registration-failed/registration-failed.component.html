@@ -8,6 +8,9 @@
   <p
     class="mt-8 text-sm text-secondary-neutral-doveGray ml-3 leading-snug text-left"
   >
+    @if (existingEmail()) {
+      {{ 'EXISTING_EMAIL_MESSAGE' | translate }}
+    } @else {}
     {{ 'REGISTRATION_FAILED_DESCRIPTION' | translate }}
   </p>
 
@@ -18,7 +21,7 @@
   <div class="content-center">
     <div class="flex justify-center">
       <app-primary-large-button
-			class="w-[260px]"
+        class="w-[260px]"
         buttonTitle="LOGIN"
         (pressButton)="emitSubmitButton()"
       ></app-primary-large-button>

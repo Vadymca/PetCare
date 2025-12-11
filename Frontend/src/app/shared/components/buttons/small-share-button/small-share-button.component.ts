@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { IconComponent } from '../../icon.component';
-type IconName = 'shareInsta' | 'shareFacebook';
+type IconName = 'shareInsta' | 'shareFacebook' | 'shareX' | 'shareTiktok';
 @Component({
   selector: 'app-small-share-button',
   imports: [IconComponent],

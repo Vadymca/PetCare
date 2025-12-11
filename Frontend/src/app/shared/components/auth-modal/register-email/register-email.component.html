@@ -1,4 +1,4 @@
-<div class="text-center h-full flex flex-col">
+<div class="text-center h-full flex flex-col leading-none">
   <div class="inline-flex items-center">
     <div
       class="hover:text-primary-orange inline-flex items-center cursor-pointer -translate-y-1/2 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-50"
@@ -13,16 +13,16 @@
       <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
     </div>
   </div>
-  <h5 class="text-40 mt-5" style="font-size: clamp(16px, 6.5vw, 40px)">
+  <h5 class="text-40 mt-3" style="font-size: clamp(16px, 6.5vw, 40px)">
     {{ 'REGISTER_TITLE' | translate | uppercase }}
   </h5>
 
-  <p class="mt-5 text-2xl">{{ 'CREATE_ACCOUNT' | translate }}</p>
+  <p class="mt-3 text-2xl">{{ 'CREATE_ACCOUNT' | translate }}</p>
   <form
     #formRef
     [formGroup]="registerForm"
     (ngSubmit)="onSubmit()"
-    class="group bg-secondary-neutral-white w-full flex flex-col justify-center items-center mt-10"
+    class="group bg-secondary-neutral-white w-full flex flex-col justify-center items-center mt-3"
   >
     <!-- Email -->
     <div class="flex flex-col w-[360px]">
@@ -32,7 +32,7 @@
         type="email"
         formControlName="email"
         [placeholder]="'ENTER_YOUR_EMAIL' | translate"
-        class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none pr-10"
+        class="mt-1 px-3 py-2 border rounded-[12px] h-12 focus:outline-none pr-10"
         [class.ring-2]="emailInvalid"
         [class.ring-secondary-semantic-error]="emailInvalid"
         autocomplete="email"
@@ -41,7 +41,7 @@
         registerForm.controls.email.touched &&
         registerForm.controls.email.invalid
       ) {
-        <div class="text-red-600 text-sm mt-3">
+        <div class="text-red-600 text-sm mt-1">
           @if (registerForm.controls.email.errors?.['required']) {
             {{ 'EMAIL_REQUIRED' | translate }}
           } @else {
@@ -51,7 +51,7 @@
       }
     </div>
     <!-- Phone number -->
-    <div class="flex flex-col w-[360px] mt-4">
+    <div class="flex flex-col w-[360px] mt-3">
       <label for="phoneNumber" class="text-left">
         {{ 'PHONE_NUMBER' | translate }}
       </label>
@@ -61,7 +61,7 @@
         formControlName="phoneNumber"
         [placeholder]="'ENTER_YOUR_PHONE_NUMBER' | translate"
         pattern="^\+\d{7,15}$"
-        class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none pr-10"
+        class="mt-1 px-3 py-2 border rounded-[12px] h-12 focus:outline-none pr-10"
         [class.ring-2]="phoneNumberInvalid"
         [class.ring-secondary-semantic-error]="phoneNumberInvalid"
         aria-label="phoneNumber"
@@ -81,7 +81,7 @@
       }
     </div>
     <!-- Submit -->
-    <div class="space-y-2 mt-6 content-center">
+    <div class="space-y-2 mt-3 content-center">
       <div class="flex justify-center">
         <app-primary-large-button
           class="w-[260px]"
@@ -93,9 +93,9 @@
     </div>
   </form>
 
-  <p class="mt-5">{{ 'OR_CONTINUE_WITH' | translate | uppercase }}</p>
+  <p class="mt-3">{{ 'OR_CONTINUE_WITH' | translate | uppercase }}</p>
   <div
-    class="flex flex-col lg:flex-row justify-center gap-2 w-full items-center"
+    class="flex flex-col lg:flex-row justify-center gap-2 w-full items-center mt-2"
   >
     <button (click)="googleLogin()">
       <app-icon [name]="'google'" class="cursor-pointer"></app-icon>
@@ -105,7 +105,7 @@
       <app-icon [name]="'facebook'" class="cursor-pointer"></app-icon>
     </button>
   </div>
-  <div class="flex-1 flex flex-col justify-end mt-auto mb-6 cursor-pointer">
+  <div class="flex-1 flex flex-col justify-end mt-2 mb-6 cursor-pointer">
     <p class="self-center">
       {{ 'ALREADY_HAVE_ACCOUNT' | translate }}
       <a

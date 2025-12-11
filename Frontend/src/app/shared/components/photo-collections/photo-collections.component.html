@@ -1,9 +1,9 @@
 <div
-  class="min-w-full flex flex-col gap-3 w-full h-full"
+  class="min-w-full flex flex-col gap-3 w-full h-full justify-center"
   style="width: 100% !important"
 >
   <div
-    class="min-w-full flex w-full rounded-[30px] aspect-[3/2.5] overflow-hidden bg-primary-beige"
+    class="min-w-full flex w-full rounded-[30px] overflow-hidden bg-primary-beige"
     style="width: 100% !important"
   >
     @if (selectedItem()) {
@@ -26,7 +26,7 @@
     @if (items().length < 4 && items().length > 1) {
       <div class="flex gap-3 justify-between w-full">
         @for (item of items(); track item) {
-          <div class="flex-1 min-w-[calc(33.3%-24px)] aspect-[3/2.5]">
+          <div class="flex flex-1 min-w-[calc(33.3%-24px)] aspect-[3/2.5]">
             <div
               class="bg-primary-beige rounded-[20px] flex items-center overflow-hidden justify-center h-full w-full"
               [ngClass]="{
@@ -67,7 +67,7 @@
           >
             @for (item of items(); track item) {
               <div
-                class="flex-1 min-w-[calc(33.3%-8px)] aspect-[3/2.5]"
+                class="flex flex-1 min-w-[calc(33.3%-8px)] aspect-[3/2.5]"
                 (click)="selectItem(item)"
                 (keyup.enter)="selectItem(item)"
                 (keyup.space)="selectItem(item)"

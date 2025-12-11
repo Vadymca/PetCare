@@ -80,26 +80,7 @@ export class HeaderComponent {
     return user ? user.firstName : null;
   });
   accumulatedDelta = 0;
-  @HostListener('window:scroll', ['$event'])
-  // onWindowScroll() {
-  //   if (isPlatformBrowser(this.platformId)) {
-  //     const currentScrollTop =
-  //       window.pageYOffset || document.documentElement.scrollTop;
-
-  //     if (currentScrollTop <= 0) {
-  //       this.isHidden.set(false);
-  //       this.isFloating.set(false);
-  //     } else if (currentScrollTop > this.lastScrollTop) {
-  //       this.isHidden.set(true);
-  //       this.isFloating.set(false);
-  //     } else {
-  //       this.isFloating.set(true);
-  //       this.isHidden.set(false);
-  //     }
-
-  //     this.lastScrollTop = currentScrollTop <= 0 ? 0 : currentScrollTop;
-  //   }
-  // }
+  @HostListener('window:scroll', [])
   onWindowScroll() {
     const currentScrollTop =
       window.pageYOffset || document.documentElement.scrollTop;

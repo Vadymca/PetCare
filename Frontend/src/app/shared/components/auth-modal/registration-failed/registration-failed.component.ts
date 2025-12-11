@@ -1,5 +1,5 @@
 import { UpperCasePipe } from '@angular/common';
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -22,6 +22,7 @@ import { IconComponent } from '../../icon.component';
 })
 export class RegistrationFailedComponent {
   @Output() submitButton = new EventEmitter<void>();
+	@Input() existingEmail=signal(false);
 
   emitSubmitButton() {
     this.submitButton.emit();

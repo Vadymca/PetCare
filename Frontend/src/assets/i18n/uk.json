@@ -174,7 +174,7 @@
   "REGISTRATION_FAILED_MESSAGE": "Реєстрація не вдалася",
   "REGISTRATION_FAILED_DESCRIPTION": "Нажаль, ми не можемо зареєструвати Вас зараз. Будь ласка, спробуйте пізніше",
   "EXISTING_EMAIL_MESSAGE": "Обліковий запис вже існує",
-  "EXISTING_EMAIL_DESCRIPTION": "У нас вже є обліковий запис з цією електронною поштою. Будь ласка, увійдіть в свій обліковий запис, щоб продовжити",
+  "EXISTING_EMAIL_DESCRIPTION": "У нас вже є обліковий запис з цією електронною поштою або телефоном. Будь ласка, увійдіть в свій обліковий запис, щоб продовжити",
   "EMAIL_CONFIRMED_TITLE": "Перевірка успішна",
   "EMAIL_CONFIRMED_MESSAGE": "Переходьте на сайт",
   "EMAIL_CONFIRMED_DESCRIPTION": "Ви можете повернутися на сайт, натиснувши кнопку нижче, а потім увійти з вашим ім’ям користувача і паролем",
@@ -585,8 +585,8 @@
   "CARE_RULES3": "Правила опіки",
   "REMOVE_FROM_FAVOURITES": "Видалити з улюблених",
   "ADD_TO_FAVOURITES": "Додати до улюблених",
-  "SHARE_WITH_FRIENDS": "Розповісти друзям: ",
-  "LINK_COPIED": "Посилання на тварину скопійовано! Поділіться ним у Instagram Stories або Direct.",
+  "SHARE_WITH_FRIENDS": "Розповісти друзям",
+  "LINK_COPIED": "Посилання на сторінку скопійовано! Поділіться ним у Instagram або TikTok.",
   "CARE_COST": "Вартість опіки",
   "ADOPTION_TITLE_DESCRIPTION": "Якщо ви хочете подарувати дім хвостику, ознайомтеся з правилами адопції:",
   "ADOPTION_RULE1_TITLE": "Свідоме рішення",
@@ -708,5 +708,7 @@
   "DELETE_SUBSCRIPTION": "Дуже шкода, що Ви вирішили припинити допомогу. Ви впевнені, що хочете продовжити?",
   "MAKE_DONATION": "Зробити донат",
   "NO_PAYMENTS": "Немає платежів",
-	"SUBSCRIBE_TO_NEWSLETTER_CONFIRMATION": "Ви підписуєтеся на новини сайту!"
+  "SUBSCRIBE_TO_NEWSLETTER_CONFIRMATION": "Ви підписуєтеся на новини сайту!",
+  "INVALID_SMS_CODE": "Невірний код",
+  "YOU_CAN_HELP": "Ви можете допомогти тваринкам в цю хвилину!"
 }

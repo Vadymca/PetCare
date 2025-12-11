@@ -1,0 +1,40 @@
+<div
+  class="flex flex-col bg-primary-blue text-primary-beige w-full pt-[150px] items-center px-5 sm:px-[50px] pb-10"
+>
+  <div class="inline-flex items-center mt-3 w-full">
+    <div
+      class="hover:text-primary-orange inline-flex items-center cursor-pointer -translate-y-1/2 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-50"
+      (click)="backBottomClick()"
+      (keyup.enter)="backBottomClick()"
+      (keyup.space)="backBottomClick()"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'BACK' | translate"
+    >
+      <app-icon [name]="'arrowLeft'" class=""></app-icon>
+      <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
+    </div>
+  </div>
+
+  <h1
+    class="font-display text-[40px] font-bold leading-none text-center w-full sm:px-[50px]"
+    style="font-size: clamp(16px, 6.5vw, 64px)"
+  >
+    {{ 'SHELTER_NEWS' | translate }}
+  </h1>
+  <p class="max-w-[700px] mt-6">
+    {{ 'SHELTER_NEWS_DESCRIPTION' | translate }}
+  </p>
+  <div class="flex flex-col lg:grid lg:grid-cols-3 gap-5 mt-6 w-full">
+    @for (item of news(); track item; let i = $index) {
+      <app-news-card
+        [news]="item"
+        [odd]="i % 2 !== 0"
+        (cardClick)="toNewsClick(item.id)"
+      ></app-news-card>
+    }
+  </div>
+</div>
+<div class="flex flex-col h-full w-full">
+  <app-share [text]="'SHELTER_NEWS'"></app-share>
+</div>

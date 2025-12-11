@@ -49,6 +49,7 @@
         </p>
         @if (
           data.scope === 'guardianship' &&
+          data.guardianship &&
           (data.status === 'success' || data.status === 'pending')
         ) {
           <div
@@ -65,8 +66,6 @@
                 {{ 'MONTLY' | translate }}
               </p>
             }
-
-            <!-- Додати абзац з даними про опіку -->
           </div>
         }
         <div class="flex flex-col items-center justify-center mt-8">

@@ -65,7 +65,7 @@ import { WelcomeComponent } from '../welcome/welcome.component';
   template: `
     @if (modalState().isOpen) {
       <div
-        class="fixed inset-0 z-[99999] bg-secondary-neutral-mineShaft bg-opacity-50 flex items-center justify-center p-2"
+        class="overflow-x-hidden fixed inset-0 z-[99999] bg-secondary-neutral-mineShaft bg-opacity-50 flex items-center justify-center p-2"
       >
         <div
           class="bg-secondary-neutral-white text-secondary-neutral-mineShaft p-4 rounded-[40px] shadow-2xl
@@ -354,11 +354,12 @@ export class AuthModalComponent {
           this.modalService.openModal('registration-confirmation');
         },
         error: err => {
+          console.log(err);
           if (err.error?.error?.includes('email')) {
             this.modalService.openModal('existing-email-error');
             return;
           }
-          if (err.error?.detail?.includes('телефон')) {
+          if (err.error?.error?.includes('телефон')) {
             this.modalService.openModal('existing-email-error');
             return;
           }

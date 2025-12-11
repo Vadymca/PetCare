@@ -144,6 +144,7 @@ export class ShelterDetailComponent {
   onHeartClick() {
     if (!this.user()) {
       this.modalService.openModal('welcome');
+      return;
     }
     this.subscribe();
   }
@@ -198,6 +199,7 @@ export class ShelterDetailComponent {
   }
 
   isSubscribedToShelter(): Observable<boolean> {
+    if (!this.isAuthenticated()) return of(false);
     const shelterValue = this.shelter();
     // const userValue = this.user();
     // if (!userValue || !shelterValue) return of(false);

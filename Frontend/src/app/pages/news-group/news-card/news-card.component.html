@@ -1,1 +1,33 @@
-<p>news-card works!</p>
+<button class="w-full h-full" (click)="onCardClick()">
+  <div
+    class="flex flex-col rounded-40 w-full h-full justify-between p-10 cursor-pointer"
+    [ngClass]="{
+      'bg-primary-beige': !odd(),
+      'bg-secondary-jordyBlue-2': odd(),
+    }"
+  >
+    <p class="text-secondary-neutral-doveGray text-[16px] text-start">
+      {{ news().date | date: 'longDate' }}
+    </p>
+    <h2
+      class="font-inter text-[40px] font-bold leading-none text-start text-primary-orange mt-1"
+      style="font-size: clamp(16px, 6.5vw, 40px)"
+    >
+      {{ news().titleShort }}
+    </h2>
+    <p class="max-w-[700px] mt-6"></p>
+    @if (news().photos!.length > 0) {
+      <div
+        class="aspect-square rounded-[12px] max-h-[50vh] w-full h-full overflow-hidden bg-secondary-neutral-silverChalice"
+      >
+        <img
+          class="w-full h-full object-cover"
+          [src]="news().photos![0]"
+          alt="cat and human hand"
+        />
+      </div>
+    }
+
+    <div class="flex flex-col"></div>
+  </div>
+</button>

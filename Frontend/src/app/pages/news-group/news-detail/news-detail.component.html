@@ -1,0 +1,59 @@
+<div class="flex flex-col w-full bg-primary-blue">
+  <div
+    class="flex flex-col bg-primary-beige text-secondary-neutral-mineShaft w-full mt-[120px] pt-[40px] rounded-tl-40 rounded-tr-40 items-center px-5 sm:px-[50px] pb-10"
+  >
+    <div class="inline-flex items-center mt-3 w-full">
+      <div
+        class="hover:text-primary-orange inline-flex items-center cursor-pointer -translate-y-1/2 focus:outline-none focus:ring-2 focus:ring-primary-orange focus:ring-opacity-50"
+        (click)="backBottomClick()"
+        (keyup.enter)="backBottomClick()"
+        (keyup.space)="backBottomClick()"
+        tabindex="0"
+        role="button"
+        [attr.aria-label]="'BACK' | translate"
+      >
+        <app-icon [name]="'arrowLeft'" class=""></app-icon>
+        <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
+      </div>
+    </div>
+
+    <div class="flex flex-col mx-2 sm:mx-[50px] w-full items-center text-left">
+      <h1
+        class="font-display text-[40px] font-bold leading-none text-center w-full"
+        style="font-size: clamp(16px, 6.5vw, 40px)"
+      >
+        {{ news()?.title }}
+      </h1>
+      <p class="flex mt-2 sm:mt-6 text-base">
+        {{ news()?.date | date: 'longDate' }}
+      </p>
+      <p class="flex mt-2 sm:mt-6 text-base">
+        {{ news()?.descriptionFirstPart }}
+      </p>
+      <h2
+        class="mt-2 sm:mt-6 font-display text-[32px] font-bold leading-none text-center w-full"
+        style="font-size: clamp(16px, 6.5vw, 32px)"
+      >
+        {{ news()?.subTitle }}
+      </h2>
+      <p class="flex mt-2 sm:mt-6 text-base">
+        {{ news()?.descriptionSecondPart }}
+      </p>
+      @if ((news()?.photos)!.length > 0) {
+        <div
+          class="flex mt-2 sm:mt-6 text-base max-h-[85vh] aspect-[1.5/2] justify-center"
+        >
+          <app-photo-collections
+            [photos]="news()?.photos || []"
+          ></app-photo-collections>
+        </div>
+      }
+      <p class="flex mt-2 sm:mt-6 text-[18px] font-bold">
+        {{ news()?.conclusion }}
+      </p>
+    </div>
+  </div>
+  <div class="flex flex-col h-full w-full">
+    <app-share [text]="textForShare()"></app-share>
+  </div>
+</div>

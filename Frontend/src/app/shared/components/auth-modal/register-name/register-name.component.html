@@ -13,15 +13,15 @@
       <span class="ml-2">{{ 'BACK' | translate | uppercase }}</span>
     </div>
   </div>
-  <h5 class="text-40 mt-5" style="font-size: clamp(16px, 6.5vw, 40px)">
+  <h5 class="text-40 mt-1" style="font-size: clamp(16px, 6.5vw, 40px)">
     {{ 'YOUR_DATA_TITLE' | translate | uppercase }}
   </h5>
 
-  <p class="mt-5 text-2xl">{{ 'CREATE_ACCOUNT' | translate }}</p>
+  <p class="mt-1 text-2xl">{{ 'CREATE_ACCOUNT' | translate }}</p>
   <form
     [formGroup]="registerForm"
     (ngSubmit)="onSubmit()"
-    class="group bg-secondary-neutral-white w-full flex-1 flex flex-col justify-center items-center mt-12 mb-4"
+    class="group bg-secondary-neutral-white w-full flex-1 flex flex-col justify-center items-center mt-4 mb-4"
   >
     <div class="flex-1 flex flex-col w-[360px]">
       <!-- First Name -->
@@ -32,43 +32,43 @@
         id="firstName"
         formControlName="firstName"
         [placeholder]="'ENTER_YOUR_FIRST_NAME' | translate"
-        class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none invalid:ring-2 invalid:ring-secondary-semantic-error pr-10"
+        class="mt-1 px-3 py-2 border rounded-[12px] h-12 focus:outline-none invalid:ring-2 invalid:ring-secondary-semantic-error pr-10"
         aria-label="First name"
       />
 
       <!-- Last Name -->
-      <label for="lastName" class="mt-5 text-left">
+      <label for="lastName" class="mt-2 text-left">
         {{ 'LAST_NAME' | translate }}
       </label>
       <input
         id="lastName"
         [placeholder]="'ENTER_YOUR_LAST_NAME' | translate"
         formControlName="lastName"
-        class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none invalid:ring-2 invalid:ring-secondary-semantic-error pr-10"
+        class="mt-1 px-3 py-2 border rounded-[12px] h-12 focus:outline-none invalid:ring-2 invalid:ring-secondary-semantic-error pr-10"
         aria-label="Last name"
       />
 
       <!-- Zip Code -->
-      <label for="postalCode" class="mt-5 text-left">
+      <label for="postalCode" class="mt-2 text-left">
         {{ 'ZIP_CODE' | translate }}
       </label>
       <input
         id="postalCode"
         [placeholder]="'ENTER_YOUR_ZIP_CODE' | translate"
         formControlName="postalCode"
-        class="mt-2 px-3 py-2 border rounded-[12px] h-12 focus:outline-none invalid:ring-2 invalid:ring-secondary-semantic-error pr-10"
+        class="mt-1 px-3 py-2 border rounded-[12px] h-12 focus:outline-none invalid:ring-2 invalid:ring-secondary-semantic-error pr-10"
         aria-label="Zip code"
       />
       <label
         for="postalCode"
-        class="text-sm mt-3 l text-left text-secondary-neutral-doveGray leading-none"
+        class="text-sm mt-2 l text-left text-secondary-neutral-doveGray leading-none"
       >
         {{ 'ZIP_CODE_DESCRIPTION' | translate }}
       </label>
     </div>
 
     <!-- Submit -->
-    <div class="content-center">
+    <div class="content-center mt-2">
       <div class="flex justify-center">
         <app-primary-large-button
           class="w-[260px]"
@@ -81,7 +81,7 @@
 
     <!-- Error message -->
     @if (errorMessage()) {
-      <div class="text-secondary-semantic-error text-center text-sm mt-3">
+      <div class="text-secondary-semantic-error text-center text-sm mt-1">
         {{ errorMessage()! | translate }}
       </div>
     }

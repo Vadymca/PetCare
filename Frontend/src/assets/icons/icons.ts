@@ -498,11 +498,12 @@ export const ICONS = {
 </svg>
 
 `,
-  smallTwitter: `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 40 40">
+
+  smallX: `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 40 40">
   <circle cx="20" cy="20" r="20" fill="#FFF6F4"/>
-  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M23 15a2.5 2.5 0 0 0-2.424 3.113c-.13.008-.259.012-.389.012-2.104 0-3.954-1.408-5.008-3.06a7.509 7.509 0 0 0-.304 2.123c0 2.067.835 4.25 2.188 5.607 0 .735-1.875 1.108-2.813 1.203A7.468 7.468 0 0 0 18 25a7.499 7.499 0 0 0 7.495-7.226l1.255-2.461-2.096.312c-.45-.4-1.04-.624-1.654-.625Z"/>
-  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.604 20c0-4.478 0-6.718 1.45-8.109C13.501 10.5 15.833 10.5 20.5 10.5c4.665 0 6.998 0 8.447 1.391 1.449 1.391 1.449 3.63 1.449 8.109 0 4.478 0 6.718-1.45 8.109C27.499 29.5 25.167 29.5 20.5 29.5c-4.665 0-6.998 0-8.447-1.391-1.449-1.391-1.449-3.63-1.449-8.109Z"/>
-</svg>
+    <g transform="translate(6 6) scale(0.55)">
+    <path fill="currentColor" d="M6.919 6L21.137 26.727 6.229 44 9.406 44 22.545 28.777 32.986 44 43 44 28.123 22.313 42.203 6 39.027 6 26.717 20.262 16.934 6 6.919 6z"/>
+  </g></svg>
 `,
   smallTiktok: `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 40 40">
   <circle cx="20" cy="20" r="20" fill="#FFF6F4"/>
@@ -665,6 +666,25 @@ export const ICONS = {
   <circle cx="20" cy="20" r="20" fill="#FFF6F4"/>
   <path fill="currentColor" fill-rule="evenodd" d="M12.664 30.5a3.174 3.174 0 0 1-2.235-.925 3.13 3.13 0 0 1-.925-2.235V12.655c0-.839.333-1.635.925-2.236a3.13 3.13 0 0 1 2.235-.925H27.35c.839 0 1.635.333 2.235.925.6.593.926 1.397.926 2.236V27.34c0 .838-.333 1.634-.926 2.235a3.13 3.13 0 0 1-2.235.925H12.664Zm12.825-8.865h-2.22v7.335h4.08a1.627 1.627 0 0 0 1.63-1.63V12.655a1.628 1.628 0 0 0-1.63-1.631H12.664a1.635 1.635 0 0 0-1.63 1.63V27.34a1.635 1.635 0 0 0 1.63 1.63h8.16v-7.335H18.38V19.19h2.445v-1.314c0-2.49 1.212-3.585 3.285-3.585.97 0 1.493.07 1.74.105l.015.002v2.34h-1.41c-.71 0-1.047.304-1.149.918-.024.16-.036.32-.034.483v1.045h2.565l-.35 2.445.003.006Z" clip-rule="evenodd"/>
 </svg>
+`,
+  shareX: `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 40 40">
+  <circle cx="20" cy="20" r="20" fill="#FFF6F4"/>
+  <g transform="translate(6 6) scale(0.55)">
+    <path fill="currentColor" d="M6.919 6L21.137 26.727 6.229 44 9.406 44 22.545 28.777 32.986 44 43 44 28.123 22.313 42.203 6 39.027 6 26.717 20.262 16.934 6 6.919 6z"/>
+  </g>
+</svg>`,
+  shareTiktok: `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 40 40">
+  <circle cx="20" cy="20" r="20" fill="#FFF6F4"/>
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M29.875 16v8a4.9 4.9 0 0 1-1.526 3.535A5.32 5.32 0 0 1 24.668 29h-8.334a5.32 5.32 0 0 1-3.682-1.465A4.9 4.9 0 0 1 11.124 24v-8a4.9 4.9 0 0 1 1.525-3.536A5.32 5.32 0 0 1 16.334 11h8.334a5.32 5.32 0 0 1 3.682 1.464A4.9 4.9 0 0 1 29.875 16Z"/>
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.418 20c-.618 0-1.222.176-1.736.506a3.03 3.03 0 0 0-1.151 1.346 2.889 2.889 0 0 0-.178 1.733c.12.582.418 1.117.855 1.536.437.42.994.706 1.6.821a3.247 3.247 0 0 0 1.806-.17 3.1 3.1 0 0 0 1.402-1.105A2.915 2.915 0 0 0 21.543 23v-9c.347 1 1.667 3 4.167 3"/>
+</svg>
+
+`,
+
+  share: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="#2E2C2C" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8m-4-6-4-4m0 0L8 6m4-4v13"/>
+</svg>
+
 `,
   adoptionRulesBrain: `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="none" viewBox="0 0 80 80">
   <path stroke="#FFA41B" stroke-linecap="round" stroke-linejoin="round" stroke-width="5" d="M40 16.667a10 10 0 1 0-19.99.416M40 16.668V60m0-43.333a10 10 0 1 1 19.99.416 13.334 13.334 0 0 1 8.42 19.234m-48.4-19.233a13.334 13.334 0 0 0-8.42 19.233m8.42-19.233a9.998 9.998 0 0 0 1.326 4.583m-9.746 14.65a13.333 13.333 0 0 0 1.853 21.96m-1.853-21.96c.61-.497 1.262-.935 1.95-1.317m-.097 23.277A13.334 13.334 0 1 0 40 60m-26.557-1.723A13.356 13.356 0 0 0 20 60m20 0a13.333 13.333 0 1 0 26.556-1.723m1.854-21.96a13.332 13.332 0 0 1-1.853 21.96m1.853-21.96A13.306 13.306 0 0 0 66.46 35m.097 23.277A13.36 13.36 0 0 1 60 60M50 43.333A15 15 0 0 1 40 30a15 15 0 0 1-10 13.333m28.664-21.666a10.001 10.001 0 0 0 1.33-4.584"/>

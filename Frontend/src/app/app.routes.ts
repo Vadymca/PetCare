@@ -193,6 +193,21 @@ export const routes: Routes = [
         c => c.NewsComponent
       ),
   },
+  {
+    path: 'latest-news',
+    loadComponent: () =>
+      import('./pages/news-group/latest-news/latest-news.component').then(
+        c => c.LatestNewsComponent
+      ),
+  },
+  {
+    path: 'news/:id',
+
+    loadComponent: () =>
+      import('./pages/news-group/news-detail/news-detail.component').then(
+        c => c.NewsDetailComponent
+      ),
+  },
 
   {
     path: 'terms-and-conditions',

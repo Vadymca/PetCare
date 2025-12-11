@@ -15,7 +15,7 @@
         <!-- Каруселька фото -->
         <div class="flex flex-col bg-transparent w-full xl:w-1/2 min-w-[40vw]">
           @if (data.photos! && data.photos.length > 0) {
-            <div class="flex w-full text-primary-beige">
+            <div class="flex text-primary-beige max-h-[100vh]">
               <app-photo-collections
                 [photos]="data.photos"
               ></app-photo-collections>
@@ -101,7 +101,7 @@
                 {{ 'TEMPERAMENT' | translate }}
               </p>
               <p class="flex flex-wrap">
-                <ng-container *ngIf="data.temperaments?.length; else unknown">
+                <ng-container *ngIf="data.temperaments.length; else unknown">
                   <ng-container
                     *ngFor="let t of data.temperaments; let last = last"
                   >
@@ -248,7 +248,7 @@
           <!-- Розповісти друзям -->
           <div class="rounded-[20px]">
             <div class="flex gap-2 items-center">
-              {{ 'SHARE_WITH_FRIENDS' | translate | uppercase }}
+              {{ 'SHARE_WITH_FRIENDS' | translate | uppercase }}:
               <app-small-share-button
                 [iconName]="shareInsta"
                 (click)="onShareInstaClick()"

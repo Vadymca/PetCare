@@ -12,9 +12,9 @@ import {
   signal,
   ViewChildren,
 } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { filter, Subscription, take } from 'rxjs';
+import { Subscription, take } from 'rxjs';
 import { PaymentScope } from '../../core/models/liqPayCheckoutRequest';
 import { AuthService } from '../../core/services/auth.service';
 import { LiqPayService } from '../../core/services/liq-pay-service.service';
@@ -184,13 +184,13 @@ export class HomeComponent implements AfterViewInit, OnDestroy, OnInit {
       } else {
         this.isCharityButtonHidden.set(false);
       }
-      if (isPlatformBrowser(this.platformId)) {
-        this.router.events
-          .pipe(filter(event => event instanceof NavigationEnd))
-          .subscribe(() => {
-            window.scrollTo({ top: 0, behavior: 'auto' });
-          });
-      }
+      // if (isPlatformBrowser(this.platformId)) {
+      //   this.router.events
+      //     .pipe(filter(event => event instanceof NavigationEnd))
+      //     .subscribe(() => {
+      //       window.scrollTo({ top: 0, behavior: 'auto' });
+      //     });
+      // }
     });
   }
   ngOnInit() {
