@@ -282,7 +282,6 @@ export class AuthModalComponent {
     });
   }
   handleOption(option: ModalState['component']) {
-    console.log('handleOption - ', option);
     if (option === 'backup-codes') {
       this.loadBackupCodes(); // завантажуємо коди перед відображенням
     }
@@ -292,7 +291,6 @@ export class AuthModalComponent {
           this.qrCodeImage.set(response.qrCodeImage);
           this.manualKey.set(response.manualKey);
           this.modalService.openModal('setup-totp');
-          console.log('Setup TOTP success!!!!!:', response.manualKey);
         },
         error: err => {
           console.error('Setup TOTP error:', err);
@@ -354,7 +352,6 @@ export class AuthModalComponent {
           this.modalService.openModal('registration-confirmation');
         },
         error: err => {
-          console.log(err);
           if (err.error?.error?.includes('email')) {
             this.modalService.openModal('existing-email-error');
             return;
@@ -579,8 +576,7 @@ export class AuthModalComponent {
   handleResendSetupSms() {
     this.isLoading.set(true);
     this.authService.setupSms2fa().subscribe({
-      next: response => {
-        console.log('Setup SMS 2FA success:', response);
+      next: () => {
         this.errorMessage.set('');
         this.isLoading.set(false);
       },

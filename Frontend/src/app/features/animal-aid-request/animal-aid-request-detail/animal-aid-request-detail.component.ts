@@ -9,12 +9,12 @@ import {
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { filter, finalize, switchMap, tap } from 'rxjs/operators';
 import { AnimalAidRequest } from '../../../core/models/animalAidRequest';
 import { AnimalAidRequestService } from '../../../core/services/animal-aid-request.service';
+import { MetaSsrService } from '../../../core/services/meta-ssr.service'; // Новий сервіс
 import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
 
 @Component({
@@ -26,7 +26,6 @@ import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading
     TranslateModule,
     LoadingSpinnerComponent,
   ],
-
   templateUrl: './animal-aid-request-detail.component.html',
   styleUrl: './animal-aid-request-detail.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,10 +36,9 @@ export class AnimalAidRequestDetailComponent {
   private cdr = inject(ChangeDetectorRef);
   private animalAidRequestService = inject(AnimalAidRequestService);
   public translate = inject(TranslateService);
+  private metaSsr = inject(MetaSsrService); // Новий сервіс
+
   loading = signal<boolean>(true);
-  private title = inject(Title);
-  private meta = inject(Meta);
-  //private authService = inject(AuthService);
 
   animalAidRequestId = toSignal(
     this.route.paramMap.pipe(
@@ -48,101 +46,63 @@ export class AnimalAidRequestDetailComponent {
       filter((id): id is string => id !== null && id !== undefined)
     )
   );
+
   animalAidRequest = signal<AnimalAidRequest | undefined>(undefined);
   error = signal<string | null>(null);
-  // public isAuthenticated: Signal<boolean> = this.authService.isLoggedIn;
-  // user: Signal<User | null> = signal(this.authService.currentUser());
 
   constructor() {
     effect(() => {
       const animalAidRequestIdValue = this.animalAidRequestId();
       if (!animalAidRequestIdValue) return;
+
       this.animalAidRequestService
         .getAnimalAidRequestById(animalAidRequestIdValue)
         .pipe(
-          tap(() => {
-            this.loading.set(true); // на старті потоку
-          }),
-          finalize(() => {
-            this.loading.set(false); // після завершення чи помилки
-          })
+          tap(() => this.loading.set(true)),
+          finalize(() => this.loading.set(false))
         )
-        .subscribe(
-          animalAidRequest => {
+        .subscribe({
+          next: animalAidRequest => {
             if (!animalAidRequest) {
               this.router.navigate(['/not-found']);
               return;
             }
+
             this.animalAidRequest.set(animalAidRequest);
             this.cdr.detectChanges();
 
+            // НОВІ мета-теги (вже з MetaSsrService)
+            this.updateMetaTags(animalAidRequest);
+
+            // Твій JSON-LD
             this.addJsonLd(animalAidRequest);
-            const translatedName = this.translate.instant(
-              'animalAidRequest.title',
-              {
-                value: animalAidRequest.title,
-              }
-            );
-            const translatedDescription = this.translate.instant(
-              'animalAidRequest.description',
-              {
-                value: animalAidRequest.description,
-              }
-            );
-
-            this.title.setTitle(`${translatedName} - PetCare`);
-            this.meta.updateTag({
-              name: 'description',
-              content: translatedDescription || '',
-            });
-            this.meta.updateTag({
-              property: 'og:title',
-              content: translatedName,
-            });
-            this.meta.updateTag({
-              property: 'og:description',
-              content: translatedDescription,
-            });
-            this.meta.updateTag({ property: 'og:type', content: 'Demand' });
-            this.meta.updateTag({
-              property: 'og:url',
-              content: window.location.href,
-            });
-            // Якщо є фото:
-            if (animalAidRequest.photos?.length) {
-              this.meta.updateTag({
-                property: 'og:image',
-                content: animalAidRequest.photos[0],
-              });
-            }
-
-            this.meta.updateTag({
-              name: 'twitter:card',
-              content: 'summary_large_image',
-            });
-            this.meta.updateTag({
-              name: 'twitter:title',
-              content: translatedName,
-            });
-            this.meta.updateTag({
-              name: 'twitter:description',
-              content: translatedDescription,
-            });
-            this.meta.updateTag({
-              name: 'keywords',
-              content: `petcare, ${animalAidRequest.title}, ${animalAidRequest.category}, ${animalAidRequest.status},
-						${animalAidRequest.estimatedCost} 'UAH'`,
-            });
           },
-          error => {
+          error: error => {
             this.error.set(error);
             this.cdr.detectChanges();
-          }
-        );
+          },
+        });
     });
   }
+
+  // НОВА ФУНКЦІЯ — заміна всіх старих meta.updateTag + title.setTitle
+  private updateMetaTags(request: AnimalAidRequest) {
+    const title = `${request.title} — Добродій`;
+    const description = request.description
+      ? request.description.split(' ').slice(0, 30).join(' ') + '...'
+      : `Допоможи притулку зібрати ${request.estimatedCost} грн на ${request.category.toLowerCase()} ❤️`;
+
+    const image =
+      request.photos?.[0] ||
+      'https://i.pinimg.com/1200x/4f/53/64/4f5364ff9ca98be71bbe2445e53ab17c.jpg';
+
+    const url = `https://dobrodii.onrender.com/animal-aid-requests/${request.id}`;
+
+    this.metaSsr.update(title, description, image, url);
+  }
+
+  // Твій JSON-LD залишається без змін — він ідеально працює
   addJsonLd(animalAidRequest: AnimalAidRequest) {
-    // Видаляємо попередні JSON-LD теги, щоб уникнути дублювання
     document
       .querySelectorAll('script[type="application/ld+json"]')
       .forEach(el => el.remove());
@@ -151,7 +111,7 @@ export class AnimalAidRequestDetailComponent {
     script.type = 'application/ld+json';
 
     const shortDescription = animalAidRequest.description
-      ? animalAidRequest.description.split(' ').slice(0, 25).join(' ') // приблизно 150 символів
+      ? animalAidRequest.description.split(' ').slice(0, 25).join(' ')
       : '';
 
     const jsonLd: Record<string, unknown> = {

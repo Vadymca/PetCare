@@ -173,7 +173,6 @@ export class AuthService {
             this.get2faStatus().subscribe({
               next: response => {
                 this.twoFaStatus.set(response);
-                console.log('Get 2FA status success:', response);
               },
               error: err => {
                 console.error('Get 2FA status error:', err);
@@ -227,36 +226,27 @@ export class AuthService {
 
   //повторна відправка токена для верифікації електронки+++++++++++++++++++++++++++++++++++++++++++++
   resendVerification(email: string): Observable<SomeResponse> {
-    return this.http
-      .post<SomeResponse>(`${this.baseUrl}/auth/resend-verification`, { email })
-      .pipe(
-        tap({
-          next: response => {
-            console.log('Resend verification email success:', response.message);
-          },
-          error: err => {
-            console.log('Resend verification email error:', err);
-          },
-        })
-      );
+    return this.http.post<SomeResponse>(
+      `${this.baseUrl}/auth/resend-verification`,
+      { email }
+    );
   }
   //підтвердження електронки++++++++++++++++++++++++++++++++++++?????чи додати мейл
   verifyEmail(email: string, token: string): Observable<SomeResponse> {
-    return this.http
-      .post<SomeResponse>(`${this.baseUrl}/auth/confirm-email`, {
-        email,
-        token,
-      })
-      .pipe(
-        tap({
-          next: response => {
-            console.log('Verify email success:', response.message);
-          },
-          error: err => {
-            console.log('Verify email error:', err);
-          },
-        })
-      );
+    return this.http.post<SomeResponse>(`${this.baseUrl}/auth/confirm-email`, {
+      email,
+      token,
+    });
+    // .pipe(
+    //   tap({
+    //     next: response => {
+    //       console.log('Verify email success:', response.message);
+    //     },
+    //     error: err => {
+    //       console.log('Verify email error:', err);
+    //     },
+    //   })
+    // )
   }
 
   //запуск процедури встановлення тотп в 2ф----------------------------- чи дійсно треба там recoveryCodes???
@@ -323,7 +313,6 @@ export class AuthService {
             this.get2faStatus().subscribe({
               next: response => {
                 this.twoFaStatus.set(response);
-                console.log('Get 2FA status success:', response);
               },
               error: err => {
                 console.error('Get 2FA status error:', err);
@@ -407,7 +396,6 @@ export class AuthService {
             this.get2faStatus().subscribe({
               next: status => {
                 this.twoFaStatus.set(status);
-                console.log('Get 2FA status success:', status);
               },
               error: err => {
                 console.error('Get 2FA status error:', err);
@@ -486,7 +474,6 @@ export class AuthService {
             this.get2faStatus().subscribe({
               next: response => {
                 this.twoFaStatus.set(response);
-                console.log('Get 2FA status success:', response);
               },
               error: err => {
                 console.error('Get 2FA status error:', err);
@@ -532,7 +519,6 @@ export class AuthService {
     this.get2faStatus().subscribe({
       next: response => {
         this.twoFaStatus.set(response);
-        console.log('Get 2FA status success:', response);
       },
       error: err => {
         console.error('Get 2FA status error:', err);
@@ -585,7 +571,6 @@ export class AuthService {
             this.get2faStatus().subscribe({
               next: status => {
                 this.twoFaStatus.set(status);
-                console.log('Get 2FA status success:', status);
               },
               error: err => {
                 console.error('Get 2FA status error:', err);
@@ -635,7 +620,6 @@ export class AuthService {
             profilePhoto: `${this.baseUrl}${response.profilePhoto}`,
           });
         }
-        console.log('Update user success:', response);
       }),
       catchError(err => {
         console.error('Update user error:', err);

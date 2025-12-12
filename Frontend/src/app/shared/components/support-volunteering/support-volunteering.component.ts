@@ -33,7 +33,6 @@ export class SupportVolunteeringComponent {
   ];
   router = inject(Router);
   onVolunteeringClick() {
-    console.log(this.isAuthenticated());
     if (!this.isAuthenticated()) {
       this.modalService.openModal('welcome');
     } else {

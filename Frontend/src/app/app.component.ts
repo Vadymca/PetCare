@@ -1,7 +1,6 @@
 import { isPlatformBrowser } from '@angular/common';
 import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { take } from 'rxjs';
 import { FooterComponent } from './core/footer/footer.component';
 import { HeaderComponent } from './core/header/header.component';
 import { AuthService } from './core/services/auth.service';
@@ -21,13 +20,6 @@ export class AppComponent implements OnInit {
     if (!isPlatformBrowser(this.platformId)) {
       return;
     }
-    this.authService
-      .refreshToken()
-      .pipe(take(1))
-      .subscribe({
-        next: () => console.log('Токен оновлено(app.component)'),
-        error: () =>
-          console.log('Помилка при спробі оновлення токена (app.component)'),
-      });
+    this.authService.refreshToken();
   }
 }

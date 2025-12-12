@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, map, tap } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { Animal, AnimalListResult } from '../models/animal';
 
 import { ApiService } from './api.service'; // оновлена адреса
@@ -19,8 +19,6 @@ export class AnimalService {
   private speciesService = inject(SpeciesService);
 
   private readonly endpoint = 'animals';
-
-
 
   getAnimalBySlug(slug: string): Observable<Animal | undefined> {
     return this.api.getBySlug<Animal>(this.endpoint, slug).pipe(
@@ -56,10 +54,7 @@ export class AnimalService {
             })),
             totalCount: response.totalCount ?? animals.length,
           } as AnimalListResult;
-        }),
-        tap(result =>
-          console.log('Animals after processing in service (POST):', result)
-        )
+        })
       );
   }
 

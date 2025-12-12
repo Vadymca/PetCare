@@ -196,7 +196,6 @@ export class HomeComponent implements AfterViewInit, OnDestroy, OnInit {
   ngOnInit() {
     // Обробка query-параметрів у ngOnInit
     if (!isPlatformBrowser(this.platformId)) {
-      console.log('Skipping query param processing on server');
       return;
     }
 
@@ -204,7 +203,6 @@ export class HomeComponent implements AfterViewInit, OnDestroy, OnInit {
       .pipe(take(1))
       .subscribe(params => {
         if (this.isProcessed) {
-          console.log('Query params already processed, skipping.');
           return;
         }
 
@@ -216,15 +214,9 @@ export class HomeComponent implements AfterViewInit, OnDestroy, OnInit {
           : '';
         const currentPath = this.route.snapshot.routeConfig?.path;
 
-        // Логування для дебагу
-        console.log('Raw token from params:', params['token']);
-        console.log('Processed token:', token);
-        console.log('Received email:', email);
-        console.log('Current path:', currentPath);
-
         // Перевірка валідності Base64
-        const isValidBase64 = token ? /^[A-Za-z0-9+/=]+$/.test(token) : false;
-        console.log('Is token valid Base64?', isValidBase64);
+        // const isValidBase64 = token ? /^[A-Za-z0-9+/=]+$/.test(token) : false;
+        // console.log('Is token valid Base64?', isValidBase64);
 
         if (email && token && currentPath === 'verify-email') {
           this.isProcessed = true; // Помічаємо, що запит оброблено
@@ -246,7 +238,6 @@ export class HomeComponent implements AfterViewInit, OnDestroy, OnInit {
         } else if (email && token && currentPath === 'reset-password') {
           this.isProcessed = true; // Помічаємо, що запит оброблено
           this.modalService.setTokenForResettingPassword(token);
-          console.log('setEmailForResettingPassword: ', email);
           this.modalService.setEmailForResettingPassword(email);
           this.modalService.openModal('reset-password');
           this.router.navigate([''], { queryParams: {}, replaceUrl: true });

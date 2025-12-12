@@ -32,7 +32,6 @@ export class SecuritySettingsComponent {
     this.errorMessage.set('');
     this.auth.setupTotp().subscribe({
       next: response => {
-        console.log('Setup TOTP success:', response);
         this.modal.setQrCodeImage(response.qrCodeImage);
         this.modal.setManualKey(response.manualKey);
         this.modal.openModal('setup-totp');
@@ -56,8 +55,7 @@ export class SecuritySettingsComponent {
       return;
     }
     this.auth.setupSms2fa().subscribe({
-      next: response => {
-        console.log('Setup SMS 2FA success:', response);
+      next: () => {
         this.modal.openModal('setup-sms');
       },
       error: err => {
@@ -68,7 +66,6 @@ export class SecuritySettingsComponent {
   }
 
   openBackupCodes() {
-		
     this.modal.openModal('backup-codes');
   }
 

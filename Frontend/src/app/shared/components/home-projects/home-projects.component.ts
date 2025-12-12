@@ -36,7 +36,7 @@ export class HomeProjectsComponent {
           this.animalAidRequests = animalAidRequests.slice(0, 4);
         });
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   }
 }

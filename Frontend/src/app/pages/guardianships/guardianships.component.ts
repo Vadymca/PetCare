@@ -55,16 +55,6 @@ export class GuardianshipsComponent {
   constructor() {
     this.loadGuardianships();
     this.loadFavoriteAnimalIds();
-    // ← ТИМЧАСОВО ДЛЯ ДІАГНОСТИКИ
-    // effect(() => {
-    //   console.log('favoriteAnimalIds changed:', [...this.favoriteAnimalIds()]);
-    //   console.log('guardianships() length:', this.guardianships().length);
-    //   this.guardianships().forEach(g => {
-    //     console.log(
-    //       `Animal ${g.animal.id} → isFavorite: ${g.animal.isFavorite}`
-    //     );
-    //   });
-    // });
   }
 
   private loadGuardianships() {
@@ -104,9 +94,6 @@ export class GuardianshipsComponent {
     this.cancelationGuardianshipId.set('');
   }
   toChangePayment(guardianship: Guardianship) {
-    console.log('toChangePayment', guardianship);
-    // if (!guardianship.paymentSubscription) this.createPayment(guardianship);
-    // else this.renewPayment(guardianship);
 
     this.createPayment(guardianship);
   }

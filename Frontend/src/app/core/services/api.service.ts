@@ -77,10 +77,10 @@ export class ApiService {
       error.error instanceof ErrorEvent
     ) {
       // Client-side error
-      console.log('Client-side error:', error.error.message);
+      console.error('Client-side error:', error.error.message);
     } else {
       // Server-side or HTTP error
-      console.log(`Backend returned code, body was:`, error.error);
+      console.error(`Backend returned code, body was:`, error.error);
     }
     return throwError(
       () => new Error('Something bad happened; please try again later.')

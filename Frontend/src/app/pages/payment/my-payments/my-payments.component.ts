@@ -62,7 +62,7 @@ export class MyPaymentsComponent {
   }
   cancelSubscription() {
     const data = this.subscriptionToDelete();
-    console.log(data);
+
     if (!data || !data.providerSubscriptionId) {
       this.showModalWindow.set(false);
       return;

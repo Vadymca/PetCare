@@ -56,7 +56,7 @@ export class HomePartnersComponent implements OnInit {
   }
   next() {
     const vis = this.visibleCount();
-    console.log(vis);
+
     if (this.animating) return;
     this.animating = true;
     // права стрілка

@@ -61,5 +61,3 @@ jsContent += '};\n';
 
 // записуємо JS файл
 fs.writeFileSync(jsOutputFile, jsContent, 'utf-8');
-
-console.log('icons.js успішно згенеровано!');

@@ -12,12 +12,7 @@ import {
   signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import {
-  DomSanitizer,
-  Meta,
-  SafeResourceUrl,
-  Title,
-} from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Observable, of } from 'rxjs';
@@ -25,6 +20,7 @@ import { catchError, filter, map, switchMap } from 'rxjs/operators';
 import { Shelter } from '../../../core/models/shelter';
 import { User } from '../../../core/models/user';
 import { AuthService } from '../../../core/services/auth.service';
+import { MetaSsrService } from '../../../core/services/meta-ssr.service'; // Новий сервіс
 import { ModalService } from '../../../core/services/modal.service';
 import { ShelterSubscriptionService } from '../../../core/services/shelter-subscription.service';
 import { ShelterService } from '../../../core/services/shelter.service';
@@ -53,14 +49,12 @@ export class ShelterDetailComponent {
   backBottomClick() {
     this.router.navigate(['contacts']);
   }
+
   private route = inject(ActivatedRoute);
   public router = inject(Router);
-  private title = inject(Title);
-  private meta = inject(Meta);
   private translate = inject(TranslateService);
   private shelterService = inject(ShelterService);
   private sanitizer = inject(DomSanitizer);
-
   private authService = inject(AuthService);
   private shelterSubscriptionService = inject(ShelterSubscriptionService);
   private platformId = inject(PLATFORM_ID);
@@ -70,6 +64,7 @@ export class ShelterDetailComponent {
   );
   private modalService = inject(ModalService);
   private destroyRef = inject(DestroyRef);
+  private metaSsr = inject(MetaSsrService); // Новий сервіс
 
   mapUrl = signal<SafeResourceUrl | null>(null);
 
@@ -84,7 +79,7 @@ export class ShelterDetailComponent {
 
   public isAuthenticated: Signal<boolean> = this.authService.isLoggedIn;
   user: Signal<User | null> = signal(this.authService._currentUser());
-  isSubscribed = signal(false); // Початкове значення isSubscribed false;
+  isSubscribed = signal(false);
   isSubscriptionChecked = signal<boolean>(false);
 
   constructor() {
@@ -102,17 +97,9 @@ export class ShelterDetailComponent {
 
           this.shelter.set(shelter);
 
-          const translatedName = this.translate.instant('shelter.name', {
-            value: shelter.name || '',
-          });
-          const translatedDescription = this.translate.instant(
-            'shelter.description',
-            {
-              value: shelter.address || '',
-            }
-          );
+          // НОВІ МЕТА-ТЕГИ — заміна всього старого setMetaTags
+          this.updateMetaTags(shelter);
 
-          this.setMetaTags(translatedName, translatedDescription);
           if (isPlatformBrowser(this.platformId)) {
             this.addJsonLd({
               name: shelter.name || '',
@@ -122,11 +109,13 @@ export class ShelterDetailComponent {
               url: this.router.url,
             });
           }
+
           this.isSubscriptionChecked.set(false);
           this.isSubscribedToShelter().subscribe(isSubscribed => {
             this.isSubscribed.set(isSubscribed);
             this.isSubscriptionChecked.set(true);
           });
+
           if (shelter.coordinates?.lat && shelter.coordinates?.lng) {
             const url = `https://maps.google.com/maps?q=${shelter.coordinates.lat},${shelter.coordinates.lng}&z=14&output=embed`;
             this.mapUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(url));
@@ -135,12 +124,26 @@ export class ShelterDetailComponent {
           }
         });
 
-      // Clean up subscription on component destruction
       this.destroyRef.onDestroy(() => {
         subscription.unsubscribe();
       });
     });
   }
+
+  // НОВА ФУНКЦІЯ — заміна старого setMetaTags
+  private updateMetaTags(shelter: Shelter) {
+    const title = `${shelter.name} — Добродій`;
+    const description =
+      shelter.description ||
+      `Притулок для тварин у ${shelter.address}. Допоможи нам рятувати життя ❤️`;
+    const image =
+      shelter.photos?.[0] ||
+      'https://i.pinimg.com/736x/d8/c8/a4/d8c8a4cf17a6d4039c6fe725c32bd8de.jpg';
+    const url = `https://dobrodii.onrender.com/shelters/${shelter.slug}`;
+
+    this.metaSsr.update(title, description, image, url);
+  }
+
   onHeartClick() {
     if (!this.user()) {
       this.modalService.openModal('welcome');
@@ -151,29 +154,6 @@ export class ShelterDetailComponent {
 
   onFilledHeartClick() {
     this.unsubscribe();
-  }
-  private setMetaTags(name: string, description: string) {
-    this.title.setTitle(`${name} | PetCare`);
-    this.meta.updateTag({ name: 'description', content: description || '' });
-    this.meta.updateTag({
-      name: 'keywords',
-      content: `petcare, shelter, ${name}`,
-    });
-
-    this.meta.updateTag({ property: 'og:title', content: name });
-    this.meta.updateTag({
-      property: 'og:description',
-      content: description || `Details about ${name}`,
-    });
-    this.meta.updateTag({ property: 'og:type', content: 'localBusiness' });
-    this.meta.updateTag({ property: 'og:url', content: this.router.url });
-
-    this.meta.updateTag({ name: 'twitter:card', content: 'summary' });
-    this.meta.updateTag({ name: 'twitter:title', content: name });
-    this.meta.updateTag({
-      name: 'twitter:description',
-      content: description || '',
-    });
   }
 
   private addJsonLd(data: {
@@ -201,9 +181,6 @@ export class ShelterDetailComponent {
   isSubscribedToShelter(): Observable<boolean> {
     if (!this.isAuthenticated()) return of(false);
     const shelterValue = this.shelter();
-    // const userValue = this.user();
-    // if (!userValue || !shelterValue) return of(false);
-
     return this.shelterSubscriptionService.getMyFavouriteShelters().pipe(
       map(shelters => {
         const found = shelters.find(s => s.id === shelterValue!.id);

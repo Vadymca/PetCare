@@ -19,10 +19,9 @@ const apiProxy = createProxyMiddleware({
   target: 'https://api-dobrodiy.kn314-uz.keenetic.pro/api',
   changeOrigin: true,
   secure: false,
-  pathRewrite: (path, req) => {
-    console.log('➡️ Original Path:', path);
+  pathRewrite: path => {
     const newPath = path.replace(/^\/api/, '/api');
-    console.log('➡️ Rewritten Path:', newPath);
+
     return newPath;
   },
 }) as unknown as import('http-proxy-middleware').RequestHandler;

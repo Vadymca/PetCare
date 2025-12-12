@@ -17,6 +17,7 @@ import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { routes } from './app.routes';
 import { translateLoaderFactory } from './core/i18n/translate-loader.factory';
 import { httpInterceptor } from './core/interceptors/http.interceptor';
+import { MetaSsrService } from './core/services/meta-ssr.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -38,5 +39,6 @@ export const appConfig: ApplicationConfig = {
         },
       })
     ),
+    MetaSsrService,
   ],
 };

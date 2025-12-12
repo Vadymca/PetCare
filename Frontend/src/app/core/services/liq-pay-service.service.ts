@@ -92,7 +92,7 @@ export class LiqPayService {
       !current?.scope ||
       (current.scope !== 'guardianship' && !current.amount)
     ) {
-      console.log('current', current);
+      //console.log('current', current);
       throw new Error('Дані платежу не заповнені');
     }
 

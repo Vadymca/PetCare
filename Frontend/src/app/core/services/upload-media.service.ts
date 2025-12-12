@@ -17,7 +17,7 @@ export class UploadMediaService {
 
   upload(file: File): Observable<UploadResponse> {
     if (!isPlatformBrowser(this.platformId)) {
-      console.log('Skipping file processing on server');
+
       // Відправляємо оригінальний файл у SSR
       const formData = new FormData();
       formData.append('file', file);
