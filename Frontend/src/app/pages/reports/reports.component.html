@@ -8,7 +8,7 @@
     {{ 'WE_ROPORT' | translate | uppercase }}
   </h1>
   <div
-    class="flex justify-center gap-5 mt-[67px] text-center content-center font-inter font-bold text-[36px]"
+    class="flex justify-center gap-5 mt-[67px] text-center content-center font-inter font-bold text-[36px] transform scale-[80%] sm:scale-[100%]"
   >
     <div
       (mouseenter)="onHover('current')"
@@ -50,9 +50,9 @@
         {{ 'FIRST_THREE_MONTHS' | translate | uppercase }}
       </h3>
       <div
-        class="flex gap-[41px] justify-center items-center content-center bg-secondary-dodgerBlue-1 rounded-40 min-h-[210px] mt-5"
+        class="flex flex-col sm:flex-row gap-2 xl:gap-[41px] justify-center items-center content-center bg-secondary-dodgerBlue-1 rounded-40 min-h-[210px] mt-5"
       >
-        <div class="flex items-center gap-[14px]">
+        <div class="flex items-center gap-2 sm:gap-[14px]">
           <p class="text-base text-secondary-neutral-mineShaft">
             {{ 'JANUARY' | translate | uppercase | uppercase }}
           </p>
@@ -62,7 +62,7 @@
             [_disabledSignal]="buttonsDisabled[0]"
           ></app-download-orange-button-with-icon-and-border>
         </div>
-        <div class="flex items-center gap-[14px]">
+        <div class="flex items-center gap-2 sm:gap-[14px]">
           <p class="text-[16px] text-secondary-neutral-mineShaft">
             {{ 'FEBRUARY' | translate | uppercase | uppercase }}
           </p>
@@ -72,7 +72,7 @@
             [_disabledSignal]="buttonsDisabled[1]"
           ></app-download-orange-button-with-icon-and-border>
         </div>
-        <div class="flex items-center gap-[14px]">
+        <div class="flex items-center gap-2 sm:gap-[14px]">
           <p class="text-[16px] text-secondary-neutral-mineShaft">
             {{ 'MARCH' | translate | uppercase | uppercase }}
           </p>
@@ -89,9 +89,9 @@
         {{ 'SECOND_THREE_MONTHS' | translate | uppercase }}
       </h3>
       <div
-        class="flex gap-[41px] justify-center items-center content-center bg-secondary-dodgerBlue-1 rounded-40 min-h-[210px] mt-5"
+        class="flex flex-col sm:flex-row gap-2 xl:gap-[41px] justify-center items-center content-center bg-secondary-dodgerBlue-1 rounded-40 min-h-[210px] mt-5"
       >
-        <div class="flex items-center gap-[14px]">
+        <div class="flex items-center gap-2 sm:gap-[14px]">
           <p class="text-[16px] text-secondary-neutral-mineShaft">
             {{ 'APRIL' | translate | uppercase | uppercase }}
           </p>
@@ -101,7 +101,7 @@
             [_disabledSignal]="buttonsDisabled[3]"
           ></app-download-orange-button-with-icon-and-border>
         </div>
-        <div class="flex items-center gap-[14px]">
+        <div class="flex items-center gap-2 sm:gap-[14px]">
           <p class="text-[16px] text-secondary-neutral-mineShaft">
             {{ 'MAY' | translate | uppercase | uppercase }}
           </p>
@@ -111,7 +111,7 @@
             [_disabledSignal]="buttonsDisabled[4]"
           ></app-download-orange-button-with-icon-and-border>
         </div>
-        <div class="flex items-center gap-[14px]">
+        <div class="flex items-center gap-2 sm:gap-[14px]">
           <p class="text-[16px] text-secondary-neutral-mineShaft">
             {{ 'JUNE' | translate | uppercase | uppercase }}
           </p>
@@ -128,9 +128,9 @@
         {{ 'THIRD_THREE_MONTHS' | translate | uppercase }}
       </h3>
       <div
-        class="flex gap-[41px] justify-center items-center content-center bg-secondary-dodgerBlue-1 rounded-40 min-h-[210px] mt-5"
+        class="flex flex-col sm:flex-row gap-2 xl:gap-[41px] justify-center items-center content-center bg-secondary-dodgerBlue-1 rounded-40 min-h-[210px] mt-5"
       >
-        <div class="flex items-center gap-[14px]">
+        <div class="flex items-center gap-2 sm:gap-[14px]">
           <p class="text-[16px] text-secondary-neutral-mineShaft">
             {{ 'JULY' | translate | uppercase | uppercase }}
           </p>
@@ -140,7 +140,7 @@
             [_disabledSignal]="buttonsDisabled[6]"
           ></app-download-orange-button-with-icon-and-border>
         </div>
-        <div class="flex items-center gap-[14px]">
+        <div class="flex items-center gap-2 sm:gap-[14px]">
           <p class="text-[16px] text-secondary-neutral-mineShaft">
             {{ 'AUGUST' | translate | uppercase | uppercase }}
           </p>
@@ -150,7 +150,7 @@
             [_disabledSignal]="buttonsDisabled[7]"
           ></app-download-orange-button-with-icon-and-border>
         </div>
-        <div class="flex items-center gap-[14px]">
+        <div class="flex items-center gap-2 sm:gap-[14px]">
           <p class="text-[16px] text-secondary-neutral-mineShaft">
             {{ 'SEPTEMBER' | translate | uppercase | uppercase }}
           </p>
@@ -167,9 +167,9 @@
         {{ 'FOURTH_THREE_MONTHS' | translate | uppercase }}
       </h3>
       <div
-        class="flex gap-[41px] justify-center items-center content-center bg-secondary-dodgerBlue-1 rounded-40 min-h-[210px] mt-5"
+        class="flex flex-col sm:flex-row gap-2 xl:gap-[41px] justify-center items-center content-center bg-secondary-dodgerBlue-1 rounded-40 min-h-[210px] mt-5"
       >
-        <div class="flex items-center gap-[14px]">
+        <div class="flex items-center gap-2 sm:gap-[14px]">
           <p class="text-[16px] text-secondary-neutral-mineShaft">
             {{ 'OCTOBER' | translate | uppercase | uppercase | uppercase }}
           </p>
@@ -179,7 +179,7 @@
             [_disabledSignal]="buttonsDisabled[9]"
           ></app-download-orange-button-with-icon-and-border>
         </div>
-        <div class="flex items-center gap-[14px]">
+        <div class="flex items-center gap-2 sm:gap-[14px]">
           <p class="text-[16px] text-secondary-neutral-mineShaft">
             {{ 'NOVEMBER' | translate | uppercase | uppercase }}
           </p>
@@ -189,7 +189,7 @@
             [_disabledSignal]="buttonsDisabled[10]"
           ></app-download-orange-button-with-icon-and-border>
         </div>
-        <div class="flex items-center gap-[14px]">
+        <div class="flex items-center gap-2 sm:gap-[14px]">
           <p class="text-[16px] text-secondary-neutral-mineShaft">
             {{ 'DECEMBER' | translate | uppercase | uppercase }}
           </p>

@@ -30,84 +30,6 @@ export class ReportsComponent {
   tryDisable = signal(true);
   //мок дата з пдф звітами за місяцями
 
-  reports = [
-    { month: 1, year: 2024, link: 'тут буде посилання на звіт за січень 2024' },
-    { month: 2, year: 2024, link: 'тут буде посилання на звіт за лютий 2024' },
-    {
-      month: 3,
-      year: 2024,
-      link: 'тут буде посилання на звіт за березень 2024',
-    },
-    {
-      month: 4,
-      year: 2024,
-      link: 'тут буде посилання на звіт за квітень 2024',
-    },
-    {
-      month: 5,
-      year: 2024,
-      link: 'тут буде посилання на звіт за травень 2024',
-    },
-    {
-      month: 6,
-      year: 2024,
-      link: 'тут буде посилання на звіт за червень 2024',
-    },
-    { month: 7, year: 2024, link: 'тут буде посилання на звіт за липень 2024' },
-    {
-      month: 8,
-      year: 2024,
-      link: 'тут буде посилання на звіт за серпень 2024',
-    },
-    {
-      month: 9,
-      year: 2024,
-      link: 'тут буде посилання на звіт за вересень 2024',
-    },
-    {
-      month: 10,
-      year: 2024,
-      link: 'тут буде посилання на звіт за жовтень 2024',
-    },
-    {
-      month: 11,
-      year: 2024,
-      link: 'тут буде посилання на звіт за листопад 2024',
-    },
-    {
-      month: 12,
-      year: 2024,
-      link: 'тут буде посилання на звіт за грудень 2024',
-    },
-    { month: 1, year: 2025, link: 'тут буде посилання на звіт за січень 2025' },
-    { month: 2, year: 2025, link: 'тут буде посилання на звіт за лютий 2025' },
-    {
-      month: 3,
-      year: 2025,
-      link: 'тут буде посилання на звіт за березень 2025',
-    },
-    {
-      month: 4,
-      year: 2025,
-      link: 'тут буде посилання на звіт за квітень 2025',
-    },
-    {
-      month: 5,
-      year: 2025,
-      link: 'тут буде посилання на звіт за травень 2025',
-    },
-    {
-      month: 6,
-      year: 2025,
-      link: 'тут буде посилання на звіт за червень 2025',
-    },
-    { month: 7, year: 2025, link: 'тут буде посилання на звіт за липень 2025' },
-    {
-      month: 8,
-      year: 2025,
-      link: 'тут буде посилання на звіт за серпень 2025',
-    },
-  ];
   router = inject(Router);
   platformId = inject(PLATFORM_ID);
 
@@ -133,16 +55,27 @@ export class ReportsComponent {
     });
   }
   onDownloadMonthlyReportClick(month: number) {
-    let link = '';
     const year = this.isCurrentYearSelected()
       ? this.currentYear
       : this.currentYear - 1;
-    this.reports.forEach(report => {
-      if (report.month - 1 === month && report.year === year) {
-        link = report.link;
-      }
-    });
-    window.open(link, '_blank');
+
+    // Місяць в файлі — це 1-12, а ти передаєш 0-11 (ймовірно з DatePicker), тому +1
+    //const monthPadded = (month + 1).toString().padStart(2, '0');
+    const monthNumber = month + 1;
+    const fileName = `${year}-${monthNumber}.pdf`;
+    const specificPath = `../../../assets/files/reports/${fileName}`;
+    const fallbackPath = '../../../assets/files/reports/universal.pdf';
+
+    // Спробуємо перевірити, чи існує конкретний файл
+    fetch(specificPath, { method: 'HEAD' })
+      .then(response => {
+        const url = response.ok ? specificPath : fallbackPath;
+        window.open(url, '_blank');
+      })
+      .catch(() => {
+        // Якщо fetch впав (наприклад, через CORS або мережеву помилку) — на всяк випадок fallback
+        window.open(fallbackPath, '_blank');
+      });
   }
   isDisabled(month: number) {
     if (!this.isCurrentYearSelected()) {

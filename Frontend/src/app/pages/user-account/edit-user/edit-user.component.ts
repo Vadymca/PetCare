@@ -28,9 +28,9 @@ import { IconComponent } from '../../../shared/components/icon.component';
   styleUrl: './edit-user.component.css',
 })
 export class EditUserComponent {
-toChangeNotifications() {
-throw new Error('Method not implemented.');
-}
+  toChangeNotifications() {
+    throw new Error('Method not implemented.');
+  }
   private authService = inject(AuthService);
   private api = inject(ApiService);
   public user = signal(this.authService._currentUser());
@@ -168,7 +168,7 @@ throw new Error('Method not implemented.');
           next: () => this.router.navigate(['/profile']),
           error: err => {
             console.error('Error updating user:', err);
-            this.errorMessages.set(err.message);
+            this.errorMessages.set(['ERROR.500_MESSAGE']);
           },
         });
         this.isLoading.set(false);
