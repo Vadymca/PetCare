@@ -23,11 +23,11 @@ public sealed class UpdateUserCommandValidator : AbstractValidator<UpdateUserCom
             .WithMessage("Email має бути валідною електронною адресою.");
 
         this.RuleFor(x => x.Password)
-            .NotEmpty().WithMessage("Пароль є обов'язковим.")
             .MinimumLength(6).WithMessage("Пароль має містити щонайменше 6 символів.")
             .MaximumLength(32).WithMessage("Пароль не може перевищувати 32 символів.")
             .Matches(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\^$*\.\(\)<>?\""!@#%&/,'’;:_\+=\-~])[A-Za-z\d\^$*\.\(\)<>?\""!@#%&/,'’;:_\+=\-~]{6,32}$")
-            .WithMessage("Пароль має містити принаймні одну велику літеру, одну малу літеру, одну цифру та один спеціальний символ.");
+            .WithMessage("Пароль має містити принаймні одну велику літеру, одну малу літеру, одну цифру та один спеціальний символ.")
+            .When(x => !string.IsNullOrWhiteSpace(x.Password));
 
         this.RuleFor(x => x.FirstName)
           .MaximumLength(50).WithMessage("Ім'я не може перевищувати 50 символів.")

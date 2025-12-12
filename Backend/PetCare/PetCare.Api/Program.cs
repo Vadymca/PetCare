@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using PetCare.Api.Authorization;
+using PetCare.Api.Endpoints.AnimalAidRequests;
 using PetCare.Api.Endpoints.Animals;
 using PetCare.Api.Endpoints.Auth;
 using PetCare.Api.Endpoints.Auth.Facebook;
@@ -512,6 +513,16 @@ public class Program
             app.MapCreatePaymentMethodEndpoint(); // /api/payment-methods
             app.MapUpdatePaymentMethodEndpoint(); // /api/payment-methods/{id:guid}
             app.MapDeletePaymentMethodEndpoint(); // /api/payment-methods/{id:guid}
+
+            // -------------------- AnimalAidRequest --------------------
+            app.MapGetAllAnimalAidRequestsEndpoint(); // /api/animal-aid-requests
+            app.MapGetAnimalAidRequestByIdEndpoint(); // /api/animal-aid-requests/{id:guid}
+            app.MapGetAnimalAidRequestBySlugEndpoint(); // /api/animal-aid-requests/{slug}
+            app.MapCreateAnimalAidRequestEndpoint(); // /api/animal-aid-requests
+            app.MapUpdateAnimalAidRequestEndpoint(); // /api/animal-aid-requests/{id:guid}
+            app.MapUpdateAnimalAidRequestStatusEndpoint(); // /api/animal-aid-requests/{id:guid}/status
+            app.MapDeleteAnimalAidRequestEndpoint(); // /api/animal-aid-requests/{id:guid}
+            app.MapGetUrgentAnimalAidRequestsEndpoint(); // /api/animal-aid-requests/urgent
 
             app.MapGet("/", () => Results.Ok("✅ PetCare.Api is running successfully!"));
 

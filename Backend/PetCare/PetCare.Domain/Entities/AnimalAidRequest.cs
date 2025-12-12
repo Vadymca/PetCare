@@ -260,6 +260,44 @@ public sealed class AnimalAidRequest : AggregateRoot
     }
 
     /// <summary>
+    /// Updates the title of the aid request.
+    /// Regenerates the slug.
+    /// </summary>
+    /// <param name="newTitle">New title value.</param>
+    /// <exception cref="ArgumentException">Thrown when the title is invalid.</exception>
+    public void UpdateTitle(string newTitle)
+    {
+        if (string.IsNullOrWhiteSpace(newTitle))
+        {
+            throw new ArgumentException("Назва не може бути порожньою.", nameof(newTitle));
+        }
+
+        this.Title = Title.Create(newTitle);
+        this.RegenerateSlug();
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Updates the description of the aid request.
+    /// </summary>
+    /// <param name="newDescription">New description value, can be null.</param>
+    public void UpdateDescription(string? newDescription)
+    {
+        this.Description = newDescription;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Updates the category of the aid request.
+    /// </summary>
+    /// <param name="newCategory">New category value.</param>
+    public void UpdateCategory(AidCategory newCategory)
+    {
+        this.Category = newCategory;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
     /// Regenerates slug from current title.
     /// </summary>
     public void RegenerateSlug()
@@ -321,6 +359,25 @@ public sealed class AnimalAidRequest : AggregateRoot
             this.Status = AidStatus.Fulfilled;
         }
 
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Attaches a donation to this AnimalAidRequest by DonationId.
+    /// </summary>
+    /// <param name="donationId">ID of the Donation to attach.</param>
+    public void AttachDonation(Guid donationId)
+    {
+        // Prevent duplicate
+        if (this.donations.Any(d => d.DonationId == donationId))
+        {
+            return;
+        }
+
+        var link = AnimalAidDonation.Create(donationId, this.Id);
+        this.donations.Add(link);
+
+        // Note: CollectedAmount is updated when actual Donation entity is linked via RegisterDonation
         this.UpdatedAt = DateTime.UtcNow;
     }
 

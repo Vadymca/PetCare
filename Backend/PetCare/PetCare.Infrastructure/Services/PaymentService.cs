@@ -17,6 +17,7 @@ public class PaymentService : IPaymentService
     private readonly IGuardianshipRepository guardianships;
     private readonly IGuardianshipService guardianshipService;
     private readonly IPaymentIntentService paymentIntentService;
+    private readonly IAnimalAidRequestService animalAidRequestService;
     private readonly ILogger<PaymentService> logger;
 
     /// <summary>
@@ -27,17 +28,20 @@ public class PaymentService : IPaymentService
     /// <param name="guardianships">The repository used to retrieve and manage guardianship information associated with payments.</param>
     /// <param name="guardianshipService">The service for managing guardianship-related operations.</param>
     /// <param name="paymentIntentService">The service for managing payment intents.</param>
+    /// <param name="animalAidRequestService">The service for managing animal aid requests.</param>
     /// <param name="logger">The logger instance for logging payment service operations and events.</param>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="db"/> or <paramref name="guardianships"/> is null.</exception>
     public PaymentService(
         IGuardianshipRepository guardianships,
         IGuardianshipService guardianshipService,
         IPaymentIntentService paymentIntentService,
+        IAnimalAidRequestService animalAidRequestService,
         ILogger<PaymentService> logger)
     {
         this.guardianships = guardianships ?? throw new ArgumentNullException(nameof(guardianships));
         this.guardianshipService = guardianshipService ?? throw new ArgumentNullException(nameof(guardianshipService));
         this.paymentIntentService = paymentIntentService ?? throw new ArgumentNullException(nameof(paymentIntentService));
+        this.animalAidRequestService = animalAidRequestService ?? throw new ArgumentNullException(nameof(animalAidRequestService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -119,6 +123,29 @@ public class PaymentService : IPaymentService
                     "Error while activating guardianship {GuardianshipId} after first payment {DonationId}.",
                     targetEntityId,
                     donation.Id);
+                throw;
+            }
+        }
+
+        // Якщо це AnimalAidRequest — прив’язуємо Donation до запиту
+        if (targetEntity == "AnimalAidRequest" && targetEntityId is not null)
+        {
+            try
+            {
+                await this.animalAidRequestService.AttachDonationAsync(targetEntityId.Value, donation.Id, cancellationToken);
+
+                this.logger.LogInformation(
+                    "Donation {DonationId} attached to AnimalAidRequest {AidRequestId} successfully.",
+                    donation.Id,
+                    targetEntityId);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(
+                    ex,
+                    "Failed to attach Donation {DonationId} to AnimalAidRequest {AidRequestId}.",
+                    donation.Id,
+                    targetEntityId);
                 throw;
             }
         }

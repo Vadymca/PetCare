@@ -54,6 +54,7 @@ public static class DependencyInjection
         services.AddScoped<ISubscriptionService, SubscriptionService>();
         services.AddScoped<IPaymentMethodService, PaymentMethodService>();
         services.AddScoped<IPaymentIntentService, PaymentIntentService>();
+        services.AddScoped<IAnimalAidRequestService, AnimalAidRequestService>();
 
         // Email services
         services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
