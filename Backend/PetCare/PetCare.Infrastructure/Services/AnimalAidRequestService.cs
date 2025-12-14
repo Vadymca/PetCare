@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using PetCare.Application.Interfaces;
+using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
 using PetCare.Infrastructure.Persistence.Repositories;
@@ -12,13 +13,13 @@ using PetCare.Infrastructure.Persistence.Repositories;
 /// </summary>
 public sealed class AnimalAidRequestService : IAnimalAidRequestService
 {
-    private readonly ShelterRepository shelterRepository;
+    private readonly IShelterRepository shelterRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AnimalAidRequestService"/> class.
     /// </summary>
     /// <param name="shelterRepository">The shelter repository to use for data access.</param>
-    public AnimalAidRequestService(ShelterRepository shelterRepository)
+    public AnimalAidRequestService(IShelterRepository shelterRepository)
     {
         this.shelterRepository = shelterRepository ?? throw new ArgumentNullException(nameof(shelterRepository));
     }
