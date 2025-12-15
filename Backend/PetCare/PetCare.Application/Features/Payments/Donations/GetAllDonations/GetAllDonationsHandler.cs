@@ -37,7 +37,7 @@ public sealed class GetAllDonationsHandler : IRequestHandler<GetAllDonationsComm
 
         return donations.Select(d => new DonationListDto(
             d.Id,
-            d.Anonymous ? "Anonymous" : d.User?.FirstName ?? "Anonymous",
+            d.Anonymous ? d.PayerName ?? "Anonymous" : d.User?.FirstName ?? d.PayerName ?? "Anonymous",
             d.Anonymous ? null : d.User?.ProfilePhoto,
             d.Amount,
             d.Currency,
