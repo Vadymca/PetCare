@@ -580,7 +580,7 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
         return await this.db.Donations
             .AsNoTracking()
             .Include(d => d.User)
-            .Where(d => d.TargetEntity == "AnimalAidRequest" && d.TargetEntityId == projectId)
+            .Where(d => d.TargetEntity == "AidRequest" && d.TargetEntityId == projectId)
             .OrderByDescending(d => d.DonationDate)
             .Take(4)
             .ToListAsync(cancellationToken);
