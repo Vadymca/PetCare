@@ -246,7 +246,7 @@ public class ShelterRepository : GenericRepository<Shelter>, IShelterRepository
     {
         return await this.Context.AnimalAidRequests
             .Where(a => a.Status != AidStatus.Cancelled)
-            .OrderBy(a  => a.Status == AidStatus.Open ? 0 : 1)
+            .OrderBy(a => a.Status == AidStatus.Open ? 0 : 1)
             .ThenByDescending(a => a.CreatedAt)
             .Include(a => a.Donations)
             .Include(a => a.User)
@@ -388,5 +388,18 @@ public class ShelterRepository : GenericRepository<Shelter>, IShelterRepository
             .Where(a => a.IsUrgent)
             .OrderByDescending(a => a.CreatedAt)
             .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<decimal> SumCompletedByAidRequestIdAsync(
+    Guid aidRequestId,
+    CancellationToken cancellationToken = default)
+    {
+        return await this.Context.Donations
+            .Where(d =>
+                d.TargetEntity == "AidRequest" &&
+                d.TargetEntityId == aidRequestId &&
+                d.Status == DonationStatus.Completed)
+            .SumAsync(d => d.Amount, cancellationToken);
     }
 }

@@ -84,4 +84,14 @@ public interface IAnimalAidRequestService
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task AttachDonationAsync(Guid aidRequestId, Guid donationId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the total collected amount for a specific animal aid request.
+    /// </summary>
+    /// <param name="aidRequestId"> Id of the AnimalAidRequest.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    Task<decimal> GetCollectedAmountAsync(
+    Guid aidRequestId,
+    CancellationToken cancellationToken = default);
 }

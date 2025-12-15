@@ -190,4 +190,14 @@ public interface IShelterRepository : IRepository<Shelter>
     /// <returns>A task that represents the asynchronous operation. The task result contains a list of urgent animal aid
     /// requests, with the most recently created requests first. If no urgent requests exist, the list will be empty.</returns>
     Task<List<AnimalAidRequest>> GetUrgentAnimalAidRequestsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sums the total amount of completed donations for a specific animal aid request.
+    /// </summary>
+    /// <param name="aidRequestId">The unique identifier of the animal aid request.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    Task<decimal> SumCompletedByAidRequestIdAsync(
+    Guid aidRequestId,
+    CancellationToken cancellationToken = default);
 }

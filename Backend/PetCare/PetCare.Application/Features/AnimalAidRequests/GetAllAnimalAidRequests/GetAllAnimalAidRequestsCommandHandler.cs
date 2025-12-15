@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using AutoMapper;
 using MediatR;
 using PetCare.Application.Dtos.AnimalAidRequestDtos;
+using PetCare.Application.Dtos.AnimalDtos;
 using PetCare.Application.Interfaces;
 
 /// <summary>
@@ -31,10 +32,35 @@ public sealed class GetAllAnimalAidRequestsCommandHandler
 
     /// <inheritdoc/>
     public async Task<IReadOnlyList<AnimalAidRequestListDto>> Handle(
-        GetAllAnimalAidRequestsCommand request,
-        CancellationToken cancellationToken)
+     GetAllAnimalAidRequestsCommand request,
+     CancellationToken cancellationToken)
     {
         var requests = await this.animalAidRequestService.GetAllAnimalAidRequestsAsync(cancellationToken);
-        return this.mapper.Map<IReadOnlyList<AnimalAidRequestListDto>>(requests);
+
+        var result = new List<AnimalAidRequestListDto>(requests.Count);
+
+        foreach (var aidRequest in requests)
+        {
+            var donatedAmount =
+                await this.animalAidRequestService.GetCollectedAmountAsync(
+                    aidRequest.Id,
+                    cancellationToken);
+
+            var dto = new AnimalAidRequestListDto(
+                aidRequest.Id,
+                aidRequest.Slug.Value,
+                aidRequest.Shelter != null ? new ShelterInfoDto(aidRequest.Shelter.Id, aidRequest.Shelter.Name.Value, aidRequest.Shelter.Slug.Value) : null,
+                aidRequest.Title.Value,
+                aidRequest.ShortDescription ?? string.Empty,
+                aidRequest.Category,
+                donatedAmount,
+                aidRequest.EstimatedCost ?? 0m,
+                aidRequest.Status,
+                aidRequest.Photos.FirstOrDefault());
+
+            result.Add(dto);
+        }
+
+        return result;
     }
 }

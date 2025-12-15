@@ -66,4 +66,14 @@ public sealed class AnimalAidRequestService : IAnimalAidRequestService
 
         await this.shelterRepository.UpdateAnimalAidRequestAsync(request, cancellationToken);
     }
+
+    /// <inheritdoc/>
+    public async Task<decimal> GetCollectedAmountAsync(
+    Guid aidRequestId,
+    CancellationToken cancellationToken = default)
+    {
+        return await this.shelterRepository.SumCompletedByAidRequestIdAsync(
+            aidRequestId,
+            cancellationToken);
+    }
 }
