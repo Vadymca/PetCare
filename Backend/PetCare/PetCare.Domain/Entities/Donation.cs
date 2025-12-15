@@ -28,7 +28,8 @@ public sealed class Donation : BaseEntity
         bool recurring,
         bool anonymous,
         DateTime? donationDate,
-        string? report)
+        string? report,
+        string? payerName)
     {
         if (amount <= 0)
         {
@@ -52,6 +53,7 @@ public sealed class Donation : BaseEntity
         this.Anonymous = anonymous;
         this.DonationDate = donationDate ?? DateTime.UtcNow;
         this.Report = report;
+        this.PayerName = payerName;
 
         this.CreatedAt = DateTime.UtcNow;
         this.UpdatedAt = DateTime.UtcNow;
@@ -99,6 +101,11 @@ public sealed class Donation : BaseEntity
     /// Gets the report associated with the donation, if any. Can be null.
     /// </summary>
     public string? Report { get; private set; }
+
+    /// <summary>
+    /// Gets the name of the payer, if provided.
+    /// </summary>
+    public string? PayerName { get; private set; }
 
     /// <summary>
     /// Gets the date and time when the donation was created.
@@ -163,6 +170,7 @@ public sealed class Donation : BaseEntity
     /// </summary>
     /// <param name="userId">The unique identifier of the user making the donation, if any. Can be null.</param>
     /// <param name="amount">The amount of the donation.</param>
+    /// <param name="currency">The currency of the donation (e.g., "UAH").</param>
     /// <param name="shelterId">The unique identifier of the shelter receiving the donation, if any. Can be null.</param>
     /// <param name="paymentMethodId">The unique identifier of the payment method used for the donation.</param>
     /// <param name="status">The current status of the donation.</param>
@@ -172,6 +180,7 @@ public sealed class Donation : BaseEntity
     /// <param name="anonymous">Indicates whether the donation is anonymous. Defaults to false.</param>
     /// <param name="donationDate">The date and time when the donation was made. If null, defaults to the current UTC time.</param>
     /// <param name="report">The report associated with the donation, if any. Can be null.</param>
+    /// , <param name="payerName">The name of the payer, if provided. Can be null.</param>
     /// <returns>A new instance of <see cref="Donation"/> with the specified parameters.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="amount"/> is less than or equal to zero.</exception>
     public static Donation Create(
@@ -186,7 +195,8 @@ public sealed class Donation : BaseEntity
         bool recurring = false,
         bool anonymous = false,
         DateTime? donationDate = null,
-        string? report = null)
+        string? report = null,
+        string? payerName = null)
     {
         return new Donation(
            userId,
@@ -200,7 +210,8 @@ public sealed class Donation : BaseEntity
            recurring,
            anonymous,
            donationDate,
-           report);
+           report,
+           payerName);
     }
 
     /// <summary>

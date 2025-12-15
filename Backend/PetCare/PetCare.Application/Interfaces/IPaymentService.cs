@@ -26,6 +26,7 @@ public interface IPaymentService
     /// <param name="anonymous">Indicates whether the donation should be recorded as anonymous. Set to <see langword="true"/> to hide donor
     /// identity; otherwise, <see langword="false"/>.</param>
     /// <param name="userId">The unique identifier of the user making the donation, if available.</param>
+    /// <param name="payerName">The name of the payer, if available. May be null.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests. The operation is canceled if the token is triggered.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created <see cref="Donation"/>
     /// object representing the recorded donation.</returns>
@@ -39,6 +40,7 @@ public interface IPaymentService
         bool recurring,
         bool anonymous,
         Guid? userId,
+        string? payerName = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -58,6 +60,7 @@ public interface IPaymentService
     /// anonymous; otherwise, <see langword="false"/>.</param>
     /// <param name="userId">The unique identifier of the user who attempted the donation, if available. May be null for anonymous donations
     /// or if the user is not registered.</param>
+    /// <param name="payerName">The name of the payer, if available. May be null.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the donation entry reflecting the
     /// failed charge attempt.</returns>
@@ -71,6 +74,7 @@ public interface IPaymentService
         bool recurring,
         bool anonymous,
         Guid? userId,
+        string? payerName = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>

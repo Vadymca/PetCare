@@ -39,11 +39,12 @@ public sealed class GetProjectDonationsHandler : IRequestHandler<GetProjectDonat
 
         return donations.Select(d => new DonationListDto(
             d.Id,
-            d.Anonymous ? "Anonymous" : d.User?.FirstName ?? "Anonymous",
+            d.Anonymous ? "Anonymous" : d.User?.FirstName ?? d.PayerName ?? "Anonymous",
             d.Anonymous ? null : d.User?.ProfilePhoto,
             d.Amount,
             d.Currency,
             d.DonationDate,
-            d.Anonymous)).ToList();
+            d.Anonymous,
+            d.Purpose)).ToList();
     }
 }

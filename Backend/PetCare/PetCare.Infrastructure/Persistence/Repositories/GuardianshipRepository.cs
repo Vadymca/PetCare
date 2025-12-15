@@ -565,6 +565,7 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
             .AsNoTracking()
             .Include(d => d.User)
             .OrderByDescending(d => d.DonationDate)
+            .Take(4)
             .ToListAsync(cancellationToken);
     }
 
@@ -581,6 +582,7 @@ public sealed class GuardianshipRepository : GenericRepository<Guardianship>, IG
             .Include(d => d.User)
             .Where(d => d.TargetEntity == "AnimalAidRequest" && d.TargetEntityId == projectId)
             .OrderByDescending(d => d.DonationDate)
+            .Take(4)
             .ToListAsync(cancellationToken);
     }
 

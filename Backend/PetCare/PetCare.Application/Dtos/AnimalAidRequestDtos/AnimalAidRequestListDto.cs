@@ -1,7 +1,8 @@
 ﻿namespace PetCare.Application.Dtos.AnimalAidRequestDtos;
 
-using System;
 using PetCare.Application.Dtos.AnimalDtos;
+using PetCare.Domain.Enums;
+using System;
 
 /// <summary>
 /// DTO representing a summary of an animal aid request in a list.
@@ -12,7 +13,8 @@ string Slug,
 ShelterInfoDto? Shelter,
 string Title,
 string ShortDescription,
-string Category,
+AidCategory Category,
 decimal EstimatedCost,
 decimal AllreadyDonated,
+AidStatus Status,
 string? Photo);

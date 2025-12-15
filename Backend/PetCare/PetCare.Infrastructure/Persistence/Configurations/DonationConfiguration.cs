@@ -54,6 +54,10 @@ public sealed class DonationConfiguration : IEntityTypeConfiguration<Donation>
         builder.Property(x => x.Report)
             .IsRequired(false);
 
+        builder.Property(x => x.PayerName)
+            .HasMaxLength(100)
+            .IsRequired(false);
+
         builder.Property(d => d.TargetEntity)
             .HasMaxLength(100)
             .IsRequired(false);

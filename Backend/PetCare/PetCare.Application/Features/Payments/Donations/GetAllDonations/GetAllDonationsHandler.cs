@@ -42,6 +42,7 @@ public sealed class GetAllDonationsHandler : IRequestHandler<GetAllDonationsComm
             d.Amount,
             d.Currency,
             d.DonationDate,
-            d.Anonymous)).ToList();
+            d.Anonymous,
+            d.Purpose)).ToList();
     }
 }

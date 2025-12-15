@@ -245,6 +245,9 @@ public class ShelterRepository : GenericRepository<Shelter>, IShelterRepository
     public async Task<List<AnimalAidRequest>> GetAllAnimalAidRequestsAsync(CancellationToken cancellationToken = default)
     {
         return await this.Context.AnimalAidRequests
+            .Where(a => a.Status != AidStatus.Cancelled)
+            .OrderBy(a  => a.Status == AidStatus.Open ? 0 : 1)
+            .ThenByDescending(a => a.CreatedAt)
             .Include(a => a.Donations)
             .Include(a => a.User)
             .Include(a => a.Shelter)
@@ -268,7 +271,6 @@ public class ShelterRepository : GenericRepository<Shelter>, IShelterRepository
         }
 
         var request = await this.Context.AnimalAidRequests
-            .AsNoTracking()
             .Include(a => a.Donations)
             .Include(a => a.User)
             .Include(a => a.Shelter)

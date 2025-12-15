@@ -26,6 +26,7 @@ public sealed class LiqPayService : ILiqPayService
     private readonly IPaymentService paymentService;
     private readonly IPaymentIntentService paymentIntentService;
     private readonly IGuardianshipRepository guardianshipRepository;
+    private readonly IAnimalAidRequestService animalAidRequestService;
     private readonly ILogger<LiqPayService> logger;
 
     /// <summary>
@@ -36,18 +37,21 @@ public sealed class LiqPayService : ILiqPayService
     /// <param name="paymentService">The payment service implementation used to process payments. Must not be null.</param>
     /// <param name="paymentIntentService">The payment intent service implementation used to manage payment intents. Must not be null.</param>
     /// <param name="guardianshipRepository">The guardianship repository for accessing guardianship data. Must not be null.</param>
+    /// <param name="animalAidRequestService">The animal aid request service for managing aid requests. Must not be null.</param>
     /// <param name="logger">The logger instance for logging information and errors. Must not be null.</param>
     public LiqPayService(
         IOptions<LiqPaySettings> options,
         IPaymentService paymentService,
         IPaymentIntentService paymentIntentService,
         IGuardianshipRepository guardianshipRepository,
+        IAnimalAidRequestService animalAidRequestService,
         ILogger<LiqPayService> logger)
     {
         this.settings = options.Value ?? throw new ArgumentNullException(nameof(options));
         this.paymentService = paymentService ?? throw new ArgumentNullException(nameof(paymentService));
         this.paymentIntentService = paymentIntentService ?? throw new ArgumentNullException(nameof(paymentIntentService));
         this.guardianshipRepository = guardianshipRepository ?? throw new ArgumentNullException(nameof(guardianshipRepository));
+        this.animalAidRequestService = animalAidRequestService ?? throw new ArgumentNullException(nameof(animalAidRequestService));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -177,6 +181,8 @@ public sealed class LiqPayService : ILiqPayService
         // 8. SUCCESS
         if (isSuccess)
         {
+            string? payerName = root.TryGetProperty("payer_name", out var pn) ? pn.GetString() : null;
+
             var donation = await this.paymentService.RecordChargeSuccessAsync(
                 provider: "LiqPay",
                 transactionId: transactionId!,
@@ -187,6 +193,7 @@ public sealed class LiqPayService : ILiqPayService
                 recurring: isRecurring,
                 anonymous: anonymous,
                 userId: userId,
+                payerName: payerName,
                 cancellationToken: cancellationToken);
 
             await this.paymentIntentService.AttachDonationAsync(
@@ -200,6 +207,14 @@ public sealed class LiqPayService : ILiqPayService
                 await this.paymentIntentService.AttachGuardianshipAsync(
                     intent.ExternalOrderId,
                     intent.ScopeId.Value,
+                    cancellationToken);
+            }
+
+            if (intent.ScopeType == SubscriptionScope.AidRequest && intent.ScopeId is not null)
+            {
+                await this.animalAidRequestService.AttachDonationAsync(
+                    intent.ScopeId.Value,
+                    donation.Id,
                     cancellationToken);
             }
 
@@ -233,6 +248,8 @@ public sealed class LiqPayService : ILiqPayService
         // 9. FAILURE
         if (isFailure)
         {
+            string? payerName = root.TryGetProperty("payer_name", out var pn) ? pn.GetString() : null;
+
             await this.paymentIntentService.MarkFailedAsync(intent.ExternalOrderId, cancellationToken);
 
             await this.paymentService.RecordChargeFailedAsync(
@@ -245,6 +262,7 @@ public sealed class LiqPayService : ILiqPayService
                 recurring: isRecurring,
                 anonymous: anonymous,
                 userId: userId,
+                payerName: payerName,
                 cancellationToken: cancellationToken);
 
             return true;

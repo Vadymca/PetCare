@@ -12,4 +12,5 @@ public sealed record DonationListDto(
     decimal Amount,
     string Currency,
     DateTime DonationDate,
-    bool IsAnonymous);
+    bool IsAnonymous,
+    string? Purpose);

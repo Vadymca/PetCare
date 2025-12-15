@@ -62,6 +62,7 @@ public class PaymentService : IPaymentService
     /// <param name="anonymous">Indicates whether the donation should be recorded as anonymous. Set to <see langword="true"/> to hide donor
     /// identity; otherwise, <see langword="false"/>.</param>
     /// <param name="userId">The unique identifier of the user making the donation, or null if the donor is not registered.</param>
+    /// <param name="payerName">The name of the payer, if available. May be null.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests. The operation will be canceled if the token is triggered.</param>
     /// <returns>A <see cref="Donation"/> object representing the recorded donation, including all associated metadata and links
     /// to related entities.</returns>
@@ -76,6 +77,7 @@ public class PaymentService : IPaymentService
         bool recurring,
         bool anonymous,
         Guid? userId,
+        string? payerName = null,
         CancellationToken cancellationToken = default)
     {
         if (amount <= 0)
@@ -97,7 +99,8 @@ public class PaymentService : IPaymentService
             recurring,
             anonymous,
             DateTime.UtcNow,
-            report: null);
+            report: null,
+            payerName);
 
         donation.SetTarget(targetEntity, targetEntityId);
 
@@ -213,6 +216,7 @@ public class PaymentService : IPaymentService
     /// <param name="anonymous">Indicates whether the donor chose to remain anonymous. Set to <see langword="true"/> if the donation is
     /// anonymous; otherwise, <see langword="false"/>.</param>
     /// <param name="userId">The unique identifier of the user who attempted the donation, if available. May be null for anonymous donations.</param>
+    /// <param name="payerName">The name of the payer, if available. May be null.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A <see cref="Donation"/> object representing the recorded failed donation attempt.</returns>
     public async Task<Donation> RecordChargeFailedAsync(
@@ -225,6 +229,7 @@ public class PaymentService : IPaymentService
         bool recurring,
         bool anonymous,
         Guid? userId,
+        string? payerName,
         CancellationToken cancellationToken = default)
     {
         var paymentMethodId = await this.guardianships.RequirePaymentMethodIdByProviderAsync(provider, cancellationToken);
@@ -241,7 +246,8 @@ public class PaymentService : IPaymentService
             recurring,
             anonymous,
             DateTime.UtcNow,
-            report: null);
+            report: null,
+            payerName: payerName);
 
         donation.SetTarget(targetEntity, targetEntityId);
 

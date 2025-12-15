@@ -23,9 +23,10 @@ public sealed class AnimalAidRequestProfile : Profile
                 : null))
             .ForCtorParam("Title", opt => opt.MapFrom(src => src.Title.Value))
             .ForCtorParam("ShortDescription", opt => opt.MapFrom(src => src.ShortDescription ?? string.Empty))
-            .ForCtorParam("Category", opt => opt.MapFrom(src => src.Category.ToString()))
+            .ForCtorParam("Category", opt => opt.MapFrom(src => src.Category))
             .ForCtorParam("AllreadyDonated", opt => opt.MapFrom(src => src.Donations.Sum(d => d.Donation != null ? d.Donation.Amount : 0)))
             .ForCtorParam("EstimatedCost", opt => opt.MapFrom(src => src.EstimatedCost ?? 0m))
+            .ForCtorParam("Status", opt => opt.MapFrom(src => src.Status))
             .ForCtorParam("Photo", opt => opt.MapFrom(src => src.Photos.FirstOrDefault()));
 
         this.CreateMap<AnimalAidRequest, AnimalAidRequestDetailsDto>()
@@ -36,7 +37,7 @@ public sealed class AnimalAidRequestProfile : Profile
                 : null))
             .ForCtorParam("Title", opt => opt.MapFrom(src => src.Title.Value))
             .ForCtorParam("Description", opt => opt.MapFrom(src => src.Description ?? string.Empty))
-            .ForCtorParam("Category", opt => opt.MapFrom(src => src.Category.ToString()))
+            .ForCtorParam("Category", opt => opt.MapFrom(src => src.Category))
             .ForCtorParam("EstimatedCost", opt => opt.MapFrom(src => src.EstimatedCost ?? 0m))
             .ForCtorParam("AllreadyDonated", opt => opt.MapFrom(src => src.Donations.Sum(d => d.Donation != null ? d.Donation.Amount : 0)))
             .ForCtorParam("Status", opt => opt.MapFrom(src => src.Status))
