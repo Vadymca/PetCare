@@ -248,7 +248,10 @@ public sealed class LiqPayService : ILiqPayService
         // 9. FAILURE
         if (isFailure)
         {
-            string? payerName = root.TryGetProperty("payer_name", out var pn) ? pn.GetString() : null;
+            string? payerName =
+                root.TryGetProperty("payer_name", out var pn) && !string.IsNullOrWhiteSpace(pn.GetString())
+                    ? pn.GetString()
+                    : intent.PayerName;
 
             await this.paymentIntentService.MarkFailedAsync(intent.ExternalOrderId, cancellationToken);
 

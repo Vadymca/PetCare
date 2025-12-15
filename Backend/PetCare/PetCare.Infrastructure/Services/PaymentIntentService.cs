@@ -32,6 +32,7 @@ public sealed class PaymentIntentService : IPaymentIntentService
         string currency,
         bool isRecurring,
         bool anonymous,
+        string? payerName,
         CancellationToken cancellationToken = default)
     {
         var intent = PaymentIntent.CreateForLiqPay(
@@ -41,7 +42,8 @@ public sealed class PaymentIntentService : IPaymentIntentService
             amount,
             currency,
             isRecurring,
-            anonymous);
+            anonymous,
+            payerName);
 
         await this.repository.AddAsync(intent, cancellationToken);
         return intent;

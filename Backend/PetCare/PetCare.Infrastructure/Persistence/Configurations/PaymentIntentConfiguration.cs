@@ -68,6 +68,10 @@ public sealed class PaymentIntentConfiguration : IEntityTypeConfiguration<Paymen
         builder.Property(pi => pi.Anonymous)
             .IsRequired();
 
+        builder.Property(pi => pi.PayerName)
+            .HasMaxLength(100)
+            .IsRequired(false);
+
         // --- Status ---
         builder.Property(pi => pi.Status)
             .IsRequired()

@@ -25,7 +25,8 @@ public sealed class PaymentIntent : BaseEntity
         decimal amount,
         string currency,
         bool isRecurring,
-        bool anonymous)
+        bool anonymous,
+        string? payerName)
     {
         if (string.IsNullOrWhiteSpace(externalOrderId))
         {
@@ -61,6 +62,7 @@ public sealed class PaymentIntent : BaseEntity
         this.Currency = currency;
         this.IsRecurring = isRecurring;
         this.Anonymous = anonymous;
+        this.PayerName = payerName;
 
         this.Status = PaymentIntentStatus.Pending;
         this.CreatedAt = DateTime.UtcNow;
@@ -124,6 +126,11 @@ public sealed class PaymentIntent : BaseEntity
     public bool Anonymous { get; private set; }
 
     /// <summary>
+    /// Gets the name of the payer, if provided.
+    /// </summary>
+    public string? PayerName { get; private set; }
+
+    /// <summary>
     /// Gets the current lifecycle status of this payment intent.
     /// </summary>
     public PaymentIntentStatus Status { get; private set; }
@@ -178,6 +185,7 @@ public sealed class PaymentIntent : BaseEntity
     /// <param name="currency">Currency code (e.g., "UAH").</param>
     /// <param name="isRecurring">Indicates whether the payment is recurring.</param>
     /// <param name="anonymous">Indicates whether the payer chose to stay anonymous.</param>
+    /// <param name="payerName">Name of the payer, if provided.</param>
     /// <returns>A new <see cref="PaymentIntent"/> instance.</returns>
     public static PaymentIntent CreateForLiqPay(
         SubscriptionScope? scopeType,
@@ -186,7 +194,8 @@ public sealed class PaymentIntent : BaseEntity
         decimal amount,
         string currency,
         bool isRecurring,
-        bool anonymous)
+        bool anonymous,
+        string? payerName)
     {
         string externalOrderId = BuildExternalOrderId(scopeType, scopeId, userId, isRecurring, anonymous);
 
@@ -199,7 +208,8 @@ public sealed class PaymentIntent : BaseEntity
             amount,
             currency,
             isRecurring,
-            anonymous);
+            anonymous,
+            payerName);
     }
 
     /// <summary>

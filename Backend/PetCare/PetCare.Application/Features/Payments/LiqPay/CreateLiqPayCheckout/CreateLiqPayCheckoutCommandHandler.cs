@@ -103,6 +103,10 @@ public sealed class CreateLiqPayCheckoutCommandHandler
             userId ??= command.TokenUserId;
         }
 
+        bool isAnonymous =
+            userId is null &&
+            string.IsNullOrWhiteSpace(payerName);
+
         var intent = await this.paymentIntentService.CreateLiqPayIntentAsync(
             req.Scope,
             req.EntityId,
@@ -110,7 +114,8 @@ public sealed class CreateLiqPayCheckoutCommandHandler
             amount,
             currency,
             isRecurring,
-            anonymous: false,
+            anonymous: isAnonymous,
+            payerName,
             cancellationToken);
 
         var finalDto = new CreateLiqPayCheckoutDto(
@@ -121,7 +126,7 @@ public sealed class CreateLiqPayCheckoutCommandHandler
             Scope: req.Scope,
             EntityId: req.EntityId,
             UserId: userId,
-            Anonymous: false,
+            Anonymous: isAnonymous,
             PayerName: payerName,
             PayerPhone: payerPhone,
             PayerEmail: payerEmail);

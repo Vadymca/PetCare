@@ -104,6 +104,7 @@ public sealed class ResetSubscriptionCommandHandler
             currency,
             isRecurring: true,
             anonymous: false,
+            payerName: oldSub.User?.FirstName,
             cancellationToken);
 
         // 5. Формуємо опис

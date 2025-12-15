@@ -21,6 +21,7 @@ public interface IPaymentIntentService
     /// <param name="currency">The currency of the payment.</param>
     /// <param name="isRecurring">Indicates if the payment is recurring.</param>
     /// <param name="anonymous">Indicates if the payment is made anonymously.</param>
+    /// <param name="payerName">The name of the payer, if available.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>The created <see cref="PaymentIntent"/>.</returns>
     Task<PaymentIntent> CreateLiqPayIntentAsync(
@@ -31,6 +32,7 @@ public interface IPaymentIntentService
         string currency,
         bool isRecurring,
         bool anonymous,
+        string? payerName,
         CancellationToken cancellationToken = default);
 
     /// <summary>
