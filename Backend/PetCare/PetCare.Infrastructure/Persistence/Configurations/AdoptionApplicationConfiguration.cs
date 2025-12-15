@@ -22,6 +22,13 @@ public sealed class AdoptionApplicationConfiguration : IEntityTypeConfiguration<
         builder.Property(x => x.AdminNotes);
         builder.Property(x => x.RejectionReason);
 
+        builder.Property(x => x.RejectionDate).HasDefaultValueSql("CURRENT_TIMESTAMP");
+        builder.Property(x => x.AdoptionDate).HasDefaultValueSql("CURRENT_TIMESTAMP");
+        builder.Property(x => x.MeetingDate).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        builder.Property(x => x.CuratorName).HasMaxLength(200);
+        builder.Property(x => x.CuratorPhone).HasMaxLength(50);
+
         builder.Property(x => x.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
         builder.Property(x => x.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -42,5 +49,8 @@ public sealed class AdoptionApplicationConfiguration : IEntityTypeConfiguration<
 
         builder.HasIndex(x => x.Status);
         builder.HasIndex(x => x.ApplicationDate);
+        builder.HasIndex(x => x.RejectionDate);
+        builder.HasIndex(x => x.AdoptionDate);
+        builder.HasIndex(x => x.MeetingDate);
     }
 }

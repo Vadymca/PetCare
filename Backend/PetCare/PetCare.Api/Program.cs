@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using PetCare.Api.Authorization;
+using PetCare.Api.Endpoints.AdoptionApplications;
 using PetCare.Api.Endpoints.AnimalAidRequests;
 using PetCare.Api.Endpoints.Animals;
 using PetCare.Api.Endpoints.Auth;
@@ -523,6 +524,20 @@ public class Program
             app.MapUpdateAnimalAidRequestStatusEndpoint(); // /api/animal-aid-requests/{id:guid}/status
             app.MapDeleteAnimalAidRequestEndpoint(); // /api/animal-aid-requests/{id:guid}
             app.MapGetUrgentAnimalAidRequestsEndpoint(); // /api/animal-aid-requests/urgent
+
+            // -------------------- AdoptionApplication --------------------
+            app.MapApproveAdoptionApplicationEndpoint(); // /api/adoption-applications/{id:guid}/approve
+            app.MapRejectAdoptionApplicationEndpoint(); // /api/adoption-applications/{id:guid}/reject
+            app.MapChangeAdoptionApplicationStatusEndpoint(); // /api/adoption-applications/{id:guid}/change-status
+            app.MapCreateAdoptionApplicationEndpoint(); // /api/adoption-applications
+            app.MapDeleteAdoptionApplicationEndpoint(); // /api/adoption-applications/{id:guid}
+            app.MapGetAllAdoptionApplicationsEndpoint(); // /api/adoption-applications
+            app.MapGetApprovedAdoptionApplicationsEndpoint(); // /api/adoption-applications/approved
+            app.MapGetAdoptionApplicationByIdEndpoint(); // /api/adoption-applications/{id:guid}
+            app.MapGetMyAdoptionApplicationsEndpoint(); // /api/adoption-applications/my
+            app.MapGetPendingAdoptionApplicationsEndpoint(); // /api/adoption-applications/pending
+            app.MapGetRejectedAdoptionApplicationsEndpoint(); // /api/adoption-applications/rejected
+            app.MapUpdateAdoptionApplicationEndpoint(); // /api/adoption-applications/{id:guid}
 
             app.MapGet("/", () => Results.Ok("✅ PetCare.Api is running successfully!"));
 

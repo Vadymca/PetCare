@@ -31,6 +31,7 @@ public sealed class AdoptionApplication : AggregateRoot
         this.UserId = userId;
         this.AnimalId = animalId;
         this.Comment = comment;
+
         this.Status = AdoptionStatus.Pending;
         this.ApplicationDate = DateTime.UtcNow;
         this.CreatedAt = DateTime.UtcNow;
@@ -48,6 +49,21 @@ public sealed class AdoptionApplication : AggregateRoot
     public DateTime ApplicationDate { get; private set; }
 
     /// <summary>
+    /// Gets the date when the application was rejected, if any.
+    /// </summary>
+    public DateTime? RejectionDate { get; private set; }
+
+    /// <summary>
+    /// Gets the date when the adoption was finalized, if any.
+    /// </summary>
+    public DateTime? AdoptionDate { get; private set; }
+
+    /// <summary>
+    /// Gets the date of the scheduled meeting with the adopter, if any.
+    /// </summary>
+    public DateTime? MeetingDate { get; private set; }
+
+    /// <summary>
     /// Gets the optional comment provided by the user. Can be null.
     /// </summary>
     public string? Comment { get; private set; }
@@ -61,6 +77,16 @@ public sealed class AdoptionApplication : AggregateRoot
     /// Gets the reason for rejection of the application, if any. Can be null.
     /// </summary>
     public string? RejectionReason { get; private set; }
+
+    /// <summary>
+    /// Gets name of the curator responsible for this application.
+    /// </summary>
+    public string? CuratorName { get; private set; }
+
+    /// <summary>
+    /// Gets phone number of the curator responsible for this application.
+    /// </summary>
+    public string? CuratorPhone { get; private set; }
 
     /// <summary>
     /// Gets the date and time when the application was created.
@@ -146,10 +172,12 @@ public sealed class AdoptionApplication : AggregateRoot
     /// Approves the adoption application and sets the approving administrator.
     /// </summary>
     /// <param name="adminId">The unique identifier of the administrator approving the application.</param>
+    /// <param name="curatorName">Optional name of the curator to assign upon approval.</param>
+    /// <param name="curatorPhone">Optional phone number of the curator to assign upon approval.</param>
     /// <exception cref="InvalidOperationException">Thrown when the application is not in the <see cref="AdoptionStatus.Pending"/> state.</exception>
-    public void Approve(Guid adminId)
+    public void Approve(Guid adminId, string? curatorName = null, string? curatorPhone = null)
     {
-        if (!this.IsPending)
+        if (!this.CanBeApproved)
         {
             throw new InvalidOperationException("Затверджуються лише ті заявки, які знаходяться на розгляді.");
         }
@@ -157,6 +185,12 @@ public sealed class AdoptionApplication : AggregateRoot
         this.Status = AdoptionStatus.Approved;
         this.ApprovedBy = adminId;
         this.UpdatedAt = DateTime.UtcNow;
+
+        // Призначаємо куратора через існуючий метод
+        if (!string.IsNullOrWhiteSpace(curatorName) && !string.IsNullOrWhiteSpace(curatorPhone))
+        {
+            this.AssignCurator(curatorName, curatorPhone);
+        }
 
         this.AddDomainEvent(new AdoptionApplicationApprovedEvent(this.Id, this.UserId, this.AnimalId, adminId));
     }
@@ -168,7 +202,7 @@ public sealed class AdoptionApplication : AggregateRoot
     /// <exception cref="InvalidOperationException">Thrown when the application is not in the <see cref="AdoptionStatus.Pending"/> state.</exception>
     public void Reject(string reason)
     {
-        if (!this.IsPending)
+        if (!this.CanBeRejected)
         {
             throw new InvalidOperationException("Відхилити можна лише ті заявки, що перебувають на розгляді.");
         }
@@ -178,6 +212,36 @@ public sealed class AdoptionApplication : AggregateRoot
         this.UpdatedAt = DateTime.UtcNow;
 
         this.AddDomainEvent(new AdoptionApplicationRejectedEvent(this.Id, this.UserId, this.AnimalId, reason));
+    }
+
+    /// <summary>
+    /// Schedules a meeting with the adopter.
+    /// </summary>
+    /// <param name="meetingDate">Meeting date and time.</param>
+    public void ScheduleMeeting(DateTime meetingDate)
+    {
+        if (!this.IsPending)
+        {
+            throw new InvalidOperationException("Можна призначити зустріч лише для заявок на розгляді.");
+        }
+
+        this.MeetingDate = meetingDate;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Completes the adoption process.
+    /// </summary>
+    /// <param name="adoptionDate">Date of adoption.</param>
+    public void CompleteAdoption(DateTime adoptionDate)
+    {
+        if (!this.IsApproved)
+        {
+            throw new InvalidOperationException("Лише схвалені заявки можуть бути завершені усиновленням.");
+        }
+
+        this.AdoptionDate = adoptionDate;
+        this.UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -195,5 +259,44 @@ public sealed class AdoptionApplication : AggregateRoot
         this.UpdatedAt = DateTime.UtcNow;
 
         this.AddDomainEvent(new AdoptionApplicationNotesUpdatedEvent(this.Id, this.UserId, notes));
+    }
+
+    /// <summary>
+    /// Assigns a curator to the application.
+    /// </summary>
+    /// <param name="name">Curator name.</param>
+    /// <param name="phone">Curator phone number.</param>
+    public void AssignCurator(string name, string phone)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Ім'я куратора не може бути порожнім.", nameof(name));
+        }
+
+        if (string.IsNullOrWhiteSpace(phone))
+        {
+            throw new ArgumentException("Телефон куратора не може бути порожнім.", nameof(phone));
+        }
+
+        this.CuratorName = name;
+        this.CuratorPhone = phone;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Updates the user comment for the adoption application.
+    /// </summary>
+    /// <param name="comment">The new comment to set.</param>
+    public void UpdateComment(string comment)
+    {
+        if (string.IsNullOrWhiteSpace(comment))
+        {
+            throw new ArgumentException("Коментар не може бути порожнім.", nameof(comment));
+        }
+
+        this.Comment = comment;
+        this.UpdatedAt = DateTime.UtcNow;
+
+        this.AddDomainEvent(new AdoptionApplicationNotesUpdatedEvent(this.Id, this.UserId, comment));
     }
 }

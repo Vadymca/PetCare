@@ -3,9 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Aggregates;
-using PetCare.Domain.Specifications.AdoptionApplication;
 
 /// <summary>
 /// Repository implementation for managing <see cref="AdoptionApplication"/> entities.
@@ -21,15 +21,72 @@ public class AdoptionApplicationRepository : GenericRepository<AdoptionApplicati
     {
     }
 
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<AdoptionApplication>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
-        => await this.FindAsync(new AdoptionApplicationsByUserSpecification(userId), cancellationToken);
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<AdoptionApplication>> GetByUserAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await this.Context.Set<AdoptionApplication>()
+            .Where(a => a.UserId == userId)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
 
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<AdoptionApplication>> GetByAnimalIdAsync(Guid animalId, CancellationToken cancellationToken = default)
-        => await this.FindAsync(new AdoptionApplicationsByAnimalSpecification(animalId), cancellationToken);
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<AdoptionApplication>> GetPendingAsync(CancellationToken cancellationToken = default)
+    {
+        return await this.Context.Set<AdoptionApplication>()
+            .Where(a => a.Status == Domain.Enums.AdoptionStatus.Pending)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
 
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<AdoptionApplication>> GetPendingApplicationsAsync(CancellationToken cancellationToken = default)
-        => await this.FindAsync(new PendingAdoptionApplicationsSpecification(), cancellationToken);
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<AdoptionApplication>> GetApprovedAsync(CancellationToken cancellationToken = default)
+    {
+        return await this.Context.Set<AdoptionApplication>()
+            .Where(a => a.Status == Domain.Enums.AdoptionStatus.Approved)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<AdoptionApplication>> GetRejectedAsync(CancellationToken cancellationToken = default)
+    {
+        return await this.Context.Set<AdoptionApplication>()
+            .Where(a => a.Status == Domain.Enums.AdoptionStatus.Rejected)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task ApproveAsync(
+        Guid applicationId,
+        Guid adminId,
+        string? curatorName = null,
+        string? curatorPhone = null,
+        CancellationToken cancellationToken = default)
+    {
+        var application = await this.GetByIdAsync(applicationId, cancellationToken);
+        if (application == null)
+        {
+            throw new InvalidOperationException("Заявку не знайдено.");
+        }
+
+        // Передаємо куратора у метод агрегату
+        application.Approve(adminId, curatorName, curatorPhone);
+
+        await this.UpdateAsync(application, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task RejectAsync(Guid applicationId, string reason, CancellationToken cancellationToken = default)
+    {
+        var application = await this.GetByIdAsync(applicationId, cancellationToken);
+        if (application == null)
+        {
+            throw new InvalidOperationException("Заявку не знайдено.");
+        }
+
+        application.Reject(reason);
+        await this.UpdateAsync(application, cancellationToken);
+    }
 }

@@ -1,14 +1,11 @@
 ﻿namespace PetCare.Infrastructure.Services;
 
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
+using System.Threading;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
-using PetCare.Infrastructure.Persistence;
-using System.Threading;
 
 /// <summary>
 /// Provides operations related to guardianship management within the application.
@@ -170,7 +167,6 @@ public class GuardianshipService : IGuardianshipService
             }
         }
     }
-
 
     /// <summary>
     /// Automatically completes all expired guardianships that require payment as of the specified UTC time.

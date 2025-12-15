@@ -98,7 +98,7 @@ public class PaymentService : IPaymentService
         if (targetEntity == "Guardianship" && targetEntityId.HasValue)
         {
             var guardianship = await this.guardianshipService.GetByAnimalAsync(targetEntityId.Value, cancellationToken: cancellationToken);
-            // Якщо метод повертає список, беремо перший елемент
+
             targetName = guardianship.FirstOrDefault()?.Animal?.Name.Value;
         }
         else if (targetEntity == "AidRequest" && targetEntityId.HasValue)
@@ -553,7 +553,7 @@ public class PaymentService : IPaymentService
     /// <summary>
     /// Builds a localized description of the donation purpose based on the specified target value.
     /// </summary>
-    /// <param name="target">The target identifier representing the type of donation purpose. Supported values include "Guardianship",
+    /// <param name="targetEntity">The target identifier representing the type of donation purpose. Supported values include "Guardianship",
     /// "AnimalAidRequest", and "Global". If the value does not match a known type, a general purpose description is
     /// returned.</param>
     /// <returns>A string containing the localized description of the donation purpose corresponding to the specified target.

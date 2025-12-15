@@ -1,0 +1,60 @@
+﻿namespace PetCare.Application.Features.AdoptionApplications.Create;
+
+using System;
+using MediatR;
+using PetCare.Application.Dtos.AdoptionApplicationDtos;
+using PetCare.Application.Interfaces;
+
+/// <summary>
+/// Handles <see cref="CreateAdoptionApplicationCommand"/>.
+/// </summary>
+public sealed class CreateAdoptionApplicationCommandHandler
+    : IRequestHandler<CreateAdoptionApplicationCommand, AdoptionApplicationDetailsDto>
+{
+    private readonly IAdoptionApplicationService adoptionApplicationService;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CreateAdoptionApplicationCommandHandler"/> class.
+    /// </summary>
+    /// <param name="adoptionApplicationService">
+    /// The service responsible for managing adoption applications.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="adoptionApplicationService"/> is <c>null</c>.
+    /// </exception>
+    public CreateAdoptionApplicationCommandHandler(
+        IAdoptionApplicationService adoptionApplicationService)
+    {
+        this.adoptionApplicationService = adoptionApplicationService
+            ?? throw new ArgumentNullException(nameof(adoptionApplicationService));
+    }
+
+    /// <inheritdoc/>
+    public async Task<AdoptionApplicationDetailsDto> Handle(
+        CreateAdoptionApplicationCommand request,
+        CancellationToken cancellationToken)
+    {
+        var application = await this.adoptionApplicationService.CreateAsync(
+            request.UserId,
+            request.AnimalId,
+            request.Comment,
+            cancellationToken);
+
+        return new AdoptionApplicationDetailsDto(
+            application.Id,
+            application.UserId,
+            application.AnimalId,
+            application.Status,
+            application.ApplicationDate,
+            application.MeetingDate,
+            application.AdoptionDate,
+            application.RejectionDate,
+            application.Comment ?? string.Empty,
+            application.AdminNotes ?? string.Empty,
+            application.RejectionReason ?? string.Empty,
+            application.CuratorName,
+            application.CuratorPhone,
+            application.CreatedAt,
+            application.UpdatedAt);
+    }
+}
