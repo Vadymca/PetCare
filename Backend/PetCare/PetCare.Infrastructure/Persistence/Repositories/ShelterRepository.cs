@@ -402,4 +402,11 @@ public class ShelterRepository : GenericRepository<Shelter>, IShelterRepository
                 d.Status == DonationStatus.Completed)
             .SumAsync(d => d.Amount, cancellationToken);
     }
+
+    /// <inheritdoc/>
+    public async Task<int> GetDonationsCountAsync(Guid aidRequestId, CancellationToken cancellationToken = default)
+    {
+        return await this.Context.Donations
+            .CountAsync(d => d.TargetEntity == "AidRequest" && d.TargetEntityId == aidRequestId, cancellationToken);
+    }
 }

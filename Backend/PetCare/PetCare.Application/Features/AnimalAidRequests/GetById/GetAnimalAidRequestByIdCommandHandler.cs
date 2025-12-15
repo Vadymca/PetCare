@@ -42,6 +42,8 @@ public sealed class GetAnimalAidRequestByIdCommandHandler
         // отримуємо суму зібраних пожертв
         var donatedAmount = await this.animalAidRequestService.GetCollectedAmountAsync(aidRequest.Id, cancellationToken);
 
+        var donationsCount = await this.animalAidRequestService.GetDonationsCountAsync(aidRequest.Id, cancellationToken);
+
         // ручне мапування в DTO
         var dto = new AnimalAidRequestDetailsDto(
             aidRequest.Id,
@@ -52,6 +54,7 @@ public sealed class GetAnimalAidRequestByIdCommandHandler
             aidRequest.Category,
             aidRequest.EstimatedCost ?? 0m,
             donatedAmount,
+            donationsCount,
             aidRequest.Status,
             aidRequest.Photos,
             aidRequest.CreatedAt);

@@ -93,6 +93,8 @@ public sealed class UpdateAnimalAidRequestCommandHandler
 
         var collectedAmount = await this.animalAidRequestService.GetCollectedAmountAsync(aidRequest.Id, cancellationToken);
 
+        var donationsCount = await this.animalAidRequestService.GetDonationsCountAsync(aidRequest.Id, cancellationToken);
+
         var dto = new AnimalAidRequestDetailsDto(
             aidRequest.Id,
             aidRequest.Slug.Value,
@@ -102,6 +104,7 @@ public sealed class UpdateAnimalAidRequestCommandHandler
             aidRequest.Category,
             aidRequest.EstimatedCost ?? 0m,
             collectedAmount,
+            donationsCount,
             aidRequest.Status,
             aidRequest.Photos.ToList(),
             aidRequest.CreatedAt);

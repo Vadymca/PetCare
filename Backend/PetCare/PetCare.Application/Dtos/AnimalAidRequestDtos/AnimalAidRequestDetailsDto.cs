@@ -17,6 +17,7 @@ string Description,
 AidCategory Category,
 decimal EstimatedCost,
 decimal AllreadyDonated,
+int DonationsCount,
 AidStatus Status,
 IReadOnlyList<string>? Photos,
 DateTime CreatedAt);

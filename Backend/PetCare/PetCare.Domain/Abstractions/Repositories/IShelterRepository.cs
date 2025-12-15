@@ -200,4 +200,12 @@ public interface IShelterRepository : IRepository<Shelter>
     Task<decimal> SumCompletedByAidRequestIdAsync(
     Guid aidRequestId,
     CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Returns the number of donations for a given animal aid request.
+    /// </summary>
+    /// <param name="aidRequestId">The ID of the animal aid request.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The count of donations.</returns>
+    Task<int> GetDonationsCountAsync(Guid aidRequestId, CancellationToken cancellationToken = default);
 }

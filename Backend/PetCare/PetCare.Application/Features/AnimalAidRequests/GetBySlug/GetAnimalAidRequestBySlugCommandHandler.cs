@@ -37,6 +37,8 @@ public sealed class GetAnimalAidRequestBySlugCommandHandler : IRequestHandler<Ge
 
         var donatedAmount = await this.animalAidRequestService.GetCollectedAmountAsync(aidRequest.Id, cancellationToken);
 
+        var donationsCount = await this.animalAidRequestService.GetDonationsCountAsync(aidRequest.Id, cancellationToken);
+
         var dto = new AnimalAidRequestDetailsDto(
             aidRequest.Id,
             aidRequest.Slug.Value,
@@ -46,6 +48,7 @@ public sealed class GetAnimalAidRequestBySlugCommandHandler : IRequestHandler<Ge
             aidRequest.Category,
             aidRequest.EstimatedCost ?? 0m,
             donatedAmount,
+            donationsCount,
             aidRequest.Status,
             aidRequest.Photos,
             aidRequest.CreatedAt);

@@ -1,10 +1,11 @@
 ﻿namespace PetCare.Application.Features.AnimalAidRequests.UpdateStatus;
 
-using System;
 using MediatR;
+using Microsoft.AspNetCore.Http.HttpResults;
 using PetCare.Application.Dtos.AnimalAidRequestDtos;
 using PetCare.Application.Dtos.AnimalDtos;
 using PetCare.Application.Interfaces;
+using System;
 
 /// <summary>
 /// Handles updating the status of an AnimalAidRequest.
@@ -44,6 +45,8 @@ public sealed class UpdateAnimalAidRequestStatusCommandHandler
         var collectedAmount = await this.animalAidRequestService.GetCollectedAmountAsync(
            updatedRequest.Id, cancellationToken);
 
+        var donationsCount = await this.animalAidRequestService.GetDonationsCountAsync(updatedRequest.Id, cancellationToken);
+
         var dto = new AnimalAidRequestDetailsDto(
             updatedRequest.Id,
             updatedRequest.Slug.Value,
@@ -53,6 +56,7 @@ public sealed class UpdateAnimalAidRequestStatusCommandHandler
             updatedRequest.Category,
             updatedRequest.EstimatedCost ?? 0m,
             collectedAmount,
+            donationsCount,
             updatedRequest.Status,
             updatedRequest.Photos.ToList(),
             updatedRequest.CreatedAt);

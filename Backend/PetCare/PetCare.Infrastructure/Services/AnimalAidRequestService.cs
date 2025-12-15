@@ -76,4 +76,10 @@ public sealed class AnimalAidRequestService : IAnimalAidRequestService
             aidRequestId,
             cancellationToken);
     }
+
+    /// <inheritdoc/>
+    public async Task<int> GetDonationsCountAsync(Guid aidRequestId, CancellationToken cancellationToken = default)
+    {
+        return await this.shelterRepository.GetDonationsCountAsync(aidRequestId, cancellationToken);
+    }
 }

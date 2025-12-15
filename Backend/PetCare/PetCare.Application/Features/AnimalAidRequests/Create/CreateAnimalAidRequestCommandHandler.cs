@@ -52,6 +52,8 @@ public sealed class CreateAnimalAidRequestCommandHandler
                     aidRequest.Id,
                     cancellationToken);
 
+        var donationsCount = await this.animalAidRequestService.GetDonationsCountAsync(createdRequest.Id, cancellationToken);
+
         var dto = new AnimalAidRequestDetailsDto(
             createdRequest.Id,
             createdRequest.Slug.Value,
@@ -61,6 +63,7 @@ public sealed class CreateAnimalAidRequestCommandHandler
             createdRequest.Category,
             createdRequest.EstimatedCost ?? 0m,
             donatedAmount,
+            donationsCount,
             createdRequest.Status,
             createdRequest.Photos,
             createdRequest.CreatedAt);
