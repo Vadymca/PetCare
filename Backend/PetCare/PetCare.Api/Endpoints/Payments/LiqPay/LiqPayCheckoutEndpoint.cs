@@ -39,6 +39,11 @@ public static class LiqPayCheckoutEndpoint
             string? tokenPayerPhone = context.User.FindFirstValue("phone");
             string? tokenPayerEmail = context.User.FindFirstValue(ClaimTypes.Email);
 
+            // Якщо користувач анонімний, беремо ім'я з форми; інакше — з токена
+            var payerNameToUse = string.IsNullOrWhiteSpace(request.PayerName) ? tokenPayerName : request.PayerName;
+            var payerPhoneToUse = string.IsNullOrWhiteSpace(request.PayerPhone) ? tokenPayerPhone : request.PayerPhone;
+            var payerEmailToUse = string.IsNullOrWhiteSpace(request.PayerEmail) ? tokenPayerEmail : request.PayerEmail;
+
             var dto = new CreateLiqPayCheckoutDto(
                 Amount: request.Amount,
                 Currency: request.Currency,
@@ -48,9 +53,9 @@ public static class LiqPayCheckoutEndpoint
                 EntityId: request.EntityId,
                 UserId: tokenUserId,
                 Anonymous: tokenUserId is null,
-                PayerName: request.PayerName,
-                PayerPhone: request.PayerPhone,
-                PayerEmail: request.PayerEmail);
+                PayerName: payerNameToUse,
+                PayerPhone: payerPhoneToUse,
+                PayerEmail: payerEmailToUse);
 
             var command = new CreateLiqPayCheckoutCommand(
                 Request: dto,
