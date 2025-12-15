@@ -4,6 +4,7 @@ using System;
 using AutoMapper;
 using MediatR;
 using PetCare.Application.Dtos.AnimalAidRequestDtos;
+using PetCare.Application.Dtos.AnimalDtos;
 using PetCare.Application.Interfaces;
 
 /// <summary>
@@ -13,20 +14,16 @@ public sealed class GetAnimalAidRequestByIdCommandHandler
     : IRequestHandler<GetAnimalAidRequestByIdCommand, AnimalAidRequestDetailsDto>
 {
     private readonly IAnimalAidRequestService animalAidRequestService;
-    private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GetAnimalAidRequestByIdCommandHandler"/> class.
     /// </summary>
     /// <param name="animalAidRequestService">The service used to retrieve animal aid request data.</param>
-    /// <param name="mapper">The mapper used to convert entities to DTOs.</param>
     /// <exception cref="ArgumentNullException">Thrown if any of the dependencies are null.</exception>
     public GetAnimalAidRequestByIdCommandHandler(
-        IAnimalAidRequestService animalAidRequestService,
-        IMapper mapper)
+        IAnimalAidRequestService animalAidRequestService)
     {
         this.animalAidRequestService = animalAidRequestService ?? throw new ArgumentNullException(nameof(animalAidRequestService));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc/>
@@ -42,6 +39,23 @@ public sealed class GetAnimalAidRequestByIdCommandHandler
         var aidRequest = await this.animalAidRequestService.GetAnimalAidRequestByIdAsync(request.Id, cancellationToken)
             ?? throw new InvalidOperationException($"Запит на допомогу з Id '{request.Id}' не знайдено.");
 
-        return this.mapper.Map<AnimalAidRequestDetailsDto>(aidRequest);
+        // отримуємо суму зібраних пожертв
+        var donatedAmount = await this.animalAidRequestService.GetCollectedAmountAsync(aidRequest.Id, cancellationToken);
+
+        // ручне мапування в DTO
+        var dto = new AnimalAidRequestDetailsDto(
+            aidRequest.Id,
+            aidRequest.Slug.Value,
+            aidRequest.Shelter != null ? new ShelterInfoDto(aidRequest.Shelter.Id, aidRequest.Shelter.Name.Value, aidRequest.Shelter.Slug.Value) : null,
+            aidRequest.Title.Value,
+            aidRequest.Description ?? string.Empty,
+            aidRequest.Category,
+            aidRequest.EstimatedCost ?? 0m,
+            donatedAmount,
+            aidRequest.Status,
+            aidRequest.Photos,
+            aidRequest.CreatedAt);
+
+        return dto;
     }
 }

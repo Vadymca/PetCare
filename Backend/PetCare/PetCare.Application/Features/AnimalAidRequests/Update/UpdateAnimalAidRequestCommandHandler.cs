@@ -4,6 +4,7 @@ using System;
 using AutoMapper;
 using MediatR;
 using PetCare.Application.Dtos.AnimalAidRequestDtos;
+using PetCare.Application.Dtos.AnimalDtos;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Enums;
 
@@ -14,19 +15,15 @@ public sealed class UpdateAnimalAidRequestCommandHandler
     : IRequestHandler<UpdateAnimalAidRequestCommand, AnimalAidRequestDetailsDto>
 {
     private readonly IAnimalAidRequestService animalAidRequestService;
-    private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UpdateAnimalAidRequestCommandHandler"/> class.
     /// </summary>
     /// <param name="animalAidRequestService">The service for managing animal aid requests.</param>
-    /// <param name="mapper">The AutoMapper instance.</param>
     public UpdateAnimalAidRequestCommandHandler(
-        IAnimalAidRequestService animalAidRequestService,
-        IMapper mapper)
+        IAnimalAidRequestService animalAidRequestService)
     {
         this.animalAidRequestService = animalAidRequestService ?? throw new ArgumentNullException(nameof(animalAidRequestService));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc/>
@@ -94,6 +91,21 @@ public sealed class UpdateAnimalAidRequestCommandHandler
 
         await this.animalAidRequestService.UpdateAnimalAidRequestAsync(aidRequest, cancellationToken);
 
-        return this.mapper.Map<AnimalAidRequestDetailsDto>(aidRequest);
+        var collectedAmount = await this.animalAidRequestService.GetCollectedAmountAsync(aidRequest.Id, cancellationToken);
+
+        var dto = new AnimalAidRequestDetailsDto(
+            aidRequest.Id,
+            aidRequest.Slug.Value,
+            aidRequest.Shelter != null ? new ShelterInfoDto(aidRequest.Shelter.Id, aidRequest.Shelter.Name.Value, aidRequest.Shelter.Slug.Value) : null,
+            aidRequest.Title.Value,
+            aidRequest.Description ?? string.Empty,
+            aidRequest.Category,
+            aidRequest.EstimatedCost ?? 0m,
+            collectedAmount,
+            aidRequest.Status,
+            aidRequest.Photos.ToList(),
+            aidRequest.CreatedAt);
+
+        return dto;
     }
 }

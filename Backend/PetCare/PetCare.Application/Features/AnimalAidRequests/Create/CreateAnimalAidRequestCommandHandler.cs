@@ -1,9 +1,9 @@
 ﻿namespace PetCare.Application.Features.AnimalAidRequests.Create;
 
 using System;
-using AutoMapper;
 using MediatR;
 using PetCare.Application.Dtos.AnimalAidRequestDtos;
+using PetCare.Application.Dtos.AnimalDtos;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
@@ -15,20 +15,16 @@ public sealed class CreateAnimalAidRequestCommandHandler
     : IRequestHandler<CreateAnimalAidRequestCommand, AnimalAidRequestDetailsDto>
 {
     private readonly IAnimalAidRequestService animalAidRequestService;
-    private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CreateAnimalAidRequestCommandHandler"/> class.
     /// </summary>
     /// <param name="animalAidRequestService">The service used to manage animal aid requests.</param>
-    /// <param name="mapper">The AutoMapper instance for mapping domain entities to DTOs.</param>
     /// <exception cref="ArgumentNullException">Thrown when any of the dependencies is null.</exception>
     public CreateAnimalAidRequestCommandHandler(
-        IAnimalAidRequestService animalAidRequestService,
-        IMapper mapper)
+        IAnimalAidRequestService animalAidRequestService)
     {
         this.animalAidRequestService = animalAidRequestService ?? throw new ArgumentNullException(nameof(animalAidRequestService));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc/>
@@ -51,6 +47,24 @@ public sealed class CreateAnimalAidRequestCommandHandler
 
         var createdRequest = await this.animalAidRequestService.CreateAnimalAidRequestAsync(aidRequest, cancellationToken);
 
-        return this.mapper.Map<AnimalAidRequestDetailsDto>(createdRequest);
+        var donatedAmount =
+                await this.animalAidRequestService.GetCollectedAmountAsync(
+                    aidRequest.Id,
+                    cancellationToken);
+
+        var dto = new AnimalAidRequestDetailsDto(
+            createdRequest.Id,
+            createdRequest.Slug.Value,
+            createdRequest.Shelter != null ? new ShelterInfoDto(createdRequest.Shelter.Id, createdRequest.Shelter.Name.Value, createdRequest.Shelter.Slug.Value) : null,
+            createdRequest.Title.Value,
+            createdRequest.Description ?? string.Empty,
+            createdRequest.Category,
+            createdRequest.EstimatedCost ?? 0m,
+            donatedAmount,
+            createdRequest.Status,
+            createdRequest.Photos,
+            createdRequest.CreatedAt);
+
+        return dto;
     }
 }

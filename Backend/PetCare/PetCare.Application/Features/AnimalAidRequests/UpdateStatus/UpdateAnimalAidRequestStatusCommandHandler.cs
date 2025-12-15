@@ -1,9 +1,9 @@
 ﻿namespace PetCare.Application.Features.AnimalAidRequests.UpdateStatus;
 
 using System;
-using AutoMapper;
 using MediatR;
 using PetCare.Application.Dtos.AnimalAidRequestDtos;
+using PetCare.Application.Dtos.AnimalDtos;
 using PetCare.Application.Interfaces;
 
 /// <summary>
@@ -13,22 +13,18 @@ public sealed class UpdateAnimalAidRequestStatusCommandHandler
     : IRequestHandler<UpdateAnimalAidRequestStatusCommand, AnimalAidRequestDetailsDto>
 {
     private readonly IAnimalAidRequestService animalAidRequestService;
-    private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UpdateAnimalAidRequestStatusCommandHandler"/> class.
     /// </summary>
     /// <param name="animalAidRequestService">The service for managing animal aid requests.</param>
-    /// <param name="mapper">The AutoMapper instance for mapping domain entities to DTOs.</param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="animalAidRequestService"/> or <paramref name="mapper"/> is null.
     /// </exception>
     public UpdateAnimalAidRequestStatusCommandHandler(
-        IAnimalAidRequestService animalAidRequestService,
-        IMapper mapper)
+        IAnimalAidRequestService animalAidRequestService)
     {
         this.animalAidRequestService = animalAidRequestService ?? throw new ArgumentNullException(nameof(animalAidRequestService));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc/>
@@ -45,6 +41,22 @@ public sealed class UpdateAnimalAidRequestStatusCommandHandler
             throw new InvalidOperationException("Запит на допомогу не знайдено після оновлення статусу.");
         }
 
-        return this.mapper.Map<AnimalAidRequestDetailsDto>(updatedRequest);
+        var collectedAmount = await this.animalAidRequestService.GetCollectedAmountAsync(
+           updatedRequest.Id, cancellationToken);
+
+        var dto = new AnimalAidRequestDetailsDto(
+            updatedRequest.Id,
+            updatedRequest.Slug.Value,
+            updatedRequest.Shelter != null ? new ShelterInfoDto(updatedRequest.Shelter.Id, updatedRequest.Shelter.Name.Value, updatedRequest.Shelter.Slug.Value) : null,
+            updatedRequest.Title.Value,
+            updatedRequest.Description ?? string.Empty,
+            updatedRequest.Category,
+            updatedRequest.EstimatedCost ?? 0m,
+            collectedAmount,
+            updatedRequest.Status,
+            updatedRequest.Photos.ToList(),
+            updatedRequest.CreatedAt);
+
+        return dto;
     }
 }

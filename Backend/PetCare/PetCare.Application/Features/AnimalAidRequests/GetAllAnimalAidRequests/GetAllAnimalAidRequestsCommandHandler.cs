@@ -15,19 +15,15 @@ public sealed class GetAllAnimalAidRequestsCommandHandler
     : IRequestHandler<GetAllAnimalAidRequestsCommand, IReadOnlyList<AnimalAidRequestListDto>>
 {
     private readonly IAnimalAidRequestService animalAidRequestService;
-    private readonly IMapper mapper;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GetAllAnimalAidRequestsCommandHandler"/> class.
     /// </summary>
     /// <param name="animalAidRequestService">Service used to access animal aid request data.</param>
-    /// <param name="mapper">Mapper to convert domain entities to DTOs.</param>
     public GetAllAnimalAidRequestsCommandHandler(
-        IAnimalAidRequestService animalAidRequestService,
-        IMapper mapper)
+        IAnimalAidRequestService animalAidRequestService)
     {
         this.animalAidRequestService = animalAidRequestService ?? throw new ArgumentNullException(nameof(animalAidRequestService));
-        this.mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <inheritdoc/>

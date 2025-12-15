@@ -18,5 +18,5 @@ AidCategory Category,
 decimal EstimatedCost,
 decimal AllreadyDonated,
 AidStatus Status,
-List<string>? Photos,
+IReadOnlyList<string>? Photos,
 DateTime CreatedAt);
