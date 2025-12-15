@@ -16,7 +16,7 @@ using PetCare.Infrastructure.Persistence;
 namespace PetCare.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251215095054_AddPayerNameToDonation")]
+    [Migration("20251215102008_AddPayerNameToDonation")]
     partial class AddPayerNameToDonation
     {
         /// <inheritdoc />
@@ -1189,6 +1189,10 @@ namespace PetCare.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("PayerName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<Guid>("PaymentMethodId")
                         .HasColumnType("uuid");

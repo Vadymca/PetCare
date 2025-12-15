@@ -1187,6 +1187,10 @@ namespace PetCare.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<string>("PayerName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<Guid>("PaymentMethodId")
                         .HasColumnType("uuid");
 
