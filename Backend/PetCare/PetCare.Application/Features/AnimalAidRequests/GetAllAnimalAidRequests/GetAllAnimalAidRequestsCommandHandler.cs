@@ -49,8 +49,8 @@ public sealed class GetAllAnimalAidRequestsCommandHandler
                 aidRequest.Title.Value,
                 aidRequest.ShortDescription ?? string.Empty,
                 aidRequest.Category,
-                donatedAmount,
                 aidRequest.EstimatedCost ?? 0m,
+                donatedAmount,
                 aidRequest.Status,
                 aidRequest.Photos.FirstOrDefault());
 
