@@ -103,9 +103,7 @@ public sealed class CreateLiqPayCheckoutCommandHandler
             userId ??= command.TokenUserId;
         }
 
-        bool isAnonymous =
-            userId is null &&
-            string.IsNullOrWhiteSpace(payerName);
+        bool isAnonymous = userId is null && req.Anonymous;
 
         var intent = await this.paymentIntentService.CreateLiqPayIntentAsync(
             req.Scope,
