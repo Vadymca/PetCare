@@ -93,6 +93,23 @@ public class PaymentService : IPaymentService
 
         var paymentMethodId = await this.guardianships.RequirePaymentMethodIdByProviderAsync(provider, cancellationToken);
 
+        // Отримуємо назву тварини або проекту для purpose
+        string? targetName = null;
+        if (targetEntity == "Guardianship" && targetEntityId.HasValue)
+        {
+            var guardianship = await this.guardianshipService.GetByAnimalAsync(targetEntityId.Value, cancellationToken: cancellationToken);
+            // Якщо метод повертає список, беремо перший елемент
+            targetName = guardianship.FirstOrDefault()?.Animal?.Name.Value;
+        }
+        else if (targetEntity == "AidRequest" && targetEntityId.HasValue)
+        {
+            var aidRequest = await this.animalAidRequestService.GetAnimalAidRequestByIdAsync(targetEntityId.Value, cancellationToken);
+            targetName = aidRequest?.Title.Value;
+        }
+
+        // Формуємо красивий purpose
+        var purpose = BuildPurpose(targetEntity, targetName);
+
         var donation = Donation.Create(
             userId,
             amount,
@@ -101,7 +118,7 @@ public class PaymentService : IPaymentService
             paymentMethodId,
             DonationStatus.Completed,
             transactionId,
-            purpose: BuildPurpose(targetEntity),
+            purpose,
             recurring,
             anonymous,
             DateTime.UtcNow,
@@ -167,7 +184,7 @@ public class PaymentService : IPaymentService
                 var scope = targetEntity switch
                 {
                     "Guardianship" => SubscriptionScope.Guardianship,
-                    "AnimalAidRequest" => SubscriptionScope.AidRequest,
+                    "AidRequest" => SubscriptionScope.AidRequest,
                     _ => SubscriptionScope.Global,
                 };
 
@@ -541,14 +558,13 @@ public class PaymentService : IPaymentService
     /// returned.</param>
     /// <returns>A string containing the localized description of the donation purpose corresponding to the specified target.
     /// Returns a general purpose description if the target is not recognized.</returns>
-    private static string BuildPurpose(string target)
+    private static string BuildPurpose(string targetEntity, string? targetName = null)
     {
-        return target switch
+        return targetEntity switch
         {
-            "Guardianship" => "Опіка над твариною",
-            "AnimalAidRequest" => "Підтримка запиту на допомогу тваринам",
-            "Global" => "Пожертва на загальні потреби",
-            _ => "Пожертва",
+            "Guardianship" => $"Опіка над твариною {targetName ?? "тварина"}",
+            "AidRequest" => $"Донат на проєкт {targetName ?? "Допомога"}",
+            _ => "Благодійний внесок на притулок",
         };
     }
 }
