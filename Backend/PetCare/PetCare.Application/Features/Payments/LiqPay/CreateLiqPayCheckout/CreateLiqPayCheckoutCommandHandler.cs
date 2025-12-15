@@ -52,7 +52,7 @@ public sealed class CreateLiqPayCheckoutCommandHandler
         string? description = req.Description;
 
         Guid? userId = req.UserId ?? command.TokenUserId;
-        string? payerName = req.PayerName ?? command.TokenPayerName;
+        string? payerName = req.PayerName;
         string? payerPhone = req.PayerPhone ?? command.TokenPayerPhone;
         string? payerEmail = req.PayerEmail ?? command.TokenPayerEmail;
 
@@ -115,7 +115,7 @@ public sealed class CreateLiqPayCheckoutCommandHandler
             currency,
             isRecurring,
             anonymous: isAnonymous,
-            payerName,
+            payerName: payerName,
             cancellationToken);
 
         var finalDto = new CreateLiqPayCheckoutDto(
