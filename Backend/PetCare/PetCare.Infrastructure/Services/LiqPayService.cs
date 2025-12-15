@@ -181,7 +181,9 @@ public sealed class LiqPayService : ILiqPayService
         // 8. SUCCESS
         if (isSuccess)
         {
-            string? payerName = root.TryGetProperty("payer_name", out var pn) ? pn.GetString() : null;
+            string? payerName = root.TryGetProperty("payer_name", out var pn) && !string.IsNullOrWhiteSpace(pn.GetString())
+                ? pn.GetString()
+                : intent.PayerName;
 
             var donation = await this.paymentService.RecordChargeSuccessAsync(
                 provider: "LiqPay",
