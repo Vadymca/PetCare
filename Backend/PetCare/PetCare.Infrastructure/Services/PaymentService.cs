@@ -77,12 +77,18 @@ public class PaymentService : IPaymentService
         bool recurring,
         bool anonymous,
         Guid? userId,
-        string? payerName = null,
+        string? payerName,
         CancellationToken cancellationToken = default)
     {
         if (amount <= 0)
         {
             throw new InvalidOperationException("Сума має бути більшою за 0.");
+        }
+
+        var existingDonation = await this.guardianships.FindDonationByTransactionIdAsync(transactionId, cancellationToken);
+        if (existingDonation != null)
+        {
+            return existingDonation;
         }
 
         var paymentMethodId = await this.guardianships.RequirePaymentMethodIdByProviderAsync(provider, cancellationToken);
@@ -131,7 +137,7 @@ public class PaymentService : IPaymentService
         }
 
         // Якщо це AnimalAidRequest — прив’язуємо Donation до запиту
-        if (targetEntity == "AnimalAidRequest" && targetEntityId is not null)
+        if (targetEntity == "AidRequest" && targetEntityId is not null)
         {
             try
             {
