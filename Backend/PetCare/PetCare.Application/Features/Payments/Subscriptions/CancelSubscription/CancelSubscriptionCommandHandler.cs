@@ -46,13 +46,40 @@ public sealed class CancelSubscriptionCommandHandler : IRequestHandler<CancelSub
 
         if (sub.ScopeType == SubscriptionScope.Guardianship && sub.ScopeId is not null)
         {
-            this.logger.LogInformation("Cancelling guardianship-linked subscription {ProviderSubscriptionId}.", sub.ProviderSubscriptionId);
-            await this.guardianships.CompleteAsync(sub.ScopeId.Value, cancelSubscription: true, cancellationToken);
+            this.logger.LogInformation(
+                "Cancelling guardianship-linked subscription {ProviderSubscriptionId}.",
+                sub.ProviderSubscriptionId);
+
+            try
+            {
+                await this.guardianships.CompleteAsync(
+                    sub.ScopeId.Value,
+                    cancelSubscription: true,
+                    cancellationToken);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                // TEMPORARY HOTFIX
+                this.logger.LogWarning(
+                    ex,
+                    "Guardianship {ScopeId} not found for subscription {ProviderSubscriptionId}. Cancelling subscription directly.",
+                    sub.ScopeId,
+                    sub.ProviderSubscriptionId);
+
+                await this.subscriptions.CancelAsync(
+                    sub.ProviderSubscriptionId,
+                    cancellationToken);
+            }
         }
         else
         {
-            this.logger.LogInformation("Cancelling standalone subscription {ProviderSubscriptionId}.", sub.ProviderSubscriptionId);
-            await this.subscriptions.CancelAsync(sub.ProviderSubscriptionId, cancellationToken);
+            this.logger.LogInformation(
+                "Cancelling standalone subscription {ProviderSubscriptionId}.",
+                sub.ProviderSubscriptionId);
+
+            await this.subscriptions.CancelAsync(
+                sub.ProviderSubscriptionId,
+                cancellationToken);
         }
 
         this.logger.LogInformation("Subscription {ProviderSubscriptionId} cancelled successfully.", sub.ProviderSubscriptionId);
