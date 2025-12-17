@@ -49,7 +49,6 @@ public sealed class CancelSubscriptionCommandHandler : IRequestHandler<CancelSub
             this.logger.LogInformation(
                 "Cancelling guardianship-linked subscription {ProviderSubscriptionId}.",
                 sub.ProviderSubscriptionId);
-
             try
             {
                 await this.guardianships.CompleteAsync(
@@ -57,9 +56,9 @@ public sealed class CancelSubscriptionCommandHandler : IRequestHandler<CancelSub
                     cancelSubscription: true,
                     cancellationToken);
             }
-            catch (KeyNotFoundException ex)
+            catch (InvalidOperationException ex)
             {
-                // TEMPORARY HOTFIX
+                // TEMPORARY HOTFIX: guardianship already deleted
                 this.logger.LogWarning(
                     ex,
                     "Guardianship {ScopeId} not found for subscription {ProviderSubscriptionId}. Cancelling subscription directly.",
