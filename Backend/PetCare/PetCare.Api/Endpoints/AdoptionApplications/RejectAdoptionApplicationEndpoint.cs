@@ -17,16 +17,17 @@ public static class RejectAdoptionApplicationEndpoint
     {
         app.MapPost("/api/adoption-applications/{id:guid}/reject", async (
             Guid id,
-            [FromBody] RejectAdoptionApplicationCommand command,
+            [FromBody] RejectAdoptionApplicationRequest request,
             IMediator mediator,
             ILoggerFactory loggerFactory) =>
         {
             var logger = loggerFactory.CreateLogger("RejectAdoptionApplicationEndpoint");
 
-            // Ensure command has the correct ID from route
-            var commandWithId = command with { Id = id };
+            var command = new RejectAdoptionApplicationCommand(
+                Id: id,
+                Reason: request.Reason);
 
-            await mediator.Send(commandWithId);
+            await mediator.Send(command);
 
             logger.LogInformation("Adoption application {ApplicationId} rejected. Reason: {Reason}", id, command.Reason);
 
@@ -40,4 +41,10 @@ public static class RejectAdoptionApplicationEndpoint
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound);
     }
+
+    /// <summary>
+    /// Request body for rejecting an adoption application.
+    /// </summary>
+    public sealed record RejectAdoptionApplicationRequest(
+        string Reason);
 }

@@ -42,6 +42,7 @@ public sealed class CreateAnimalAidRequestCommandHandler
             status: request.Status,
             estimatedCost: request.EstimatedCost,
             photos: request.Photos,
+            curatorFullName: request.CuratorFullName,
             contactPhone: request.ContactPhone,
             isUrgent: request.IsUrgent);
 
@@ -66,6 +67,8 @@ public sealed class CreateAnimalAidRequestCommandHandler
             donationsCount,
             createdRequest.Status,
             createdRequest.Photos,
+            createdRequest.CuratorFullName,
+            createdRequest.ContactPhone?.Value,
             createdRequest.CreatedAt);
 
         return dto;

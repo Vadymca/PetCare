@@ -20,4 +20,6 @@ decimal AllreadyDonated,
 int DonationsCount,
 AidStatus Status,
 IReadOnlyList<string>? Photos,
+string? CuratorFullName,
+string? ContactPhone,
 DateTime CreatedAt);

@@ -26,8 +26,7 @@ public sealed class AdoptionApplicationService : IAdoptionApplicationService
     /// <inheritdoc/>
     public async Task<AdoptionApplication> CreateAsync(Guid userId, Guid animalId, string? comment, CancellationToken cancellationToken = default)
     {
-        var application = AdoptionApplication.Create(userId, animalId, comment);
-        return await this.repository.AddAsync(application, cancellationToken);
+        return await this.repository.CreateWithAnimalReservationAsync(userId, animalId, comment, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -56,8 +55,7 @@ public sealed class AdoptionApplicationService : IAdoptionApplicationService
     /// <inheritdoc/>
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var application = await this.repository.GetByIdAsync(id, cancellationToken) ?? throw new InvalidOperationException("Заявку не знайдено.");
-        await this.repository.DeleteAsync(application, cancellationToken);
+        await this.repository.DeleteWithAnimalReleaseAsync(id, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -98,12 +96,19 @@ public sealed class AdoptionApplicationService : IAdoptionApplicationService
         Guid adminId,
         string? curatorName = null,
         string? curatorPhone = null,
+        DateTime? meetingDate = null,
         CancellationToken cancellationToken = default)
         {
-            return this.repository.ApproveAsync(id, adminId, curatorName, curatorPhone, cancellationToken);
+            return this.repository.ApproveAsync(id, adminId, curatorName, curatorPhone, meetingDate, cancellationToken);
         }
 
     /// <inheritdoc/>
     public Task RejectAsync(Guid id, string reason, CancellationToken cancellationToken = default)
         => this.repository.RejectAsync(id, reason, cancellationToken);
+
+    /// <inheritdoc/>
+    public Task CompleteAdoptionAsync(Guid id, bool isAdopted, CancellationToken cancellationToken = default)
+    {
+        return this.repository.CompleteAdoptionAsync(id, isAdopted, cancellationToken);
+    }
 }

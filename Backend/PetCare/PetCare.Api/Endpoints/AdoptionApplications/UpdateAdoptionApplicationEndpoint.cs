@@ -18,16 +18,18 @@ public static class UpdateAdoptionApplicationEndpoint
     {
         app.MapPut("/api/adoption-applications/{id:guid}", async (
             Guid id,
-            [FromBody] UpdateAdoptionApplicationCommand command,
+            [FromBody] UpdateAdoptionApplicationRequest request,
             IMediator mediator,
             ILoggerFactory loggerFactory) =>
         {
             var logger = loggerFactory.CreateLogger("UpdateAdoptionApplicationEndpoint");
 
-            // Ensure the command has the correct ID from route
-            var commandWithId = command with { Id = id };
+            var command = new UpdateAdoptionApplicationCommand(
+                Id: id,
+                Comment: request.Comment,
+                AdminNotes: request.AdminNotes);
 
-            var updatedApplication = await mediator.Send(commandWithId);
+            var updatedApplication = await mediator.Send(command);
 
             logger.LogInformation("Adoption application {ApplicationId} updated.", id);
 
@@ -41,4 +43,11 @@ public static class UpdateAdoptionApplicationEndpoint
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound);
     }
+
+    /// <summary>
+    /// Request body for updating an adoption application.
+    /// </summary>
+    public sealed record UpdateAdoptionApplicationRequest(
+        string? Comment,
+        string? AdminNotes);
 }

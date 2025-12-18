@@ -10,7 +10,7 @@ using PetCare.Application.Interfaces;
 /// Handler for the <see cref="GetAdoptionApplicationsCommand"/>.
 /// </summary>
 public sealed class GetAdoptionApplicationsCommandHandler
-    : IRequestHandler<GetAdoptionApplicationsCommand, IReadOnlyList<AdoptionApplicationListDto>>
+    : IRequestHandler<GetAdoptionApplicationsCommand, IReadOnlyList<AdoptionApplicationDetailsDto>>
 {
     private readonly IAdoptionApplicationService adoptionApplicationService;
 
@@ -26,7 +26,7 @@ public sealed class GetAdoptionApplicationsCommandHandler
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<AdoptionApplicationListDto>> Handle(
+    public async Task<IReadOnlyList<AdoptionApplicationDetailsDto>> Handle(
         GetAdoptionApplicationsCommand request,
         CancellationToken cancellationToken)
     {
@@ -34,14 +34,22 @@ public sealed class GetAdoptionApplicationsCommandHandler
             .GetAllAsync(cancellationToken);
 
         return applications
-            .Select(a => new AdoptionApplicationListDto(
-                a.Id,
-                a.UserId,
-                a.AnimalId,
-                a.Status,
-                a.ApplicationDate,
-                a.Comment ?? string.Empty,
-                a.AdminNotes ?? string.Empty))
+            .Select(a => new AdoptionApplicationDetailsDto(
+                 a.Id,
+                 a.UserId,
+                 a.AnimalId,
+                 a.Status,
+                 a.ApplicationDate,
+                 a.MeetingDate,
+                 a.AdoptionDate,
+                 a.RejectionDate,
+                 a.Comment ?? string.Empty,
+                 a.AdminNotes ?? string.Empty,
+                 a.RejectionReason ?? string.Empty,
+                 a.CuratorName,
+                 a.CuratorPhone,
+                 a.CreatedAt,
+                 a.UpdatedAt))
             .ToList();
     }
 }

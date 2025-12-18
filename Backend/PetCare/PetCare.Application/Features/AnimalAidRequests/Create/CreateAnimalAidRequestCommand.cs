@@ -18,5 +18,6 @@ public sealed record CreateAnimalAidRequestCommand(
     AidStatus Status,
     decimal? EstimatedCost,
     List<string>? Photos,
+    string? CuratorFullName,
     string? ContactPhone,
     bool IsUrgent) : IRequest<AnimalAidRequestDetailsDto>;

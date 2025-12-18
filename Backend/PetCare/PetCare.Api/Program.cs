@@ -538,6 +538,7 @@ public class Program
             app.MapGetPendingAdoptionApplicationsEndpoint(); // /api/adoption-applications/pending
             app.MapGetRejectedAdoptionApplicationsEndpoint(); // /api/adoption-applications/rejected
             app.MapUpdateAdoptionApplicationEndpoint(); // /api/adoption-applications/{id:guid}
+            app.MapCompleteAdoptionApplicationEndpoint(); // /api/adoption-applications/{id:guid}/complete
 
             app.MapGet("/", () => Results.Ok("✅ PetCare.Api is running successfully!"));
 

@@ -37,6 +37,10 @@ public sealed class AnimalAidRequestConfiguration : IEntityTypeConfiguration<Ani
 
         builder.Property(x => x.EstimatedCost);
 
+        builder.Property(x => x.CuratorFullName)
+            .HasMaxLength(200)
+            .IsRequired(false);
+
         builder.Property(x => x.ContactPhone)
             .HasConversion(
                 phone => phone == null ? null : phone.Value,

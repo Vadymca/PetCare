@@ -20,6 +20,7 @@ public sealed class AnimalAidRequest : AggregateRoot
         this.Title = null!;
         this.Slug = null!;
         this.ShortDescription = string.Empty;
+        this.CuratorFullName = null;
         this.ContactPhone = null;
         this.CreatedAt = DateTime.UtcNow;
         this.UpdatedAt = DateTime.UtcNow;
@@ -34,6 +35,7 @@ public sealed class AnimalAidRequest : AggregateRoot
         AidCategory category,
         AidStatus status,
         decimal? estimatedCost,
+        string? curatorFullName,
         PhoneNumber? contactPhone,
         Slug slug,
         bool isUrgent,
@@ -57,6 +59,7 @@ public sealed class AnimalAidRequest : AggregateRoot
         this.Category = category;
         this.Status = status;
         this.EstimatedCost = estimatedCost;
+        this.CuratorFullName = curatorFullName;
         this.ContactPhone = contactPhone;
         this.Slug = slug;
         this.IsUrgent = isUrgent;
@@ -94,6 +97,11 @@ public sealed class AnimalAidRequest : AggregateRoot
     /// Gets the estimated cost of the aid request, if known. Can be null.
     /// </summary>
     public decimal? EstimatedCost { get; private set; }
+
+    /// <summary>
+    /// Gets the curator full name for this aid request, if specified.
+    /// </summary>
+    public string? CuratorFullName { get; private set; }
 
     /// <summary>
     /// Gets the contact phone for non-donation aid. Can be null.
@@ -167,6 +175,7 @@ public sealed class AnimalAidRequest : AggregateRoot
     /// <param name="status">The current status of the aid request.</param>
     /// <param name="estimatedCost">The estimated cost of the aid request, if known. Can be null.</param>
     /// <param name="photos">The list of photo URLs for the aid request. Can be null.</param>
+    /// <param name="curatorFullName">Optional curator full name (string). If null or whitespace => no curator.</param>
     /// <param name="contactPhone">Optional contact phone (string). If null or whitespace => no phone.</param>
     /// <param name="isUrgent">Indicates whether the request is urgent.</param>
     /// <returns>A new instance of <see cref="AnimalAidRequest"/> with the specified parameters.</returns>
@@ -182,6 +191,7 @@ public sealed class AnimalAidRequest : AggregateRoot
         AidStatus status,
         decimal? estimatedCost,
         List<string>? photos = null,
+        string? curatorFullName = null,
         string? contactPhone = null,
         bool isUrgent = false)
     {
@@ -197,6 +207,7 @@ public sealed class AnimalAidRequest : AggregateRoot
             category,
             status,
             estimatedCost,
+            curatorFullName,
             phoneVo,
             slug,
             isUrgent,
@@ -243,6 +254,19 @@ public sealed class AnimalAidRequest : AggregateRoot
         }
 
         this.ShortDescription = newShortDescription;
+        this.UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Updates or clears the curator full name.
+    /// </summary>
+    /// <param name="newCuratorFullName">New curator full name or null/empty to clear.</param>
+    public void UpdateCuratorFullName(string? newCuratorFullName)
+    {
+        this.CuratorFullName = string.IsNullOrWhiteSpace(newCuratorFullName)
+            ? null
+            : newCuratorFullName.Trim();
+
         this.UpdatedAt = DateTime.UtcNow;
     }
 

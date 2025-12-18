@@ -19,4 +19,9 @@ public enum AdoptionStatus
     /// The application has been rejected.
     /// </summary>
     Rejected,
+
+    /// <summary>
+    /// The adoption process has been completed.
+    /// </summary>
+    Completed,
 }

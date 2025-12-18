@@ -1,8 +1,10 @@
 ﻿namespace PetCare.Api.Endpoints.AdoptionApplications;
 
+using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using PetCare.Application.Features.AdoptionApplications.ChangeStatus;
+using PetCare.Domain.Enums;
 
 /// <summary>
 /// Endpoint for changing the status of an adoption application.
@@ -17,16 +19,33 @@ public static class ChangeAdoptionApplicationStatusEndpoint
     {
         app.MapPatch("/api/adoption-applications/{id:guid}/change-status", async (
             Guid id,
-            [FromBody] ChangeAdoptionApplicationStatusCommand command,
+            HttpContext httpContext,
+            [FromBody] ChangeAdoptionApplicationStatusRequest request,
             IMediator mediator,
             ILoggerFactory loggerFactory) =>
         {
             var logger = loggerFactory.CreateLogger("ChangeAdoptionApplicationStatusEndpoint");
 
-            // Ensure the command has the correct ID from route
-            var commandWithId = command with { Id = id };
+            var adminIdClaim = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(adminIdClaim, out var adminId))
+            {
+                logger.LogWarning(
+                    "Unauthorized attempt to change adoption application status. ApplicationId={ApplicationId}",
+                    id);
 
-            await mediator.Send(commandWithId);
+                return Results.Unauthorized();
+            }
+
+            var command = new ChangeAdoptionApplicationStatusCommand(
+                Id: id,
+                Status: request.Status,
+                AdminId: adminId,
+                RejectionReason: request.RejectionReason,
+                CuratorName: request.CuratorName,
+                CuratorPhone: request.CuratorPhone,
+                MeetingDate: request.MeetingDate);
+
+            await mediator.Send(command);
 
             logger.LogInformation(
                 "Adoption application {ApplicationId} status changed to {Status}",
@@ -43,4 +62,14 @@ public static class ChangeAdoptionApplicationStatusEndpoint
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound);
     }
+
+    /// <summary>
+    /// Request body for changing adoption application status.
+    /// </summary>
+    public sealed record ChangeAdoptionApplicationStatusRequest(
+        AdoptionStatus Status,
+        string? RejectionReason,
+        string? CuratorName = null,
+        string? CuratorPhone = null,
+        DateTime? MeetingDate = null);
 }

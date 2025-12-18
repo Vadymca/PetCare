@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -15,16 +16,18 @@ using PetCare.Infrastructure.Persistence;
 namespace PetCare.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251217170627_AddCuratorFullNameToAnimalAidRequest")]
+    partial class AddCuratorFullNameToAnimalAidRequest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "9.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "adoption_status", new[] { "pending", "approved", "rejected", "completed" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "adoption_status", new[] { "pending", "approved", "rejected" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "aid_category", new[] { "food", "medical", "equipment", "other" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "aid_status", new[] { "open", "in_progress", "fulfilled", "cancelled" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "animal_gender", new[] { "male", "female", "unknown" });

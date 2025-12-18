@@ -42,6 +42,7 @@ public sealed class ChangeAdoptionApplicationStatusCommandHandler
                 request.AdminId,
                 request.CuratorName,
                 request.CuratorPhone,
+                request.MeetingDate,
                 cancellationToken);
                 break;
 

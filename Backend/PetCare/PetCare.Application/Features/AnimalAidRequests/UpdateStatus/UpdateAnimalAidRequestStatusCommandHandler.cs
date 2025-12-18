@@ -1,11 +1,10 @@
 ﻿namespace PetCare.Application.Features.AnimalAidRequests.UpdateStatus;
 
+using System;
 using MediatR;
-using Microsoft.AspNetCore.Http.HttpResults;
 using PetCare.Application.Dtos.AnimalAidRequestDtos;
 using PetCare.Application.Dtos.AnimalDtos;
 using PetCare.Application.Interfaces;
-using System;
 
 /// <summary>
 /// Handles updating the status of an AnimalAidRequest.
@@ -59,6 +58,8 @@ public sealed class UpdateAnimalAidRequestStatusCommandHandler
             donationsCount,
             updatedRequest.Status,
             updatedRequest.Photos.ToList(),
+            updatedRequest.CuratorFullName,
+            updatedRequest.ContactPhone?.Value,
             updatedRequest.CreatedAt);
 
         return dto;

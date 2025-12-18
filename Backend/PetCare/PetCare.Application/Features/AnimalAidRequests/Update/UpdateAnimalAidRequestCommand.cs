@@ -29,5 +29,6 @@ public sealed record UpdateAnimalAidRequestCommand(
     decimal? EstimatedCost,
     List<string>? Photos,
     AidStatus? Status,
+    string? CuratorFullName,
     string? ContactPhone,
     bool? IsUrgent) : IRequest<AnimalAidRequestDetailsDto>;

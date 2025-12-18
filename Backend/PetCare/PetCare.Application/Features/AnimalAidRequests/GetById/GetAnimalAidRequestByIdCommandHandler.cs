@@ -57,6 +57,8 @@ public sealed class GetAnimalAidRequestByIdCommandHandler
             donationsCount,
             aidRequest.Status,
             aidRequest.Photos,
+            aidRequest.CuratorFullName,
+            aidRequest.ContactPhone?.Value,
             aidRequest.CreatedAt);
 
         return dto;

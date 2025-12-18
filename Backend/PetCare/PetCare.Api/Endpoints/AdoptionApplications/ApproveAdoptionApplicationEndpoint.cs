@@ -1,5 +1,6 @@
 ﻿namespace PetCare.Api.Endpoints.AdoptionApplications;
 
+using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using PetCare.Application.Features.AdoptionApplications.Approve;
@@ -17,16 +18,31 @@ public static class ApproveAdoptionApplicationEndpoint
     {
         app.MapPost("/api/adoption-applications/{id:guid}/approve", async (
             Guid id,
-            [FromBody] ApproveAdoptionApplicationCommand command,
+            HttpContext httpContext,
+            [FromBody] ApproveAdoptionApplicationRequest request,
             IMediator mediator,
             ILoggerFactory loggerFactory) =>
         {
             var logger = loggerFactory.CreateLogger("ApproveAdoptionApplicationEndpoint");
 
-            // Ensure command has the correct ID from route
-            var commandWithId = command with { Id = id };
+            var adminIdClaim = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(adminIdClaim, out var adminId))
+            {
+                logger.LogWarning(
+                    "Unauthorized attempt to approve adoption application {ApplicationId}",
+                    id);
 
-            await mediator.Send(commandWithId);
+                return Results.Unauthorized();
+            }
+
+            var command = new ApproveAdoptionApplicationCommand(
+                Id: id,
+                AdminId: adminId,
+                CuratorName: request.CuratorName,
+                CuratorPhone: request.CuratorPhone,
+                MeetingDate: request.MeetingDate);
+
+            await mediator.Send(command);
 
             logger.LogInformation("Adoption application {ApplicationId} approved by admin {AdminId}", id, command.AdminId);
 
@@ -40,4 +56,12 @@ public static class ApproveAdoptionApplicationEndpoint
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound);
     }
+
+    /// <summary>
+    /// Request body for approving an adoption application.
+    /// </summary>
+    public sealed record ApproveAdoptionApplicationRequest(
+        string? CuratorName,
+        string? CuratorPhone,
+        DateTime? MeetingDate);
 }

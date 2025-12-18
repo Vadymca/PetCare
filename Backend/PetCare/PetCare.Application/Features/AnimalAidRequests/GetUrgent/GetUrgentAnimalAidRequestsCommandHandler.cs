@@ -50,6 +50,9 @@ public sealed class GetUrgentAnimalAidRequestsCommandHandler
             var collectedAmount = await this.animalAidRequestService.GetCollectedAmountAsync(
                 aidRequest.Id, cancellationToken);
 
+            var donationsCount = await this.animalAidRequestService
+                .GetDonationsCountAsync(aidRequest.Id, cancellationToken);
+
             var donationsDto = aidRequest.Donations
                 .Where(d => d.Donation != null)
                 .Select(d => new DonationListDto(
@@ -69,7 +72,7 @@ public sealed class GetUrgentAnimalAidRequestsCommandHandler
                 aidRequest.Title.Value,
                 aidRequest.EstimatedCost ?? 0m,
                 collectedAmount,
-                donationsDto.Count,
+                donationsCount,
                 donationsDto);
 
             result.Add(dto);

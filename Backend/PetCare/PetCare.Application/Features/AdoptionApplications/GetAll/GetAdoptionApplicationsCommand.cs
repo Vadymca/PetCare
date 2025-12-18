@@ -8,4 +8,4 @@ using PetCare.Application.Dtos.AdoptionApplicationDtos;
 /// Command to retrieve all adoption applications.
 /// </summary>
 public sealed record GetAdoptionApplicationsCommand
-    : IRequest<IReadOnlyList<AdoptionApplicationListDto>>;
+    : IRequest<IReadOnlyList<AdoptionApplicationDetailsDto>>;

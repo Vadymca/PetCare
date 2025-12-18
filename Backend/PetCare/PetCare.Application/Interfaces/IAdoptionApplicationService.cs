@@ -86,6 +86,7 @@ public interface IAdoptionApplicationService
     /// <param name="adminId">The unique identifier of the administrator approving the application.</param>
     /// <param name="curatorName">The name of the curator assigned to the application, if any.</param>
     /// <param name="curatorPhone">The phone number of the curator assigned to the application, if any.</param>
+    /// <param name="meetingDate">The scheduled meeting date for the adoption, if any.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task ApproveAsync(
@@ -93,6 +94,7 @@ public interface IAdoptionApplicationService
          Guid adminId,
          string? curatorName = null,
          string? curatorPhone = null,
+         DateTime? meetingDate = null,
          CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -103,4 +105,14 @@ public interface IAdoptionApplicationService
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task RejectAsync(Guid id, string reason, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Completes the adoption process for a given application.
+    /// If <paramref name="isAdopted"/> is true, the animal is marked as Adopted; otherwise Available.
+    /// </summary>
+    /// <param name="id">The ID of the adoption application.</param>
+    /// <param name="isAdopted">Indicates if the adoption was successful.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    Task CompleteAdoptionAsync(Guid id, bool isAdopted, CancellationToken cancellationToken = default);
 }

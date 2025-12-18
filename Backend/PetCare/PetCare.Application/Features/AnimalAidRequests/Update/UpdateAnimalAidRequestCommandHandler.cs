@@ -66,6 +66,11 @@ public sealed class UpdateAnimalAidRequestCommandHandler
             aidRequest.UpdateStatus(request.Status.Value);
         }
 
+        if (request.CuratorFullName is not null)
+        {
+            aidRequest.UpdateCuratorFullName(request.CuratorFullName);
+        }
+
         if (request.ContactPhone is not null)
         {
             aidRequest.UpdateContactPhone(request.ContactPhone);
@@ -107,6 +112,8 @@ public sealed class UpdateAnimalAidRequestCommandHandler
             donationsCount,
             aidRequest.Status,
             aidRequest.Photos.ToList(),
+            aidRequest.CuratorFullName,
+            aidRequest.ContactPhone?.Value,
             aidRequest.CreatedAt);
 
         return dto;

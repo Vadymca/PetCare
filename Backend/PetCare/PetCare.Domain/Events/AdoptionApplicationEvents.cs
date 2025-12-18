@@ -11,6 +11,12 @@ public sealed record AdoptionApplicationApprovedEvent(Guid ApplicationId, Guid U
     : DomainEvent;
 
 /// <summary>
+/// Represents an event that occurs when an adoption application is completed.
+/// </summary>
+public sealed record AdoptionApplicationCompletedEvent(Guid ApplicationId, Guid UserId, Guid AnimalId)
+    : DomainEvent;
+
+/// <summary>
 /// Represents an event that occurs when a new adoption application is created.
 /// </summary>
 /// <param name="ApplicationId">The unique identifier of the adoption application associated with this event.</param>

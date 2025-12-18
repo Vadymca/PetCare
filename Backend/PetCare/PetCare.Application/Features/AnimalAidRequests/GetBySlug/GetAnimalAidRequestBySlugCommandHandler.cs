@@ -51,6 +51,8 @@ public sealed class GetAnimalAidRequestBySlugCommandHandler : IRequestHandler<Ge
             donationsCount,
             aidRequest.Status,
             aidRequest.Photos,
+            aidRequest.CuratorFullName,
+            aidRequest.ContactPhone?.Value,
             aidRequest.CreatedAt);
 
         return dto;

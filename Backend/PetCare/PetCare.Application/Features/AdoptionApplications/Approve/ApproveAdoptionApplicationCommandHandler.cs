@@ -40,6 +40,7 @@ public sealed class ApproveAdoptionApplicationCommandHandler
             request.AdminId,
             request.CuratorName,
             request.CuratorPhone,
+            request.MeetingDate,
             cancellationToken);
 
         return Unit.Value;

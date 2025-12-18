@@ -169,13 +169,14 @@ public sealed class AdoptionApplication : AggregateRoot
     }
 
     /// <summary>
-    /// Approves the adoption application and sets the approving administrator.
+    /// Approves the adoption application, assigns a curator, and sets the meeting date.
     /// </summary>
     /// <param name="adminId">The unique identifier of the administrator approving the application.</param>
     /// <param name="curatorName">Optional name of the curator to assign upon approval.</param>
     /// <param name="curatorPhone">Optional phone number of the curator to assign upon approval.</param>
+    /// <param name="meetingDate">Optional date of the scheduled meeting at the shelter.</param>
     /// <exception cref="InvalidOperationException">Thrown when the application is not in the <see cref="AdoptionStatus.Pending"/> state.</exception>
-    public void Approve(Guid adminId, string? curatorName = null, string? curatorPhone = null)
+    public void Approve(Guid adminId, string? curatorName = null, string? curatorPhone = null, DateTime? meetingDate = null)
     {
         if (!this.CanBeApproved)
         {
@@ -190,6 +191,12 @@ public sealed class AdoptionApplication : AggregateRoot
         if (!string.IsNullOrWhiteSpace(curatorName) && !string.IsNullOrWhiteSpace(curatorPhone))
         {
             this.AssignCurator(curatorName, curatorPhone);
+        }
+
+        // Призначаємо дату зустрічі, якщо передано
+        if (meetingDate.HasValue)
+        {
+            this.MeetingDate = meetingDate.Value;
         }
 
         this.AddDomainEvent(new AdoptionApplicationApprovedEvent(this.Id, this.UserId, this.AnimalId, adminId));
@@ -209,9 +216,28 @@ public sealed class AdoptionApplication : AggregateRoot
 
         this.Status = AdoptionStatus.Rejected;
         this.RejectionReason = reason;
+        this.RejectionDate = DateTime.UtcNow;
         this.UpdatedAt = DateTime.UtcNow;
 
         this.AddDomainEvent(new AdoptionApplicationRejectedEvent(this.Id, this.UserId, this.AnimalId, reason));
+    }
+
+    /// <summary>
+    /// Marks the adoption as completed and sets the adoption date.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown if the application is not approved.</exception>
+    public void CompleteAdoption()
+    {
+        if (this.Status != AdoptionStatus.Approved)
+        {
+            throw new InvalidOperationException("Лише затверджені заявки можуть бути завершені усиновленням.");
+        }
+
+        this.Status = AdoptionStatus.Completed; // Можна додати окремий статус Completed або залишити Approved, залежно від доменної логіки
+        this.AdoptionDate = DateTime.UtcNow;
+        this.UpdatedAt = DateTime.UtcNow;
+
+        this.AddDomainEvent(new AdoptionApplicationCompletedEvent(this.Id, this.UserId, this.AnimalId));
     }
 
     /// <summary>

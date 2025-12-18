@@ -264,6 +264,21 @@ public sealed class Animal : AggregateRoot
     public IReadOnlyCollection<AnimalSubscription> Subscribers => this.subscribers.AsReadOnly();
 
     /// <summary>
+    /// Gets a value indicating whether checks if the animal is available for adoption.
+    /// </summary>
+    public bool IsAvailable => this.Status == AnimalStatus.Available;
+
+    /// <summary>
+    /// Gets a value indicating whether checks if the animal is reserved for adoption.
+    /// </summary>
+    public bool IsReserved => this.Status == AnimalStatus.Reserved;
+
+    /// <summary>
+    /// Gets a value indicating whether checks if the animal has been adopted.
+    /// </summary>
+    public bool IsAdopted => this.Status == AnimalStatus.Adopted;
+
+    /// <summary>
     /// Creates a new <see cref="Animal"/> instance with the specified parameters.
     /// </summary>
     /// <param name="userId">The unique identifier of the user associated with the animal.</param>
@@ -529,6 +544,57 @@ public sealed class Animal : AggregateRoot
         this.Status = newStatus;
         this.UpdatedAt = DateTime.UtcNow;
         this.AddDomainEvent(new AnimalStatusChangedEvent(this.Id, newStatus));
+    }
+
+    /// <summary>
+    /// Reserves the animal for an approved adoption application.
+    /// </summary>
+    public void ReserveForAdoption()
+    {
+        if (this.Status != AnimalStatus.Available)
+        {
+            throw new InvalidOperationException(
+                "Забронювати можна лише тварину, доступну для адопції.");
+        }
+
+        this.Status = AnimalStatus.Reserved;
+        this.UpdatedAt = DateTime.UtcNow;
+
+        this.AddDomainEvent(new AnimalStatusChangedEvent(this.Id, this.Status));
+    }
+
+    /// <summary>
+    /// Makes the animal available for adoption again.
+    /// </summary>
+    public void MakeAvailable()
+    {
+        if (this.Status is not (AnimalStatus.Reserved or AnimalStatus.InTreatment))
+        {
+            throw new InvalidOperationException(
+                "Повернути у доступні можна лише заброньовану або тварину на лікуванні.");
+        }
+
+        this.Status = AnimalStatus.Available;
+        this.UpdatedAt = DateTime.UtcNow;
+
+        this.AddDomainEvent(new AnimalStatusChangedEvent(this.Id, this.Status));
+    }
+
+    /// <summary>
+    /// Marks the animal as adopted.
+    /// </summary>
+    public void MarkAsAdopted()
+    {
+        if (this.Status != AnimalStatus.Reserved)
+        {
+            throw new InvalidOperationException(
+                "Усиновити можна лише заброньовану тварину.");
+        }
+
+        this.Status = AnimalStatus.Adopted;
+        this.UpdatedAt = DateTime.UtcNow;
+
+        this.AddDomainEvent(new AnimalStatusChangedEvent(this.Id, this.Status));
     }
 
     /// <summary>
