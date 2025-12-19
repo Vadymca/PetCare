@@ -10,6 +10,8 @@ using PetCare.Infrastructure.BackgroundJobs;
 using PetCare.Infrastructure.Options;
 using PetCare.Infrastructure.Payments;
 using PetCare.Infrastructure.Persistence.Repositories;
+using PetCare.Infrastructure.Search.Elastic;
+using PetCare.Infrastructure.Search.Options;
 using PetCare.Infrastructure.Services;
 using PetCare.Infrastructure.Services.Email;
 using PetCare.Infrastructure.Services.Identity;
@@ -31,6 +33,12 @@ public static class DependencyInjection
     {
         services.AddMemoryCache();
 
+        // Elasticsearch
+        services.Configure<ElasticSearchOptions>(
+            configuration.GetSection("ElasticSearch"));
+
+        services.AddElasticSearch();
+
         // Repositories
         services.AddScoped<IAnimalRepository, AnimalRepository>();
         services.AddScoped<IShelterRepository, ShelterRepository>();
@@ -40,6 +48,10 @@ public static class DependencyInjection
         services.AddScoped<IVolunteerTaskRepository, VolunteerTaskRepository>();
         services.AddScoped<IGuardianshipRepository, GuardianshipRepository>();
         services.AddScoped<IPaymentIntentRepository, PaymentIntentRepository>();
+
+        services.AddScoped<INewsRepository, InMemoryNewsRepository>();
+        services.AddScoped<IStoryArticleRepository, InMemoryStoryArticleRepository>();
+        services.AddScoped<IStaticPageRepository, InMemoryStaticPageRepository>();
 
         // Domain services
         services.AddScoped<IUserService, UserService>();

@@ -1,6 +1,12 @@
 ﻿namespace PetCare.Domain.Events;
 
 /// <summary>
+/// Represents an event that occurs when an adoption application is updated.
+/// </summary>
+public sealed record AdoptionApplicationUpdatedEvent(Guid ApplicationId, Guid UserId)
+    : DomainEvent;
+
+/// <summary>
 /// Represents an event that occurs when an adoption application has been approved.
 /// </summary>
 /// <param name="ApplicationId">The unique identifier of the adoption application that was approved.</param>

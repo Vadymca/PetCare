@@ -68,7 +68,7 @@ public sealed class ResendVerificationCommandHandler : IRequestHandler<ResendVer
 
         var token = await this.userService.GenerateEmailConfirmationTokenAsync(user);
         var encodedToken = HttpUtility.UrlEncode(token);
-        var confirmationUrl = $"https://localhost:4200/verify-email?token={encodedToken}&email={user.Email}";
+        var confirmationUrl = $"https://dobrodii.onrender.com/verify-email?token={encodedToken}&email={user.Email}";
 
         var subject = "Підтвердження Email для Добродій";
 

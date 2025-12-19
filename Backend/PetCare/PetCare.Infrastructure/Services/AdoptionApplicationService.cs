@@ -31,23 +31,23 @@ public sealed class AdoptionApplicationService : IAdoptionApplicationService
 
     /// <inheritdoc/>
     public async Task<AdoptionApplication> UpdateAsync(
-    Guid id,
-    string? comment,
-    string? adminNotes,
-    CancellationToken cancellationToken = default)
+        Guid id,
+        string? comment,
+        string? adminNotes,
+        string? curatorName,
+        string? curatorPhone,
+        DateTime? meetingDate,
+        CancellationToken cancellationToken = default)
     {
         var application = await this.repository.GetByIdAsync(id, cancellationToken)
             ?? throw new InvalidOperationException("Заявку не знайдено.");
 
-        if (!string.IsNullOrWhiteSpace(comment))
-        {
-            application.UpdateComment(comment);
-        }
-
-        if (!string.IsNullOrWhiteSpace(adminNotes))
-        {
-            application.AddAdminNotes(adminNotes);
-        }
+        application.UpdateDetails(
+         comment,
+         adminNotes,
+         curatorName,
+         curatorPhone,
+         meetingDate);
 
         return await this.repository.UpdateAsync(application, cancellationToken);
     }

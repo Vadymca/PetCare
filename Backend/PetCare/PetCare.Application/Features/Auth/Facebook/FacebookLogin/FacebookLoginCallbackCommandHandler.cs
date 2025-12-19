@@ -69,6 +69,6 @@ public sealed class FacebookLoginCallbackCommandHandler
         this.logger.LogInformation("User {Email} successfully logged in via Facebook.", user.Email);
 
         // Редірект на фронтенд
-        return "https://localhost:4200";
+        return "https://dobrodii.onrender.com";
     }
 }

@@ -30,12 +30,18 @@ public interface IAdoptionApplicationService
     /// <param name="id">The unique identifier of the application to update.</param>
     /// <param name="comment">An optional comment to update.</param>
     /// <param name="adminNotes">Optional administrative notes to update.</param>
+    /// <param name="curatorName">The name of the curator assigned to the application, if any.</param>
+    /// <param name="curatorPhone">The phone number of the curator assigned to the application, if any.</param>
+    /// <param name="meetingDate">The scheduled meeting date for the adoption, if any.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>The updated <see cref="AdoptionApplication"/>.</returns>
     Task<AdoptionApplication> UpdateAsync(
         Guid id,
         string? comment,
         string? adminNotes,
+        string? curatorName,
+        string? curatorPhone,
+        DateTime? meetingDate,
         CancellationToken cancellationToken = default);
 
     /// <summary>

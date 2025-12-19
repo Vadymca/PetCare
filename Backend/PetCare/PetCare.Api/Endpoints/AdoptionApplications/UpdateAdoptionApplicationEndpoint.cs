@@ -27,7 +27,10 @@ public static class UpdateAdoptionApplicationEndpoint
             var command = new UpdateAdoptionApplicationCommand(
                 Id: id,
                 Comment: request.Comment,
-                AdminNotes: request.AdminNotes);
+                AdminNotes: request.AdminNotes,
+                CuratorName: request.CuratorName,
+                CuratorPhone: request.CuratorPhone,
+                MeetingDate: request.MeetingDate);
 
             var updatedApplication = await mediator.Send(command);
 
@@ -49,5 +52,8 @@ public static class UpdateAdoptionApplicationEndpoint
     /// </summary>
     public sealed record UpdateAdoptionApplicationRequest(
         string? Comment,
-        string? AdminNotes);
+        string? AdminNotes,
+        string? CuratorName,
+        string? CuratorPhone,
+        DateTime? MeetingDate);
 }

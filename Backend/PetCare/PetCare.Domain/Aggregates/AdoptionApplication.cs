@@ -169,6 +169,72 @@ public sealed class AdoptionApplication : AggregateRoot
     }
 
     /// <summary>
+    /// Updates editable details of the adoption application.
+    /// This method does not change the application status.
+    /// </summary>
+    /// <param name="comment">User comment.</param>
+    /// <param name="adminNotes">Administrative notes.</param>
+    /// <param name="curatorName">Curator name.</param>
+    /// <param name="curatorPhone">Curator phone.</param>
+    /// <param name="meetingDate">Scheduled meeting date.</param>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when attempting to update a completed or rejected application.
+    /// </exception>
+    public void UpdateDetails(
+        string? comment,
+        string? adminNotes,
+        string? curatorName,
+        string? curatorPhone,
+        DateTime? meetingDate)
+    {
+        if (this.Status is AdoptionStatus.Rejected or AdoptionStatus.Completed)
+        {
+            throw new InvalidOperationException(
+                "Неможливо оновлювати відхилену або завершену заявку.");
+        }
+
+        if (comment is not null)
+        {
+            this.Comment = string.IsNullOrWhiteSpace(comment)
+                ? throw new ArgumentException("Коментар не може бути порожнім.", nameof(comment))
+                : comment;
+        }
+
+        if (adminNotes is not null)
+        {
+            this.AdminNotes = string.IsNullOrWhiteSpace(adminNotes)
+                ? throw new ArgumentException("Адміністративні нотатки не можуть бути порожніми.", nameof(adminNotes))
+                : adminNotes;
+        }
+
+        if (curatorName is not null || curatorPhone is not null)
+        {
+            if (string.IsNullOrWhiteSpace(curatorName) || string.IsNullOrWhiteSpace(curatorPhone))
+            {
+                throw new ArgumentException("Ім'я та телефон куратора повинні бути заповнені разом.");
+            }
+
+            this.CuratorName = curatorName;
+            this.CuratorPhone = curatorPhone;
+        }
+
+        if (meetingDate.HasValue)
+        {
+            if (meetingDate.Value < DateTime.UtcNow)
+            {
+                throw new ArgumentException("Дата зустрічі не може бути в минулому.", nameof(meetingDate));
+            }
+
+            this.MeetingDate = meetingDate.Value;
+        }
+
+        this.UpdatedAt = DateTime.UtcNow;
+
+        this.AddDomainEvent(
+            new AdoptionApplicationUpdatedEvent(this.Id, this.UserId));
+    }
+
+    /// <summary>
     /// Approves the adoption application, assigns a curator, and sets the meeting date.
     /// </summary>
     /// <param name="adminId">The unique identifier of the administrator approving the application.</param>

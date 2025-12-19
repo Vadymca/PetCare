@@ -38,6 +38,9 @@ public sealed class UpdateAdoptionApplicationCommandHandler
             request.Id,
             request.Comment,
             request.AdminNotes,
+            request.CuratorName,
+            request.CuratorPhone,
+            request.MeetingDate,
             cancellationToken);
 
         return new AdoptionApplicationDetailsDto(

@@ -268,6 +268,7 @@ public class AdoptionApplicationRepository : GenericRepository<AdoptionApplicati
             {
                 // Якщо усиновлення не відбулося
                 animal.ChangeStatus(AnimalStatus.Available);
+                animal.MarkAsNotUnderCare();
             }
 
             await this.Context.SaveChangesAsync(cancellationToken);
