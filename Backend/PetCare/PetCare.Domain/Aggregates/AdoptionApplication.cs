@@ -187,11 +187,11 @@ public sealed class AdoptionApplication : AggregateRoot
         string? curatorPhone,
         DateTime? meetingDate)
     {
-        if (this.Status is AdoptionStatus.Rejected or AdoptionStatus.Completed)
-        {
-            throw new InvalidOperationException(
-                "Неможливо оновлювати відхилену або завершену заявку.");
-        }
+        //if (this.Status is AdoptionStatus.Rejected or AdoptionStatus.Completed)
+        //{
+        //    throw new InvalidOperationException(
+        //        "Неможливо оновлювати відхилену або завершену заявку.");
+        //}
 
         if (comment is not null)
         {
