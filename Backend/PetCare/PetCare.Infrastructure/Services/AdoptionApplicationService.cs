@@ -74,7 +74,7 @@ public sealed class AdoptionApplicationService : IAdoptionApplicationService
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<AdoptionApplication>> GetAllAsync(CancellationToken cancellationToken = default)
-        => this.repository.GetAllAsync(cancellationToken);
+        => this.repository.GetAllOrderedByNewestAsync(cancellationToken);
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<AdoptionApplication>> GetByUserAsync(Guid userId, CancellationToken cancellationToken = default)

@@ -32,6 +32,16 @@ public class AdoptionApplicationRepository : GenericRepository<AdoptionApplicati
     }
 
     /// <inheritdoc/>
+    public async Task<IReadOnlyList<AdoptionApplication>> GetAllOrderedByNewestAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await this.Context.Set<AdoptionApplication>()
+            .AsNoTracking()
+            .OrderByDescending(a => a.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
     public async Task<IReadOnlyList<AdoptionApplication>> GetPendingAsync(CancellationToken cancellationToken = default)
     {
         return await this.Context.Set<AdoptionApplication>()

@@ -19,6 +19,14 @@ public interface IAdoptionApplicationRepository : IRepository<AdoptionApplicatio
     Task<IReadOnlyList<AdoptionApplication>> GetByUserAsync(Guid userId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Returns all adoption applications sorted by creation date (newest first).
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>List of adoption applications ordered by newest first.</returns>
+    Task<IReadOnlyList<AdoptionApplication>> GetAllOrderedByNewestAsync(
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves all adoption applications that are currently pending review.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token.</param>
