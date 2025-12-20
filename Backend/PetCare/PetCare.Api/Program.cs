@@ -125,19 +125,6 @@ public class Program
                     ValidateIssuer = false,
                     ValidateAudience = false,
                 };
-
-                options.Events = new JwtBearerEvents
-                {
-                    OnMessageReceived = context =>
-                    {
-                        if (context.Request.Cookies.TryGetValue("refresh_token", out var token))
-                        {
-                            context.Token = token;
-                        }
-
-                        return Task.CompletedTask;
-                    },
-                };
             });
 
             // Застосовуємо схему авторизації за замовчуванням
