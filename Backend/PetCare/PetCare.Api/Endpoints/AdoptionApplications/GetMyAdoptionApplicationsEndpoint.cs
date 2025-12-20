@@ -40,7 +40,7 @@ public static class GetMyAdoptionApplicationsEndpoint
         .RequireRateLimiting("GlobalPolicy")
         .WithName("GetMyAdoptionApplications")
         .WithTags("AdoptionApplications")
-        .Produces<IReadOnlyList<AdoptionApplicationListDto>>(StatusCodes.Status200OK)
+        .Produces<IReadOnlyList<AdoptionApplicationDetailsDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized);
     }
 }

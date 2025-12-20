@@ -30,6 +30,6 @@ public static class GetAllAdoptionApplicationsEndpoint
         .WithName("GetAllAdoptionApplications")
         .WithTags("AdoptionApplications")
         .RequireRateLimiting("GlobalPolicy")
-        .Produces<IReadOnlyList<AdoptionApplicationListDto>>(StatusCodes.Status200OK);
+        .Produces<IReadOnlyList<AdoptionApplicationDetailsDto>>(StatusCodes.Status200OK);
     }
 }

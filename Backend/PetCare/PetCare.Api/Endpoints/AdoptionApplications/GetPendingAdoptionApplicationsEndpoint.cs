@@ -31,6 +31,6 @@ public static class GetPendingAdoptionApplicationsEndpoint
         .WithTags("AdoptionApplications")
         .RequireAuthorization("AdminOnly")
         .RequireRateLimiting("GlobalPolicy")
-        .Produces<IReadOnlyList<AdoptionApplicationListDto>>(StatusCodes.Status200OK);
+        .Produces<IReadOnlyList<AdoptionApplicationDetailsDto>>(StatusCodes.Status200OK);
     }
 }
