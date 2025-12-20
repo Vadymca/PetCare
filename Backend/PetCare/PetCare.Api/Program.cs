@@ -96,10 +96,9 @@ public class Program
                 options.AddPolicy("PetCarePolicy", policy =>
                 {
                     policy.WithOrigins(
-                        "http://localhost:4200",
-                        "https://localhost:4200",
                         "https://dobrodii.onrender.com",
-                        "https://api-dobrodiy.kn314-uz.keenetic.pro")
+                        "http://localhost:4200",
+                        "https://localhost:4200")
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials();
@@ -125,6 +124,19 @@ public class Program
                     IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.ASCII.GetBytes(secretKey)),
                     ValidateIssuer = false,
                     ValidateAudience = false,
+                };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        if (context.Request.Cookies.TryGetValue("refresh_token", out var token))
+                        {
+                            context.Token = token;
+                        }
+
+                        return Task.CompletedTask;
+                    },
                 };
             });
 
@@ -343,7 +355,7 @@ public class Program
             app.UseAuthorization();
             app.UseRateLimiter();
 
-            app.UseAntiforgery();
+            //app.UseAntiforgery();
 
             // Явно відповідаємо на всі OPTIONS-запити (preflight)
             app.MapMethods("{*any}", new[] { "OPTIONS" }, (HttpContext context) =>

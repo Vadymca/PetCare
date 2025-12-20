@@ -27,6 +27,8 @@ public static class RefreshEndpoint
             return Results.Ok(response);
         })
         .RequireRateLimiting("GlobalPolicy")
+        .AllowAnonymous()
+        .RequireCors("PetCarePolicy")
         .WithName("Refresh")
         .WithTags("Auth")
         .Produces<LoginResponseDto>(StatusCodes.Status200OK)
