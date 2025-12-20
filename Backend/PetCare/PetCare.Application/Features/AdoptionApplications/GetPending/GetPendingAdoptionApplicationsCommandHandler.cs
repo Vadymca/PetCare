@@ -11,7 +11,7 @@ using PetCare.Domain.Enums;
 /// Handles <see cref="GetPendingAdoptionApplicationsCommand"/>.
 /// </summary>
 public sealed class GetPendingAdoptionApplicationsCommandHandler
-    : IRequestHandler<GetPendingAdoptionApplicationsCommand, IReadOnlyList<AdoptionApplicationListDto>>
+    : IRequestHandler<GetPendingAdoptionApplicationsCommand, IReadOnlyList<AdoptionApplicationDetailsDto>>
 {
     private readonly IAdoptionApplicationService adoptionApplicationService;
 
@@ -29,7 +29,7 @@ public sealed class GetPendingAdoptionApplicationsCommandHandler
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<AdoptionApplicationListDto>> Handle(
+    public async Task<IReadOnlyList<AdoptionApplicationDetailsDto>> Handle(
         GetPendingAdoptionApplicationsCommand request,
         CancellationToken cancellationToken)
     {
@@ -37,14 +37,23 @@ public sealed class GetPendingAdoptionApplicationsCommandHandler
             AdoptionStatus.Pending, cancellationToken);
 
         return applications
-            .Select(a => new AdoptionApplicationListDto(
-                a.Id,
-                a.UserId,
-                a.AnimalId,
-                a.Status,
-                a.ApplicationDate,
-                a.Comment ?? string.Empty,
-                a.AdminNotes ?? string.Empty))
-            .ToList();
+             .Select(a => new AdoptionApplicationDetailsDto(
+                 a.Id,
+                 a.UserId,
+                 a.AnimalId,
+                 a.Status,
+                 a.ApplicationDate,
+                 a.MeetingDate,
+                 a.AdoptionDate,
+                 a.RejectionDate,
+                 a.Comment ?? string.Empty,
+                 a.AdminNotes ?? string.Empty,
+                 a.RejectionReason ?? string.Empty,
+                 a.CuratorName,
+                 a.CuratorPhone,
+                 a.CreatedAt,
+                 a.UpdatedAt))
+             .OrderByDescending(a => a.CreatedAt) // найсвіжіші зверху
+             .ToList();
     }
 }

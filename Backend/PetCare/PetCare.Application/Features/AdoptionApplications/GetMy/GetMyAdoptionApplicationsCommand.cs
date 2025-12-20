@@ -11,4 +11,4 @@ using PetCare.Application.Dtos.AdoptionApplicationDtos;
 /// <param name="UserId">The identifier of the current user.</param>
 public sealed record GetMyAdoptionApplicationsCommand(
     Guid UserId)
-    : IRequest<IReadOnlyList<AdoptionApplicationListDto>>;
+    : IRequest<IReadOnlyList<AdoptionApplicationDetailsDto>>;

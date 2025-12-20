@@ -11,7 +11,7 @@ using PetCare.Domain.Enums;
 /// Handles <see cref="GetRejectedAdoptionApplicationsCommand"/>.
 /// </summary>
 public sealed class GetRejectedAdoptionApplicationsCommandHandler
-    : IRequestHandler<GetRejectedAdoptionApplicationsCommand, IReadOnlyList<AdoptionApplicationListDto>>
+    : IRequestHandler<GetRejectedAdoptionApplicationsCommand, IReadOnlyList<AdoptionApplicationDetailsDto>>
 {
     private readonly IAdoptionApplicationService adoptionApplicationService;
 
@@ -27,7 +27,7 @@ public sealed class GetRejectedAdoptionApplicationsCommandHandler
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<AdoptionApplicationListDto>> Handle(
+    public async Task<IReadOnlyList<AdoptionApplicationDetailsDto>> Handle(
         GetRejectedAdoptionApplicationsCommand request,
         CancellationToken cancellationToken)
     {
@@ -35,14 +35,23 @@ public sealed class GetRejectedAdoptionApplicationsCommandHandler
             AdoptionStatus.Rejected, cancellationToken);
 
         return applications
-            .Select(a => new AdoptionApplicationListDto(
+            .Select(a => new AdoptionApplicationDetailsDto(
                 a.Id,
                 a.UserId,
                 a.AnimalId,
                 a.Status,
                 a.ApplicationDate,
+                a.MeetingDate,
+                a.AdoptionDate,
+                a.RejectionDate,
                 a.Comment ?? string.Empty,
-                a.AdminNotes ?? string.Empty))
+                a.AdminNotes ?? string.Empty,
+                a.RejectionReason ?? string.Empty,
+                a.CuratorName,
+                a.CuratorPhone,
+                a.CreatedAt,
+                a.UpdatedAt))
+            .OrderByDescending(a => a.CreatedAt) // найсвіжіші зверху
             .ToList();
     }
 }

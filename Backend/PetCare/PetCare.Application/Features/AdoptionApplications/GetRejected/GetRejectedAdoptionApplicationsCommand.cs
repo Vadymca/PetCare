@@ -8,4 +8,4 @@ using PetCare.Application.Dtos.AdoptionApplicationDtos;
 /// Command to retrieve all rejected adoption applications.
 /// </summary>
 public sealed record GetRejectedAdoptionApplicationsCommand
-    : IRequest<IReadOnlyList<AdoptionApplicationListDto>>;
+    : IRequest<IReadOnlyList<AdoptionApplicationDetailsDto>>;
