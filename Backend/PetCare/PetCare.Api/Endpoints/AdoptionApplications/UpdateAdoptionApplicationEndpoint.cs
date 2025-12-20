@@ -30,7 +30,8 @@ public static class UpdateAdoptionApplicationEndpoint
                 AdminNotes: request.AdminNotes,
                 CuratorName: request.CuratorName,
                 CuratorPhone: request.CuratorPhone,
-                MeetingDate: request.MeetingDate);
+                MeetingDate: request.MeetingDate,
+                AdoptionDate: request.AdoptionDate);
 
             var updatedApplication = await mediator.Send(command);
 
@@ -55,5 +56,6 @@ public static class UpdateAdoptionApplicationEndpoint
         string? AdminNotes,
         string? CuratorName,
         string? CuratorPhone,
-        DateTime? MeetingDate);
+        DateTime? MeetingDate,
+        DateTime? AdoptionDate);
 }

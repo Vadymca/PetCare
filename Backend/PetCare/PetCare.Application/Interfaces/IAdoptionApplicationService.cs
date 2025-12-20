@@ -33,6 +33,7 @@ public interface IAdoptionApplicationService
     /// <param name="curatorName">The name of the curator assigned to the application, if any.</param>
     /// <param name="curatorPhone">The phone number of the curator assigned to the application, if any.</param>
     /// <param name="meetingDate">The scheduled meeting date for the adoption, if any.</param>
+    /// <param name="adoptionDate">The date when the adoption was completed, if any.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>The updated <see cref="AdoptionApplication"/>.</returns>
     Task<AdoptionApplication> UpdateAsync(
@@ -42,6 +43,7 @@ public interface IAdoptionApplicationService
         string? curatorName,
         string? curatorPhone,
         DateTime? meetingDate,
+        DateTime? adoptionDate,
         CancellationToken cancellationToken = default);
 
     /// <summary>

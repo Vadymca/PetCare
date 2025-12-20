@@ -37,6 +37,7 @@ public sealed class AdoptionApplicationService : IAdoptionApplicationService
         string? curatorName,
         string? curatorPhone,
         DateTime? meetingDate,
+        DateTime? adoptionDate,
         CancellationToken cancellationToken = default)
     {
         var application = await this.repository.GetByIdAsync(id, cancellationToken)
@@ -47,7 +48,8 @@ public sealed class AdoptionApplicationService : IAdoptionApplicationService
          adminNotes,
          curatorName,
          curatorPhone,
-         meetingDate);
+         meetingDate,
+         adoptionDate);
 
         return await this.repository.UpdateAsync(application, cancellationToken);
     }

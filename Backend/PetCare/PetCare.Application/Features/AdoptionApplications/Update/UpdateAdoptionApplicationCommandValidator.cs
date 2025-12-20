@@ -47,5 +47,9 @@ public sealed class UpdateAdoptionApplicationCommandValidator
         this.RuleFor(x => x.MeetingDate)
             .Must(date => date is null || date.Value > DateTime.UtcNow)
             .WithMessage("Дата зустрічі не може бути в минулому.");
+
+        this.RuleFor(x => x.AdoptionDate)
+            .Must(date => date is null || date.Value > DateTime.UtcNow)
+            .WithMessage("Дата усиновлення не може бути в минулому.");
     }
 }

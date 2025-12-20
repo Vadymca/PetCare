@@ -41,6 +41,7 @@ public sealed class UpdateAdoptionApplicationCommandHandler
             request.CuratorName,
             request.CuratorPhone,
             request.MeetingDate,
+            request.AdoptionDate,
             cancellationToken);
 
         return new AdoptionApplicationDetailsDto(

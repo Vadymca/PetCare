@@ -13,11 +13,13 @@ using PetCare.Application.Dtos.AdoptionApplicationDtos;
 /// <param name="CuratorName">Updated curator name.</param>
 /// <param name="CuratorPhone">Updated curator phone number.</param>
 /// <param name="MeetingDate">Updated meeting date.</param>
+/// <param name="AdoptionDate">Updated adoption date.</param>
 public sealed record UpdateAdoptionApplicationCommand(
     Guid Id,
     string? Comment,
     string? AdminNotes,
     string? CuratorName,
     string? CuratorPhone,
-    DateTime? MeetingDate)
+    DateTime? MeetingDate,
+    DateTime? AdoptionDate)
     : IRequest<AdoptionApplicationDetailsDto>;

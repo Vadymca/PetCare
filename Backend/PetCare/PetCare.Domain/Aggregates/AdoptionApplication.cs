@@ -177,6 +177,7 @@ public sealed class AdoptionApplication : AggregateRoot
     /// <param name="curatorName">Curator name.</param>
     /// <param name="curatorPhone">Curator phone.</param>
     /// <param name="meetingDate">Scheduled meeting date.</param>
+    /// <param name="adoptionDate">Adoption date.</param>
     /// <exception cref="InvalidOperationException">
     /// Thrown when attempting to update a completed or rejected application.
     /// </exception>
@@ -185,7 +186,8 @@ public sealed class AdoptionApplication : AggregateRoot
         string? adminNotes,
         string? curatorName,
         string? curatorPhone,
-        DateTime? meetingDate)
+        DateTime? meetingDate,
+        DateTime? adoptionDate)
     {
         //if (this.Status is AdoptionStatus.Rejected or AdoptionStatus.Completed)
         //{
@@ -226,6 +228,21 @@ public sealed class AdoptionApplication : AggregateRoot
             }
 
             this.MeetingDate = meetingDate.Value;
+        }
+
+        if (adoptionDate.HasValue)
+        {
+            if (!this.MeetingDate.HasValue)
+            {
+                throw new InvalidOperationException("Не можна встановити дату адопції без дати зустрічі.");
+            }
+
+            if (adoptionDate.Value < this.MeetingDate.Value)
+            {
+                throw new ArgumentException("Дата адопції не може бути раніше дати зустрічі.", nameof(adoptionDate));
+            }
+
+            this.AdoptionDate = adoptionDate.Value;
         }
 
         this.UpdatedAt = DateTime.UtcNow;
