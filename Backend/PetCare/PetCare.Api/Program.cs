@@ -541,27 +541,6 @@ public class Program
 
             app.MapGet("/", () => Results.Ok("✅ PetCare.Api is running successfully!"));
 
-            app.MapGet("/auth/success", () => Results.Content(
-                @"
-                <!DOCTYPE html>
-                <html lang=""uk"">
-                <head>
-                    <meta charset=""utf-8"">
-                    <title>Успішний вхід</title>
-                </head>
-                <body>
-                    <p>Вхід виконано успішно. Перенаправляємо на сайт...</p>
-                    <script>
-                        // Можна додати параметри для фронтенду
-                        const params = new URLSearchParams(window.location.search);
-                        const redirectUrl = 'https://dobrodii.onrender.com' + (params.has('state') ? '?state=' + params.get('state') : '?login=success');
-                        window.location.href = redirectUrl;
-                    </script>
-                </body>
-                </html>
-                ",
-                "text/html"));
-
             // -------------------- Migrations & Seeding --------------------
             using (var scope = app.Services.CreateScope())
             {
