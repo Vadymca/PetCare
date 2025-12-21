@@ -169,7 +169,7 @@ public sealed class JwtService : IJwtService
         };
 
         response.Cookies.Append("refresh_token", token, options);
-        this.logger.LogInformation("Refresh token cookie встановлено, екcп.: {Expiration}", options.Expires);
+        this.logger.LogInformation("Refresh token cookie встановлено, екcп.: {Expiration}", options.Expires , options.HttpOnly, options.Secure, options.SameSite, options.Path);
     }
 
     /// <summary>
