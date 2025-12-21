@@ -98,9 +98,7 @@ public class Program
                     policy.WithOrigins(
                         "https://dobrodii.onrender.com",
                         "http://localhost:4200",
-                        "https://localhost:4200",
-                        "http://192.168.1.104",
-                        "https://192.168.1.104")
+                        "https://localhost:4200")
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials();

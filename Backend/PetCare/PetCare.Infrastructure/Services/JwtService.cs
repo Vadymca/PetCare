@@ -157,37 +157,19 @@ public sealed class JwtService : IJwtService
     /// </summary>
     /// <param name="response">HTTP response to append the cookie to.</param>
     /// <param name="token">Serialized JWT refresh token.</param>
-    public void SetRefreshTokenCookie(HttpResponse response, string refreshToken)
+    public void SetRefreshTokenCookie(HttpResponse response, string token)
     {
-        if (response == null) throw new ArgumentNullException(nameof(response));
-
-        var isHttps = response.HttpContext.Request.IsHttps;
-
-        response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
+        var options = new CookieOptions
         {
             HttpOnly = true,
-            Secure = isHttps,               // Secure лише якщо HTTPS
-            SameSite = SameSiteMode.None,   // для cross-site
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Expires = DateTime.UtcNow.AddDays(this.refreshExpirationDays),
             Path = "/",
-            Expires = DateTimeOffset.UtcNow.AddDays(30),
-            Domain = GetCookieDomain(response.HttpContext.Request),
-        });
-    }
+        };
 
-    /// <summary>
-    /// Визначає домен cookie в залежності від середовища.
-    /// Локально — null, на хості — добродій.
-    /// </summary>
-    private string? GetCookieDomain(HttpRequest request)
-    {
-        var host = request.Host.Host;
-
-        // Локальна розробка
-        if (host.Contains("localhost") || host.Contains("127.0.0.1"))
-            return null;
-
-        // Встановлюємо домен для хоста
-        return "dobrodii.onrender.com";
+        response.Cookies.Append("refresh_token", token, options);
+        this.logger.LogInformation("Refresh token cookie встановлено, екcп.: {Expiration}", options.Expires);
     }
 
     /// <summary>
