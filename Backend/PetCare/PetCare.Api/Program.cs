@@ -539,8 +539,7 @@ public class Program
             app.MapUpdateAdoptionApplicationEndpoint(); // /api/adoption-applications/{id:guid}
             app.MapCompleteAdoptionApplicationEndpoint(); // /api/adoption-applications/{id:guid}/complete
 
-            app.MapGet("/", () => Results.Redirect("https://dobrodii.onrender.com/"));
-
+            app.MapGet("/", () => Results.Ok("✅ PetCare.Api is running successfully!"));
 
             // -------------------- Migrations & Seeding --------------------
             using (var scope = app.Services.CreateScope())
