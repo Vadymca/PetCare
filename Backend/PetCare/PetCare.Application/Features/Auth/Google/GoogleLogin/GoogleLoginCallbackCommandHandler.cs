@@ -69,6 +69,6 @@ public sealed class GoogleLoginCallbackCommandHandler
         this.logger.LogInformation("User {Email} successfully logged in via Google.", user.Email);
 
         // Редірект на фронтенд
-        return "https://dobrodii.onrender.com";
+        return "https://api-dobrodiy.phfk.college/auth/success";
     }
 }
