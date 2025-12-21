@@ -166,6 +166,7 @@ public sealed class JwtService : IJwtService
             SameSite = SameSiteMode.None,
             Expires = DateTime.UtcNow.AddDays(this.refreshExpirationDays),
             Path = "/",
+            Domain = ".phfk.college",
         };
 
         response.Cookies.Append("refresh_token", token, options);
