@@ -69,6 +69,7 @@ public sealed class GoogleLoginCallbackCommandHandler
         this.logger.LogInformation("User {Email} successfully logged in via Google.", user.Email);
 
         // Редірект на фронтенд
-        return "https://dobrodii.onrender.com";
+        var host = httpContext.Request.Host.Host;
+        return host.Contains("localhost") ? "https://localhost:4200" : "https://dobrodii.onrender.com";
     }
 }
