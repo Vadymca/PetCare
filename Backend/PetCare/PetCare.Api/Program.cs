@@ -392,6 +392,7 @@ public class Program
             app.MapResetPasswordEndpoint(); // /api/auth/reset-password
             app.MapConfirmEmailEndpoint(); // /api/auth/confirm-email
             app.MapResendVerificationEndpoint(); // /api/auth/resend-verification
+            app.MapExchangeSocialMiniTokenEndpoint(); // /api/auth/social
 
             // --------------------TwoFactor----------------------
             app.MapSetupTotpEndpoint(); // /api/auth/2fa/totp/setup

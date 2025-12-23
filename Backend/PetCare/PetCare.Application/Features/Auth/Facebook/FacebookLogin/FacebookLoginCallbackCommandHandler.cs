@@ -1,9 +1,11 @@
 ﻿namespace PetCare.Application.Features.Auth.Facebook.FacebookLogin;
 
 using System;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Abstractions.Services;
@@ -18,6 +20,7 @@ public sealed class FacebookLoginCallbackCommandHandler
     private readonly IUserService userService;
     private readonly IJwtService jwtService;
     private readonly IHttpContextAccessor httpContextAccessor;
+    private readonly IMemoryCache memoryCache;
     private readonly ILogger<FacebookLoginCallbackCommandHandler> logger;
 
     /// <summary>
@@ -27,18 +30,21 @@ public sealed class FacebookLoginCallbackCommandHandler
     /// <param name="userService">The user service.</param>
     /// <param name="jwtService">The JWT service.</param>
     /// <param name="httpContextAccessor">The HTTP context accessor.</param>
+    /// <param name="memoryCache">The memory cache instance.</param>
     /// <param name="logger">The logger instance.</param>
     public FacebookLoginCallbackCommandHandler(
         IFacebookAuthService facebookAuthService,
         IUserService userService,
         IJwtService jwtService,
         IHttpContextAccessor httpContextAccessor,
+        IMemoryCache memoryCache,
         ILogger<FacebookLoginCallbackCommandHandler> logger)
     {
         this.facebookAuthService = facebookAuthService ?? throw new ArgumentNullException(nameof(facebookAuthService));
         this.userService = userService ?? throw new ArgumentNullException(nameof(userService));
         this.jwtService = jwtService ?? throw new ArgumentNullException(nameof(jwtService));
         this.httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+        this.memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -59,16 +65,27 @@ public sealed class FacebookLoginCallbackCommandHandler
         var user = await this.userService.FindByEmailAsync(fbUser.Email)
                    ?? await this.userService.CreateUserFromFacebookAsync(fbUser);
 
-        // Отримуємо ролі
-        var roles = await this.userService.GetRolesAsync(user);
+        // 🔑 MINI TOKEN
+        var miniToken = GenerateMiniToken();
 
-        // Генеруємо refresh token і записуємо в cookie
-        var jwtRefreshToken = this.jwtService.GenerateRefreshToken(user.Id);
-        this.jwtService.SetRefreshTokenCookie(httpContext.Response, jwtRefreshToken);
+        this.memoryCache.Set(miniToken, user.Id, TimeSpan.FromMinutes(5));
 
-        this.logger.LogInformation("User {Email} successfully logged in via Facebook.", user.Email);
+        this.logger.LogInformation(
+            "Mini token generated for Facebook user {Email}: {MiniToken}",
+            user.Email,
+            miniToken);
 
-        // Редірект на фронтенд
-        return "https://dobrodii.onrender.com";
+        return $"https://dobrodii.onrender.com/social#token={miniToken}";
+    }
+
+    private static string GenerateMiniToken()
+    {
+        Span<byte> buffer = stackalloc byte[12];
+        RandomNumberGenerator.Fill(buffer);
+
+        return Convert.ToBase64String(buffer)
+            .Replace("+", "-")
+            .Replace("/", "_")
+            .TrimEnd('=');
     }
 }
