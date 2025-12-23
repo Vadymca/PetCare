@@ -55,7 +55,7 @@ public sealed class FacebookLoginCallbackCommandHandler
         this.logger.LogInformation("Handling Facebook login callback. Code: {Code}, State: {State}", request.Code, request.State);
 
         // Отримуємо access token
-        var redirectUri = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/api/auth/facebook/callback";
+        var redirectUri = "https://api-dobrodiy.phfk.college/api/auth/facebook/callback";
         var accessToken = await this.facebookAuthService.GetAccessTokenAsync(request.Code, redirectUri);
 
         // Отримуємо дані користувача
