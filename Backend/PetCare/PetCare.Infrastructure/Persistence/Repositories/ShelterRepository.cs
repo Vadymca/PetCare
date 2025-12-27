@@ -419,16 +419,12 @@ public class ShelterRepository : GenericRepository<Shelter>, IShelterRepository
     int limit,
     CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(query))
+        if (string.IsNullOrWhiteSpace(query) || query.Length < 3)
         {
             return Array.Empty<SearchItem>();
         }
 
-        var prefix = query.Length >= 3
-            ? query[..3]
-            : query;
-
-        var tsQuery = prefix + ":*";
+        var tsQuery = query.Trim() + ":*";
 
         var sql = @$"
             SELECT ""Name"", ""Slug"", ""Description"" AS ""Snippet""
@@ -455,16 +451,12 @@ public class ShelterRepository : GenericRepository<Shelter>, IShelterRepository
     int limit,
     CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(query))
+        if (string.IsNullOrWhiteSpace(query) || query.Length < 3)
         {
             return Array.Empty<SearchItem>();
         }
 
-        var prefix = query.Length >= 3
-            ? query[..3]
-            : query;
-
-        var tsQuery = prefix + ":*";
+        var tsQuery = query.Trim() + ":*";
 
         var sql = @$"
             SELECT ""Title"" AS ""Name"", ""Slug"", ""Description"" AS ""Snippet""

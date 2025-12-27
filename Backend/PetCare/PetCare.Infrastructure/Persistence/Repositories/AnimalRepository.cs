@@ -340,30 +340,28 @@ public class AnimalRepository : GenericRepository<Animal>, IAnimalRepository
     int limit,
     CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(query))
+        if (string.IsNullOrWhiteSpace(query) || query.Length < 3)
         {
             return Array.Empty<SearchItem>();
         }
 
-        var prefix = query.Length >= 3 ? query[..3] : query;
-        var tsQuery = prefix + ":*";
+        var tsQuery = query.Trim() + ":*";
 
         var sql = @$"
             SELECT ""Name"", ""Slug"", ""Description"" AS ""Snippet""
             FROM ""Animals""
             WHERE ""SearchVector"" @@ to_tsquery('simple', {{0}})
                OR ""SearchVector"" @@ to_tsquery('english', {{0}})
-            ORDER BY ts_rank(""SearchVector"", to_tsquery('simple', {{0}})) DESC,
-                     ts_rank(""SearchVector"", to_tsquery('english', {{0}})) DESC,
-                     ""CreatedAt"" DESC
+            ORDER BY
+                ts_rank(""SearchVector"", to_tsquery('simple', {{0}})) DESC,
+                ts_rank(""SearchVector"", to_tsquery('english', {{0}})) DESC,
+                ""CreatedAt"" DESC
             LIMIT {{1}};
-";
+        ";
 
-        var animals = await this.Context.SearchItems
+        return await this.Context.SearchItems
             .FromSqlInterpolated(FormattableStringFactory.Create(sql, tsQuery, limit))
             .AsNoTracking()
             .ToListAsync(cancellationToken);
-
-        return animals;
     }
 }
