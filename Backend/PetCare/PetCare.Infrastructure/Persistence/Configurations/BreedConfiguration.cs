@@ -2,6 +2,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using NpgsqlTypes;
 using PetCare.Domain.Entities;
 using PetCare.Domain.ValueObjects;
 
@@ -45,5 +46,18 @@ public class BreedConfiguration : IEntityTypeConfiguration<Breed>
 
         builder.HasIndex(b => new { b.Name, b.SpeciesId })
             .IsUnique();
+
+        builder.Property<NpgsqlTsVector>("SearchVector")
+            .HasColumnType("tsvector")
+            .HasComputedColumnSql(
+                """
+                to_tsvector('simple', coalesce("Name", ''))
+                ||
+                to_tsvector('english', coalesce("Name", ''))
+                """,
+                stored: true);
+
+        builder.HasIndex("SearchVector")
+            .HasMethod("GIN");
     }
 }

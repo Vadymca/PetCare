@@ -50,7 +50,7 @@ public sealed class StoryArticleSearchSource : ISearchSource
             .Select(s => new SearchResultItemDto(
                 Title: s.Title,
                 Slug: s.Slug,
-                Snippet: this.BuildSnippet(s, normalizedQuery)))
+                Snippet: this.BuildSnippet(s)))
             .Take(MaxResults)
             .ToList();
 
@@ -69,28 +69,14 @@ public sealed class StoryArticleSearchSource : ISearchSource
             && source.Contains(query, StringComparison.OrdinalIgnoreCase);
     }
 
-    private string? BuildSnippet(dynamic story, string query)
+    private string? BuildSnippet(dynamic story)
     {
-        var source = story.ShortContent;
-
-        if (string.IsNullOrWhiteSpace(source))
+        if (string.IsNullOrWhiteSpace(story.ShortContent))
         {
             return null;
         }
 
-        var index = source.IndexOf(query, StringComparison.OrdinalIgnoreCase);
-        if (index < 0)
-        {
-            return null;
-        }
-
-        var start = Math.Max(0, index - (SnippetLength / 2));
-        var length = Math.Min(SnippetLength, source.Length - start);
-
-        var snippet = source.Substring(start, length).Trim();
-
-        return start > 0
-            ? $"…{snippet}"
-            : snippet;
+        var sentences = story.ShortContent.Split(new[] { '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries);
+        return sentences.Length > 0 ? sentences[0].Trim() + "." : story.ShortContent;
     }
 }

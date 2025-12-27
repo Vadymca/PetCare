@@ -2,16 +2,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using PetCare.Application.Dtos.SearchDtos;
 using PetCare.Application.Interfaces;
 using PetCare.Domain.Abstractions.Repositories;
 
 /// <summary>
 /// Search source for animals stored in the database.
+/// Supports search by Name, Description, Breed and Species in two languages.
 /// </summary>
 public sealed class AnimalSearchSource : ISearchSource
 {
-    private const int MaxResults = 5;
+    private const int MaxResults = 10;
     private const int SnippetLength = 120;
 
     private readonly IAnimalRepository animalRepository;
@@ -35,13 +37,15 @@ public sealed class AnimalSearchSource : ISearchSource
         string language,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(query))
+        if (string.IsNullOrWhiteSpace(query) || query.Length < 3)
         {
             return Array.Empty<SearchResultItemDto>();
         }
 
+        var trimmedQuery = query.Trim();
+
         var items = await this.animalRepository.SearchAnimalsAsync(
-            query.Trim(),
+            trimmedQuery,
             MaxResults,
             cancellationToken);
 
@@ -49,15 +53,21 @@ public sealed class AnimalSearchSource : ISearchSource
 
         foreach (var item in items)
         {
+            var snippet = this.BuildSnippet(item.Snippet, trimmedQuery);
             results.Add(new SearchResultItemDto(
                 Title: item.Name,
                 Slug: item.Slug,
-                Snippet: this.BuildSnippet(item.Snippet, query)));
+                Snippet: snippet));
         }
 
         return results;
     }
 
+    /// <summary>
+    /// Builds a snippet for search result.
+    /// If query found in text, returns fragment around it.
+    /// Otherwise returns first sentence.
+    /// </summary>
     private string? BuildSnippet(string? text, string query)
     {
         if (string.IsNullOrWhiteSpace(text))
@@ -65,19 +75,27 @@ public sealed class AnimalSearchSource : ISearchSource
             return null;
         }
 
+        // Try to find the query in text (case-insensitive)
         var index = text.IndexOf(query, StringComparison.OrdinalIgnoreCase);
-        if (index < 0)
+        if (index >= 0)
         {
-            return null;
+            var start = Math.Max(0, index - (SnippetLength / 2));
+            var length = Math.Min(SnippetLength, text.Length - start);
+            var snippet = text.Substring(start, length).Trim();
+
+            return start > 0 ? $"…{snippet}" : snippet;
         }
 
-        var start = Math.Max(0, index - (SnippetLength / 2));
-        var length = Math.Min(SnippetLength, text.Length - start);
+        // Fallback: return first sentence
+        var match = Regex.Match(text, @"^.*?[.!?](\s|$)");
+        if (match.Success)
+        {
+            return match.Value.Trim();
+        }
 
-        var snippet = text.Substring(start, length).Trim();
-
-        return start > 0
-            ? $"…{snippet}"
-            : snippet;
+        // If no sentence ending, return start of text
+        return text.Length <= SnippetLength
+            ? text
+            : text.Substring(0, SnippetLength).Trim() + "…";
     }
 }

@@ -336,9 +336,9 @@ public class AnimalRepository : GenericRepository<Animal>, IAnimalRepository
 
     /// <inheritdoc/>
     public async Task<IReadOnlyList<SearchItem>> SearchAnimalsAsync(
-    string query,
-    int limit,
-    CancellationToken cancellationToken)
+        string query,
+        int limit,
+        CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(query) || query.Length < 3)
         {
@@ -348,14 +348,86 @@ public class AnimalRepository : GenericRepository<Animal>, IAnimalRepository
         var tsQuery = query.Trim() + ":*";
 
         var sql = @$"
-            SELECT ""Name"", ""Slug"", ""Description"" AS ""Snippet""
-            FROM ""Animals""
-            WHERE ""SearchVector"" @@ to_tsquery('simple', {{0}})
-               OR ""SearchVector"" @@ to_tsquery('english', {{0}})
+            SELECT a.""Name"", a.""Slug"", a.""Description"" AS ""Snippet""
+            FROM ""Animals"" a
+            LEFT JOIN ""Breeds"" b ON a.""BreedId"" = b.""Id""
+            LEFT JOIN ""Species"" s ON b.""SpeciesId"" = s.""Id""
+            WHERE
+                to_tsvector('simple',
+                    coalesce(a.""Name"", '') || ' ' ||
+                    coalesce(a.""Description"", '') || ' ' ||
+                    coalesce(b.""Name"", '') || ' ' ||
+                    CASE coalesce(s.""Name"", '')
+                        WHEN 'Кішка' THEN 'cat кішка'
+                        WHEN 'Собака' THEN 'dog собака'
+                        WHEN 'Птах' THEN 'bird птах'
+                        WHEN 'Риба' THEN 'fish риба'
+                        WHEN 'Кролик' THEN 'rabbit кролик'
+                        WHEN 'Гризун' THEN 'rodent гризун'
+                        WHEN 'Плазун' THEN 'reptile плазун'
+                        WHEN 'Комаха' THEN 'insect комаха'
+                        WHEN 'Павук' THEN 'spider павук'
+                        ELSE coalesce(s.""Name"", '')
+                    END
+                ) @@ to_tsquery('simple', {{0}})
+                OR
+                to_tsvector('english',
+                    coalesce(a.""Name"", '') || ' ' ||
+                    coalesce(a.""Description"", '') || ' ' ||
+                    coalesce(b.""Name"", '') || ' ' ||
+                    CASE coalesce(s.""Name"", '')
+                        WHEN 'Кішка' THEN 'cat кішка'
+                        WHEN 'Собака' THEN 'dog собака'
+                        WHEN 'Птах' THEN 'bird птах'
+                        WHEN 'Риба' THEN 'fish риба'
+                        WHEN 'Кролик' THEN 'rabbit кролик'
+                        WHEN 'Гризун' THEN 'rodent гризун'
+                        WHEN 'Плазун' THEN 'reptile плазун'
+                        WHEN 'Комаха' THEN 'insect комаха'
+                        WHEN 'Павук' THEN 'spider павук'
+                        ELSE coalesce(s.""Name"", '')
+                    END
+                ) @@ to_tsquery('english', {{0}})
             ORDER BY
-                ts_rank(""SearchVector"", to_tsquery('simple', {{0}})) DESC,
-                ts_rank(""SearchVector"", to_tsquery('english', {{0}})) DESC,
-                ""CreatedAt"" DESC
+                ts_rank(
+                    to_tsvector('simple',
+                        coalesce(a.""Name"", '') || ' ' ||
+                        coalesce(a.""Description"", '') || ' ' ||
+                        coalesce(b.""Name"", '') || ' ' ||
+                        CASE coalesce(s.""Name"", '')
+                            WHEN 'Кішка' THEN 'cat кішка'
+                            WHEN 'Собака' THEN 'dog собака'
+                            WHEN 'Птах' THEN 'bird птах'
+                            WHEN 'Риба' THEN 'fish риба'
+                            WHEN 'Кролик' THEN 'rabbit кролик'
+                            WHEN 'Гризун' THEN 'rodent гризун'
+                            WHEN 'Плазун' THEN 'reptile плазун'
+                            WHEN 'Комаха' THEN 'insect комаха'
+                            WHEN 'Павук' THEN 'spider павук'
+                            ELSE coalesce(s.""Name"", '')
+                        END
+                    ), to_tsquery('simple', {{0}})
+                ) DESC,
+                ts_rank(
+                    to_tsvector('english',
+                        coalesce(a.""Name"", '') || ' ' ||
+                        coalesce(a.""Description"", '') || ' ' ||
+                        coalesce(b.""Name"", '') || ' ' ||
+                        CASE coalesce(s.""Name"", '')
+                            WHEN 'Кішка' THEN 'cat кішка'
+                            WHEN 'Собака' THEN 'dog собака'
+                            WHEN 'Птах' THEN 'bird птах'
+                            WHEN 'Риба' THEN 'fish риба'
+                            WHEN 'Кролик' THEN 'rabbit кролик'
+                            WHEN 'Гризун' THEN 'rodent гризун'
+                            WHEN 'Плазун' THEN 'reptile плазун'
+                            WHEN 'Комаха' THEN 'insect комаха'
+                            WHEN 'Павук' THEN 'spider павук'
+                            ELSE coalesce(s.""Name"", '')
+                        END
+                    ), to_tsquery('english', {{0}})
+                ) DESC,
+                a.""CreatedAt"" DESC
             LIMIT {{1}};
         ";
 

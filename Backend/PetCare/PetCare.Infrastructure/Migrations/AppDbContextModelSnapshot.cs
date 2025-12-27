@@ -651,10 +651,19 @@ namespace PetCare.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<NpgsqlTsVector>("SearchVector")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("tsvector")
+                        .HasComputedColumnSql("to_tsvector('simple', coalesce(\"Name\", ''))\r\n||\r\nto_tsvector('english', coalesce(\"Name\", ''))", true);
+
                     b.HasKey("Id");
 
                     b.HasIndex("Name")
                         .IsUnique();
+
+                    b.HasIndex("SearchVector");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("SearchVector"), "GIN");
 
                     b.ToTable("Species", (string)null);
                 });
@@ -1168,10 +1177,19 @@ namespace PetCare.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<NpgsqlTsVector>("SearchVector")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("tsvector")
+                        .HasComputedColumnSql("to_tsvector('simple', coalesce(\"Name\", ''))\r\n||\r\nto_tsvector('english', coalesce(\"Name\", ''))", true);
+
                     b.Property<Guid>("SpeciesId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SearchVector");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("SearchVector"), "GIN");
 
                     b.HasIndex("SpeciesId");
 
@@ -1960,6 +1978,24 @@ namespace PetCare.Infrastructure.Migrations
                     b.HasIndex("VolunteerTaskId");
 
                     b.ToTable("VolunteerTaskAssignments", (string)null);
+                });
+
+            modelBuilder.Entity("PetCare.Domain.Search.SearchItem", b =>
+                {
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Snippet")
+                        .HasColumnType("text");
+
+                    b.ToTable((string)null);
+
+                    b.ToView(null, (string)null);
                 });
 
             modelBuilder.Entity("PetCare.Infrastructure.Identity.AppRole", b =>
