@@ -9,6 +9,7 @@ using PetCare.Domain.Common;
 using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
 using PetCare.Domain.Events;
+using PetCare.Domain.Search;
 using PetCare.Infrastructure.Identity;
 
 /// <summary>
@@ -201,6 +202,14 @@ public class AppDbContext : IdentityDbContext<User, AppRole, Guid>
     /// called.</remarks>
     public DbSet<PaymentIntent> PaymentIntents => this.Set<PaymentIntent>();
 
+    /// <summary>
+    /// Gets the set of search items in the context.
+    /// </summary>
+    /// <remarks>This property provides access to query and manage <see cref="SearchItem"/> entities within
+    /// the database context. Changes made to the returned <see cref="DbSet{TEntity}"/> are tracked by the context and
+    /// persisted to the database when <c>SaveChanges</c> is called.</remarks>
+    public DbSet<SearchItem> SearchItems => this.Set<SearchItem>();
+
     /// <inheritdoc/>
     /// <summary>
     /// Saves all changes made in this context to the database.
@@ -277,6 +286,12 @@ public class AppDbContext : IdentityDbContext<User, AppRole, Guid>
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
+        modelBuilder.Entity<SearchItem>(entity =>
+        {
+            entity.HasNoKey();
+            entity.ToView(null);
+        });
 
         // Налаштування Identity таблиць
         modelBuilder.Entity<User>(entity =>

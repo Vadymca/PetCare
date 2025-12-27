@@ -190,13 +190,18 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
 
         // --- Full-text search vector ---
         builder.Property<NpgsqlTsVector>("SearchVector")
-            .HasColumnType("tsvector")
-            .HasComputedColumnSql(
-            @"
-            to_tsvector('simple', coalesce(""Name"",'') || ' ' || coalesce(""Description"",''))
-            || to_tsvector('english', coalesce(""Name"",'') || ' ' || coalesce(""Description"",''))
-        ",
-            stored: true);
+             .HasColumnType("tsvector")
+             .HasComputedColumnSql(
+                 """
+                to_tsvector('simple',
+                    coalesce("Name", '') || ' ' || coalesce("Description", '')
+                )
+                ||
+                to_tsvector('english',
+                    coalesce("Name", '') || ' ' || coalesce("Description", '')
+                )
+                """,
+                 stored: true);
 
         builder.HasIndex("SearchVector")
             .HasMethod("GIN");

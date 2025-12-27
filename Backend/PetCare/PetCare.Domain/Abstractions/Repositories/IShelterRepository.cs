@@ -3,6 +3,7 @@
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
+using PetCare.Domain.Search;
 using PetCare.Domain.ValueObjects;
 
 /// <summary>
@@ -208,4 +209,30 @@ public interface IShelterRepository : IRepository<Shelter>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The count of donations.</returns>
     Task<int> GetDonationsCountAsync(Guid aidRequestId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asynchronously searches for items that match the specified query string.
+    /// </summary>
+    /// <param name="query">The search query used to filter items. Cannot be null or empty.</param>
+    /// <param name="limit">The maximum number of items to return. Must be greater than zero.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the search operation.</param>
+    /// <returns>A task that represents the asynchronous search operation. The task result contains a read-only list of matching
+    /// items. The list will be empty if no items match the query.</returns>
+    Task<IReadOnlyList<SearchItem>> SearchShelterAsync(
+       string query,
+       int limit,
+       CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Asynchronously searches the project for items that match the specified query.
+    /// </summary>
+    /// <param name="query">The search query used to filter project items. Cannot be null or empty.</param>
+    /// <param name="limit">The maximum number of search results to return. Must be greater than zero.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the search operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a read-only list of matching search
+    /// items. The list is empty if no items match the query.</returns>
+    Task<IReadOnlyList<SearchItem>> SearchProjectAsync(
+        string query,
+        int limit,
+        CancellationToken cancellationToken);
 }

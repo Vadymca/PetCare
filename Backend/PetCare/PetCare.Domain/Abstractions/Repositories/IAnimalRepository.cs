@@ -1,9 +1,9 @@
-﻿namespace PetCare.Application.Interfaces;
+﻿namespace PetCare.Domain.Abstractions.Repositories;
 
-using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
+using PetCare.Domain.Search;
 
 /// <summary>
 /// Represents a repository interface for accessing animal entities.
@@ -122,4 +122,16 @@ public interface IAnimalRepository : IRepository<Animal>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The fully loaded <see cref="Animal"/>, or null if not found.</returns>
     Task<Animal?> GetFullByIdAsync(Guid id, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Gets a list of animal search items matching the given query.
+    /// </summary>
+    /// <param name="query">The search query.</param>
+    /// <param name="limit">The maximum number of results to return.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    Task<IReadOnlyList<SearchItem>> SearchAnimalsAsync(
+       string query,
+       int limit,
+       CancellationToken cancellationToken);
 }

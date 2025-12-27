@@ -2,6 +2,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using NpgsqlTypes;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.ValueObjects;
 
@@ -107,5 +108,22 @@ public class ShelterConfiguration : IEntityTypeConfiguration<Shelter>
 
         builder.Property(s => s.UpdatedAt)
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        builder.Property<NpgsqlTsVector>("SearchVector")
+    .HasColumnType("tsvector")
+    .HasComputedColumnSql(
+        """
+        to_tsvector('simple',
+            coalesce("Name", '') || ' ' || coalesce("Description", '')
+        )
+        ||
+        to_tsvector('english',
+            coalesce("Name", '') || ' ' || coalesce("Description", '')
+        )
+        """,
+        stored: true);
+
+        builder.HasIndex("SearchVector")
+            .HasMethod("GIN");
     }
 }

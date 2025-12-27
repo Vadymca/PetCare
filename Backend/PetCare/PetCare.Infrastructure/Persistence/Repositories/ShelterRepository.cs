@@ -1,10 +1,13 @@
 ﻿namespace PetCare.Infrastructure.Persistence.Repositories;
 
+using System.Linq;
+using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore;
 using PetCare.Domain.Abstractions.Repositories;
 using PetCare.Domain.Aggregates;
 using PetCare.Domain.Entities;
 using PetCare.Domain.Enums;
+using PetCare.Domain.Search;
 using PetCare.Domain.Specifications.Shelter;
 using PetCare.Domain.ValueObjects;
 using PetCare.Infrastructure.Persistence;
@@ -408,5 +411,77 @@ public class ShelterRepository : GenericRepository<Shelter>, IShelterRepository
     {
         return await this.Context.Donations
             .CountAsync(d => d.TargetEntity == "AidRequest" && d.TargetEntityId == aidRequestId, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<SearchItem>> SearchShelterAsync(
+    string query,
+    int limit,
+    CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return Array.Empty<SearchItem>();
+        }
+
+        var prefix = query.Length >= 3
+            ? query[..3]
+            : query;
+
+        var tsQuery = prefix + ":*";
+
+        var sql = @$"
+            SELECT ""Name"", ""Slug"", ""Description"" AS ""Snippet""
+            FROM ""Shelters""
+            WHERE ""SearchVector"" @@ to_tsquery('simple', {{0}})
+               OR ""SearchVector"" @@ to_tsquery('english', {{0}})
+            ORDER BY
+                ts_rank(""SearchVector"", to_tsquery('simple', {{0}})) DESC,
+                ts_rank(""SearchVector"", to_tsquery('english', {{0}})) DESC,
+                ""UpdatedAt"" DESC,
+                ""CreatedAt"" DESC
+            LIMIT {{1}};
+        ";
+
+        return await this.Context.SearchItems
+            .FromSqlInterpolated(FormattableStringFactory.Create(sql, tsQuery, limit))
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<SearchItem>> SearchProjectAsync(
+    string query,
+    int limit,
+    CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return Array.Empty<SearchItem>();
+        }
+
+        var prefix = query.Length >= 3
+            ? query[..3]
+            : query;
+
+        var tsQuery = prefix + ":*";
+
+        var sql = @$"
+            SELECT ""Title"" AS ""Name"", ""Slug"", ""Description"" AS ""Snippet""
+            FROM ""AnimalAidRequests""
+            WHERE ""SearchVector"" @@ to_tsquery('simple', {{0}})
+               OR ""SearchVector"" @@ to_tsquery('english', {{0}})
+            ORDER BY
+                ts_rank(""SearchVector"", to_tsquery('simple', {{0}})) DESC,
+                ts_rank(""SearchVector"", to_tsquery('english', {{0}})) DESC,
+                ""UpdatedAt"" DESC,
+                ""CreatedAt"" DESC
+            LIMIT {{1}};
+        ";
+
+        return await this.Context.SearchItems
+            .FromSqlInterpolated(FormattableStringFactory.Create(sql, tsQuery, limit))
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
     }
 }

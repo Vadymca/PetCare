@@ -2,6 +2,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using NpgsqlTypes;
 using PetCare.Domain.Entities;
 using PetCare.Domain.ValueObjects;
 
@@ -82,5 +83,22 @@ public sealed class AnimalAidRequestConfiguration : IEntityTypeConfiguration<Ani
         builder.HasIndex(x => x.Category);
 
         builder.HasIndex(x => x.CreatedAt);
+
+        builder.Property<NpgsqlTsVector>("SearchVector")
+            .HasColumnType("tsvector")
+            .HasComputedColumnSql(
+                """
+                to_tsvector('simple',
+                    coalesce("Title", '') || ' ' || coalesce("Description", '')
+                )
+                ||
+                to_tsvector('english',
+                    coalesce("Title", '') || ' ' || coalesce("Description", '')
+                )
+                """,
+                stored: true);
+
+        builder.HasIndex("SearchVector")
+            .HasMethod("GIN");
     }
 }

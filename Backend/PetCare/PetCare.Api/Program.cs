@@ -28,6 +28,7 @@ using PetCare.Api.Endpoints.Payments.History;
 using PetCare.Api.Endpoints.Payments.Intents;
 using PetCare.Api.Endpoints.Payments.LiqPay;
 using PetCare.Api.Endpoints.Payments.Subscriptions;
+using PetCare.Api.Endpoints.Search;
 using PetCare.Api.Endpoints.Shelters;
 using PetCare.Api.Endpoints.Species;
 using PetCare.Api.Endpoints.Users;
@@ -539,6 +540,9 @@ public class Program
             app.MapGetRejectedAdoptionApplicationsEndpoint(); // /api/adoption-applications/rejected
             app.MapUpdateAdoptionApplicationEndpoint(); // /api/adoption-applications/{id:guid}
             app.MapCompleteAdoptionApplicationEndpoint(); // /api/adoption-applications/{id:guid}/complete
+
+            // ------------------------ Search -----------------------
+            app.MapGlobalSearchEndpoint(); // /api/search
 
             app.MapGet("/", () => Results.Ok("✅ PetCare.Api is running successfully!"));
 
